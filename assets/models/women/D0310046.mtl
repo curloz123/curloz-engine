@@ -1,0 +1,73 @@
+# 3ds Max Wavefront OBJ Exporter v0.94b - (c)2007 guruware
+# www.cadnav.com
+
+newmtl Facos
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 1.0000 1.0000 1.0000
+	map_Ka body-cos.jpg
+	map_Kd body-cos.jpg
+
+newmtl Falace
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 1.0000 1.0000 1.0000
+	map_Ka lace.jpg
+	map_Kd lace.jpg
+
+newmtl Falace_ura
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.7140 0.6750 0.6510
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.7140 0.6750 0.6510
+	map_Ka lace.jpg
+	map_Kd lace.jpg
+
+newmtl Fahair
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 1.0000 1.0000 1.0000
+	map_Ka trans.jpg
+	map_Kd trans.jpg
+	map_d trans_mask.jpg
+
+newmtl Famimi
+	Ns 0.0000
+	Ni 1.5000
+	d 0.6500
+	Tr 0.6500
+	Tf 0.6500 0.6500 0.6500 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 1.0000 1.0000 1.0000
+	map_Ka mimi.jpg
+	map_Kd mimi.jpg
