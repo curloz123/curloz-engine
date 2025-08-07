@@ -1,8 +1,6 @@
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/trigonometric.hpp"
-#include <assimp/mesh.h>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include "renderer/gltLoader.h"
 #include "renderer/shaders.h"
 #include "renderer/stb_image.h"
@@ -16,11 +14,7 @@
 #include <iostream>
 #include <string>
 #include <glm/glm.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-
+#include "renderer/animator.h"
 
 int screenWidth = 1920;
 int screenHeight = 1080;
@@ -58,6 +52,7 @@ int main()
 
     Shader shaderObject = Shader("assets/shaders/assimpShader.vert","assets/shaders/assimpShader.frag");
     Shader simpleShader = Shader("assets/shaders/gltVert.vert","assets/shaders/gltFrag.frag");
+    Shader animShader = Shader("assets/shaders/animation.vert","assets/shaders/animation.frag");
 
     GLuint platformDiffuse = loadTextureFromFile("assets/textures/platform.jpg",false);
     shaderObject.use();
@@ -221,7 +216,9 @@ int main()
 
 
      // working on our tinygltf stuff now
-     Model ourModel("assets/models/Juliet/Juliet_Sexy_Rider.dae");
+     Model ourModel("assets/models/mixamo/Dancing.fbx");
+     Animation danceAnimation("assets/models/mixamo/Dancing.fbx", &ourModel);
+     Animator animator(&danceAnimation);
      // GLTloader ourModel("assets/models/axe/scene.gltf","gltf");
      // stbi_flip_vertically_on_write(true);
 
@@ -335,13 +332,28 @@ int main()
         if(sinComponent <0) sinComponent *= -1;
         model = glm::mat4(1.0f);
         model = glm::translate(model,glm::vec3(0.0f,0.0f,-1.0f));
-        model = glm::rotate(model,glm::radians(90.0f),glm::vec3(1.0f,0.0f,0.0f));
+        // model = glm::rotate(model,glm::radians(90.0f),glm::vec3(1.0f,0.0f,0.0f));
         // model = glm::rotate(model,glm::radians(45.0f),glm::vec3(0.0f,1.0f,0.0f));
         // model = glm::rotate(model,glm::radians(90.0f),glm::vec3(0.0f,0.0f,1.0f));
         model = glm::scale(model,glm::vec3(0.05f));
         shaderObject.use();
         shaderObject.setMat4("model",model);
+        
 
+        animShader.use();
+        animShader.setMat4("projection",projection);
+        animShader.setMat4("view",view);
+
+        auto transforms = animator.getFinalBonesMatrices();
+        for(int i=0; i<transforms.size(); ++i)
+        {
+            animShader.setMat4("finalBonesMatrices["+std::to_string(i)+"]",transforms[i]);
+        }
+        model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(0.0f,0.0f,-1.0f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        animShader.setMat4("model",model);
+        ourModel.Draw(animShader);
         // ourModel.Draw(simpleShader);
         // ourModel.Draw(shaderObject);
 

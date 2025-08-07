@@ -26,6 +26,11 @@ class Model
             loadModel(path);
         }
         void Draw(Shader &shader);	
+        std::map<std::string, BoneInfo> m_BoneInfoMap;
+
+        std::map<std::string, BoneInfo> &getBoneInfoMap();
+        int &getBoneCount();
+
     private:
         std::vector<assimpMesh> meshes;
         std::string directory;
@@ -37,15 +42,11 @@ class Model
         std::vector<meshTexture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
         unsigned int TextureFromFile(const char *path);
 
-        //Animation stuff
-        std::map<std::string, BoneInfo> m_BoneInfoMap;
+
         int m_BoneCounter = 0;
-        // auto &getBoneInfoMap();
-        std::map<std::string, BoneInfo> getBoneInfoMap();
-        int getBoneCount();
         void setVertexBoneData2Default(meshVertex& vertex);
         void setVertexBoneData(meshVertex &vertex, int BoneID, float weight);
-        void ExtractBoneWeightForVertices(std::vector<meshVertex> vertices, aiMesh* mesh, const aiScene* scene);
+        void ExtractBoneWeightForVertices(std::vector<meshVertex> &vertices, aiMesh* mesh, const aiScene* scene);
 };
 
 

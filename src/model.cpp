@@ -1,4 +1,5 @@
 #include "renderer/model.h"
+#include "renderer/assimp_glm_helpers.h"
 #include <algorithm>
 
 void Model::Draw(Shader &shader)
@@ -162,12 +163,12 @@ unsigned int Model::TextureFromFile(const char *path)
 }
 
 //Animation stuff
-std::map<std::string, BoneInfo> Model::getBoneInfoMap()
+std::map<std::string, BoneInfo> &Model::getBoneInfoMap()
 {
     return m_BoneInfoMap;
 }
 
-int Model::getBoneCount()
+int &Model::getBoneCount()
 {
     return m_BoneCounter;
 }
@@ -190,6 +191,43 @@ void Model::setVertexBoneData(meshVertex &vertex, int BoneID, float weight)
             vertex.m_BoneIDs[i] = BoneID;
             vertex.m_Weights[i] = weight;
             break;
+        }
+    }
+}
+
+void Model::ExtractBoneWeightForVertices(std::vector<meshVertex> &vertices, aiMesh* mesh, const aiScene* scene)
+{
+    for(int boneIndex=0; boneIndex<mesh->mNumBones; ++boneIndex)
+    {
+        int boneID = -1;
+        std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+        if(m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
+        {
+            BoneInfo newBoneInfo;
+            newBoneInfo.id = m_BoneCounter;
+            newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+            m_BoneInfoMap[boneName] = newBoneInfo;            
+            boneID = m_BoneCounter;
+            ++m_BoneCounter;
+        }
+        else
+        {
+            boneID = m_BoneInfoMap[boneName].id;
+        }
+        if(boneID == -1)
+        {
+            std::cout<<"Could not load bone"<<std::endl;
+            assert(boneID != -1);
+        }            
+        auto weights = mesh->mBones[boneIndex]->mWeights;
+        int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+        
+        for(int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+        {
+            int vertexID = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexID <= vertices.size());
+            setVertexBoneData(vertices[vertexID], boneID, weight);
         }
     }
 }

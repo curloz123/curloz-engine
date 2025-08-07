@@ -1,5 +1,5 @@
-CC := ccache clang
-CXX := ccache clang++
+CC := ccache  clang
+CXX := ccache  clang++
 CXXFLAGS := -O0 -Wall
 LDFLAGS := -fuse-ld=mold  -lglfw -lGL -ldl -lassimp 
 
