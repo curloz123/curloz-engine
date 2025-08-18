@@ -1,0 +1,260 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 13292,
+      "max": [
+        1.59698486328125,
+        7.321882724761963,
+        1.5995017290115356
+      ],
+      "min": [
+        -1.5969847440719604,
+        4.143287658691406,
+        -1.5995022058486938
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 159504,
+      "componentType": 5126,
+      "count": 13292,
+      "max": [
+        0.9998401403427124,
+        0.999539852142334,
+        0.9998169541358948
+      ],
+      "min": [
+        -0.9997856020927429,
+        -0.9995056390762329,
+        -0.99981689453125
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 13292,
+      "max": [
+        0.6249667406082153,
+        0.9970703125
+      ],
+      "min": [
+        0.0029296875,
+        0.0029296875
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 77760,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Logan Harrington 3D (https://sketchfab.com/loganharrington3d)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/buga-sphere-2e263300f1324a68af6299b2b99ea143",
+      "title": "Buga Sphere"
+    },
+    "generator": "Sketchfab-16.67.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 311040,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 106336,
+      "byteOffset": 311040,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 319008,
+      "byteOffset": 417376,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 736384,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "images": [
+    {
+      "uri": "textures/SphereMAT_baseColor.png"
+    },
+    {
+      "uri": "textures/SphereMAT_metallicRoughness.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "specularFactor": 0.4805685896322985
+        }
+      },
+      "name": "SphereMAT",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Sphere_SphereMAT_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        11.135110855102539,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.472491290617671e-15,
+        -11.135110855102539,
+        0.0,
+        0.0,
+        11.135110855102539,
+        2.472491290617671e-15,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Buga_Sphere_GEO.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        0.9999943925592918,
+        0.0,
+        -0.0033488580102671328,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0033488580102671328,
+        0.0,
+        0.9999943925592918,
+        0.0,
+        4.694431510188224e-10,
+        0.0,
+        -1.929176957071732e-10,
+        1.0
+      ],
+      "name": "Sphere"
+    },
+    {
+      "mesh": 0,
+      "name": "Sphere_SphereMAT_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    }
+  ]
+}

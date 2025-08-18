@@ -2,6 +2,7 @@
 #define MAX_BONE_INFLUENCE 4
 #include <string>
 #include <vector>
+#include <iostream>
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -44,6 +45,7 @@ class assimpMesh {
         {
             unsigned int diffuseNr  = 1;
             unsigned int specularNr = 1;
+            // std::cout<<"Num textures: "<<textures.size()<<std::endl;
             for(unsigned int i = 0; i < textures.size(); ++i)
             {
                 glActiveTexture(GL_TEXTURE0 + i); 
@@ -59,14 +61,9 @@ class assimpMesh {
                     number = std::to_string(specularNr++); 
                 }
                 
-                glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
+                glUniform1i(glGetUniformLocation(shader.ID, ("material." + name + number).c_str()), i);
                 glBindTexture(GL_TEXTURE_2D, textures[i].id);
             }
-            // glm::mat4 model = glm::mat4(1.0f);
-            // model = glm::mat4(1.0f);
-            // model = glm::translate(model,glm::vec3(0.0f,0.0f,0.0f));
-            // model = glm::scale(model,glm::vec3(0.1f));
-            // shader.setMat4("model",model);
 
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
@@ -103,7 +100,7 @@ class assimpMesh {
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(meshVertex), (void*)offsetof(meshVertex, TexCoords));
 
             glEnableVertexAttribArray(3);	
-            glVertexAttribPointer(3, MAX_BONE_INFLUENCE, GL_FLOAT, GL_FALSE, sizeof(meshVertex), (void*)offsetof(meshVertex, m_BoneIDs));
+            glVertexAttribIPointer(3, MAX_BONE_INFLUENCE, GL_FALSE, sizeof(meshVertex), (void*)offsetof(meshVertex, m_BoneIDs));
 
             glEnableVertexAttribArray(4);	
             glVertexAttribPointer(4, MAX_BONE_INFLUENCE, GL_FLOAT, GL_FALSE, sizeof(meshVertex), (void*)offsetof(meshVertex, m_Weights));

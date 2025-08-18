@@ -5,4 +5,4 @@
 #include <string>
 
 GLuint loadTextureFromFile(const std::string &path, bool flip);
-
+GLuint loadTextureFromBinary(const unsigned char *pixelData, int imageWidth, int imageHeight, int numChannels);

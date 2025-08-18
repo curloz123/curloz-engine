@@ -1,0 +1,11 @@
+Model Information:
+* title:	Buga Sphere
+* source:	https://sketchfab.com/3d-models/buga-sphere-2e263300f1324a68af6299b2b99ea143
+* author:	Logan Harrington 3D (https://sketchfab.com/loganharrington3d)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Buga Sphere" (https://sketchfab.com/3d-models/buga-sphere-2e263300f1324a68af6299b2b99ea143) by Logan Harrington 3D (https://sketchfab.com/loganharrington3d) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

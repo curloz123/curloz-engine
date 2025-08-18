@@ -1,14 +1,14 @@
 CC := ccache  clang
 CXX := ccache  clang++
-CXXFLAGS := -O0 -Wall
+CXXFLAGS := -O0 -Wno
 LDFLAGS := -fuse-ld=mold  -lglfw -lGL -ldl -lassimp 
 
 TARGET = prog
-INCLUDE := include/ 
-SRC_DIR := src/
+INCLUDE := include
+SRC_DIR := src/imgui src/physics src/renderer
 BUILD_DIR := build
 
-SRCS = $(shell find $(SRC_DIR) -name '*.cpp' -or -name '*.c')
+SRCS = $(shell find $(SRC_DIR)/ -name '*.cpp' -or -name '*.c')
 OBJS := $(SRCS:$(SRC_DIR)%=$(BUILD_DIR)/%.o)
 
 
@@ -26,3 +26,17 @@ run: $(BUILD_DIR)/$(TARGET)
 	./$(BUILD_DIR)/$(TARGET)
 clean:
 	rm ${BUILD_DIR}/*
+
+CC = ccache clang
+CXX = ccache clang++
+CFLAGS = -O0 -Wall
+CXXFLAGS = $(CFLAGS)
+LDFLAGS = -fuse-ld=mold -lglfw -lGL -ldl -lassimp
+
+TARGET = prog
+INCLUDE = include/
+SRC_DIR = src/imgui src/physics src/renderer
+BUILD_DIR = build/
+SRCS = $(SHELL)
+
+

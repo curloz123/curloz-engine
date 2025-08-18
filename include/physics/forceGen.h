@@ -1,6 +1,6 @@
 /*
  * This file initializes the force generator for our engine.
- * We basically use polymorphusm here
+ * We basically use polymorphism here
 */
 #pragma once
 #include <vector>
@@ -9,7 +9,6 @@
 class ParticleForceGenerator
 {
     public:
-        
         virtual void updateForce(Particle* particle, physics::real duration) = 0;
 };
 

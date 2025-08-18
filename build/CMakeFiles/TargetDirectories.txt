@@ -1,0 +1,3 @@
+/home/curloz/dev/project/opengl/build/CMakeFiles/prog.dir
+/home/curloz/dev/project/opengl/build/CMakeFiles/edit_cache.dir
+/home/curloz/dev/project/opengl/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,117 @@
+#include "renderer/animator.h"
+
+Animator::Animator(Animation *animation)
+{
+    m_CurrentTime = 0.0f;
+    m_CurrentAnimation = animation;
+    m_FinalBoneMatrices.reserve(100);
+    for(int i=0; i<100; ++i)
+        m_FinalBoneMatrices.push_back(glm::mat4(1.0f));
+}
+
+void Animator::updateAnimation(float dt)
+{
+    m_DeltaTime = dt;
+    if(m_CurrentAnimation)
+    {
+        m_CurrentTime += m_CurrentAnimation->getTicksPerSecond() * dt;
+        m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->getDuration());
+        calculateBonesTransform(&m_CurrentAnimation->getRootNode(), glm::mat4(1.0f));
+    }
+    // std::cout<<"Enter update"<<std::endl;
+    // std::vector<glm::mat4> transforms = getFinalBonesMatrices();
+    // for(int i=0; i<transforms.size(); ++i)
+    // {
+    //     for(int j=0;j<4;++j)
+    //     {
+    //         for(int k=0;k<4;++k)
+    //         {
+    //             std::cout<<transforms[i][j][k]<<" ";
+    //         }
+    //         std::cout<<std::endl;
+    //     }
+    // }
+
+    // std::cout << "Current time: " << m_CurrentTime << " / " << m_CurrentAnimation->getDuration() << std::endl;
+}
+
+void Animator::playAnimation(Animation *pAnimation)
+{
+    m_CurrentAnimation = pAnimation;
+    m_CurrentTime = 0.0f;
+}
+
+void Animator::calculateBonesTransform(const AssimpNodeData *node, glm::mat4 parentTransform)
+{
+    std::string nodeName = node->name;
+    glm::mat4 nodeTransform = node->transformation;
+
+    Bone *bone = m_CurrentAnimation->findBone(nodeName);
+    if(bone)
+    {
+        bone->update(m_CurrentTime);     
+        nodeTransform = bone->getLocalTransform();
+    }
+
+    glm::mat4 globalTransformation = parentTransform * nodeTransform;
+    auto BoneInfoMap = m_CurrentAnimation->getBoneInfoMap();
+    if(BoneInfoMap.find(nodeName) != BoneInfoMap.end())
+    {
+        int index = BoneInfoMap[nodeName].id;
+        glm::mat4 offset = BoneInfoMap[nodeName].offset;
+        m_FinalBoneMatrices[index] = globalTransformation * offset;
+
+        // std::cout<<"Bone ID: "<<index<<" final matrix "<<std::endl;
+        // for(int i=0;i<4;++i)
+        // {
+        //     for(int j=0;j<4;++j)
+        //     {
+        //         std::cout<<m_FinalBoneMatrices[index][i][j]<<" ";
+        //     }
+        //     std::cout<<std::endl;
+        // }
+
+        // std::cout << "Setting bone matrix for " << nodeName << " at index " << index << std::endl;
+    }
+
+    for(int i=0; i<node->childrenCount; ++i)
+    {
+        calculateBonesTransform(&node->children[i], globalTransformation);
+    }
+}
+
+std::vector<glm::mat4> Animator::getFinalBonesMatrices()
+{
+    // std::cout<<"Entered return matrice function"<<std::endl;
+    std::vector<glm::mat4> transforms = m_FinalBoneMatrices;
+    // for(int i=0; i<transforms.size(); ++i)
+    // {
+    //     for(int j=0;j<4;++j)
+    //     {
+    //         for(int k=0;k<4;++k)
+    //         {
+    //             std::cout<<transforms[i][j][k]<<" ";
+    //         }
+    //         std::cout<<std::endl;
+    //     }
+    // }
+    // std::cout<<"weight: "<<
+
+    return m_FinalBoneMatrices;
+}
+
+void Animator::printFinalBonesMatrices()
+{
+    std::vector<glm::mat4> transforms = getFinalBonesMatrices();
+    for(int i=0; i<transforms.size(); ++i)
+    {
+        for(int j=0;j<4;++j)
+        {
+            for(int k=0;k<4;++k)
+            {
+                std::cout<<transforms[i][j][k]<<" ";
+            }
+            std::cout<<std::endl;
+        }
+    }
+}

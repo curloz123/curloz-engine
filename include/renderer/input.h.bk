@@ -1,0 +1,18 @@
+#pragma once
+#include <GLFW/glfw3.h>
+#include "camera.h"
+
+class Input 
+{
+    private:
+        GLFWwindow* window;
+        Camera &camera;
+
+    public:
+        Input(GLFWwindow *window, Camera &camera);
+        friend void mouseCallBack(GLFWwindow*, double xPos, double yPos);
+        friend void scrollCallBack(GLFWwindow*, double xOffset, double yOffset);
+        
+};
+
+

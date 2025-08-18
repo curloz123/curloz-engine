@@ -21,10 +21,7 @@ struct BoneInfo
 class Model 
 {
     public:
-        Model(std::string path)
-        {
-            loadModel(path);
-        }
+        Model(std::string path);
         void Draw(Shader &shader);	
         std::map<std::string, BoneInfo> m_BoneInfoMap;
 
@@ -43,10 +40,9 @@ class Model
         unsigned int TextureFromFile(const char *path);
 
 
-        int m_BoneCounter = 0;
+        int m_BoneCounter ;
         void setVertexBoneData2Default(meshVertex& vertex);
         void setVertexBoneData(meshVertex &vertex, int BoneID, float weight);
         void ExtractBoneWeightForVertices(std::vector<meshVertex> &vertices, aiMesh* mesh, const aiScene* scene);
 };
-
 

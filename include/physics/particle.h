@@ -16,7 +16,8 @@ class Particle
         void addForce(const physics::Vector3& force);
         void clearAccumulator();
         void integrate(physics::real duration);
-        glm::vec3 to_glmVec3(const physics::Vector3& vector) const
+
+        inline glm::vec3 to_glmVec3(const physics::Vector3& vector) const
         {
             return glm::vec3(vector.x , vector.y, vector.z);
         }
