@@ -6,6 +6,7 @@ class Particle
 {
     public:
         physics::Vector3 position;
+        Particle(physics::Vector3 pos) : position(pos){}
         physics::Vector3 velocity;
         // physics::Vector3 acceleration ;
         physics::Vector3 forceAccum;
@@ -21,6 +22,7 @@ class Particle
         {
             return glm::vec3(vector.x , vector.y, vector.z);
         }
+
 
 
 };

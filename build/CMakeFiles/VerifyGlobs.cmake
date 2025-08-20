@@ -24,6 +24,7 @@ set(OLD_GLOB
   "/home/curloz/dev/project/opengl/src/physics/forceGen.cpp"
   "/home/curloz/dev/project/opengl/src/physics/particle.cpp"
   "/home/curloz/dev/project/opengl/src/renderer/camera.cpp"
+  "/home/curloz/dev/project/opengl/src/renderer/entity.cpp"
   "/home/curloz/dev/project/opengl/src/renderer/gltLoader.cpp"
   "/home/curloz/dev/project/opengl/src/renderer/imageLoader.cpp"
   "/home/curloz/dev/project/opengl/src/renderer/model.cpp"
