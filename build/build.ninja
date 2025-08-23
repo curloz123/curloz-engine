@@ -12,7 +12,7 @@
 
 # =============================================================================
 # Project: OpenGL
-# Configurations: 
+# Configurations: Debug
 # =============================================================================
 
 #############################################
@@ -20,6 +20,11 @@
 
 ninja_required_version = 1.8
 
+
+#############################################
+# Set configuration variable for custom commands.
+
+CONFIGURATION = Debug
 # =============================================================================
 # Include auxiliary files.
 
@@ -44,120 +49,135 @@ cmake_ninja_workdir = /home/curloz/dev/project/opengl/build/
 
 build cmake_object_order_depends_target_prog: phony || .
 
-build CMakeFiles/prog.dir/src/imgui/imgui.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/imgui/imgui_draw.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui_draw.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui_draw.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui_draw.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui_draw.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/imgui/imgui_impl_glfw.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui_impl_glfw.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui_impl_glfw.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui_impl_glfw.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui_impl_glfw.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/imgui/imgui_impl_opengl3.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui_impl_opengl3.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui_impl_opengl3.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui_impl_opengl3.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui_impl_opengl3.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/imgui/imgui_tables.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui_tables.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui_tables.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui_tables.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui_tables.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/imgui/imgui_widgets.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/imgui/imgui_widgets.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/imgui/imgui_widgets.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/imgui/imgui_widgets.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/imgui/imgui_widgets.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/imgui
 
-build CMakeFiles/prog.dir/src/physics/forceGen.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/physics/forceGen.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/physics/forceGen.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/physics/forceGen.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/physics/forceGen.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/physics
 
-build CMakeFiles/prog.dir/src/physics/particle.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/physics/particle.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/physics/particle.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/physics/particle.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/physics/particle.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/physics
 
-build CMakeFiles/prog.dir/src/renderer/camera.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/camera.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/camera.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/camera.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/camera.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/entity.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/entity.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/entity.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/entity.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/entity.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/glad.c.o: C_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/glad.c || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/general.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/general.cpp || cmake_object_order_depends_target_prog
+  DEP_FILE = CMakeFiles/prog.dir/src/renderer/general.cpp.o.d
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
+  INCLUDES = -I/home/curloz/dev/project/opengl/include
+  OBJECT_DIR = CMakeFiles/prog.dir
+  OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
+
+build CMakeFiles/prog.dir/src/renderer/glad.c.o: C_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/glad.c || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/glad.c.o.d
+  FLAGS = -g
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/gltLoader.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/gltLoader.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/gltLoader.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/gltLoader.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/gltLoader.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/imageLoader.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/imageLoader.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/imageLoader.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/imageLoader.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/imageLoader.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/model.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/model.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/model.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/model.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/model.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/platform.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/platform.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/platform.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/platform.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/platform.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/shaders.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/shaders.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/renderCube.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/renderCube.cpp || cmake_object_order_depends_target_prog
+  DEP_FILE = CMakeFiles/prog.dir/src/renderer/renderCube.cpp.o.d
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
+  INCLUDES = -I/home/curloz/dev/project/opengl/include
+  OBJECT_DIR = CMakeFiles/prog.dir
+  OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
+
+build CMakeFiles/prog.dir/src/renderer/shaders.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/shaders.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/shaders.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
 
-build CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o: CXX_COMPILER__prog_unscanned_ /home/curloz/dev/project/opengl/src/renderer/stb_image.cpp || cmake_object_order_depends_target_prog
+build CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o: CXX_COMPILER__prog_unscanned_Debug /home/curloz/dev/project/opengl/src/renderer/stb_image.cpp || cmake_object_order_depends_target_prog
   DEP_FILE = CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o.d
-  FLAGS = -std=gnu++11
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g -std=gnu++17
   INCLUDES = -I/home/curloz/dev/project/opengl/include
   OBJECT_DIR = CMakeFiles/prog.dir
   OBJECT_FILE_DIR = CMakeFiles/prog.dir/src/renderer
@@ -170,10 +190,9 @@ build CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o: CXX_COMPILER__prog_unsca
 #############################################
 # Link the executable prog
 
-build prog: CXX_EXECUTABLE_LINKER__prog_ CMakeFiles/prog.dir/src/imgui/imgui.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_draw.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_impl_glfw.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_impl_opengl3.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_tables.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_widgets.cpp.o CMakeFiles/prog.dir/src/physics/forceGen.cpp.o CMakeFiles/prog.dir/src/physics/particle.cpp.o CMakeFiles/prog.dir/src/renderer/camera.cpp.o CMakeFiles/prog.dir/src/renderer/entity.cpp.o CMakeFiles/prog.dir/src/renderer/glad.c.o CMakeFiles/prog.dir/src/renderer/gltLoader.cpp.o CMakeFiles/prog.dir/src/renderer/imageLoader.cpp.o CMakeFiles/prog.dir/src/renderer/model.cpp.o CMakeFiles/prog.dir/src/renderer/platform.cpp.o CMakeFiles/prog.dir/src/renderer/shaders.cpp.o CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o
-  DEP_FILE = CMakeFiles/prog.dir/link.d
-  LINK_FLAGS = -Wl,--dependency-file=CMakeFiles/prog.dir/link.d
-  LINK_LIBRARIES = -lglfw  -lGL  -ldl  -lassimp
+build prog: CXX_EXECUTABLE_LINKER__prog_Debug CMakeFiles/prog.dir/src/imgui/imgui.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_draw.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_impl_glfw.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_impl_opengl3.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_tables.cpp.o CMakeFiles/prog.dir/src/imgui/imgui_widgets.cpp.o CMakeFiles/prog.dir/src/physics/forceGen.cpp.o CMakeFiles/prog.dir/src/physics/particle.cpp.o CMakeFiles/prog.dir/src/renderer/camera.cpp.o CMakeFiles/prog.dir/src/renderer/entity.cpp.o CMakeFiles/prog.dir/src/renderer/general.cpp.o CMakeFiles/prog.dir/src/renderer/glad.c.o CMakeFiles/prog.dir/src/renderer/gltLoader.cpp.o CMakeFiles/prog.dir/src/renderer/imageLoader.cpp.o CMakeFiles/prog.dir/src/renderer/model.cpp.o CMakeFiles/prog.dir/src/renderer/platform.cpp.o CMakeFiles/prog.dir/src/renderer/renderCube.cpp.o CMakeFiles/prog.dir/src/renderer/shaders.cpp.o CMakeFiles/prog.dir/src/renderer/stb_image.cpp.o | /usr/lib64/libglfw.so.3.4
+  FLAGS = -g -O0 -Wall -Wextra  -fuse-ld=mold -g
+  LINK_LIBRARIES = /usr/lib64/libglfw.so.3.4  -lGL  -ldl  -lassimp
   OBJECT_DIR = CMakeFiles/prog.dir
   POST_BUILD = :
   PRE_LINK = :
@@ -238,14 +257,14 @@ build /home/curloz/dev/project/opengl/build/CMakeFiles/cmake.verify_globs: VERIF
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE /home/curloz/dev/project/opengl/build/CMakeFiles/cmake.verify_globs | /home/curloz/dev/project/opengl/CMakeLists.txt /home/curloz/dev/project/opengl/build/CMakeFiles/VerifyGlobs.cmake /usr/share/cmake/Modules/CMakeCInformation.cmake /usr/share/cmake/Modules/CMakeCXXInformation.cmake /usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake/Modules/CMakeGenericSystem.cmake /usr/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake/Modules/Compiler/GNU-C.cmake /usr/share/cmake/Modules/Compiler/GNU-CXX.cmake /usr/share/cmake/Modules/Compiler/GNU.cmake /usr/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake /usr/share/cmake/Modules/Linker/GNU-C.cmake /usr/share/cmake/Modules/Linker/GNU-CXX.cmake /usr/share/cmake/Modules/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-Initialize.cmake /usr/share/cmake/Modules/Platform/Linux.cmake /usr/share/cmake/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/3.31.7/CMakeCCompiler.cmake CMakeFiles/3.31.7/CMakeCXXCompiler.cmake CMakeFiles/3.31.7/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE /home/curloz/dev/project/opengl/build/CMakeFiles/cmake.verify_globs | /home/curloz/dev/project/opengl/CMakeLists.txt /home/curloz/dev/project/opengl/build/CMakeFiles/VerifyGlobs.cmake /usr/lib64/cmake/glfw3/glfw3Config.cmake /usr/lib64/cmake/glfw3/glfw3ConfigVersion.cmake /usr/lib64/cmake/glfw3/glfw3Targets-relwithdebinfo.cmake /usr/lib64/cmake/glfw3/glfw3Targets.cmake /usr/share/cmake/Modules/CMakeCInformation.cmake /usr/share/cmake/Modules/CMakeCXXInformation.cmake /usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake/Modules/CMakeGenericSystem.cmake /usr/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake/Modules/CheckCSourceCompiles.cmake /usr/share/cmake/Modules/CheckIncludeFile.cmake /usr/share/cmake/Modules/CheckLibraryExists.cmake /usr/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake/Modules/Compiler/Clang-C.cmake /usr/share/cmake/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake/Modules/Compiler/Clang.cmake /usr/share/cmake/Modules/Compiler/GNU.cmake /usr/share/cmake/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake/Modules/FindPackageMessage.cmake /usr/share/cmake/Modules/FindThreads.cmake /usr/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake /usr/share/cmake/Modules/Linker/GNU.cmake /usr/share/cmake/Modules/Linker/MOLD-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-MOLD-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-MOLD.cmake /usr/share/cmake/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-Initialize.cmake /usr/share/cmake/Modules/Platform/Linux.cmake /usr/share/cmake/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/3.31.7/CMakeCCompiler.cmake CMakeFiles/3.31.7/CMakeCXXCompiler.cmake CMakeFiles/3.31.7/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build /home/curloz/dev/project/opengl/CMakeLists.txt /home/curloz/dev/project/opengl/build/CMakeFiles/VerifyGlobs.cmake /usr/share/cmake/Modules/CMakeCInformation.cmake /usr/share/cmake/Modules/CMakeCXXInformation.cmake /usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake/Modules/CMakeGenericSystem.cmake /usr/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake/Modules/Compiler/GNU-C.cmake /usr/share/cmake/Modules/Compiler/GNU-CXX.cmake /usr/share/cmake/Modules/Compiler/GNU.cmake /usr/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake /usr/share/cmake/Modules/Linker/GNU-C.cmake /usr/share/cmake/Modules/Linker/GNU-CXX.cmake /usr/share/cmake/Modules/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-Initialize.cmake /usr/share/cmake/Modules/Platform/Linux.cmake /usr/share/cmake/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/3.31.7/CMakeCCompiler.cmake CMakeFiles/3.31.7/CMakeCXXCompiler.cmake CMakeFiles/3.31.7/CMakeSystem.cmake: phony
+build /home/curloz/dev/project/opengl/CMakeLists.txt /home/curloz/dev/project/opengl/build/CMakeFiles/VerifyGlobs.cmake /usr/lib64/cmake/glfw3/glfw3Config.cmake /usr/lib64/cmake/glfw3/glfw3ConfigVersion.cmake /usr/lib64/cmake/glfw3/glfw3Targets-relwithdebinfo.cmake /usr/lib64/cmake/glfw3/glfw3Targets.cmake /usr/share/cmake/Modules/CMakeCInformation.cmake /usr/share/cmake/Modules/CMakeCXXInformation.cmake /usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake /usr/share/cmake/Modules/CMakeFindDependencyMacro.cmake /usr/share/cmake/Modules/CMakeGenericSystem.cmake /usr/share/cmake/Modules/CMakeInitializeConfigs.cmake /usr/share/cmake/Modules/CMakeLanguageInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake /usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake /usr/share/cmake/Modules/CheckCSourceCompiles.cmake /usr/share/cmake/Modules/CheckIncludeFile.cmake /usr/share/cmake/Modules/CheckLibraryExists.cmake /usr/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake /usr/share/cmake/Modules/Compiler/Clang-C.cmake /usr/share/cmake/Modules/Compiler/Clang-CXX.cmake /usr/share/cmake/Modules/Compiler/Clang.cmake /usr/share/cmake/Modules/Compiler/GNU.cmake /usr/share/cmake/Modules/FindPackageHandleStandardArgs.cmake /usr/share/cmake/Modules/FindPackageMessage.cmake /usr/share/cmake/Modules/FindThreads.cmake /usr/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake /usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake /usr/share/cmake/Modules/Linker/GNU.cmake /usr/share/cmake/Modules/Linker/MOLD-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-MOLD-CXX.cmake /usr/share/cmake/Modules/Platform/Linker/Linux-MOLD.cmake /usr/share/cmake/Modules/Platform/Linux-Clang-C.cmake /usr/share/cmake/Modules/Platform/Linux-Clang-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-C.cmake /usr/share/cmake/Modules/Platform/Linux-GNU-CXX.cmake /usr/share/cmake/Modules/Platform/Linux-GNU.cmake /usr/share/cmake/Modules/Platform/Linux-Initialize.cmake /usr/share/cmake/Modules/Platform/Linux.cmake /usr/share/cmake/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/3.31.7/CMakeCCompiler.cmake CMakeFiles/3.31.7/CMakeCXXCompiler.cmake CMakeFiles/3.31.7/CMakeSystem.cmake: phony
 
 
 #############################################

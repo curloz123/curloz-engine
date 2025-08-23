@@ -2,7 +2,7 @@
 #include "glad/glad.h"
 #include <fstream>
 #include <sstream>
-#include<iostream>
+#include <iostream>
 #include <string>
 #include "glm/gtc//type_ptr.hpp"
 
@@ -14,7 +14,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     std::ifstream fShaderFile;
     vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-    std::cout<<"vertex path "<<vertexPath<<"fragment path "<<fragmentPath<<std::endl;
+    // std::cout<<"vertex path "<<vertexPath<<"fragment path "<<fragmentPath<<std::endl;
     try
     {
         vShaderFile.open(vertexPath);
@@ -30,6 +30,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     catch(std::ifstream::failure e)
     {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        std::cout<<"BAD::FILE->"<<vertexPath<<std::endl;
     }
 
     const char* vShaderCode = vertexCode.c_str();
@@ -51,6 +52,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cout<<"BAD::FILE->"<<fragmentPath<<std::endl;
     };
 
 

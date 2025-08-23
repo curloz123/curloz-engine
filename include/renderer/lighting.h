@@ -53,4 +53,5 @@ class PointLight : public Lighting
         {
             position = newPosition;
         }
+
 };

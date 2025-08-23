@@ -1,0 +1,17 @@
+Source/Core/CMakeFiles/rmlui_core.dir/XMLParseTools.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLParseTools.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLParseTools.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementDocument.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StreamMemory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Stream.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/URL.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StringUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Template.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DocumentHeader.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/TemplateCache.h \
+ /usr/include/ctype.h /usr/include/string.h

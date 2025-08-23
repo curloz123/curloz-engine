@@ -1,0 +1,24 @@
+Source/Core/CMakeFiles/rmlui_core.dir/SystemInterface.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/SystemInterface.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/SystemInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Log.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StringUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/URL.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/LogDefault.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/chrono \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/requires_hosted.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/chrono.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/ratio \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/type_traits \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/cstdint \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/version.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/x86_64-pc-linux-gnu/bits/c++config.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/limits \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/ctime \
+ /usr/include/time.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/parse_numbers.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/ext/numeric_traits.h

@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../librmlui_shell.a CMakeFiles/rmlui_shell.dir/src/PlatformExtensions.cpp.o CMakeFiles/rmlui_shell.dir/src/RendererExtensions.cpp.o CMakeFiles/rmlui_shell.dir/src/Shell.cpp.o CMakeFiles/rmlui_shell.dir/src/ShellFileInterface.cpp.o CMakeFiles/rmlui_shell.dir/__/__/Backends/RmlUi_Platform_GLFW.cpp.o CMakeFiles/rmlui_shell.dir/__/__/Backends/RmlUi_Renderer_GL3.cpp.o CMakeFiles/rmlui_shell.dir/__/__/Backends/RmlUi_Backend_GLFW_GL3.cpp.o
+/usr/bin/ranlib ../../librmlui_shell.a

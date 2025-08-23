@@ -1,0 +1,21 @@
+Source/Core/CMakeFiles/rmlui_core.dir/FontEngineDefault/FontProvider.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontProvider.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontProvider.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FontGlyph.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Core.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FileInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Log.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Math.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/StringUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../ComputeProperty.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/NumericValue.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontFace.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontFamily.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FreeTypeInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FontMetrics.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/algorithm

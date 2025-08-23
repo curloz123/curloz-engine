@@ -1,0 +1,33 @@
+Source/Core/CMakeFiles/rmlui_core.dir/StyleSheetParser.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetParser.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetParser.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Decorator.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Factory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Log.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Profiling.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertySpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StreamMemory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Stream.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/URL.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetContainer.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetSpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ComputeProperty.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/NumericValue.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ControlledLifetimeResource.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetFactory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetNode.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetSelector.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/algorithm \
+ /usr/include/string.h

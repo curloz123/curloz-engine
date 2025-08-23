@@ -1,0 +1,23 @@
+Source/Core/CMakeFiles/rmlui_core.dir/TypeConverter.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/TypeConverter.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/TypeConverter.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Animation.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DecorationTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Decorator.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Filter.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertySpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetSpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Transform.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/TransformPrimitive.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserColour.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyParser.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ControlledLifetimeResource.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserDecorator.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/TransformUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h

@@ -1,70 +1,31 @@
-// #include "glm/common.hpp"
-#include "glm/ext/matrix_float3x3.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/matrix.hpp"
-#include "glm/trigonometric.hpp"
-#include "physics/core.h"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "renderer/gltLoader.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include "renderer/general.h"
+#include <glm/glm.hpp>
+// #include "renderer/gltLoader.h"
 #include "renderer/shaders.h"
 #include "renderer/stb_image.h"
 #include "renderer/camera.h"
-#include "renderer/gltLoader.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
 #include "renderer/imageLoader.h"
-#include "physics/particle.h"
+// #include "physics/particle.h"
 // #include "physics/forceGen.h"
 #include "renderer/lighting.h"
 #include "renderer/entity.h"
-#include <imgui/imgui_impl_opengl3.h>
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 #include <iostream>
 #include <string>
 
-int screenWidth = 1920;
-int screenHeight = 1080;
+int screenWidth = generalInfo.width;
+int screenHeight = generalInfo.height;
 
 void processInput(GLFWwindow* window);
 void processMouse(GLFWwindow *window, Camera &camera);
 void ImGuiEvent();
-
-struct renderState
-{
-    glm::mat4 projection; 
-    glm::mat4 view;
-    renderState(glm::mat4 projection, glm::mat4 view) : projection(projection), view(view){}
-};
-
-struct entity
-{
-    GLTloader ourModel;
-    Shader &shader;
-    Camera &camera;
-    Particle particle;
-    glm::mat4 modelMatrix;
-
-    entity(GLTloader ourModel, Particle particle, Shader &shader, Camera &camera):
-        ourModel(ourModel), particle(particle), shader(shader), camera(camera) 
-    {
-
-    }
-    void update(float deltaTime, renderState &m_renderState, std::vector<PointLight*> lights, DirectionalLight& directionLight){
-        shader.use();
-        modelMatrix = glm::mat4(1.0f);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(particle.position.x, particle.position.y, particle.position.z));
-        shader.setMat3("normalMatrix", glm::mat3(glm::transpose(glm::inverse(modelMatrix) ) ) );
-
-        shader.setVec3("viewPos", camera.Position);
-        shader.setMat4("model", modelMatrix);
-        shader.setMat4("transform", m_renderState.projection * m_renderState.view * modelMatrix);
-        ourModel.Draw(shader);
-    }
-};
 
 
 int main()
@@ -90,16 +51,8 @@ int main()
     glViewport(0,0,1920,1080);
     glEnable(GL_DEPTH_TEST);
 
+    renderCube::bookInAdvance();
 
-    Camera camera;
-    camera.aspectRatio = (float)screenWidth/(float)screenHeight;
-    renderState l_renderState
-        (
-         glm::perspective(glm::radians(45.0f), (float)screenWidth/(float)screenHeight, 0.1f, 100.0f),
-         camera.GetViewMatrix()
-        );
-    float aspectRatio = (float)screenWidth / (float)screenHeight;
-    l_renderState.view = camera.GetViewMatrix();
 
     //Working in ImGUI stuff
     IMGUI_CHECKVERSION();
@@ -125,22 +78,27 @@ int main()
     Shader simpleShader = Shader("assets/shaders/vertexShader.vert", "assets/shaders/fragmentShader.frag");
 
 
-    DirectionalLight dirLight(glm::vec3(-0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.1f), glm::vec3(0.01f));
+    DirectionalLight dirLight(glm::vec3(-0.2f, -1.0f, -0.3f), glm::vec3(0.01f), glm::vec3(0.1f), glm::vec3(0.01f));
     glm::vec3 ptLightPosition [3] =
     {
-        glm::vec3( 0.0f, 5.0f, 1.0f),
-        glm::vec3(-0.7f, 5.0f,-0.7f),
-        glm::vec3( 0.7f, 5.0f,-0.7f)
+        glm::vec3( 0.0f, 5.0f, 5.0f),
+        glm::vec3( 7.0f, 5.0f,-7.0f),
+        glm::vec3(-7.0f, 5.0f,-7.0f)
     };
-    PointLight ptLight1 = PointLight(ptLightPosition[0],glm::vec3(0.1f), glm::vec3(0.8f), glm::vec3(1.0f));
+    PointLight ptLight1 = PointLight(ptLightPosition[0],glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.0f,0.0f,0.8f), glm::vec3(0.0f,0.0f,1.0f));
+    PointLight ptLight2 = PointLight(ptLightPosition[1],glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f,0.8f,0.0f), glm::vec3(0.0f,1.0f,0.0f));
+    PointLight ptLight3 = PointLight(ptLightPosition[2],glm::vec3(0.1f,0.0f,0.0f), glm::vec3(0.8f,0.0f,0.0f), glm::vec3(1.0f,0.0f,0.0f));
     Entity::PointLights.push_back(ptLight1);
+    Entity::PointLights.push_back(ptLight2);
+    Entity::PointLights.push_back(ptLight3);
 
-    Entity::camera = &camera;
-    Entity::viewMatrix = l_renderState.view;
-    Entity::projectionMatrix = l_renderState.projection;
+    Entity::camera = &generalInfo.camera;
+    Entity::viewMatrix = generalInfo.viewMatrix;
+    Entity::projectionMatrix = generalInfo.projectionMatrix;
     Entity::directionLight = dirLight;
 
-    Entity statue(GLTloader("assets/models/statue-chiriqui-3d-model/scene.gltf","gltf"), shaderObject);
+    Entity statue("assets/models/statue-chiriqui-3d-model/scene.gltf", shaderObject);
+    Entity mic("assets/models/microphone/microphone_gxl_066_bafhcteks.glb", shaderObject);
 
     float verticesPlatform[] = 
     {
@@ -182,65 +140,6 @@ int main()
     GLuint groundSpecular = loadTextureFromFile("assets/textures/sexyAhhGround/GroundDirtWeedsPatchy004_COL_1K.jpg",false);
     platformShader.setInt("material.specular0",1);
 
-
-
-
-    float verticesBox[] = {
-        // positions         
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f, 
-         0.5f,  0.5f,  0.5f, 
-         0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-        
-         0.5f,  0.5f,  0.5f, 
-         0.5f,  0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f,  0.5f, 
-         0.5f,  0.5f,  0.5f, 
-
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f,  0.5f, 
-         0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-    };
-
-    unsigned int VAO2;
-    glGenVertexArrays(1,&VAO2);
-    glBindVertexArray(VAO2);
-
-    unsigned int VBO2;
-    glGenBuffers(1,&VBO2);
-    glBindBuffer(GL_ARRAY_BUFFER,VBO2);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(verticesBox),verticesBox,GL_STATIC_DRAW);
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
-    glEnableVertexAttribArray(0);
-
     
     float deltaTime = 0.0f;
     float timeTakenThisFrame = 0.0f;
@@ -248,7 +147,7 @@ int main()
 
     glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
 
-    glfwSetWindowUserPointer(window, &camera);
+    glfwSetWindowUserPointer(window, &generalInfo.camera);
     glm::vec3 lightPos = glm::vec3(0.0f,1.0f,-5.0f);
     float lightPosArr[3] = {lightPos.x, lightPos.y, lightPos.z};
     glm::vec3 modelPos = glm::vec3(0.0f,0.0f,0.0f);
@@ -268,10 +167,9 @@ int main()
         glClearColor(0.0f,0.0f,0.0f, 1.0f);
 
         processInput(window);
-        camera.ProcessKeyboard(window,deltaTime);
-        if(camera.shouldMove) processMouse(window, camera);
-        l_renderState.view = camera.GetViewMatrix();
-        Entity::viewMatrix = l_renderState.view;
+        generalInfo.camera.ProcessKeyboard(window,deltaTime);
+        if(generalInfo.camera.shouldMove) processMouse(window, generalInfo.camera);
+        generalInfo.update();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -281,14 +179,14 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
        
         platformShader.use();
-        platformShader.setVec3("lighting.position",lightPos);
-        platformShader.setVec3("lighting.ambient",glm::vec3(0.2f));
-        platformShader.setVec3("lighting.diffuse",glm::vec3(0.8f,0.8f,0.8f));
-        platformShader.setVec3("lighting.specular",glm::vec3(1.0f,1.0f,1.0f));
+        platformShader.setVec3("lighting.position",glm::vec3(0.0f,25.0f,0.0f));
+        platformShader.setVec3("lighting.ambient",glm::vec3(1.0f));
+        platformShader.setVec3("lighting.diffuse",glm::vec3(1.0f));
+        platformShader.setVec3("lighting.specular",glm::vec3(1.0f));
         platformShader.setFloat("lighting.constant",1);
         platformShader.setFloat("lighting.linear",0.009f);
         platformShader.setFloat("lighting.quadratic",0.0032f);
-        platformShader.setVec3("viewPos",camera.Position);
+        platformShader.setVec3("viewPos",generalInfo.camera.Position);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, groundDiffuse);
@@ -302,10 +200,37 @@ int main()
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         model = glm::scale(model, glm::vec3(100.0f));
         platformShader.setMat4("model", model);
-        platformShader.setMat4("transform", l_renderState.projection*l_renderState.view*model);
+        platformShader.setMat4("transform", generalInfo.projectionMatrix * generalInfo.viewMatrix * model);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+        if(!generalInfo.camera.shouldMove) 
+        {
+        for(int i=0; i<Entity::entities.size(); ++i)
+        {
+            ImGui::PushID(i);
+            ImGui::Begin(Entity::entities[i]->name.c_str());
+
+            //setting position
+            glm::vec3 objectPosArr = Entity::entities[i]->getPosition();
+            ImGui::SliderFloat3("Object Position", &objectPosArr.x, -50.0f, 50.0f);
+            Entity::entities[i]->setPosition(objectPosArr);
+
+            //setting rotation
+            glm::vec3 objectRotArr = Entity::entities[i]->getRotation();
+            ImGui::SliderFloat3("Object Rotation", &objectRotArr.x, -180.0f, 180.0f);
+            Entity::entities[i]->setRotation(glm::vec3(1.0f,0.0f,0.0f), objectRotArr.x);
+            Entity::entities[i]->setRotation(glm::vec3(0.0f,1.0f,0.0f), objectRotArr.y);
+            Entity::entities[i]->setRotation(glm::vec3(0.0f,0.0f,1.0f), objectRotArr.z);
+
+            //setting scale
+            float scale = Entity::entities[i]->getScale();
+            ImGui::SliderFloat("Object Scale", &scale, 0.0f,100.0f);
+            Entity::entities[i]->setScale(scale);
+            ImGui::End();
+            ImGui::PopID();
+        }
+        }
     
         for(auto it : Entity::entities)
         {

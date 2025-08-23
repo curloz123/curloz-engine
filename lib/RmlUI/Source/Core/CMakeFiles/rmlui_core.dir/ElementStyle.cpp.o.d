@@ -1,0 +1,28 @@
+Source/Core/CMakeFiles/rmlui_core.dir/ElementStyle.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementStyle.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementStyle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyIdSet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Context.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Core.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementDocument.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/FontEngineInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Log.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Math.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Profiling.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Property.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetSpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/TransformPrimitive.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ComputeProperty.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/NumericValue.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertiesIterator.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/algorithm

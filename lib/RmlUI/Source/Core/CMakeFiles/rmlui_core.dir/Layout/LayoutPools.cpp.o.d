@@ -1,0 +1,28 @@
+Source/Core/CMakeFiles/rmlui_core.dir/Layout/LayoutPools.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutPools.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutPools.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../ControlledLifetimeResource.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../Pool.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../Pool.inl \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/BlockContainer.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/ContainerBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Box.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/FloatedBoxSpace.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/FormattingContext.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineLevelBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineContainer.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LineBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/ReplacedFormattingContext.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/algorithm \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/cstddef

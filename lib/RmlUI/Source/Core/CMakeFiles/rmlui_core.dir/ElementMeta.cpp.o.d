@@ -1,0 +1,24 @@
+Source/Core/CMakeFiles/rmlui_core.dir/ElementMeta.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementMeta.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementMeta.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementScroll.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ControlledLifetimeResource.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementBackgroundBorder.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/CallbackTexture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Geometry.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementEffects.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/CompiledFilterShader.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementStyle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyIdSet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/EventDispatcher.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Event.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Pool.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Pool.inl

@@ -1,0 +1,27 @@
+Source/Core/CMakeFiles/rmlui_core.dir/Layout/LineBox.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LineBox.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LineBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Box.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/InlineLevelBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutPools.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/float.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/numeric \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/x86_64-pc-linux-gnu/bits/c++config.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/stl_iterator_base_types.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/stl_numeric.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/concept_check.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/debug/debug.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/move.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/type_traits \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bit \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/ext/numeric_traits.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/stl_function.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/bits/version.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/pstl/glue_numeric_defs.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/pstl/execution_defs.h

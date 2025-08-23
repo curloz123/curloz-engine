@@ -1,0 +1,19 @@
+Source/Core/CMakeFiles/rmlui_core.dir/DecoratorShader.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/DecoratorShader.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DecoratorShader.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Decorator.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Geometry.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ID.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Spritesheet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Pool.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Pool.inl \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/MeshUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/RenderManager.h

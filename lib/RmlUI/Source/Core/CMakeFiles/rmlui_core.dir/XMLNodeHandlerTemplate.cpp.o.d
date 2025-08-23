@@ -1,0 +1,20 @@
+Source/Core/CMakeFiles/rmlui_core.dir/XMLNodeHandlerTemplate.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLNodeHandlerTemplate.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLNodeHandlerTemplate.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/XMLNodeHandler.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Dictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Factory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/XMLParser.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Template.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StreamMemory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Stream.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/URL.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DocumentHeader.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/TemplateCache.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLParseTools.h

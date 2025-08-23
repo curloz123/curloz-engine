@@ -1,0 +1,28 @@
+Source/Core/CMakeFiles/rmlui_core.dir/StyleSheetSpecification.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/StyleSheetSpecification.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleSheetSpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyIdSet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/IdNameMap.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/algorithm \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserAnimation.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyParser.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ControlledLifetimeResource.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Debug.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserBoxShadow.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserColorStopList.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserNumber.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserColour.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserDecorator.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserFilter.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserFontEffect.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserKeyword.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserRatio.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserString.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyParserTransform.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/PropertyShorthandDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ID.h

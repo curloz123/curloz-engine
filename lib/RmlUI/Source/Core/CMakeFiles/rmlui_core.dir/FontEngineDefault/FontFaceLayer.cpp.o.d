@@ -1,0 +1,25 @@
+Source/Core/CMakeFiles/rmlui_core.dir/FontEngineDefault/FontFaceLayer.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontFaceLayer.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontFaceLayer.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/CallbackTexture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FontGlyph.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Geometry.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/MeshUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../TextureLayout.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../TextureLayoutRectangle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../TextureLayoutTexture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Texture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../TextureLayoutRow.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/RenderManager.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontFaceHandleDefault.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FontEffect.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/FontMetrics.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Texture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/FontTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/FontEngineDefault/../../../Include/RmlUi/Core/Types.h \
+ /usr/include/string.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/type_traits

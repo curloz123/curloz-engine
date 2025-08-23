@@ -5,11 +5,14 @@
 
 
 std::map<std::string, glTexture> GLTloader::texturesLoaded;
-GLTloader::GLTloader(const std::string &path, const std::string &type)
+
+GLTloader::GLTloader(const std::string &path)
 {
     //retrieve path of models directory, to later use when accessing model's textures
     directory = path.substr(0, path.find_last_of('/'));
 
+    int pos = path.find(".");
+    std::string type = path.substr(pos+1);
     //loading model
     if(!loadModel(path, type))
     {

@@ -1,0 +1,9 @@
+Source/Core/CMakeFiles/rmlui_core.dir/URL.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/URL.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/URL.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Log.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StringUtilities.h \
+ /usr/include/stdio.h /usr/include/string.h

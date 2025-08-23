@@ -1,0 +1,27 @@
+Source/Core/CMakeFiles/rmlui_core.dir/ElementText.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementText.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementText.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Context.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Core.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementDocument.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Event.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/FontEngineInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/MeshUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Profiling.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Property.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/RenderManager.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/TextShapingContext.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ComputeProperty.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/NumericValue.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyDictionary.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/PropertyIdSet.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementStyle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/TransformState.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h

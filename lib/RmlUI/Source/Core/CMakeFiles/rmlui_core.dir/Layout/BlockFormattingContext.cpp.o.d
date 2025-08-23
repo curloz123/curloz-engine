@@ -1,0 +1,19 @@
+Source/Core/CMakeFiles/rmlui_core.dir/Layout/BlockFormattingContext.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/BlockFormattingContext.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/BlockFormattingContext.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/FormattingContext.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Profiling.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/PropertyDefinition.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/StyleSheetSpecification.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/SystemInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/BlockContainer.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/ContainerBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Box.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutBox.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/FloatedBoxSpace.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutDetails.h

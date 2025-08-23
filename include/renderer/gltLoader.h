@@ -104,7 +104,7 @@ class GLTloader
         std::string directory;
 
         //constructor that learns the file location
-        GLTloader(const std::string &path, const std::string &type);
+        GLTloader(const std::string &path);
 
         //A list of all loaded meshes
         std::vector<gltMesh> meshes;

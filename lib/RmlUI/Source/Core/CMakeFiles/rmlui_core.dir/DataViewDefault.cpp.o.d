@@ -1,0 +1,20 @@
+Source/Core/CMakeFiles/rmlui_core.dir/DataViewDefault.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataViewDefault.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataViewDefault.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Variant.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataView.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DataTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Core.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DataVariable.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementText.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Factory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/SystemInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataExpression.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataModel.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DataModelHandle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/XMLParseTools.h

@@ -1,0 +1,32 @@
+Source/Core/CMakeFiles/rmlui_core.dir/ElementUtilities.cpp.o: \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementUtilities.cpp \
+ /usr/include/stdc-predef.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementUtilities.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ComputedValues.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Context.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Core.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DecorationTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Element.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/ElementScroll.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Factory.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/FontEngineInterface.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Math.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/RenderManager.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/TextShapingContext.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataController.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Header.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Traits.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataModel.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DataModelHandle.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/DataTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/DataView.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/ElementBackgroundBorder.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/CallbackTexture.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/../../Include/RmlUi/Core/Geometry.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutDetails.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/StyleTypes.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/../../../Include/RmlUi/Core/Types.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/Layout/LayoutEngine.h \
+ /home/curloz/dev/git/RmlUi/Source/Core/TransformState.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14/include/g++-v14/limits
