@@ -48,3 +48,22 @@ target("curloz engine")
     if is_plat("linux") then
         add_syslinks("pthread", "dl")
     end
+
+    -- Compile all shaders in assets/shaders/ to SPIR-V before every run
+    before_run(function (target)
+        local shader_dir = path.join(os.projectdir(), "assets", "shaders")
+        local glslc = find_tool("glslc") or find_tool("glslangValidator")
+        if not glslc then
+            raise("Shader compiler not found. Please install glslc (Vulkan SDK) or glslangValidator.")
+        end
+        local exts = { ".vert", ".frag", ".comp", ".geom", ".tesc", ".tese" }
+        for _, ext in ipairs(exts) do
+            for _, src in ipairs(os.files(path.join(shader_dir, "*" .. ext))) do
+                -- e.g. assets/shaders/triangle_vert.vert -> assets/shaders/triangle_vert.spirv
+                local base = path.basename(src)
+                local spv  = path.join(shader_dir, base .. ".spirv")
+                print("Compiling shader: " .. path.filename(src) .. " -> " .. path.filename(spv))
+                os.vrunv(glslc.program, { src, "-o", spv })
+            end
+        end
+    end)
