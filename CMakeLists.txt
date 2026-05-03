@@ -54,3 +54,7 @@ set(ALSOFT_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/openal-soft)
 target_compile_options(OpenAL PRIVATE -Wno-function-effects)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenAL)
+
+#GLM
+add_subdirectory(external/glm)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
