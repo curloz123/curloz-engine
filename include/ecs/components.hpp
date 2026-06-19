@@ -9,6 +9,7 @@
 #pragma once
 
 #include "math/vec3.hpp"
+#include <AL/al.h>
 
 namespace clz::ecs
 {
@@ -30,6 +31,16 @@ namespace clz::ecs
 					const clz::math::vec3 &scale) : position(position), rotation(rotation),
 									scale(scale) {}
 
+	};
+
+	struct AudioBuffer
+	{
+		ALuint bufferID;
+	};
+
+	struct AudioSource 
+	{
+		ALuint sourceID;
 	};
 
 } // namespace clz::ecs

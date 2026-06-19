@@ -63,7 +63,11 @@ add_subdirectory(external/openal-soft)
 target_compile_options(OpenAL PRIVATE -Wno-function-effects)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenAL)
 
+#DR_WAV
+target_include_directories(${PROJECT_NAME} PRIVATE external/dr_libs)
+
 #JSON
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/json)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
