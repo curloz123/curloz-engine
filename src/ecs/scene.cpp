@@ -13,7 +13,7 @@
 #include <nlohmann/json.hpp>
 
 #include "ecs/scene.hpp"
-#include "config/config.hpp"
+#include "filesystem"
 #include "core/logs.hpp"
 #include "ecs/components.hpp"
 #include "ecs/entitymanager.hpp"
@@ -34,10 +34,10 @@ namespace clz::ecs
 		clz::log::debug("Loading entities");
 
 		// Read scene file path from config
-		const auto entityFile = clz::config::getString("entity", "file", "");
-		if (std::string(entityFile).empty())
+		const std::filesystem::path entityFile = "config/scene.json";
+		if (!std::filesystem::exists(entityFile))
 		{
-			clz::log::error("No entity file specified in config [entity] file");
+			clz::log::error("No file named 'scene.json' found in config directory");
 			return false;
 		}
 
@@ -49,8 +49,8 @@ namespace clz::ecs
 			clz::log::error("Could not open entity file: " + std::string(entityFile));
 			return false;
 		}
-		const nlohmann::json json = nlohmann::json::parse(file);
-		if (json.is_null())
+		const nlohmann::json json = nlohmann::json::parse(file, nullptr, false);
+		if (json.is_discarded())
 		{
 			clz::log::error("Could not parse JSON file: " + std::string(entityFile));
 			return false;

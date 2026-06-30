@@ -51,6 +51,55 @@ namespace clz::math
 			res = _mm_shuffle_ps(xmm, xmm, _MM_SHUFFLE(2, 2, 2, 2));
 			z = _mm_cvtss_f32(res);
 		}
+
+		/**
+		 * @brief Operator overloaded addition of current to rhs vector
+		 * @param rhs Source SSE register.
+		 */
+		void operator += (const vec3& rhs)
+		{
+			x += rhs.x;
+			y += rhs.y;
+			z += rhs.z;
+		}
+		/**
+		 * @brief Operator overloaded subtraction of current to rhs vector
+		 * @param rhs Source SSE register.
+		 */
+		void operator -= (const vec3& rhs)
+		{
+			x -= rhs.x;
+			y -= rhs.y;
+			z -= rhs.z;
+		}
+
+		/**
+		 * @brief Operator overloaded addition with another vector
+		 * @param rhs Source SSE register.
+		 */
+		vec3 operator+(const vec3& rhs) const
+		{
+			return {x + rhs.x, y + rhs.y, z + rhs.z};
+		}
+
+		/**
+		 * @brief Operator overloaded subtraction with another vector
+		 * @param rhs Source SSE register.
+		 */
+		inline vec3 operator-(const vec3& rhs) const
+		{
+			return {x - rhs.x, y - rhs.y, z - rhs.z};
+		}
+
+		/**
+		 * @brief Operator overloaded subtraction with a scalar
+		 * @param scalar Source SSE register.
+		 * @return Product of vector with scalar
+		 */
+		inline vec3 operator*(const float scalar) const
+		{
+			return {x * scalar, y * scalar, z * scalar};
+		}
 	};
 
 	/**
@@ -87,7 +136,7 @@ namespace clz::math
 	}
 
 	/**
-	 * @brief Component-wise multiplication of two vec3s.
+	 * @brief Component-wise multiplication of two vec3's.
 	 * @param lhs Left operand.
 	 * @param rhs Right operand.
 	 * @return lhs * rhs (per component)
@@ -108,6 +157,13 @@ namespace clz::math
 		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 	}
 
+	/**
+	 * @brief Returns cross product of two vectors
+	 * @note 1st parameter is considered left hand side
+	 * @param lhs left hand side vector
+	 * @param rhs right hand side vector
+	 * @return cross of both vectors
+	 */
 	inline vec3 cross(const vec3& lhs, const vec3& rhs)
 	{
 		return
@@ -130,6 +186,20 @@ namespace clz::math
 		return _mm_cvtss_f32(_mm_sqrt_ss(lSquare));
 	}
 
+
+	/**
+	 * @brief Computes the square length (magnitude) of a vec3.
+	 * Useful in places to check if length != 0
+	 * @param lhs Source vector.
+	 * @return Scalar length of lhs.
+	 */
+	inline float getLengthSquared(const vec3& lhs)
+	{
+		__m128 vec = _mm_set_ps(0, lhs.z, lhs.y, lhs.x);
+		const __m128 lSquare = _mm_dp_ps(vec, vec, 0x71);
+		return _mm_cvtss_f32(lSquare);
+	}
+
 	/**
 	 * @brief Returns a normalized (unit length) copy of a vec3.
 	 * @param lhs Source vector.
@@ -145,7 +215,11 @@ namespace clz::math
 		return vec3(_mm_mul_ps(vec, _mm_rsqrt_ps(length)));
 	}
 
-
+	/**
+	 * @brief Describes Axis - X, Y, Z
+	 * Useful because passing a vec3 raw to any function is kinda dangerous
+	 * Just use this for axis related operations(dw we enforce it anyways)
+	 */
 	struct Axis
 	{
 		union

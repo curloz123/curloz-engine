@@ -6,8 +6,6 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <expected>
-#include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
 
@@ -19,8 +17,7 @@ namespace clz::window
 	 * @return void if function was a success
 	 * @return string as error about what went wrong
 	 */
-	std::expected<void, std::string>
-	getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions);
+	bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions);
 
 	/**
 	 * @brief Creates vulkan surface
@@ -29,8 +26,7 @@ namespace clz::window
 	 * @return void if function was a success
 	 * @return string as error about what went wrong
 	 */
-	std::expected<void, std::string> createVulkanSurface(VkInstance instance,
-							     VkSurfaceKHR& rSurface);
+	bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& rSurface);
 
 	/**
 	 * @brief Callback function that is called

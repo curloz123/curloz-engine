@@ -6,12 +6,13 @@
 
 #include "scripting/luainterface.hpp"
 #include "core/logs.hpp"
-#include "window/keyboard.hpp"
+#include "window/inputmanager.hpp"
 
 namespace clz::script
 {
 	void bindKeyboardKeys(sol::state& rLua)
 	{
+		/*
 		// ALl keyboard binds
 		rLua["Key"] =
 		    rLua.create_table_with("Escape", static_cast<int>(clz::window::Key::Escape),
@@ -25,21 +26,23 @@ namespace clz::script
 					   static_cast<int>(clz::window::Key::Down), "Left",
 					   static_cast<int>(clz::window::Key::Left), "Right",
 					   static_cast<int>(clz::window::Key::Right));
+		*/
 	}
 
 	void log(const std::string& msg)
 	{
-		clz::log::info(msg);
+		//clz::log::info(msg);
 	}
 
 	bool isKeyPressed(int key)
 	{
-		return clz::window::isPressed(static_cast<clz::window::Key>(key));
+		//return clz::window::isPressed(static_cast<clz::window::Key>(key));
 	}
 
 	bool isKeyReleased(int key)
 	{
-		return clz::window::isReleased(static_cast<clz::window::Key>(key));
+		//return clz::window::isReleased(static_cast<clz::window::Key>(key));
 	}
+
 
 } // namespace clz::script

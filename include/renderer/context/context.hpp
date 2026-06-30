@@ -14,7 +14,6 @@
  */
 #pragma once
 
-#include <cstdint>
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan.h>

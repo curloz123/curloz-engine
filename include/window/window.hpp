@@ -10,8 +10,7 @@
  */
 
 #pragma once
-
-#include "GLFW/glfw3.h"
+#include "math/vec2.hpp"
 
 namespace clz::window
 {
@@ -40,4 +39,5 @@ namespace clz::window
 	 * @param height
 	 */
 	void getFramebufferExtents(int* width, int* height);
+
 } // namespace clz::window

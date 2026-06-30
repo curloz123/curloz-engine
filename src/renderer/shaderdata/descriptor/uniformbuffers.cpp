@@ -7,6 +7,7 @@
 #include "renderer/utility/offsetalignment.hpp"
 #include "renderer/vk_types.hpp"
 #include <memory.h>
+#include "renderer/camera/camera.hpp"
 
 #include "math/localtransform.hpp"
 #include <cstddef>
@@ -49,8 +50,8 @@ namespace clz::renderer
 	void updateUniformBuffers(const uint32_t currentFrame)
 	{
 		TransformUBO ubo;
-		clz::math::mat4 view = clz::math::getViewMatrix(math::vec3(0.0f, 0.0f, 5.0f), math::vec3(0.0f, 0.0f, 0.0f), math::vec3(0.0f, 1.0f, 0.0f));
-		math::mat4 projection = clz::math::getPerspectiveMatrix(100.0f, 1.0f, 1920.0f/1080, math::radians(60.0f));
+		clz::math::mat4 view = clz::math::getViewMatrix(camera::getPosition(), camera::getTarget(), camera::WorldUp);
+		math::mat4 projection = clz::math::getPerspectiveMatrix(100.0f, 1.0f, 1920.0f/1080, math::radians(camera::getFov()));
 		ubo.projection = projection;
 		ubo.view = view;
 		memcpy(r_transformUBOMapped[currentFrame], &ubo, sizeof(ubo));

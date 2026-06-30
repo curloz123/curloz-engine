@@ -16,10 +16,10 @@
 #include "core/logs.hpp"
 #include "core/time.hpp"
 #include "ecs/ecs.hpp"
-#include "math/vec3.hpp"
 #include "renderer/renderer.hpp"
 #include "scripting/scripting.hpp"
 #include "window/window.hpp"
+#include "window/mouse.hpp"
 
 int main()
 {
@@ -33,12 +33,8 @@ int main()
 
 
 
-
-
 	// Start clock, Whole system uses it, so make sure to start it first
 	clz::time::init();
-
-
 
 
 
@@ -49,31 +45,34 @@ int main()
 
 
 
-
-
 	// Initialize renderer
 	if (!clz::renderer::init()) [[unlikely]]
 		return 1;
+
+
+
+	// Initialize audio
+	clz::audio::init();
+
+
 
 	// Initialize entities
 	clz::ecs::init();
 	if (clz::log::errorOccurred()) [[unlikely]]
 		return 1;
 
-	// Initialize audio
-	clz::audio::init();
+
 
 	// Initialize script at last
 	clz::script::init();
 	clz::script::runScript("assets/scripts/test.lua");
 
-	clz::math::vec3 a;
-	a = clz::math::vec3{3, 4, 0};
-	clz::log::debug("Value of a's length: " +
-			std::to_string(getLength(clz::math::normalize(a))));
+
+	// TEST
+	clz::window::disableCursor();
 
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
-	while (clz::state::g_engineState == clz::state::EngineState::Running)
+	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
 		clz::time::computeTime();
 		clz::window::update();

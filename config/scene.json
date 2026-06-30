@@ -1,0 +1,53 @@
+{
+	"camera": [
+		{
+			"name": "game",
+			"maxvelocity": 5.0,
+			"sensitivity": 0.4,
+			"acceleration": 15.0,
+			"pitch": 0.0,
+			"yaw": -90.0,
+			"position": [20.0, 0.0, 0.0],
+			"localfront": [0.0, 0.0, -1.0],
+			"right": [1.0, 0.0, 0.0],
+			"fov": 45.0
+		},
+		{
+			"name": "editor",
+			"maxvelocity": 8.0,
+			"sensitivity": 0.4,
+			"acceleration": 20.0,
+			"pitch": 0.0,
+			"yaw": -90.0,
+			"position": [0.0, 0.0, 0.0],
+			"localfront": [0.0, 0.0, -1.0],
+			"right": [1.0, 0.0, 0.0],
+			"fov": 45.0
+		}
+	],
+
+	"entities": [
+		{
+			"name": "Player",
+			"transform": {
+				"position": [0, 0, -20],
+				"rotation": [1, 0, 0, 0],
+				"scale": [0.05, 0.05, 0.05]
+			},
+			"model": {
+				"path": "assets/models/backpack/scene.gltf"
+			}
+		},
+		{
+			"name": "helmet",
+			"transform": {
+				"position": [1, 0, -1],
+				"rotation": [1, 0, 0, 0],
+				"scale": [2.0, 2.0, 2.0]
+			},
+			"model": {
+				"path": "assets/models/helmet/scene.gltf"
+			}
+		}
+	]
+}

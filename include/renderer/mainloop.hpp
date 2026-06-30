@@ -9,6 +9,14 @@
 namespace clz::renderer
 {
 	/**
+	 * @brief All graphics related operations go over here
+	 *
+	 * @param commandBuffer commandBuffer to record this on
+	 * @param currentFrame current frame index
+	 */
+	void render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+
+	/**
 	 * @brief Waits for the GPU to finish work associated with a fence.
 	 * Ensures that CPU does not overwrite resources still in use by GPU.
 	 * @param fence Fence associated with the current frame.
@@ -36,6 +44,7 @@ namespace clz::renderer
 	 * @param commandBuffer Command buffer to begin recording.
 	 */
 	void startCommandBuffer(VkCommandBuffer commandBuffer);
+
 
 	/**
 	 * @brief Records rendering commands into a command buffer.

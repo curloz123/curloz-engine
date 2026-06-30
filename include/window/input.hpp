@@ -1,14 +1,8 @@
-/**
- * @file keyboard.hpp
- * @author curl0z
- * @brief Keyboard input definitions and query functions.
- */
-
 #pragma once
 
 #include <GLFW/glfw3.h>
 
-namespace clz::window
+namespace clz::input
 {
 	// Key definitions matching GLFW key codes
 	enum class Key : int
@@ -18,6 +12,14 @@ namespace clz::window
 		Enter = GLFW_KEY_ENTER,
 		Tab = GLFW_KEY_TAB,
 		Backspace = GLFW_KEY_BACKSPACE,
+		LeftControl = GLFW_KEY_LEFT_CONTROL,
+		RightControl = GLFW_KEY_RIGHT_CONTROL,
+		LeftAlt = GLFW_KEY_LEFT_ALT,
+		RightAlt = GLFW_KEY_RIGHT_ALT,
+		LeftShift = GLFW_KEY_LEFT_SHIFT,
+		RightShift = GLFW_KEY_RIGHT_SHIFT,
+		LeftSuper = GLFW_KEY_LEFT_SUPER,
+		RightSuper = GLFW_KEY_RIGHT_SUPER,
 
 		// Arrow keys
 		Up = GLFW_KEY_UP,
@@ -79,17 +81,4 @@ namespace clz::window
 		F11 = GLFW_KEY_F11,
 		F12 = GLFW_KEY_F12,
 	};
-
-	/**
-	 * @brief Returns true if the key is currently held down.
-	 * @param key The key to query.
-	 */
-	bool isPressed(Key key);
-
-	/**
-	 * @brief Returns true if the key was just released.
-	 * @param key The key to query.
-	 */
-	bool isReleased(Key key);
-
-} // namespace clz::window
+}

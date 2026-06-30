@@ -10,22 +10,32 @@
 
 namespace clz::window
 {
-	std::expected<void, std::string> initializeGLFW(GLFWwindow** pWindow)
+	bool initializeGLFW(GLFWwindow** pWindow)
 	{
 		const int width = clz::config::getInt("window", "width", 800);
 		const int height = clz::config::getInt("window", "height", 600);
-		if (width <= 0 || height <= 0)
-			return std::unexpected("Invalid window dimensions passed");
+		if (width < 0 || height < 0)
+		{
+			log::error("Window system passed invalid window dimensions");
+			return false;
+		}
 
-		glfwInit();
+		if (!glfwInit())
+		{
+			log::error("Could not initialize GLFW");
+			return false;
+		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(),
 					    nullptr, nullptr);
 		if (!(*pWindow))
-			return std::unexpected("Could not create window handle");
+		{
+			log::error("Could not create GLFW window");
+			return false;
+		}
 
-		return {};
+		return true;
 	}
 
 	void shutdownGLFW(GLFWwindow** pWindow)

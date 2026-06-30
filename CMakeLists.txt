@@ -21,6 +21,13 @@ find_package(Vulkan REQUIRED)
 # Compile Profile
 target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:CLZ_DEBUG>)
 
+#Editor
+option(CLZ_SHOW_EDITOR "Build with editor camera/UI support" ON)
+if(CLZ_SHOW_EDITOR)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CLZ_SHOW_EDITOR)
+    message(STATUS "CLZ: Editor is enabled")
+endif()
+
 #SSE 4.1 instruction sets
 target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1)
 
@@ -71,12 +78,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 #STB_IMAGE
 target_include_directories(${PROJECT_NAME} PRIVATE external/stb)
 
-#FASTGLTF
-add_subdirectory(external/fastgltf)
-target_link_libraries(${PROJECT_NAME} PRIVATE fastgltf)
-
 # ASSIMP
 set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 target_compile_options(assimp PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)

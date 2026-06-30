@@ -16,11 +16,11 @@
 #include "renderer/mainloop.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/camera/camera.hpp"
 #include <vector>
 
 namespace clz::renderer
 {
-	ModelID modelID;
 	bool init()
 	{
 		if (!initDeviceContext())
@@ -29,45 +29,45 @@ namespace clz::renderer
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-
 		if (!initCommandContext())
 		{
 			clz::log::error("Could not initialize frame context");
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-
 		if (!initSwapchainContext())
 		{
 			clz::log::error("Could not initialize swapchain context");
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-
-
 		if (!initShaderData())
 		{
 			clz::log::error("Could not initialize shader data");
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-
 		if (!initPipelineContext())
 		{
 			clz::log::error("Could not initialize pipeline context");
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-
 		if (!initFrameContext())
 		{
 			clz::log::error("Could not initialize frame context");
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
+		if (!camera::initializeCameras())
+		{
+			clz::log::error("Could not initialize cameras");
+			return false;
+		}
 
 		clz::log::info("initialized all renderer context's");
 		clz::log::info("Initialized renderer");
+
 
 
 		return true;

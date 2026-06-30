@@ -6,16 +6,45 @@
 
 #include "renderer/mainloop.hpp"
 #include "core/logs.hpp"
+#include "renderer/assets/drawmodel.hpp"
+#include "renderer/camera/camera.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shaderdata/descriptor/descriptor.hpp"
 #include "renderer/shaderdata/pushconstant/mainpipeline.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/assets/drawmodel.hpp"
+#include "window/mouse.hpp"
+#include "core/enginestate.hpp"
 
 namespace clz::renderer
 {
+	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
+	{
+#ifdef CLZ_SHOW_EDITOR
+		if (window::isPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
+		{
+			camera::setActiveCamera(camera::EditorCam);
+			setEngineState(state::EngineState::Editor, "KEY->ESCAPE, mid render loop");
+		}
+		if (window::isPressed(input::Key::LeftControl) &&
+			window::isPressed(input::Key::G) &&
+				state::g_engineState == state::EngineState::Editor)
+		{
+			camera::setActiveCamera(camera::GameCam);
+			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
+		}
+#endif
+
+		const math::vec2 cursorPos = window::getCursorPosition();
+		const float scroll = window::getScrollOffset();
+		camera::update(cursorPos.x, cursorPos.y, scroll);
+
+		updateShaderData(commandBuffer, currentFrame);
+		drawEntitiesMainPipeline(commandBuffer);
+	}
+
+
 	void waitForGPU(VkFence fence)
 	{
 		if (vkWaitForFences(renderer::r_deviceContext.device, 1, &fence, VK_TRUE,
@@ -28,8 +57,7 @@ namespace clz::renderer
 		const VkResult acquireResult =
 		    vkAcquireNextImageKHR(r_deviceContext.device, r_swapchainContext.swapchain,
 					  UINT64_MAX, semaphore, VK_NULL_HANDLE, &rImageIndex);
-		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR || acquireResult == VK_SUBOPTIMAL_KHR)
-		    [[unlikely]]
+		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR || acquireResult == VK_SUBOPTIMAL_KHR) [[unlikely]]
 		{
 			r_recreateSwapchain = true;
 		}
@@ -115,16 +143,7 @@ namespace clz::renderer
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 				  r_pipelineContext.pipeline);
 
-
-		updateShaderData(r_currentFrame);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				clz::renderer::r_pipelineContext.layout, 0, 1,
-				&r_descriptorSets[r_currentFrame], 0, nullptr);
-
-		drawEntitiesMainPipeline(commandBuffer);
-
-		//vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-		//vkCmdDraw(commandBuffer, 6, 1, 6, 0);
+		render(commandBuffer, r_currentFrame);
 
 		vkCmdEndRendering(commandBuffer);
 

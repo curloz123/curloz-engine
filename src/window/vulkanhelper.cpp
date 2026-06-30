@@ -5,32 +5,35 @@
  */
 
 #include "window/vulkanhelper.hpp"
+#include "core/logs.hpp"
 #include "renderer/renderer.hpp"
-#include "window/variables.hpp"
+#include "window/window_types.hpp"
 
 namespace clz::window
 {
-	std::expected<void, std::string>
-	getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
+	bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
 	{
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions =
 		    glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		if (glfwExtensionCount == 0 || glfwExtensions == nullptr)
 		{
-			return std::unexpected(
-			    "Could not retrieve extensions required for instance by window");
+			log::error("Could not retrieve extensions required for instance by window");
+			return false;
 		}
 		rRequiredExtensions.assign(glfwExtensions, glfwExtensions + glfwExtensionCount);
-		return {};
+		return true;
 	}
-	std::expected<void, std::string> createVulkanSurface(VkInstance instance,
-							     VkSurfaceKHR& rSurface)
+
+	bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& rSurface)
 	{
 		if (glfwCreateWindowSurface(instance, w_window, nullptr, &rSurface) != VK_SUCCESS)
-			return std::unexpected("Could not create window surface");
+		{
+			log::error("Could not create window surface");
+			return false;
+		}
 
-		return {};
+		return true;
 	}
 
 	void hintRendererAboutResize(GLFWwindow* window, int, int)

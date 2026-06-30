@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <cstdint>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -36,8 +36,9 @@ namespace clz::renderer
 	 * by the current frame.
 	 *
 	 * @param currentFrame Current frame in flight index.
+	 * @param commandBuffer Current command buffer in flight
 	 */
-	void updateShaderData(uint32_t currentFrame);
+	void updateShaderData(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	/**
 	 * @brief Releases all GPU resources owned by the shader subsystem.

@@ -56,9 +56,9 @@ namespace clz::renderer
 		return true;
 	}
 
-	void updateShaderData(const uint32_t currentFrame)
+	void updateShaderData(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
-		updateDescriptors(currentFrame);
+		updateDescriptors(commandBuffer, currentFrame);
 	}
 
 	void destroyShaderData()
