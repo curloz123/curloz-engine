@@ -9,6 +9,7 @@
 #include "renderer/editor/playertable.hpp"
 #include "ecs/entitymanager.hpp"
 #include "ecs/components.hpp"
+#include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include "renderer/editor/editor_types.hpp"
 #include "renderer/assets/modeldata.hpp"

@@ -3,6 +3,7 @@
 build
 compile_commands.json
 docs
+imgui.ini
 
 # shader binaries
 shader/triangle.vert.spirv
