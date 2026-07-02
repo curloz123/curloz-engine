@@ -11,6 +11,8 @@
 
 #include "math/localtransform.hpp"
 #include <cstddef>
+#include "math/angle.hpp"
+#include "renderer/camera/cameramatrices.hpp"
 
 namespace clz::renderer
 {
@@ -50,10 +52,8 @@ namespace clz::renderer
 	void updateUniformBuffers(const uint32_t currentFrame)
 	{
 		TransformUBO ubo;
-		clz::math::mat4 view = clz::math::getViewMatrix(camera::getPosition(), camera::getTarget(), camera::WorldUp);
-		math::mat4 projection = clz::math::getPerspectiveMatrix(100.0f, 1.0f, 1920.0f/1080, math::radians(camera::getFov()));
-		ubo.projection = projection;
-		ubo.view = view;
+		ubo.view = camera::getViewMatrix();
+		ubo.projection  = camera::getProjectionMatrix();
 		memcpy(r_transformUBOMapped[currentFrame], &ubo, sizeof(ubo));
 	}
 

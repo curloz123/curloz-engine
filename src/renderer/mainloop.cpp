@@ -11,9 +11,8 @@
 #include "renderer/camera/camera.hpp"
 #include "renderer/editor/editor.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shaderdata/descriptor/descriptor.hpp"
-#include "renderer/shaderdata/pushconstant/mainpipeline.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
+#include "window/inputmanager.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/mouse.hpp"
@@ -23,14 +22,14 @@ namespace clz::renderer
 	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
 	{
 #ifdef CLZ_ENABLE_SANDBOX
-		if (window::isPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
+		if (window::isKeyPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
 		{
 			window::enableCursor();
 			camera::setActiveCamera(camera::EditorCam);
 			setEngineState(state::EngineState::Sandbox, "KEY->ESCAPE, mid render loop");
 		}
-		if (window::isPressed(input::Key::LeftControl) &&
-			window::isPressed(input::Key::G) &&
+		if (window::isKeyPressed(input::Key::LeftControl) &&
+			window::isKeyPressed(input::Key::G) &&
 			state::g_engineState == state::EngineState::Sandbox)
 		{
 			window::disableCursor();

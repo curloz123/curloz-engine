@@ -6,7 +6,6 @@
 
 #include "renderer/editor/inspector.hpp"
 #include <imgui.h>
-#include "renderer/editor/playertable.hpp"
 #include "ecs/entitymanager.hpp"
 #include "ecs/components.hpp"
 #include "math/angle.hpp"
@@ -64,9 +63,18 @@ namespace clz::editor
 		math::vec3 scale = transform.scale;
 
 		ImGui::PushFont(fontMono);
-		ImGui::SliderFloat3("Position", &pos.x, -100.0f, 100.0f);
-		ImGui::SliderFloat3("Rotation", &rot.x, -180.0f, 180.0f);
-		ImGui::SliderFloat3("Scale", &scale.x, 0.01f, 10.0f);
+		if (ImGui::SliderFloat3("Position", &pos.x, -100.0f, 100.0f))
+		{
+			ActiveTransform = TransformType::TRANSLATE;
+		}
+		if (ImGui::SliderFloat3("Rotation", &rot.x, -180.0f, 180.0f))
+		{
+			ActiveTransform = TransformType::ROTATE;
+		}
+		if (ImGui::SliderFloat3("Scale", &scale.x, 0.01f, 10.0f))
+		{
+			ActiveTransform = TransformType::SCALE;
+		}
 		ImGui::PopFont();
 
 		euler.rotation = rot;

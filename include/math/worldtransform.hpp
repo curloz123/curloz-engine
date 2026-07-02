@@ -27,7 +27,7 @@ namespace clz::math
 		return scale * rotation * translation;
 	}
 
-	inline mat4 getViewMatrix(const vec3& eye, const vec3& target, const vec3& worldUp)
+	inline mat4 makeViewMatrix(const vec3& eye, const vec3& target, const vec3& worldUp)
 	{
 		const vec3 forward = normalize(subtract(target, eye));
 		const vec3 right = normalize(cross(forward, worldUp));
@@ -44,7 +44,7 @@ namespace clz::math
 		return view;
 	}
 
-	inline mat4 getPerspectiveMatrix(const float far, const float near,
+	inline mat4 makePerspectiveMatrix(const float far, const float near,
 		const float aspectRatio, const float fov)
 	{
 		const float sx = 1.0f / (aspectRatio * std::tan(fov * 0.5f));

@@ -100,6 +100,25 @@ namespace clz::math
 		{
 			return {x * scalar, y * scalar, z * scalar};
 		}
+
+		/**
+		 * @brief equality operator
+		 * @param vec vec3 vector
+		 * @return true if equal, false otherwise
+		 */
+		bool operator==(const vec3& vec) const
+		{
+			return vec.x == x && vec.y == y && vec.z == z;
+		}
+		/**
+		 * @brief inequality operator
+		 * @param vec vec3 vector
+		 * @return true if not equal, trueotherwise
+		 */
+		bool operator!=(const vec3& vec) const
+		{
+			return vec.x != x || vec.y != y || vec.z != z;
+		}
 	};
 
 	/**

@@ -3,8 +3,8 @@
  * @author curl0z
  *
  * @brief Sandbox editor implementation
- *
  */
+
 #include "renderer/editor/editor.hpp"
 #include "core/logs.hpp"
 #include "renderer/editor/editor_types.hpp"
@@ -14,11 +14,12 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-
+#include "renderer/editor/gizmo.hpp"
 #include <cmath>
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
+#include "renderer/editor/editorshortcuts.hpp"
 
 namespace clz::editor
 {
@@ -38,6 +39,10 @@ namespace clz::editor
 			showEntityTab();
 			ImGui::EndTabBar();
 		}
+
+		processShortcuts();
+		drawGizmo();
+
 		ImGui::End();
 
 		showInspector();

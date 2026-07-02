@@ -98,3 +98,14 @@ target_include_directories(imgui PUBLIC
         external/imgui/backends
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
+
+#IMGUIZMO
+add_library(imguizmo STATIC
+        external/ImGuizmo/src/ImGuizmo.cpp
+)
+target_include_directories(imguizmo PUBLIC
+        external/ImGuizmo/src
+)
+target_link_libraries(imguizmo PUBLIC imgui)
+target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
+target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
