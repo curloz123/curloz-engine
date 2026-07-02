@@ -18,6 +18,9 @@ namespace clz::editor
 	/// @return true on success.
 	bool init();
 
+	/// @brief Sets Editor theme
+	void setTheme();
+
 	/// @brief Builds all ImGui widget calls for the current frame.
 	void render();
 
