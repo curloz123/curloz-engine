@@ -5,9 +5,11 @@
  */
 
 #include "renderer/mainloop.hpp"
+#include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/assets/drawmodel.hpp"
 #include "renderer/camera/camera.hpp"
+#include "renderer/editor/editor.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shaderdata/descriptor/descriptor.hpp"
 #include "renderer/shaderdata/pushconstant/mainpipeline.hpp"
@@ -15,22 +17,23 @@
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/mouse.hpp"
-#include "core/enginestate.hpp"
 
 namespace clz::renderer
 {
 	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
 	{
-#ifdef CLZ_SHOW_EDITOR
+#ifdef CLZ_ENABLE_SANDBOX
 		if (window::isPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
 		{
+			window::enableCursor();
 			camera::setActiveCamera(camera::EditorCam);
-			setEngineState(state::EngineState::Editor, "KEY->ESCAPE, mid render loop");
+			setEngineState(state::EngineState::Sandbox, "KEY->ESCAPE, mid render loop");
 		}
 		if (window::isPressed(input::Key::LeftControl) &&
 			window::isPressed(input::Key::G) &&
-				state::g_engineState == state::EngineState::Editor)
+			state::g_engineState == state::EngineState::Sandbox)
 		{
+			window::disableCursor();
 			camera::setActiveCamera(camera::GameCam);
 			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
 		}
@@ -39,9 +42,13 @@ namespace clz::renderer
 		const math::vec2 cursorPos = window::getCursorPosition();
 		const float scroll = window::getScrollOffset();
 		camera::update(cursorPos.x, cursorPos.y, scroll);
-
 		updateShaderData(commandBuffer, currentFrame);
 		drawEntitiesMainPipeline(commandBuffer);
+
+#ifdef CLZ_ENABLE_SANDBOX
+		if (state::g_engineState == state::EngineState::Sandbox)
+			editor::update(commandBuffer);
+#endif
 	}
 
 

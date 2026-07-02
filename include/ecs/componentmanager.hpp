@@ -48,7 +48,7 @@ namespace clz::ecs
 	 * @brief Returns the ComponentStorage for component type T.
 	 *
 	 * Creates the storage on first call. Uses a flat vector indexed
-	 * by component ID — O(1) with no hashing.
+	 * by component ID.
 	 *
 	 * @tparam T Component type.
 	 * @return Reference to the ComponentStorage<T> for T.

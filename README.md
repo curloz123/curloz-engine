@@ -5,17 +5,17 @@ A Vulkan 1.3 game engine written in C++23.
 
 ## Tech Stack
 
-| System | Library |
-|---|---|
-| Renderer | Vulkan 1.3 |
-| Windowing | GLFW |
-| ECS | # |
-| Physics | Jolt Physics* |
-| Audio | OpenAL Soft* |
-| Math | # |
-| Model Loading | assimp |
+| System | Library        |
+|---|----------------|
+| Renderer | Vulkan 1.3     |
+| Windowing | GLFW           |
+| ECS | clz::ecs#      |
+| Physics | Jolt Physics*  |
+| Audio | OpenAL Soft*   |
+| Math | clz::math#     |
+| Model Loading | assimp         |
 | Animation | ozz-animation* |
-| Build System | CMake + Ninja |
+| Build System | CMake + Ninja  |
 
 ---
 > '#' Signifies that no external library is used and is self authorized
@@ -92,6 +92,9 @@ curloz-engine/
 Contributors are always welcome! If you feel there is any issue, or think there's something that can either be added or be better, feel free to open an issue or submit a pull request.
 
 If you think can handle a subsystem for long term, feel free to approach and it will be assigned to you.
+
+### To-Do
+- Display model component's Node->Mesh->Primitives hierarchy in editor's inspector
 
 For More details, see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 

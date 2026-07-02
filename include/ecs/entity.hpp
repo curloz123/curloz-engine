@@ -27,9 +27,12 @@ namespace clz::ecs
 	constexpr entity MAX_ENTITIES = 256;
 
 	/// @brief All entity IDs. Index is not the same as entity ID after removals.
-	inline std::vector<entity> ecs_entities;
+	inline std::vector<entity> entities;
+
+	/// @brief Components of all entities
+	inline std::vector<uint32_t> entityComponents;
 
 	/// @brief All entity's names
-	inline std::vector<std::string> ecs_entityName;
+	inline std::vector<std::string> entityName;
 
 } // namespace clz::ecs

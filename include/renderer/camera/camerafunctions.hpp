@@ -2,13 +2,14 @@
 
 #include "cameradata.hpp"
 #include "core/time.hpp"
-#include "math/localtransform.hpp"
+#include "math/angle.hpp"
 #include "window/inputmanager.hpp"
 #include <fstream>
 
 #define JSON_HAS_STATIC_RTTI 0
 #define JSON_NOEXCEPTION
 #include <nlohmann/json.hpp>
+#include "core/enginestate.hpp"
 
 namespace clz::renderer::camera
 {
@@ -119,6 +120,9 @@ namespace clz::renderer::camera
 		const float yOff = -(yPos - LastY[id]);
 		LastX[id] = xPos;
 		LastY[id] = yPos;
+
+		if (state::g_engineState == state::EngineState::Sandbox && !window::isPressed(input::Key::F))
+			return;
 
 		Yaw[id]   += xOff * Sensitivity[id];
 		Pitch[id] += yOff * Sensitivity[id];

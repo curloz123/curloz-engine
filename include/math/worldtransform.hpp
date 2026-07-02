@@ -7,11 +7,22 @@
 
 namespace clz::math
 {
-	inline mat4 getModelMatrix(const quat& q, const vec3& t, const vec3& s)
+	inline mat4 getModelMatrix(const quat& r, const vec3& t, const vec3& s)
 	{
-		const mat4 scale = makeScaleMatrix(s);
-		const mat4 translation = makeTranslationMatrix(t);
-		const mat4 rotation = makeRotationMatrix(q);
+		const mat4 rotation = {
+			_mm_set_ps(0.0f, 2.0f*(r.x*r.z - r.y*r.w), 2.0f*(r.x*r.y + r.z*r.w), 1.0f - 2.0f*(r.y*r.y + r.z*r.z)),
+			_mm_set_ps(0.0f, 2.0f*(r.y*r.z + r.x*r.w), 1.0f - 2.0f*(r.x*r.x + r.z*r.z), 2.0f*(r.x*r.y - r.z*r.w)),
+			_mm_set_ps(0.0f, 1.0f - 2.0f*(r.x*r.x + r.y*r.y), 2.0f*(r.y*r.z - r.x*r.w), 2.0f*(r.x*r.z + r.y*r.w)),
+			_mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f)
+
+		};
+		const mat4 translation = {
+			_mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f),
+			_mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f),
+			_mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f),
+			_mm_set_ps(1.0f, t.z, t.y, t.x)
+		};
+		const mat4 scale = mat4(s);
 
 		return scale * rotation * translation;
 	}

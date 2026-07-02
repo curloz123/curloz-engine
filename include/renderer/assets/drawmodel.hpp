@@ -19,5 +19,5 @@ namespace clz::renderer
 	 *
 	 * @param commandBuffer Command buffer currently recording draw commands.
 	 */
-	void drawEntitiesMainPipeline(const VkCommandBuffer commandBuffer);
+	void drawEntitiesMainPipeline(VkCommandBuffer commandBuffer);
 }

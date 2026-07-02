@@ -19,14 +19,13 @@ find_package(Vulkan REQUIRED)
 ## Compile options
 
 # Compile Profile
-target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:CLZ_DEBUG>)
-
-#Editor
-option(CLZ_SHOW_EDITOR "Build with editor camera/UI support" ON)
-if(CLZ_SHOW_EDITOR)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE CLZ_SHOW_EDITOR)
-    message(STATUS "CLZ: Editor is enabled")
-endif()
+set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Sandbox>:CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
+        $<$<CONFIG:RelWithDebInfo>:CLZ_RELEASE CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Release>:CLZ_RELEASE>
+)
 
 #SSE 4.1 instruction sets
 target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1)
@@ -84,3 +83,18 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 target_compile_options(assimp PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+
+#IMGUI
+add_library(imgui STATIC
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_widgets.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/backends/imgui_impl_glfw.cpp
+        external/imgui/backends/imgui_impl_vulkan.cpp
+)
+target_include_directories(imgui PUBLIC
+        external/imgui
+        external/imgui/backends
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui)

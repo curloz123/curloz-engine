@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <array>
 #include "math/vec3.hpp"
-#include <cstdint>
 
 namespace clz::renderer::camera
 {

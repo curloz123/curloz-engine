@@ -8,6 +8,20 @@ namespace clz::renderer::camera
 	/// @brief Switches the active camera and resets its mouse-delta tracking.
 	inline void setActiveCamera(const CameraID id)
 	{
+#ifdef CLZ_ENABLE_SANDBOX
+		const auto previousActiveCamera = activeCamera;
+		if (id == EditorCam && previousActiveCamera == GameCam)
+		{
+			Yaw[id] = Yaw[previousActiveCamera];
+			Pitch[id] = Pitch[previousActiveCamera];
+			Position[id] = Position[previousActiveCamera];
+			localFront[id] = localFront[previousActiveCamera];
+			Right[id] = Right[previousActiveCamera];
+			LastX[id] = LastX[previousActiveCamera];
+			LastY[id] = LastY[previousActiveCamera];
+		}
+#endif
+
 		activeCamera = id;
 		FirstTime[id] = true;
 	}
@@ -23,7 +37,7 @@ namespace clz::renderer::camera
 		}
 		setActiveCamera(GameCam);
 
-#ifdef CLZ_SHOW_EDITOR
+#ifdef CLZ_ENABLE_SANDBOX
 		if (!loadCamera("editor", EditorCam))
 		{
 			clz::log::error("Could not load editor camera");

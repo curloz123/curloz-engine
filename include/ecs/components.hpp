@@ -43,6 +43,14 @@ namespace clz::ecs
 		}
 	};
 
+	/**
+	 * @brief Euler rotation of transform. Required for editor
+	 * @Dependencies -> TransformComponent
+	 */
+	struct EulerRotationComponent
+	{
+		math::vec3 rotation;
+	};
 
 	/**
 	 * @brief Stores a renderable ModelID, that can be used to draw models

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <immintrin.h>
-#include "vec3.hpp"
+#include <cmath>
 
 namespace clz::math
 {
@@ -18,11 +18,18 @@ namespace clz::math
 				float z;
 			};
 		};
+
+		quat() : w(1.0f), x(0.0f), y(0.0f), z(0.0f)
+		{
+
+		}
+
 		quat(const float w, const float x,
 			const float y, const float z) :
 				xmm(_mm_set_ps(z, y, x, w))
 		{
 		}
+
 		explicit quat(const __m128 xmm) : xmm(xmm)
 		{
 		}
@@ -34,7 +41,9 @@ namespace clz::math
 					w*q.y - x*q.z + y*q.w + z*q.x,
 					w*q.z + x*q.y - y*q.x + z*q.w};
 		}
+
 	};
+
 
 
 }

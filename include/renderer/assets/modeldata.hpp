@@ -102,6 +102,15 @@ namespace clz::renderer
 		 * @return The ModelID of the newly loaded model, or NULL_ASSET on failure.
 		 */
 		ModelID loadModel(const std::string& modelPath);
+
+		/// Name's (basically path) of all models
+		inline std::vector<std::string> modelName;
+		/**
+		 * @brief Retrieve's name (basically path) of a model
+		 * @param id Model's ID
+		 * @return name std::string name
+		 */
+		std::string getModelName(const ModelID id);
 	}
 
 }

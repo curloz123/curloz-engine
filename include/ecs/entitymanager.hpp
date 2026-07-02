@@ -25,9 +25,9 @@ namespace clz::ecs
 	 */
 	inline uint32_t createEntity(const std::string& name)
 	{
-		uint32_t id = ecs_entities.size();
-		ecs_entities.emplace_back(id);
-		ecs_entityName.emplace_back(name);
+		uint32_t id = entities.size();
+		entities.emplace_back(id);
+		entityName.emplace_back(name);
 		return id;
 	}
 
@@ -43,8 +43,8 @@ namespace clz::ecs
 	inline void removeEntity(const entity e)
 	{
 		removeAllComponentsForEntity(e);
-		ecs_entities[e] = NULL_ENTITY;
-		ecs_entityName[e] = "INVALID_ENTITY";
+		entities[e] = NULL_ENTITY;
+		entityName[e] = "INVALID_ENTITY";
 	}
 
 	/**
@@ -55,7 +55,27 @@ namespace clz::ecs
 	 */
 	inline void clearEntities()
 	{
-		ecs_entities.clear();
+		entities.clear();
 	}
+
+	/**
+	 * @brief Returns a const reference to entity array
+	 * @return entity(uint32_t) vector
+	 */
+	inline const std::vector<uint32_t>& getEntities()
+	{
+		return entities;
+	}
+
+	/**
+	 * @brief Returns the name of entity
+	 * @return name string
+	 */
+	inline std::string getEntityName(const entity e)
+	{
+		return entityName[e];
+	}
+
+
 
 } // namespace clz::ecs

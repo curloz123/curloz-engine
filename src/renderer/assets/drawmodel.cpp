@@ -14,7 +14,7 @@
 
 namespace clz::renderer
 {
-	void drawEntitiesMainPipeline(const VkCommandBuffer commandBuffer)
+	void drawEntitiesMainPipeline(VkCommandBuffer commandBuffer)
 	{
 		const auto& entities =
 			ecs::getEntitiesWithComponent<ecs::ModelComponent>();

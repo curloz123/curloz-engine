@@ -17,6 +17,7 @@
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/camera/camera.hpp"
+#include "renderer/editor/editor.hpp"
 #include <vector>
 
 namespace clz::renderer
@@ -66,6 +67,15 @@ namespace clz::renderer
 		}
 
 		clz::log::info("initialized all renderer context's");
+
+#ifdef CLZ_ENABLE_SANDBOX
+		if (!editor::init())
+		{
+			clz::log::error("Could not initialize editor");
+			return false;
+		}
+#endif
+
 		clz::log::info("Initialized renderer");
 
 
@@ -116,6 +126,8 @@ namespace clz::renderer
 	void shutdown()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
+
+		editor::shutdown();
 
 		destroyFrameContext();
 		destroyPipelineContext();

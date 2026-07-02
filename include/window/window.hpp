@@ -10,7 +10,8 @@
  */
 
 #pragma once
-#include "math/vec2.hpp"
+
+#include <GLFW/glfw3.h>
 
 namespace clz::window
 {
@@ -18,7 +19,7 @@ namespace clz::window
 	 * @brief Initializes GLFW and creates the window using config values.
 	 * @note Logs an error and returns early on failure.
 	 */
-	void init();
+	bool init();
 
 	/**
 	 * @brief Destroys the window and terminates GLFW.
@@ -40,4 +41,9 @@ namespace clz::window
 	 */
 	void getFramebufferExtents(int* width, int* height);
 
+	/**
+	 * @brief Retrieves current window handle
+	 * @return GLFWwindow handle
+	 */
+	GLFWwindow* getWindowHandle();
 } // namespace clz::window

@@ -18,6 +18,7 @@
 #include "ecs/components.hpp"
 #include "ecs/entitymanager.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "math/quateulerconv.hpp"
 #include <fstream>
 
 
@@ -75,6 +76,10 @@ namespace clz::ecs
 			if (entityData.contains("transform"))
 			{
 				addComponent<TransformComponent>(e, retrieveTransformComponent(entityData["transform"]));
+			#ifdef CLZ_ENABLE_SANDBOX
+				addComponent<EulerRotationComponent>(e, {math::quatToEulerXYZ(
+					getComponent<TransformComponent>(e).rotation)});
+			#endif
 			}
 
 			// Attach ModelComponent if present
@@ -82,7 +87,7 @@ namespace clz::ecs
 			{
 				if (!hasComponent<TransformComponent>(e))
 				{
-					clz::log::warn("Entity: " + ecs_entityName[e] +
+					clz::log::warn("Entity: " + entityName[e] +
 						"Does not have transform component\nAssigning it identity transform component");
 
 					addComponent<TransformComponent>(e, TransformComponent());

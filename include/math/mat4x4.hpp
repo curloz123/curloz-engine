@@ -9,7 +9,6 @@
 
 #include <immintrin.h>
 #include "vec3.hpp"
-#include "quat.hpp"
 
 namespace clz::math
 {
@@ -195,31 +194,6 @@ namespace clz::math
 	inline mat4 multiply(const mat4& m1, const mat4& m2)
 	{
 		return m1 * m2;
-	}
-
-	inline mat4 makeScaleMatrix(const vec3& scale)
-	{
-		return mat4(scale);
-	}
-
-	inline mat4 makeTranslationMatrix(const vec3& translation)
-	{
-		return {
-			_mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f),
-			_mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f),
-			_mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f),
-			_mm_set_ps(1.0f, translation.z, translation.y, translation.x)
-		    };
-	}
-
-	inline mat4 makeRotationMatrix(const quat& r)
-	{
-		return {
-			_mm_set_ps(0.0f, 2.0f*(r.x*r.z - r.y*r.w), 2.0f*(r.x*r.y + r.z*r.w), 1.0f - 2.0f*(r.y*r.y + r.z*r.z)),
-			_mm_set_ps(0.0f, 2.0f*(r.y*r.z + r.x*r.w), 1.0f - 2.0f*(r.x*r.x + r.z*r.z), 2.0f*(r.x*r.y - r.z*r.w)),
-			_mm_set_ps(0.0f, 1.0f - 2.0f*(r.x*r.x + r.y*r.y), 2.0f*(r.y*r.z - r.x*r.w), 2.0f*(r.x*r.z + r.y*r.w)),
-			_mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f)
-		};
 	}
 
 } // namespace clz::math

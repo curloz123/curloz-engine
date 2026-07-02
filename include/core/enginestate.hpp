@@ -14,20 +14,20 @@ namespace clz::state
 	/**
 	 * @brief Describes current state of engine
 	 * Game means engine is in game mode
-	 * Editor means engine is in editor mode (Only Enabled when CLZ_SHOW_EDITOR is defined)
+	 * Editor means engine is in sandbox mode (Only Enabled when CLZ_ENABLE_SANDBOX is defined)
 	 * Shutdown means, engine has to shut down
 	 */
 	enum class EngineState
 	{
 		Game,
-		Editor,
+		Sandbox,
 		Shutdown
 	};
 
 	/// @brief Global engine state. The engine will shut down once enum is set to
 	/// EngineState::Shutdown
-#ifdef CLZ_SHOW_EDITOR
-	inline EngineState g_engineState = EngineState::Editor;
+#ifdef CLZ_ENABLE_SANDBOX
+	inline EngineState g_engineState = EngineState::Sandbox;
 #else
 	inline EngineState g_engineState = EngineState::Game;
 #endif
@@ -48,7 +48,7 @@ namespace clz::state
 					std::string(callerLocation));
 				break;
 
-			case EngineState::Editor:
+			case EngineState::Sandbox:
 				clz::log::info("Engine state set to Editor by: " +
 					std::string(callerLocation));
 				break;

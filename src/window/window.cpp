@@ -9,16 +9,17 @@
 #include "window/native.hpp"
 #include "window/vulkanhelper.hpp"
 #include "window/window_types.hpp"
+#include <GLFW/glfw3.h>
 
 namespace clz::window
 {
-	void init()
+	bool init()
 	{
 		// Initialize window
 		if (!initializeGLFW(&w_window))
 		{
-			log::error("COuld not create window");
-			return;
+			log::error("Could not create window");
+			return false;
 		}
 
 		// Initialize all callback functions
@@ -26,7 +27,15 @@ namespace clz::window
 		glfwSetCursorPosCallback(w_window, cursorCallback);
 		glfwSetScrollCallback(w_window, scrollCallback);
 
+		// Cursor's initial state
+#ifdef CLZ_ENABLE_SANDBOX
+		enableCursor();
+#else
+		disableCursor();
+#endif
+
 		clz::log::debug("Initialized window system");
+		return true;
 	}
 
 	void shutdown()
@@ -43,6 +52,11 @@ namespace clz::window
 	void getFramebufferExtents(int* width, int* height)
 	{
 		glfwGetFramebufferSize(w_window, width, height);
+	}
+
+	GLFWwindow* getWindowHandle()
+	{
+		return w_window;
 	}
 
 } // namespace clz::window

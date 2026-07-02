@@ -39,8 +39,7 @@ int main()
 
 
 	// Initialize Window. Should be the first subsystem to initialize
-	clz::window::init();
-	if (clz::log::errorOccurred()) [[unlikely]]
+	if (!clz::window::init()) [[unlikely]]
 		return 1;
 
 
@@ -66,10 +65,6 @@ int main()
 	// Initialize script at last
 	clz::script::init();
 	clz::script::runScript("assets/scripts/test.lua");
-
-
-	// TEST
-	clz::window::disableCursor();
 
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
