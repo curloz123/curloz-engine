@@ -17,7 +17,6 @@
 #include "core/time.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
-#include "scripting/scripting.hpp"
 #include "window/window.hpp"
 
 int main()
@@ -49,9 +48,6 @@ int main()
 	if (clz::log::errorOccurred()) [[unlikely]]
 		return 1;
 
-	// Initialize script at last
-	clz::script::init();
-	clz::script::runScript("assets/scripts/test.lua");
 
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)

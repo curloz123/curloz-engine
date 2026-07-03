@@ -233,6 +233,9 @@ namespace clz::renderer
 
 	bool createDebugMessenger()
 	{
+		if constexpr (!r_enableValidationLayers)
+			return true;
+
 		VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
 		messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |

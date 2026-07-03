@@ -28,7 +28,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 #SSE 4.1 instruction sets
-target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1)
+target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
 
 
 ## Always use static libs
@@ -43,23 +43,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 add_subdirectory(external/glfw)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
-#JOLT
-set(JPH_USE_DX12 OFF)
-set(JPH_USE_VK OFF)
-set(JPH_USE_MTL OFF)
-add_subdirectory(external/jolt/Build)
-target_link_libraries(${PROJECT_NAME} PRIVATE Jolt)
-
 #TOMLPLUSPLUS
 add_subdirectory(external/tomlplusplus)
 target_link_libraries(${PROJECT_NAME} PRIVATE tomlplusplus::tomlplusplus)
-
-#LUA
-add_subdirectory(external/lua)
-target_link_libraries(${PROJECT_NAME} PRIVATE sol2 lua_static)
-#SOL2
-add_subdirectory(external/sol2)
-target_link_libraries(${PROJECT_NAME} PRIVATE sol2)
 
 #OPENAL-SOFT
 set(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
