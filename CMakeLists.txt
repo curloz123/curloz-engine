@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## Sources
 file(GLOB_RECURSE SOURCES src/*.cpp)
+list(FILTER SOURCES EXCLUDE REGEX ".*Benchmark\\.cpp$")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -98,3 +99,8 @@ target_include_directories(imgui PUBLIC
         external/imgui/backends
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
+
+## Job System Benchmark — standalone stress test (no engine deps required)
+add_executable(JobSystemBenchmark src/core/JobSystemBenchmark.cpp src/core/JobSystem.cpp)
+target_include_directories(JobSystemBenchmark PRIVATE include)
+set_target_properties(JobSystemBenchmark PROPERTIES CXX_STANDARD 23)
