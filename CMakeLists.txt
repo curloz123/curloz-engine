@@ -8,7 +8,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## Sources
 file(GLOB_RECURSE SOURCES src/*.cpp)
-list(FILTER SOURCES EXCLUDE REGEX ".*Benchmark\\.cpp$")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -34,6 +33,12 @@ target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
 
 ## Always use static libs
 set(BUILD_SHARED_LIBS OFF)
+
+## Job System Benchmark — standalone stress test (no engine deps required)
+list(FILTER SOURCES EXCLUDE REGEX ".*Benchmark\\.cpp$")
+add_executable(JobSystemBenchmark src/core/JobSystemBenchmark.cpp src/core/JobSystem.cpp)
+target_include_directories(JobSystemBenchmark PRIVATE include)
+set_target_properties(JobSystemBenchmark PROPERTIES CXX_STANDARD 23)
 
 ## External Libs, This should be the last section, everything below this is just linking third party libraries
 
@@ -97,7 +102,3 @@ target_link_libraries(imguizmo PUBLIC imgui)
 target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
 
-## Job System Benchmark — standalone stress test (no engine deps required)
-add_executable(JobSystemBenchmark src/core/JobSystemBenchmark.cpp src/core/JobSystem.cpp)
-target_include_directories(JobSystemBenchmark PRIVATE include)
-set_target_properties(JobSystemBenchmark PROPERTIES CXX_STANDARD 23)
