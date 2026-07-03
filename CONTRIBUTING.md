@@ -23,18 +23,17 @@ The main loop in main.cpp is the only place that knows about every subsystem at 
 Every subsystem's architecture and patterns
 ---
 
-## Who mainting what
+## Who maintaining what
 
 | Subsystem | Owner      | Scope |
 |---|------------|---|
 | Window | @curl0z    | Everything under **src or include/window/** |
 | Renderer | @curl0z    | Everything under **src or include/renderer/** |
 | Math | @curl0z | Everything under **include/math/** |
-| ECS | @curl0z | Everything under **src or include/ecs/** |
-| Physics | unassigned |  |
-| Audio | unassigned | |
 | Website | @harleen05 | index.html |
 | Documentation | @harleen05 | index.html |
+| Physics | unassigned |  |
+| Audio | unassigned | |
 
 **Do not touch code outside your area without discussing it first.** If you need something from another area, ask. Don't patch it yourself.
 

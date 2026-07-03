@@ -320,39 +320,6 @@ nav {
   border:1px solid rgba(61,126,255,.2);
 }
 
-/* UPCOMING GRID */
-.upcoming-grid {
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  border:1px solid var(--rim);
-}
-.upcoming-item {
-  padding:30px 24px;
-  border-right:1px solid var(--rim);
-  position:relative; overflow:hidden;
-  transition:background .2s;
-  display:flex; flex-direction:column; gap:16px;
-}
-.upcoming-item:last-child { border-right:none; }
-.upcoming-item::before {
-  content:''; position:absolute;
-  left:0; top:0; bottom:0; width:2px;
-  background:var(--brass);
-  transform:scaleY(0); transform-origin:bottom;
-  transition:transform .25s ease;
-}
-.upcoming-item:hover { background:rgba(200,169,110,.04); }
-.upcoming-item:hover::before { transform:scaleY(1); }
-.upcoming-num {
-  font-family:var(--mono); font-size:11px; color:var(--brass);
-  letter-spacing:.12em;
-}
-.upcoming-name {
-  font-family:var(--mono); font-size:14.5px; font-weight:700;
-  color:var(--text); letter-spacing:.02em; line-height:1.45;
-  text-transform:uppercase;
-}
-
 /* HORIZONTAL RULE */
 .hr { height:1px; background:var(--rim); margin:0 48px; }
 
@@ -581,10 +548,6 @@ pre .st { color:#7ec98a; }
   .sys-card:nth-child(2n) { border-right:none; }
   .sys-card:nth-last-child(-n+4) { border-bottom:1px solid var(--rim); }
   .sys-card:nth-last-child(-n+2) { border-bottom:none; }
-
-  .upcoming-grid { grid-template-columns:1fr 1fr; }
-  .upcoming-item:nth-child(4n) { border-right:1px solid var(--rim); }
-  .upcoming-item:nth-child(2n) { border-right:none; }
 }
 
 @media (max-width:768px) {
@@ -601,9 +564,6 @@ pre .st { color:#7ec98a; }
   .sys-card { border-right:none !important; border-bottom:1px solid var(--rim); }
   .sys-card:last-child { border-bottom:none !important; }
 
-  .upcoming-grid { grid-template-columns:1fr; border:1px solid var(--rim); }
-  .upcoming-item { border-right:none !important; border-bottom:1px solid var(--rim); }
-  .upcoming-item:last-child { border-bottom:none !important; }
 
   .contrib { flex-direction:column; }
   .cnav {
@@ -662,7 +622,7 @@ pre .st { color:#7ec98a; }
   <section class="hero">
     <div class="hero-lines"></div>
     <div class="hero-content">
-      <div class="hero-kicker">Vulkan 1.3 &nbsp;·&nbsp; C++23 &nbsp; </div>
+      <div class="hero-kicker">Vulkan 1.3 &nbsp;·&nbsp; C++23 &nbsp;·&nbsp; v0.3.3 &nbsp; </div>
       <h1 class="hero-title">
         CURLOZ<br>
         <span class="dim">EN</span><span class="gold">GINE</span>
@@ -698,6 +658,10 @@ pre .st { color:#7ec98a; }
         <span class="hs-val">Custom</span>
         <span class="hs-key">ECS + Math</span>
       </div>
+      <div class="hero-stat">
+        <span class="hs-val"><em>0.3.3</em></span>
+        <span class="hs-key">Version</span>
+      </div>
     </div>
   </section>
 
@@ -724,7 +688,7 @@ pre .st { color:#7ec98a; }
       </div>
       <div class="sys-card">
         <div class="sys-name">Math</div>
-        <div class="sys-desc">Header-only vec2, vec3, vec4, mat4x4. Written to match the engine's type conventions exactly.</div>
+        <div class="sys-desc">Header-only vec2, vec3, vec4, quat, <strong>mat4x4</strong> <span class="tag-wip" style="margin-left:2px">new</span>. Local and world space transform helpers. Written to match the engine's type conventions exactly.</div>
         <span class="sys-tag owned">@curl0z</span>
       </div>
       <div class="sys-card">
@@ -735,6 +699,16 @@ pre .st { color:#7ec98a; }
       <div class="sys-card">
         <div class="sys-name">Config</div>
         <div class="sys-desc">TOML and JSON loading. Drive engine settings from <code class="sys-inline-code"></code>config/engine.toml</code> without a recompile.</div>
+        <span class="sys-tag owned">@curl0z</span>
+      </div>
+      <div class="sys-card">
+        <div class="sys-name">Model Loading</div>
+        <div class="sys-desc">Assimp-backed model importing. ModelComponent flags an entity as model-bearing, driving mesh submission for the renderer.</div>
+        <span class="sys-tag owned">@curl0z</span>
+      </div>
+      <div class="sys-card">
+        <div class="sys-name">Editor</div>
+        <div class="sys-desc">ImGui-based in-engine editor: entity inspector, scene hierarchy, and a 3D transform gizmo (ImGuizmo) for translate/rotate/scale.</div>
         <span class="sys-tag owned">@curl0z</span>
       </div>
       <div class="sys-card">
@@ -822,37 +796,12 @@ git clone --recursive https://github.com/curloz123/curloz-engine.git
         <tr><td>Build System</td><td>CMake + Ninja</td></tr>
         <tr><td>Physics</td><td>Jolt Physics <span class="tag-wip">planned</span></td></tr>
         <tr><td>Audio</td><td>OpenAL Soft <span class="tag-wip">planned</span></td></tr>
-        <tr><td>Model Loading</td><td>fastgltf <span class="tag-wip">planned</span></td></tr>
+        <tr><td>Model Loading</td><td>Assimp</td></tr>
+        <tr><td>Editor</td><td>Dear ImGui</td></tr>
+        <tr><td>Gizmo</td><td>ImGuizmo</td></tr>
         <tr><td>Animation</td><td>ozz-animation <span class="tag-wip">planned</span></td></tr>
       </tbody>
     </table>
-  </section>
-
-  <div class="hr"></div>
-
-  <!-- UPCOMING -->
-  <section class="sec" id="upcoming">
-    <div class="sec-label">Looking Ahead</div>
-    <h2 class="sec-title">UPCOMING </h2>
-    <p class="sec-sub">What's coming up next in the near-term development cycle.</p>
-    <div class="upcoming-grid">
-      <div class="upcoming-item">
-        <span class="upcoming-num">01</span>
-        <span class="upcoming-name">.obj Model Loading</span>
-      </div>
-      <div class="upcoming-item">
-        <span class="upcoming-num">02</span>
-        <span class="upcoming-name">Mesh Component</span>
-      </div>
-      <div class="upcoming-item">
-        <span class="upcoming-num">03</span>
-        <span class="upcoming-name">Matrix4x4 Operations</span>
-      </div>
-      <div class="upcoming-item">
-        <span class="upcoming-num">04</span>
-        <span class="upcoming-name">Local Space Transforms</span>
-      </div>
-    </div>
   </section>
 
   <div class="hfooter">
@@ -932,7 +881,10 @@ git clone --recursive https://github.com/curloz123/curloz-engine.git
           <tr><td>Window</td><td><span class="otag">@curl0z</span></td><td><code>src/window/</code> and <code>include/window/</code></td></tr>
           <tr><td>Renderer</td><td><span class="otag">@curl0z</span></td><td><code>src/renderer/</code> and <code>include/renderer/</code></td></tr>
           <tr><td>Math</td><td><span class="otag">@curl0z</span></td><td><code>include/math/</code></td></tr>
-          <tr><td>ECS</td><td><span class="otag">@curl0z</span></td><td><code>src/ecs/</code> and <code>include/ecs/</code></td></tr>
+          <tr><td>Scene / ECS</td><td><span class="otag">@curl0z</span></td><td><code>src/scene/</code> and <code>include/scene/</code></td></tr>
+          <tr><td>Config</td><td><span class="otag">@curl0z</span></td><td><code>src/config/</code> and <code>include/config/</code></td></tr>
+          <tr><td>Model Loading</td><td><span class="otag">@curl0z</span></td><td><code>src/renderer/assets/</code> and <code>include/renderer/assets/</code></td></tr>
+          <tr><td>Editor / Gizmo</td><td><span class="otag">@curl0z</span></td><td><code>src/renderer/editor/</code> and <code>include/renderer/editor/</code></td></tr>
           <tr><td>Website</td><td><span class="otag">@harleen05</span></td><td><code>index.html</code></td></tr>
           <tr><td>Documentation</td><td><span class="otag">@harleen05</span></td><td><code>index.html</code></td></tr>
           <tr><td>Physics</td><td><span class="otag open">unassigned</span></td><td></td></tr>
