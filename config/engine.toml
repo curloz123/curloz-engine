@@ -2,7 +2,7 @@
 name = "Curloz Engine"
 version_major = 0
 version_minor = 3
-version_patch = 3
+version_patch = 4
 
 [window]
 width = 1920
