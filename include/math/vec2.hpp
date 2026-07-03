@@ -4,8 +4,6 @@
  * @author curl0z
  *
  * Uses SSE4.1 intrinsics via __m128 for all operations.
- * The third and fourth lanes (_pad1, _pad2) are always zero and ignored in all math.
- * Requires 16-byte alignment, achieved by alignas(16).
  * x86-64 only.
  */
 #pragma once
@@ -17,23 +15,15 @@ namespace clz::math
 	/**
 	 * @brief 2-component float vector backed by a 128-bit SSE register.
 	 *
-	 * Internally uses a __m128 register with the upper two lanes zeroed.
 	 * Members x, y are accessible directly. It is not recommended to
 	 * extract values via the underlying xmm register.
-	 * All instances are 16-byte aligned for safe use with aligned SSE loads/stores.
 	 */
-	struct alignas(16) vec2
+	struct vec2
 	{
-		union {
-			__m128 xmm;
-			struct
-			{
-				float x, y, _pad1, _pad2;
-			};
-		};
+		float x, y;
 
 		/// @brief Initializes all components to zero.
-		vec2() : xmm(_mm_setzero_ps())
+		vec2() : x(0.0f), y(0.0f)
 		{
 		}
 
@@ -42,7 +32,7 @@ namespace clz::math
 		 * @param x X component.
 		 * @param y Y component.
 		 */
-		vec2(const float x, const float y) : xmm(_mm_set_ps(0, 0, y, x))
+		vec2(const float x, const float y) : x(x), y(y)
 		{
 		}
 
@@ -50,8 +40,11 @@ namespace clz::math
 		 * @brief Constructs a vec2 directly from a __m128 register.
 		 * @param xmm Source SSE register.
 		 */
-		vec2(const __m128 xmm) : xmm(xmm)
+		vec2(const __m128& xmm)
 		{
+			x = _mm_cvtss_f32(xmm);
+			__m128 res = _mm_shuffle_ps(xmm, xmm, _MM_SHUFFLE(1, 1, 1, 1));
+			y = _mm_cvtss_f32(res);
 		}
 	};
 
@@ -63,7 +56,7 @@ namespace clz::math
 	 */
 	inline vec2 add(const vec2& lhs, const vec2& rhs)
 	{
-		return vec2(_mm_add_ps(lhs.xmm, rhs.xmm));
+		return vec2(lhs.x + rhs.x, lhs.y + rhs.y);
 	}
 
 	/**
@@ -74,7 +67,7 @@ namespace clz::math
 	 */
 	inline vec2 subtract(const vec2& lhs, const vec2& rhs)
 	{
-		return vec2(_mm_sub_ps(lhs.xmm, rhs.xmm));
+		return vec2(lhs.x - rhs.x, lhs.y - rhs.y);
 	}
 
 	/**
@@ -85,7 +78,7 @@ namespace clz::math
 	 */
 	inline vec2 scalar_product(const vec2& lhs, const float scalar)
 	{
-		return vec2(_mm_mul_ps(lhs.xmm, _mm_set1_ps(scalar)));
+		return vec2(lhs.x * scalar, lhs.y * scalar);
 	}
 
 	/**
@@ -96,7 +89,7 @@ namespace clz::math
 	 */
 	inline vec2 component_product(const vec2& lhs, const vec2& rhs)
 	{
-		return vec2(_mm_mul_ps(lhs.xmm, rhs.xmm));
+		return vec2(lhs.x * rhs.x, lhs.y * rhs.y);
 	}
 
 	/**
@@ -108,8 +101,7 @@ namespace clz::math
 	inline float dot_product(const vec2& lhs, const vec2& rhs)
 	{
 		// 0x31 = 0011 0001 — multiply xy only, store in slot 0
-		const __m128 res = _mm_dp_ps(lhs.xmm, rhs.xmm, 0x31);
-		return _mm_cvtss_f32(res);
+		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
 
 	/**
@@ -119,8 +111,9 @@ namespace clz::math
 	 */
 	inline float getLength(const vec2& v)
 	{
+		__m128 xmm = _mm_set_ps(0.0f, 0.0f, v.y, v.x);
 		// dot(v, v) = squared length, then sqrt
-		const __m128 sLength = _mm_dp_ps(v.xmm, v.xmm, 0x31);
+		const __m128 sLength = _mm_dp_ps(xmm, xmm, 0x31);
 		return _mm_cvtss_f32(_mm_sqrt_ss(sLength));
 	}
 
@@ -132,9 +125,10 @@ namespace clz::math
 	 */
 	inline vec2 normalize(const vec2& v)
 	{
+		__m128 xmm = _mm_set_ps(0.0f, 0.0f, v.y, v.x);
 		// 0x33 = 0011 0011 — broadcast squared length into xy lanes for division
-		const __m128 sLength = _mm_dp_ps(v.xmm, v.xmm, 0x33);
-		return vec2(_mm_mul_ps(v.xmm, _mm_rsqrt_ps(sLength)));
+		const __m128 sLength = _mm_dp_ps(xmm, xmm, 0x33);
+		return vec2(_mm_mul_ps(xmm, _mm_rsqrt_ps(sLength)));
 	}
 
 } // namespace clz::math

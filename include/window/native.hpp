@@ -10,8 +10,6 @@
 #pragma once
 
 #include "GLFW/glfw3.h"
-#include <expected>
-#include <string>
 
 namespace clz::window
 {
@@ -21,9 +19,9 @@ namespace clz::window
 	 * @note Reads window dimensions from the config subsystem.
 	 *
 	 * @param pWindow pointer to the GLFW window
-	 * @return void on success, error string on failure.
+	 * @return true on success, false on failure and logs an error
 	 */
-	std::expected<void, std::string> initializeGLFW(GLFWwindow** pWindow);
+	bool initializeGLFW(GLFWwindow** pWindow);
 
 	/**
 	 * @brief Destroys the GLFW window and terminates GLFW.

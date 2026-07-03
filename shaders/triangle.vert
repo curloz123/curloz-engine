@@ -1,21 +1,29 @@
 #version 460
 
-layout(location = 0) out vec3 fragColor;
+// In's
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec2 inUV;
 
-vec3 positions[3] = vec3[](
-        vec3(0.0, -0.5, 0.0),
-        vec3(0.5, 0.5, 0.0),
-        vec3(-0.5, 0.5, 0.0)
-);
+// Uniform's
 
-vec3 colors[3] = vec3[](
-        vec3(1.0, 0.0, 0.0),
-        vec3(0.0, 1.0, 0.0),
-        vec3(0.0, 0.0, 1.0)
-);
-
-void main() 
+layout(push_constant) uniform PushConstants
 {
-        gl_Position = vec4(positions[gl_VertexIndex], 1.0);
-        fragColor = colors[gl_VertexIndex];
+	mat4 model;
+} pushConstant;
+
+layout(binding = 0) uniform UniformBufferObject
+{
+	mat4 projection;
+	mat4 view;
+} ubo;
+
+// Out's
+layout(location = 0) out vec2 outUV;
+
+
+
+void main()
+{
+   	gl_Position = ubo.projection * ubo.view * pushConstant.model * vec4(inPosition, 1.0);
+	outUV = inUV;
 }

@@ -4,67 +4,126 @@
  * @brief Implementation of the public header
  * of renderer subsystem
  */
+
 #include "renderer/renderer.hpp"
 #include "core/logs.hpp"
-#include "renderer/cleaners.hpp"
-#include "renderer/initializers.hpp"
+#include "renderer/assets/modeldata.hpp"
+#include "renderer/camera/camera.hpp"
+#include "renderer/context/commandcontext.hpp"
+#include "renderer/context/devicecontext.hpp"
+#include "renderer/context/framecontext.hpp"
+#include "renderer/context/pipelinecontext.hpp"
+#include "renderer/context/swapchaincontext.hpp"
+#include "renderer/editor/editor.hpp"
 #include "renderer/mainloop.hpp"
-#include "renderer/variables.hpp"
+#include "renderer/shaderdata/shaderdata.hpp"
+#include "renderer/vk_types.hpp"
+#include <vector>
 
 namespace clz::renderer
 {
-	void init()
+	bool init()
 	{
-		if (auto deviceContextResult = initDeviceContext(); !deviceContextResult)
+		if (!initDeviceContext())
 		{
-			clz::log::error(deviceContextResult.error());
-			return;
+			clz::log::error("Could not initialize device context");
+			clz::log::error("Could not initialize renderer");
+			return false;
+		}
+		if (!initCommandContext())
+		{
+			clz::log::error("Could not initialize frame context");
+			clz::log::error("Could not initialize renderer");
+			return false;
+		}
+		if (!initSwapchainContext())
+		{
+			clz::log::error("Could not initialize swapchain context");
+			clz::log::error("Could not initialize renderer");
+			return false;
+		}
+		if (!initShaderData())
+		{
+			clz::log::error("Could not initialize shader data");
+			clz::log::error("Could not initialize renderer");
+			return false;
+		}
+		if (!initPipelineContext())
+		{
+			clz::log::error("Could not initialize pipeline context");
+			clz::log::error("Could not initialize renderer");
+			return false;
+		}
+		if (!initFrameContext())
+		{
+			clz::log::error("Could not initialize frame context");
+			clz::log::error("Could not initialize renderer");
+			return false;
 		}
 
-		if (auto swapchainContextResult = initSwapchainContext(); !swapchainContextResult)
-		{
-			clz::log::error(swapchainContextResult.error());
-			return;
-		}
+		clz::log::info("initialized all renderer context's");
 
-		if (auto pipelineContextResult = initPipelineContext(); !pipelineContextResult)
+#ifdef CLZ_ENABLE_SANDBOX
+		if (!editor::init())
 		{
-			clz::log::error(pipelineContextResult.error());
-			return;
+			clz::log::error("Could not initialize editor");
+			return false;
 		}
+#endif
 
-		if (auto frameContextResult = initFrameContext(); !frameContextResult)
-		{
-			clz::log::error(frameContextResult.error());
-			return;
-		}
+		clz::log::info("Initialized renderer");
 
-		clz::log::debug("initialized all renderer context's");
+		return true;
 	}
 
-	void update(const float deltaTime)
+	void update()
 	{
+		// Main loop part1 - start
+		if (r_recreateSwapchain) [[unlikely]]
+		{
+			clz::log::warn("swapchain out of date, recreating it");
+			recreateSwapchainContext();
+			r_recreateSwapchain = false;
+		}
 		waitForGPU(r_frameContext.inFlightFences[r_currentFrame]);
-		acquireNextImage(r_frameContext.imageAvailableSemaphores[r_currentFrame],
-				 r_imageIndex);
-		startCommandBuffer(r_frameContext.commandBuffer[r_imageIndex]);
-		recordCommandBuffer(r_frameContext.commandBuffer[r_imageIndex], r_imageIndex);
-		submitCommandBuffer(r_frameContext.commandBuffer[r_imageIndex],
-				    r_frameContext.imageAvailableSemaphores[r_currentFrame],
-				    r_frameContext.renderFinishedSemaphores[r_imageIndex],
-				    r_frameContext.inFlightFences[r_currentFrame]);
-		present(r_frameContext.renderFinishedSemaphores[r_imageIndex], r_imageIndex);
+		acquireNextImage(r_frameContext.renderReadySemaphores[r_currentFrame], r_imageIndex);
+		if (r_recreateSwapchain) [[unlikely]]
+			return;
+		resetFence(r_frameContext.inFlightFences[r_currentFrame]);
+		startCommandBuffer(r_commandContext.commandBuffer[r_currentFrame]);
+		// Main loop part1 - end
 
-		r_currentFrame = (r_currentFrame + 1) % FRAMES_IN_FLIGHT;
+		// Main loop part2 - start
+		// Everything that's not defined in mainloop.hpp, shall go inside this function
+		recordCommandBuffer(r_commandContext.commandBuffer[r_currentFrame], r_imageIndex);
+		// Main loop part2 - end
+
+		// Main loop part3 - submit
+		submitCommandBuffer(r_commandContext.commandBuffer[r_currentFrame], r_frameContext.renderReadySemaphores[r_currentFrame],
+				    r_frameContext.presentReadySemaphores[r_imageIndex], r_frameContext.inFlightFences[r_currentFrame]);
+
+		present(r_frameContext.presentReadySemaphores[r_imageIndex],
+			r_imageIndex); // Internally can also r_recreateSwapchain = true
+		// Main loop part3 - end
+
+		r_currentFrame = (r_currentFrame + 1) % r_FRAMES_IN_FLIGHT;
 	}
 
 	void shutdown()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
 
+		editor::shutdown();
+
 		destroyFrameContext();
 		destroyPipelineContext();
 		destroySwapchainContext();
+
+		// TEST
+		destroyShaderData();
+		// TEST
+
+		destroyCommandContext();
 		destroyDeviceContext();
 
 		clz::log::info("renderer shutdown completed");

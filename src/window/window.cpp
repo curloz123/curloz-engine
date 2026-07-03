@@ -1,29 +1,41 @@
-/*
+/**
  * @file window.cpp
  * @author curl0z
  * @brief Implementation of the window public header
  */
-#define GLFW_INCLUDE_VULKAN
 #include "window/window.hpp"
 #include "core/logs.hpp"
+#include "window/mouse.hpp"
 #include "window/native.hpp"
+#include "window/vulkanhelper.hpp"
+#include "window/window_types.hpp"
+#include <GLFW/glfw3.h>
 
 namespace clz::window
 {
-	/// @brief Internal window state.
-	static GLFWwindow* w_window = nullptr;
-} // namespace clz::window
-
-namespace clz::window
-{
-	void init()
+	bool init()
 	{
-		if (auto result = initializeGLFW(&w_window); !result)
+		// Initialize window
+		if (!initializeGLFW(&w_window))
 		{
-			clz::log::error(result.error());
-			return;
+			log::error("Could not create window");
+			return false;
 		}
+
+		// Initialize all callback functions
+		glfwSetFramebufferSizeCallback(w_window, hintRendererAboutResize);
+		glfwSetCursorPosCallback(w_window, cursorCallback);
+		glfwSetScrollCallback(w_window, scrollCallback);
+
+		// Cursor's initial state
+#ifdef CLZ_ENABLE_SANDBOX
+		enableCursor();
+#else
+		disableCursor();
+#endif
+
 		clz::log::debug("Initialized window system");
+		return true;
 	}
 
 	void shutdown()
@@ -36,13 +48,15 @@ namespace clz::window
 		pollEventsGLFW(&w_window);
 	}
 
+	// Other subsystems helper functions
+	void getFramebufferExtents(int* width, int* height)
+	{
+		glfwGetFramebufferSize(w_window, width, height);
+	}
+
 	GLFWwindow* getWindowHandle()
 	{
 		return w_window;
 	}
 
-	void getFramebufferExtents(int* width, int* height)
-	{
-		glfwGetFramebufferSize(w_window, width, height);
-	}
 } // namespace clz::window

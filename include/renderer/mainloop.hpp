@@ -9,6 +9,14 @@
 namespace clz::renderer
 {
 	/**
+	 * @brief All graphics related operations go over here
+	 *
+	 * @param commandBuffer commandBuffer to record this on
+	 * @param currentFrame current frame index
+	 */
+	void render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+
+	/**
 	 * @brief Waits for the GPU to finish work associated with a fence.
 	 * Ensures that CPU does not overwrite resources still in use by GPU.
 	 * @param fence Fence associated with the current frame.
@@ -25,12 +33,10 @@ namespace clz::renderer
 	void acquireNextImage(VkSemaphore semaphore, uint32_t& rImageIndex);
 
 	/**
-	 * @brief Recreates the swapchain.
-	 *
-	 * Called when the swapchain becomes invalid
-	 * Destroys and rebuilds the whole swapchain context
+	 * @brief Resets the fence, basically makes it unsignaled
+	 * @param fence Fence associated with current frame.
 	 */
-	void recreateSwapchain();
+	void resetFence(VkFence fence);
 
 	/**
 	 * @brief Begins recording a command buffer.
@@ -55,8 +61,8 @@ namespace clz::renderer
 	 * @param renderFinishedSemaphore Signals when rendering is complete.
 	 * @param inFlightFence Fence used for synchronization.
 	 */
-	void submitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore imageAvailableSemaphore,
-				 VkSemaphore renderFinishedSemaphore, VkFence inFlightFence);
+	void submitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore imageAvailableSemaphore, VkSemaphore renderFinishedSemaphore,
+				 VkFence inFlightFence);
 
 	/**
 	 * @brief Presents a rendered image to the swapchain.

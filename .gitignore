@@ -3,4 +3,11 @@
 build
 compile_commands.json
 docs
-.clangd
+imgui.ini
+
+# shader binaries
+shader/triangle.vert.spirv
+shader/triangle.frag.spirv
+
+# Test models
+assets/models/*

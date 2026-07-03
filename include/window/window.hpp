@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 namespace clz::window
 {
@@ -19,7 +19,7 @@ namespace clz::window
 	 * @brief Initializes GLFW and creates the window using config values.
 	 * @note Logs an error and returns early on failure.
 	 */
-	void init();
+	bool init();
 
 	/**
 	 * @brief Destroys the window and terminates GLFW.
@@ -34,11 +34,16 @@ namespace clz::window
 	void update();
 
 	/**
-	 * @brief Returns window handle
-	 * @warning not to be used outside window subsystem
-	 * @return pointer to GLFWwindow
+	 * @brief Returns actual framebuffer extents
+	 * Basically coords in pixel space not screen space
+	 * @param width
+	 * @param height
+	 */
+	void getFramebufferExtents(int* width, int* height);
+
+	/**
+	 * @brief Retrieves current window handle
+	 * @return GLFWwindow handle
 	 */
 	GLFWwindow* getWindowHandle();
-
-	void getFramebufferExtents(int* width, int* height);
 } // namespace clz::window

@@ -15,10 +15,8 @@
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "core/time.hpp"
-#include "ecs/ecs.hpp"
-#include "math/vec3.hpp"
 #include "renderer/renderer.hpp"
-#include "scripting/scripting.hpp"
+#include "scene/scene.hpp"
 #include "window/window.hpp"
 
 int main()
@@ -35,43 +33,33 @@ int main()
 	clz::time::init();
 
 	// Initialize Window. Should be the first subsystem to initialize
-	clz::window::init();
-	if (clz::log::errorOccurred()) [[unlikely]]
+	if (!clz::window::init()) [[unlikely]]
 		return 1;
 
 	// Initialize renderer
-	clz::renderer::init();
-	if (clz::log::errorOccurred()) [[unlikely]]
-		return 1;
-
-	// Initialize entities
-	clz::ecs::init();
-	if (clz::log::errorOccurred()) [[unlikely]]
+	if (!clz::renderer::init()) [[unlikely]]
 		return 1;
 
 	// Initialize audio
 	clz::audio::init();
 
-	// Initialize script at last
-	clz::script::init();
-	clz::script::runScript("assets/scripts/test.lua");
+	// Initialize Scene
+	clz::scene::loadScene();
+	if (clz::log::errorOccurred()) [[unlikely]]
+		return 1;
 
-	clz::math::vec3 a;
-	a = clz::math::vec3{3, 4, 0};
-	clz::log::debug("Value of a's length: " +
-			std::to_string(getLength(clz::math::normalize(a))));
 
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
-	while (clz::state::g_engineState == clz::state::EngineState::Running)
+	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
 		clz::time::computeTime();
 		clz::window::update();
-		clz::renderer::update(clz::time::getDeltaTime());
+		clz::renderer::update();
 	}
 
 	// Shut down
+	clz::scene::saveScene();
 	clz::audio::shutdown();
-	clz::ecs::shutdown();
 	clz::renderer::shutdown();
 	clz::window::shutdown();
 	clz::log::info("Exiting successfully");

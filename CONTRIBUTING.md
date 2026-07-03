@@ -9,9 +9,9 @@ Curloz Engine is built as a collection of independent subsystems under the clz::
 ```bash
 curloz-engine/
 ├── Renderer		# Renderer subsystem
-├── Window		# Window subsystem
+├── Window		     # Window subsystem
 ├── Math			# Math subsystem
-└── ECS			# ECS subsystem
+└── ECS			    # ECS subsystem
 ```
 
 The init pattern is a linear sequence of init calls, with each subsystem initializing in dependency order. For example, the renderer subsystem depends on the window subsystem, so the window subsystem's init must be called before the renderer subsystem's init. Same is the case with shutdown.
