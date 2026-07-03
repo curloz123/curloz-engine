@@ -19,8 +19,7 @@ namespace clz::renderer
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
 		{
-			if ((typeFilter & (1 << i)) &&
-			    (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
 				return i;
 		}
 
@@ -28,4 +27,4 @@ namespace clz::renderer
 		clz::CLZ_ASSERT(false, "could not find suitable memory type!");
 		return UINT32_MAX;
 	}
-}
+} // namespace clz::renderer

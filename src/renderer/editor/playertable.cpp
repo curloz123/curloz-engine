@@ -5,11 +5,9 @@
  */
 
 #include "renderer/editor/playertable.hpp"
-#include "ecs/components.hpp"
-#include "ecs/entitymanager.hpp"
 #include "renderer/editor/editor_types.hpp"
+#include "scene/entity/entitymanager.hpp"
 #include <imgui.h>
-#include "math/quateulerconv.hpp"
 
 namespace clz::editor
 {
@@ -34,4 +32,4 @@ namespace clz::editor
 		ImGui::PopFont();
 		ImGui::EndTabItem();
 	}
-}
+} // namespace clz::editor

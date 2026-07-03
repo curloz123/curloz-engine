@@ -3,19 +3,20 @@
  * @author curl0z
  *
  * @brief Sandbox editor implementation
- *
  */
+
 #include "renderer/editor/editor.hpp"
 #include "core/logs.hpp"
 #include "renderer/editor/editor_types.hpp"
+#include "renderer/editor/editorshortcuts.hpp"
+#include "renderer/editor/gizmo.hpp"
 #include "renderer/editor/inspector.hpp"
 #include "renderer/editor/playertable.hpp"
 #include "renderer/vk_types.hpp"
+#include <cmath>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-
-#include <cmath>
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
@@ -24,11 +25,7 @@ namespace clz::editor
 {
 	void render()
 	{
-		ImGui::DockSpaceOverViewport(
-			ImGui::GetMainViewport()->ID,
-			ImGui::GetMainViewport(),
-			ImGuiDockNodeFlags_PassthruCentralNode
-		);
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
 		ImGui::PushFont(fontSansBold);
 		ImGui::Begin("Players");
@@ -38,6 +35,10 @@ namespace clz::editor
 			showEntityTab();
 			ImGui::EndTabBar();
 		}
+
+		processShortcuts();
+		drawGizmo();
+
 		ImGui::End();
 
 		showInspector();
@@ -45,19 +46,17 @@ namespace clz::editor
 	bool init()
 	{
 		/// Create ImGui's descriptor pool
-		std::vector<VkDescriptorPoolSize> poolSizes = {
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
-			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
-		};
+		std::vector<VkDescriptorPoolSize> poolSizes = {{VK_DESCRIPTOR_TYPE_SAMPLER, 100},
+							       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100},
+							       {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100},
+							       {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100},
+							       {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100},
+							       {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100},
+							       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100},
+							       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100},
+							       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100},
+							       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100},
+							       {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100}};
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -66,13 +65,11 @@ namespace clz::editor
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
 
-		if (vkCreateDescriptorPool(renderer::r_deviceContext.device, &poolInfo,
-			nullptr, &editorDescriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(renderer::r_deviceContext.device, &poolInfo, nullptr, &editorDescriptorPool) != VK_SUCCESS)
 		{
 			clz::log::error("Editor's vkCreateDescriptorPool failed");
 			return false;
 		}
-
 
 		/// Initialize ImGui
 		IMGUI_CHECKVERSION();
@@ -85,7 +82,7 @@ namespace clz::editor
 		setTheme();
 
 		// Apply gamma correction
-		for (auto& col: ImGui::GetStyle().Colors)
+		for (auto& col : ImGui::GetStyle().Colors)
 		{
 			col.x = std::pow(col.x, 2.2f);
 			col.y = std::pow(col.y, 2.2f);
@@ -93,9 +90,9 @@ namespace clz::editor
 		}
 
 		/// Fonts
-		fontSans     = io.Fonts->AddFontFromFileTTF("assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f);
+		fontSans = io.Fonts->AddFontFromFileTTF("assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f);
 		fontSansBold = io.Fonts->AddFontFromFileTTF("assets/fonts/NotoSansNerdFont-Bold.ttf", 20.0f);
-		fontMono     = io.Fonts->AddFontFromFileTTF("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f);
+		fontMono = io.Fonts->AddFontFromFileTTF("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f);
 		fontMonoBold = io.Fonts->AddFontFromFileTTF("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 19.0f);
 
 		if (!fontSans || !fontSansBold || !fontMono || !fontMonoBold)
@@ -112,7 +109,6 @@ namespace clz::editor
 		pipelineRenderingInfo.colorAttachmentCount = 1;
 		pipelineRenderingInfo.pColorAttachmentFormats = &renderer::r_swapchainContext.format.format;
 		pipelineRenderingInfo.depthAttachmentFormat = renderer::r_swapchainContext.depthFormat;
-
 
 		/// initInfo
 		ImGui_ImplVulkan_InitInfo initInfo{};
@@ -155,8 +151,7 @@ namespace clz::editor
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-		vkDestroyDescriptorPool(renderer::r_deviceContext.device,
-					editorDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(renderer::r_deviceContext.device, editorDescriptorPool, nullptr);
 	}
 
 	void setTheme()
@@ -248,4 +243,4 @@ namespace clz::editor
 		style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.8f, 0.8f, 0.8f, 0.2f);
 		style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.5647059f);
 	}
-}
+} // namespace clz::editor

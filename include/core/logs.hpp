@@ -41,8 +41,7 @@ namespace clz::log
 	 * @brief Logs a warning message.
 	 * @param warn Warning.
 	 */
-	inline void warn(std::string_view warn,
-			 std::source_location loc = std::source_location::current())
+	inline void warn(std::string_view warn, std::source_location loc = std::source_location::current())
 	{
 		std::println("{}[WARN]{} {}", color::yellow, color::reset, warn);
 		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
@@ -52,8 +51,7 @@ namespace clz::log
 	 * @brief Logs a debug message.
 	 * @param debug message
 	 */
-	inline void debug(std::string_view debug,
-			  std::source_location loc = std::source_location::current())
+	inline void debug(std::string_view debug, std::source_location loc = std::source_location::current())
 	{
 		std::println("{}[DEBUG]{} {}", color::blue, color::reset, debug);
 		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
@@ -63,8 +61,7 @@ namespace clz::log
 	 * @brief Logs an error message and sets hadError to true.
 	 * @param error The error
 	 */
-	inline void error(std::string_view error,
-			  std::source_location loc = std::source_location::current())
+	inline void error(std::string_view error, std::source_location loc = std::source_location::current())
 	{
 		hadError = true;
 		std::println("{}[ERROR]{} {}", color::red, color::reset, error);

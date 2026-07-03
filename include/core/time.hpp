@@ -68,9 +68,7 @@ namespace clz::time
 	inline void computeTime()
 	{
 		t_timeTakenThisFrame = std::chrono::high_resolution_clock::now();
-		t_deltaTime =
-		    std::chrono::duration<float>(t_timeTakenThisFrame - t_timeTakenLastFrame)
-			.count();
+		t_deltaTime = std::chrono::duration<float>(t_timeTakenThisFrame - t_timeTakenLastFrame).count();
 		t_timeTakenLastFrame = t_timeTakenThisFrame;
 
 		t_totalElapsedTime += t_deltaTime;
@@ -78,8 +76,7 @@ namespace clz::time
 		// Software frame cap — sleep remaining time if frame finished early
 		if (t_VSync && t_deltaTime < t_targetDeltaTime)
 		{
-			std::this_thread::sleep_for(
-			    std::chrono::duration<float>(t_targetDeltaTime - t_deltaTime));
+			std::this_thread::sleep_for(std::chrono::duration<float>(t_targetDeltaTime - t_deltaTime));
 			t_deltaTime = t_targetDeltaTime;
 		}
 	}

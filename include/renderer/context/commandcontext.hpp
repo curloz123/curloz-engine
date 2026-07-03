@@ -20,4 +20,4 @@ namespace clz::renderer
 	 * @brief Destroys command pool and buffer
 	 */
 	void destroyCommandContext();
-}
+} // namespace clz::renderer

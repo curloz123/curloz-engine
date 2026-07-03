@@ -5,6 +5,14 @@
 namespace clz::input
 {
 	// Key definitions matching GLFW key codes
+	enum class Mouse : int
+	{
+		// Mouse clicks
+		MouseLeft = GLFW_MOUSE_BUTTON_LEFT,
+		MouseRight = GLFW_MOUSE_BUTTON_RIGHT,
+		MouseMiddle = GLFW_MOUSE_BUTTON_MIDDLE,
+	};
+
 	enum class Key : int
 	{
 		Escape = GLFW_KEY_ESCAPE,
@@ -81,4 +89,4 @@ namespace clz::input
 		F11 = GLFW_KEY_F11,
 		F12 = GLFW_KEY_F12,
 	};
-}
+} // namespace clz::input

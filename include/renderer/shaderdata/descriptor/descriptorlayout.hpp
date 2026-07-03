@@ -17,4 +17,4 @@ namespace clz::renderer
 	 * @brief Destroys the descriptor set layout.
 	 */
 	void destroyDescriptorSetLayout();
-}
+} // namespace clz::renderer

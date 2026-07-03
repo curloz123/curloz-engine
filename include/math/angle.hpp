@@ -33,7 +33,6 @@ namespace clz::math
 		return degree * DEG_TO_RAD;
 	}
 
-
 	/**
 	 * @brief Converts radians to degrees
 	 * @param rad angle in degrees
@@ -53,4 +52,4 @@ namespace clz::math
 	{
 		return rad * RAD_TO_DEG;
 	}
-}
+} // namespace clz::math

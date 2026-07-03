@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "entity.hpp"
+#include "entitymanager.hpp"
 #include <vector>
 
 namespace clz::ecs
@@ -48,10 +48,9 @@ namespace clz::ecs
 	 */
 	template <typename T> struct ComponentStorage : IComponentStorage
 	{
-		std::vector<T> storage; ///< Contiguous component data. Iterate this for hot paths.
-		std::vector<entity> dense; ///< Entity that owns storage[i]. Parallel to storage.
-		std::vector<uint32_t>
-		    sparse; ///< sparse[entity] = index into storage. NULL_ENTITY if absent.
+		std::vector<T> storage;	      ///< Contiguous component data. Iterate this for hot paths.
+		std::vector<entity> dense;    ///< Entity that owns storage[i]. Parallel to storage.
+		std::vector<uint32_t> sparse; ///< sparse[entity] = index into storage. NULL_ENTITY if absent.
 
 		/// @brief Initializes sparse array to NULL_ENTITY for MAX_ENTITIES slots.
 		ComponentStorage()

@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <vector>
 #include "math/mat4x4.hpp"
+#include <vector>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -20,7 +20,7 @@ namespace clz::renderer
 		clz::math::mat4 view;
 	};
 
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -32,7 +32,7 @@ namespace clz::renderer
 	constexpr uint32_t r_TRANSFORM_DESCRIPTOR_BINDING = 0;
 	inline std::vector<VkDeviceSize> r_transformUBOOffsets;
 	inline std::vector<void*> r_transformUBOMapped;
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -58,4 +58,4 @@ namespace clz::renderer
 	 * @brief Releases all uniform buffer resources.
 	 */
 	void destroyUniformBuffers();
-}
+} // namespace clz::renderer

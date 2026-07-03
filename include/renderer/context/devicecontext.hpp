@@ -64,7 +64,7 @@ namespace clz::renderer
 	 * physical device has been selected
 	 */
 	bool createLogicalDevice();
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {

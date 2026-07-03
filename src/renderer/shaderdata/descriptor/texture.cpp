@@ -1,14 +1,14 @@
-#include <stb_image.h>
-#include "core/logs.hpp"
 #include "renderer/shaderdata/descriptor/texture.hpp"
 #include "core/assert.hpp"
+#include "core/logs.hpp"
 #include "renderer/utility/buffer.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/utility/offsetalignment.hpp"
 #include "renderer/vk_types.hpp"
-#include <memory.h>
 #include <filesystem>
+#include <memory.h>
+#include <stb_image.h>
 
 namespace clz::renderer
 {
@@ -41,21 +41,17 @@ namespace clz::renderer
 		const uint32_t index = r_numRegisteredTextures;
 
 		r_textures.raw_data[index] =
-			stbi_load(filePath.c_str(),
-			&r_textures.width[index], &r_textures.height[index],
-			&r_textures.numChannels[index], 4);
+		    stbi_load(filePath.c_str(), &r_textures.width[index], &r_textures.height[index], &r_textures.numChannels[index], 4);
 
 		r_textures.imageSize[index] = r_textures.width[index] * r_textures.height[index] * 4;
 
-		if (!clz::renderer::createImage(r_textures.image[index], filePath,
-			r_textures.width[index], r_textures.height[index],
-			VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0))
+		if (!clz::renderer::createImage(r_textures.image[index], filePath, r_textures.width[index], r_textures.height[index],
+						VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+						VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0))
 		{
 			clz::log::error("Could not create texture: " + filePath.string());
 			clz::CLZ_ASSERT(false, "could not initialize all textures");
 		}
-
 
 		return r_numRegisteredTextures++;
 	}
@@ -71,24 +67,21 @@ namespace clz::renderer
 			stagingBufferSize += r_textures.imageSize[i];
 		}
 
-		if (!createBuffer(stagingBuffer, stagingBufferMemory, "Texture staging buffer",
-			stagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+		if (!createBuffer(stagingBuffer, stagingBufferMemory, "Texture staging buffer", stagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 		{
 			clz::log::error("could not create texture staging buffer");
 			return false;
 		}
 
 		void* data;
-		vkMapMemory(clz::renderer::r_deviceContext.device, stagingBufferMemory,
-			0, stagingBufferSize, 0, &data);
+		vkMapMemory(clz::renderer::r_deviceContext.device, stagingBufferMemory, 0, stagingBufferSize, 0, &data);
 		memcpy(data, r_textures.raw_data[0], r_textures.imageSize[0]);
 		stbi_image_free(r_textures.raw_data[0]);
 		VkDeviceSize totalStagingBufferOffset = r_textures.imageSize[0];
-		for (auto i=1; i < r_numRegisteredTextures; ++i)
+		for (auto i = 1; i < r_numRegisteredTextures; ++i)
 		{
-			memcpy(static_cast<std::byte*>(data) + totalStagingBufferOffset,
-				r_textures.raw_data[i], r_textures.imageSize[i]);
+			memcpy(static_cast<std::byte*>(data) + totalStagingBufferOffset, r_textures.raw_data[i], r_textures.imageSize[i]);
 			totalStagingBufferOffset += r_textures.imageSize[i];
 			stbi_image_free(r_textures.raw_data[i]);
 		}
@@ -114,8 +107,7 @@ namespace clz::renderer
 		memAllocInfo.allocationSize = totalDeviceLocalTextureMemoryRequired;
 		memAllocInfo.memoryTypeIndex = findMemoryType(memoryTypeIndexBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		if (vkAllocateMemory(clz::renderer::r_deviceContext.device, &memAllocInfo,
-			nullptr, &r_textureDeviceMemory) != VK_SUCCESS)
+		if (vkAllocateMemory(clz::renderer::r_deviceContext.device, &memAllocInfo, nullptr, &r_textureDeviceMemory) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan could not create texture memory");
 			return false;
@@ -123,8 +115,7 @@ namespace clz::renderer
 
 		for (auto i = 0; i < r_numRegisteredTextures; ++i)
 		{
-			vkBindImageMemory(clz::renderer::r_deviceContext.device,
-				r_textures.image[i], r_textureDeviceMemory, r_textures.offset[i]);
+			vkBindImageMemory(clz::renderer::r_deviceContext.device, r_textures.image[i], r_textureDeviceMemory, r_textures.offset[i]);
 		}
 
 		// Copying content of staging buffer to device local memory
@@ -135,11 +126,10 @@ namespace clz::renderer
 		allocInfo.commandBufferCount = 1;
 
 		// Finally create the image views now that memory has been allocated
-		for (auto i = 0; i<r_numRegisteredTextures; ++i)
+		for (auto i = 0; i < r_numRegisteredTextures; ++i)
 		{
-			if (!createImageView(r_textures.imageView[i], "entity texture Image view",
-						r_textures.image[i], VK_FORMAT_R8G8B8A8_SRGB,
-						VK_IMAGE_ASPECT_COLOR_BIT))
+			if (!createImageView(r_textures.imageView[i], "entity texture Image view", r_textures.image[i], VK_FORMAT_R8G8B8A8_SRGB,
+					     VK_IMAGE_ASPECT_COLOR_BIT))
 			{
 				clz::log::error("Could not create image view for textures");
 				clz::CLZ_ASSERT(false, "could not initialize all textures");
@@ -159,11 +149,9 @@ namespace clz::renderer
 		for (auto i = 0; i < r_numRegisteredTextures; ++i)
 		{
 			// transition - 1
-			clz::renderer::transition_image_layout(r_textures.image[i],
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				0, VK_ACCESS_TRANSFER_WRITE_BIT,
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+			clz::renderer::transition_image_layout(r_textures.image[i], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+							       0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+							       VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
 			// Copying buffer to image
 			VkBufferImageCopy region = {};
@@ -186,21 +174,14 @@ namespace clz::renderer
 			region.imageSubresource.layerCount = 1;
 
 			region.imageOffset = {0, 0, 0};
-			region.imageExtent =
-			{
-				static_cast<uint32_t>(r_textures.width[i]),
-				static_cast<uint32_t>(r_textures.height[i]),
-				1
-			};
-			vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, r_textures.image[i],
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+			region.imageExtent = {static_cast<uint32_t>(r_textures.width[i]), static_cast<uint32_t>(r_textures.height[i]), 1};
+			vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, r_textures.image[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 			// Transition - 2
-			clz::renderer::transition_image_layout(r_textures.image[i],
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+			clz::renderer::transition_image_layout(r_textures.image[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+							       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT,
+							       VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+							       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 		}
 		vkEndCommandBuffer(commandBuffer);
 
@@ -212,10 +193,8 @@ namespace clz::renderer
 		vkQueueSubmit(clz::renderer::r_deviceContext.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(clz::renderer::r_deviceContext.graphicsQueue);
 
-		vkDestroyBuffer(clz::renderer::r_deviceContext.device,
-				stagingBuffer, nullptr);
-		vkFreeMemory(clz::renderer::r_deviceContext.device,
-				stagingBufferMemory, nullptr);
+		vkDestroyBuffer(clz::renderer::r_deviceContext.device, stagingBuffer, nullptr);
+		vkFreeMemory(clz::renderer::r_deviceContext.device, stagingBufferMemory, nullptr);
 
 		return true;
 	}
@@ -240,8 +219,7 @@ namespace clz::renderer
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 
-		if (vkCreateSampler(clz::renderer::r_deviceContext.device,
-			&samplerInfo, nullptr, &r_sampler) != VK_SUCCESS)
+		if (vkCreateSampler(clz::renderer::r_deviceContext.device, &samplerInfo, nullptr, &r_sampler) != VK_SUCCESS)
 		{
 			clz::log::error("Failed to create texture sampler");
 			return false;
@@ -259,7 +237,7 @@ namespace clz::renderer
 	{
 		destroySampler();
 
-		for (auto i=0; i < r_numRegisteredTextures; i++)
+		for (auto i = 0; i < r_numRegisteredTextures; i++)
 		{
 			vkDestroyImageView(clz::renderer::r_deviceContext.device, r_textures.imageView[i], nullptr);
 			vkDestroyImage(clz::renderer::r_deviceContext.device, r_textures.image[i], nullptr);

@@ -8,7 +8,6 @@
 
 #include "window_types.hpp"
 
-
 namespace clz::window
 {
 	/**
@@ -64,4 +63,4 @@ namespace clz::window
 		w_scrollOffset = 0.0f;
 		return offset;
 	}
-}
+} // namespace clz::window

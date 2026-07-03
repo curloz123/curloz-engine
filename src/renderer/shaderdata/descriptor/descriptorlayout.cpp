@@ -30,10 +30,9 @@ namespace clz::renderer
 		textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		bindings.push_back(textureLayoutBinding);
 
-		constexpr std::array<VkDescriptorBindingFlags, 2> bindingFlags =
-		{
-			0,	// Binding 0 - no flags for transform UBO
-			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT // For textures
+		constexpr std::array<VkDescriptorBindingFlags, 2> bindingFlags = {
+		    0,											    // Binding 0 - no flags for transform UBO
+		    VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT // For textures
 		};
 		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
 		bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
@@ -47,8 +46,7 @@ namespace clz::renderer
 		layoutInfo.bindingCount = bindings.size();
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(clz::renderer::r_deviceContext.device,
-			&layoutInfo, nullptr, &r_descriptorSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(clz::renderer::r_deviceContext.device, &layoutInfo, nullptr, &r_descriptorSetLayout) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan Could not initialize descriptor set layout");
 			return false;
@@ -59,7 +57,6 @@ namespace clz::renderer
 
 	void destroyDescriptorSetLayout()
 	{
-		vkDestroyDescriptorSetLayout(clz::renderer::r_deviceContext.device,
-						r_descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(clz::renderer::r_deviceContext.device, r_descriptorSetLayout, nullptr);
 	}
-}
+} // namespace clz::renderer

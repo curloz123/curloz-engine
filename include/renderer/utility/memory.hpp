@@ -18,4 +18,4 @@ namespace clz::renderer
 	 * @return Index of memory type
 	 */
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-}
+} // namespace clz::renderer

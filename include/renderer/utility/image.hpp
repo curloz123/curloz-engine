@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <string>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -22,11 +22,8 @@ namespace clz::renderer
 	 * @param commandBuffer   Command buffer to record the barrier into.
 	 * @param aspectMask	  Subresource range aspect mark.
 	 */
-	void transition_image_layout(VkImage image, VkImageLayout oldLayout,
-				     VkImageLayout newLayout, VkAccessFlags2 src_access_mask,
-				     VkAccessFlags2 dst_access_mask,
-				     VkPipelineStageFlags2 src_stage_mask,
-				     VkPipelineStageFlags2 dst_stage_mask,
+	void transition_image_layout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkAccessFlags2 src_access_mask,
+				     VkAccessFlags2 dst_access_mask, VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask,
 				     VkImageAspectFlags aspectMask, VkCommandBuffer commandBuffer);
 
 	/**
@@ -42,10 +39,8 @@ namespace clz::renderer
 	 * @param flags which flags are these again??
 	 * @return True if successful, false if not
 	 */
-	bool createImage(VkImage& rImage, const std::string& name,
-		const uint32_t width, const uint32_t height,
-		const VkFormat format, VkImageTiling tiling, const
-		VkImageUsageFlags usage, const VkImageCreateFlags flags);
+	bool createImage(VkImage& rImage, const std::string& name, const uint32_t width, const uint32_t height, const VkFormat format,
+			 VkImageTiling tiling, const VkImageUsageFlags usage, const VkImageCreateFlags flags);
 
 	/**
 	 * @brief Creates an image view for an image
@@ -57,7 +52,7 @@ namespace clz::renderer
 	 * @param aspect What was this again??
 	 * @return True if successful, false if not
 	 */
-	bool createImageView(VkImageView& rImageView, const std::string& name,
-		const VkImage image, const VkFormat format, const VkImageAspectFlags aspect);
+	bool createImageView(VkImageView& rImageView, const std::string& name, const VkImage image, const VkFormat format,
+			     const VkImageAspectFlags aspect);
 
 } // namespace clz::renderer

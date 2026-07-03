@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#include "renderer/shaderdata/descriptor/texture.hpp"
 #include "math/mat4x4.hpp"
+#include "renderer/shaderdata/descriptor/texture.hpp"
 
 namespace clz::renderer::MainPC
 {
@@ -23,4 +23,4 @@ namespace clz::renderer::MainPC
 	inline VertexData vertexData;
 	/// Fragment Shader data
 	inline FragmentData fragmentData;
-}
+} // namespace clz::renderer::MainPC

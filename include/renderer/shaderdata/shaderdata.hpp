@@ -44,4 +44,4 @@ namespace clz::renderer
 	 * @brief Releases all GPU resources owned by the shader subsystem.
 	 */
 	void destroyShaderData();
-}
+} // namespace clz::renderer

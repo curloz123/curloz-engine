@@ -4,19 +4,16 @@
  * @brief Vulkan image layout transition utility implementation.
  */
 
-#include <string>
 #include "renderer/utility/image.hpp"
 #include "core/logs.hpp"
 #include "renderer/vk_types.hpp"
+#include <string>
 
 namespace clz::renderer
 {
-	void transition_image_layout(const VkImage image, const VkImageLayout oldLayout,
-				     const VkImageLayout newLayout,
-				     const VkAccessFlags2 src_access_mask,
-				     const VkAccessFlags2 dst_access_mask,
-				     const VkPipelineStageFlags2 src_stage_mask,
-				     const VkPipelineStageFlags2 dst_stage_mask,
+	void transition_image_layout(const VkImage image, const VkImageLayout oldLayout, const VkImageLayout newLayout,
+				     const VkAccessFlags2 src_access_mask, const VkAccessFlags2 dst_access_mask,
+				     const VkPipelineStageFlags2 src_stage_mask, const VkPipelineStageFlags2 dst_stage_mask,
 				     VkImageAspectFlags aspectMask, VkCommandBuffer commandBuffer)
 	{
 		VkImageMemoryBarrier2 barrier = {};
@@ -48,10 +45,8 @@ namespace clz::renderer
 		vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 	}
 
-	bool createImage(VkImage& rImage, const std::string& name,
-		const uint32_t width, const uint32_t height,
-		const VkFormat format, const VkImageTiling tiling,
-		const VkImageUsageFlags usage, const VkImageCreateFlags flags)
+	bool createImage(VkImage& rImage, const std::string& name, const uint32_t width, const uint32_t height, const VkFormat format,
+			 const VkImageTiling tiling, const VkImageUsageFlags usage, const VkImageCreateFlags flags)
 	{
 
 		VkImageCreateInfo imageInfo = {};
@@ -70,19 +65,19 @@ namespace clz::renderer
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.flags = flags;
 
-		if (vkCreateImage(clz::renderer::r_deviceContext.device, &imageInfo,
-				nullptr, &rImage) != VK_SUCCESS)
+		if (vkCreateImage(clz::renderer::r_deviceContext.device, &imageInfo, nullptr, &rImage) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan Unable to create "
-						"image handle for" + name);
+					"image handle for" +
+					name);
 			return false;
 		}
 
 		return true;
 	}
 
-	bool createImageView(VkImageView& rImageView, const std::string& name,
-		const VkImage image, const VkFormat format, const VkImageAspectFlags aspect)
+	bool createImageView(VkImageView& rImageView, const std::string& name, const VkImage image, const VkFormat format,
+			     const VkImageAspectFlags aspect)
 	{
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -94,16 +89,15 @@ namespace clz::renderer
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
-		if (vkCreateImageView(clz::renderer::r_deviceContext.device,
-			&viewInfo, nullptr, &rImageView) != VK_SUCCESS)
+		if (vkCreateImageView(clz::renderer::r_deviceContext.device, &viewInfo, nullptr, &rImageView) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan Unable to create "
-						"image view handle for" + name);
+					"image view handle for" +
+					name);
 			return false;
 		}
 
 		return true;
 	}
-
 
 } // namespace clz::renderer

@@ -5,14 +5,13 @@
  */
 
 #include "renderer/editor/inspector.hpp"
-#include <imgui.h>
-#include "renderer/editor/playertable.hpp"
-#include "ecs/entitymanager.hpp"
-#include "ecs/components.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
-#include "renderer/editor/editor_types.hpp"
 #include "renderer/assets/modeldata.hpp"
+#include "renderer/editor/editor_types.hpp"
+#include "scene/entity/componentmanager.hpp"
+#include "scene/entity/components.hpp"
+#include <imgui.h>
 
 namespace clz::editor
 {
@@ -21,7 +20,7 @@ namespace clz::editor
 
 	/// @brief Renders the Model component section in the inspector, if present.
 	void showModelComponentHeader();
-}
+} // namespace clz::editor
 
 namespace clz::editor
 {
@@ -39,14 +38,12 @@ namespace clz::editor
 			showTransformComponentHeader();
 			ImGui::Separator();
 			showModelComponentHeader();
-
 		}
 		else
 		{
 			ImGui::TextDisabled("No entity selected");
 		}
 		ImGui::End();
-
 	}
 
 	void showTransformComponentHeader()
@@ -64,9 +61,18 @@ namespace clz::editor
 		math::vec3 scale = transform.scale;
 
 		ImGui::PushFont(fontMono);
-		ImGui::SliderFloat3("Position", &pos.x, -100.0f, 100.0f);
-		ImGui::SliderFloat3("Rotation", &rot.x, -180.0f, 180.0f);
-		ImGui::SliderFloat3("Scale", &scale.x, 0.01f, 10.0f);
+		if (ImGui::SliderFloat3("Position", &pos.x, -100.0f, 100.0f))
+		{
+			ActiveTransform = TransformType::TRANSLATE;
+		}
+		if (ImGui::SliderFloat3("Rotation", &rot.x, -180.0f, 180.0f))
+		{
+			ActiveTransform = TransformType::ROTATE;
+		}
+		if (ImGui::SliderFloat3("Scale", &scale.x, 0.01f, 10.0f))
+		{
+			ActiveTransform = TransformType::SCALE;
+		}
 		ImGui::PopFont();
 
 		euler.rotation = rot;
@@ -86,15 +92,12 @@ namespace clz::editor
 			return;
 		}
 
-		const renderer::ModelID id = ecs::getComponent<ecs::ModelComponent>(
-						currentSelectedEntity.value()).modelID;
+		const renderer::ModelID id = ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID;
 		const auto name = renderer::Asset::getModelName(id);
 
 		ImGui::PushFont(fontMono);
 		ImGui::Text("Model Path: %s", name.c_str());
 		ImGui::Separator();
 		ImGui::PopFont();
-
-
 	}
-}
+} // namespace clz::editor

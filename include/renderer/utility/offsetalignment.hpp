@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <optional>
 #include "renderer/vk_types.hpp"
+#include <optional>
 #include <vulkan/vulkan.h>
 
 namespace clz::renderer
@@ -30,4 +30,4 @@ namespace clz::renderer
 	{
 		return (imageSize + nextImageAlignment - 1) & ~(nextImageAlignment - 1);
 	}
-}
+} // namespace clz::renderer

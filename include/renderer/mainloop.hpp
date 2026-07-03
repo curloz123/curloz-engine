@@ -45,7 +45,6 @@ namespace clz::renderer
 	 */
 	void startCommandBuffer(VkCommandBuffer commandBuffer);
 
-
 	/**
 	 * @brief Records rendering commands into a command buffer.
 	 * @param commandBuffer Command buffer to record into.
@@ -62,8 +61,8 @@ namespace clz::renderer
 	 * @param renderFinishedSemaphore Signals when rendering is complete.
 	 * @param inFlightFence Fence used for synchronization.
 	 */
-	void submitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore imageAvailableSemaphore,
-				 VkSemaphore renderFinishedSemaphore, VkFence inFlightFence);
+	void submitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore imageAvailableSemaphore, VkSemaphore renderFinishedSemaphore,
+				 VkFence inFlightFence);
 
 	/**
 	 * @brief Presents a rendered image to the swapchain.

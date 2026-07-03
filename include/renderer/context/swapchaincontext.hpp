@@ -38,7 +38,7 @@ namespace clz::renderer
 	 * whenever window is resized
 	 */
 	void recreateSwapchainContext();
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {

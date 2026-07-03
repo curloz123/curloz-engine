@@ -14,8 +14,7 @@ namespace clz::window
 	bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
 	{
 		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions =
-		    glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		if (glfwExtensionCount == 0 || glfwExtensions == nullptr)
 		{
 			log::error("Could not retrieve extensions required for instance by window");

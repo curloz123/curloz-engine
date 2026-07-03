@@ -1,10 +1,10 @@
-#include "core/logs.hpp"
-#include <memory.h>
 #include "renderer/shaderdata/descriptor/descriptor.hpp"
-#include "renderer/shaderdata/descriptor/uniformbuffers.hpp"
+#include "core/logs.hpp"
 #include "renderer/shaderdata/descriptor/descriptorlayout.hpp"
 #include "renderer/shaderdata/descriptor/texture.hpp"
+#include "renderer/shaderdata/descriptor/uniformbuffers.hpp"
 #include "renderer/vk_types.hpp"
+#include <memory.h>
 
 namespace clz::renderer
 {
@@ -31,13 +31,13 @@ namespace clz::renderer
 
 		// Transform UBO
 		VkDescriptorPoolSize transformUBOPoolSize;
-		transformUBOPoolSize.type= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		transformUBOPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		transformUBOPoolSize.descriptorCount = r_FRAMES_IN_FLIGHT;
 		poolSize.emplace_back(transformUBOPoolSize);
 
 		// Texture Samplers
 		VkDescriptorPoolSize texturePoolSize;
-		texturePoolSize.type= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		texturePoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		texturePoolSize.descriptorCount = r_FRAMES_IN_FLIGHT * r_MAX_TEXTURE_COUNT;
 		poolSize.emplace_back(texturePoolSize);
 
@@ -48,13 +48,11 @@ namespace clz::renderer
 		poolInfo.pPoolSizes = poolSize.data();
 		poolInfo.maxSets = static_cast<uint32_t>(r_FRAMES_IN_FLIGHT);
 
-		if (vkCreateDescriptorPool(clz::renderer::r_deviceContext.device, &poolInfo, nullptr,
-					   &r_descriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(clz::renderer::r_deviceContext.device, &poolInfo, nullptr, &r_descriptorPool) != VK_SUCCESS)
 		{
 			clz::log::error("Could not create descriptor pool");
 			return false;
 		}
-
 
 		// Creating Descriptor sets
 		VkDescriptorSetAllocateInfo allocInfo{};
@@ -65,8 +63,7 @@ namespace clz::renderer
 		allocInfo.pSetLayouts = layouts.data();
 
 		r_descriptorSets.resize(r_FRAMES_IN_FLIGHT);
-		if (vkAllocateDescriptorSets(clz::renderer::r_deviceContext.device, &allocInfo,
-					     r_descriptorSets.data()) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(clz::renderer::r_deviceContext.device, &allocInfo, r_descriptorSets.data()) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan could not allocate descriptor sets");
 			return false;
@@ -91,9 +88,7 @@ namespace clz::renderer
 			transformUBOWrite.pBufferInfo = &transformBufferInfo;
 			descriptorWrites.emplace_back(transformUBOWrite);
 
-			vkUpdateDescriptorSets(clz::renderer::r_deviceContext.device,
-					descriptorWrites.size(), descriptorWrites.data(),
-					0, nullptr);
+			vkUpdateDescriptorSets(clz::renderer::r_deviceContext.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 		}
 
 		clz::log::info("(partially) initialised descriptors");
@@ -135,10 +130,8 @@ namespace clz::renderer
 	{
 		updateUniformBuffers(currentFrame);
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				clz::renderer::r_pipelineContext.layout, 0, 1,
-				&r_descriptorSets[r_currentFrame], 0, nullptr);
-
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, clz::renderer::r_pipelineContext.layout, 0, 1,
+					&r_descriptorSets[r_currentFrame], 0, nullptr);
 	}
 
 	void destroyDescriptors()
@@ -151,4 +144,4 @@ namespace clz::renderer
 		clz::log::info("Destroyed descriptors");
 	}
 
-}
+} // namespace clz::renderer

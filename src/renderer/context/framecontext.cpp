@@ -23,7 +23,6 @@ namespace clz::renderer
 		return true;
 	}
 
-
 	bool createSyncObjects()
 	{
 		r_frameContext.renderReadySemaphores.resize(r_FRAMES_IN_FLIGHT);
@@ -31,20 +30,17 @@ namespace clz::renderer
 		for (auto i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
 			VkSemaphoreCreateInfo semaphoreInfo{
-				.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-			    };
-			if (vkCreateSemaphore(r_deviceContext.device, &semaphoreInfo, nullptr,
-					      &r_frameContext.renderReadySemaphores[i]) !=
+			    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+			};
+			if (vkCreateSemaphore(r_deviceContext.device, &semaphoreInfo, nullptr, &r_frameContext.renderReadySemaphores[i]) !=
 			    VK_SUCCESS)
 			{
 				clz::log::error("vulkan could not create semaphores");
 				return false;
 			}
 
-			VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-						    .flags = VK_FENCE_CREATE_SIGNALED_BIT};
-			if (vkCreateFence(r_deviceContext.device, &fenceInfo, nullptr,
-					  &r_frameContext.inFlightFences[i]) != VK_SUCCESS)
+			VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .flags = VK_FENCE_CREATE_SIGNALED_BIT};
+			if (vkCreateFence(r_deviceContext.device, &fenceInfo, nullptr, &r_frameContext.inFlightFences[i]) != VK_SUCCESS)
 			{
 				clz::log::error("vulkan could not create fence");
 				return false;
@@ -56,8 +52,8 @@ namespace clz::renderer
 		{
 			VkSemaphoreCreateInfo semaphoreInfo = {};
 			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			if (vkCreateSemaphore(r_deviceContext.device, &semaphoreInfo, nullptr,
-					      &r_frameContext.presentReadySemaphores[i]) != VK_SUCCESS)
+			if (vkCreateSemaphore(r_deviceContext.device, &semaphoreInfo, nullptr, &r_frameContext.presentReadySemaphores[i]) !=
+			    VK_SUCCESS)
 			{
 				clz::log::error("vulkan Could not create semaphores");
 				return false;
@@ -67,7 +63,7 @@ namespace clz::renderer
 		clz::log::info("created All semaphores and fences");
 		return true;
 	}
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {

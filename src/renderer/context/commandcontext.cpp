@@ -6,15 +6,15 @@
 
 #include "renderer/context/commandcontext.hpp"
 #include "core/logs.hpp"
-#include <vulkan/vulkan.h>
 #include "renderer/vk_types.hpp"
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
 	bool createCommandPool();
 	bool createCommandBuffers();
 	void destroyCommandPool();
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -43,8 +43,7 @@ namespace clz::renderer
 		commandPoolInfo.queueFamilyIndex = r_deviceContext.graphicsFamily.value();
 		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		if (vkCreateCommandPool(r_deviceContext.device, &commandPoolInfo, nullptr,
-					&r_commandContext.commandPool) != VK_SUCCESS)
+		if (vkCreateCommandPool(r_deviceContext.device, &commandPoolInfo, nullptr, &r_commandContext.commandPool) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan could not create command pool :(");
 			return false;
@@ -64,8 +63,7 @@ namespace clz::renderer
 
 		r_commandContext.commandBuffer.resize((r_FRAMES_IN_FLIGHT));
 
-		if (vkAllocateCommandBuffers(r_deviceContext.device, &allocateInfo,
-					     r_commandContext.commandBuffer.data()) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(r_deviceContext.device, &allocateInfo, r_commandContext.commandBuffer.data()) != VK_SUCCESS)
 		{
 			clz::log::error("Vulkan failed to allocate command buffers");
 			return false;
@@ -75,7 +73,7 @@ namespace clz::renderer
 
 		return true;
 	}
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {

@@ -31,24 +31,19 @@ namespace clz::renderer
 		return true;
 	}
 
-	bool createShaderModules(PipelineContext& rPipelineContext,
-				const std::string& vertexShaderLocation,
-				const std::string& fragmentShaderLocation)
+	bool createShaderModules(PipelineContext& rPipelineContext, const std::string& vertexShaderLocation,
+				 const std::string& fragmentShaderLocation)
 	{
 		// Loading Shaders
-		std::ifstream vertex_file(vertexShaderLocation,
-					  std::ios::ate | std::ios::binary);
-		std::ifstream frag_file(std::string(fragmentShaderLocation),
-					std::ios::ate | std::ios::binary);
+		std::ifstream vertex_file(vertexShaderLocation, std::ios::ate | std::ios::binary);
+		std::ifstream frag_file(std::string(fragmentShaderLocation), std::ios::ate | std::ios::binary);
 		if (!vertex_file)
 		{
-			clz::log::error("unable to load file: " +
-					std::string(vertexShaderLocation));
+			clz::log::error("unable to load file: " + std::string(vertexShaderLocation));
 		}
 		if (!frag_file)
 		{
-			clz::log::error("unable to load file: " +
-					std::string(fragmentShaderLocation));
+			clz::log::error("unable to load file: " + std::string(fragmentShaderLocation));
 		}
 
 		auto vertexFileSize = vertex_file.tellg();
@@ -69,11 +64,9 @@ namespace clz::renderer
 		vertInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		vertInfo.codeSize = vertexShaderCode.size();
 		vertInfo.pCode = reinterpret_cast<const uint32_t*>(vertexShaderCode.data());
-		if (vkCreateShaderModule(r_deviceContext.device, &vertInfo, nullptr,
-					 &r_pipelineContext.vertexShader) != VK_SUCCESS)
+		if (vkCreateShaderModule(r_deviceContext.device, &vertInfo, nullptr, &r_pipelineContext.vertexShader) != VK_SUCCESS)
 		{
-			clz::log::error("Could not create vertex shader module" +
-					std::string(vertexShaderLocation));
+			clz::log::error("Could not create vertex shader module" + std::string(vertexShaderLocation));
 
 			return false;
 		}
@@ -82,26 +75,21 @@ namespace clz::renderer
 		fragInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		fragInfo.codeSize = fragShaderCode.size();
 		fragInfo.pCode = reinterpret_cast<const uint32_t*>(fragShaderCode.data());
-		if (vkCreateShaderModule(r_deviceContext.device, &fragInfo, nullptr,
-					 &r_pipelineContext.fragmentShader) != VK_SUCCESS)
+		if (vkCreateShaderModule(r_deviceContext.device, &fragInfo, nullptr, &r_pipelineContext.fragmentShader) != VK_SUCCESS)
 		{
-			clz::log::error("Could not create fragment shader module" +
-					std::string(fragmentShaderLocation));
+			clz::log::error("Could not create fragment shader module" + std::string(fragmentShaderLocation));
 
 			return false;
 		}
 
-		clz::log::info("created shader modules: " + std::string(vertexShaderLocation) +
-				" and " + std::string(fragmentShaderLocation));
+		clz::log::info("created shader modules: " + std::string(vertexShaderLocation) + " and " + std::string(fragmentShaderLocation));
 		return true;
 	}
 
 	bool createMainPipeline()
 	{
 		// Create shaders modules
-		auto shaderModuleResult =
-		    createShaderModules(r_pipelineContext, "shaders/triangle.vert.spirv",
-					"shaders/triangle.frag.spirv");
+		auto shaderModuleResult = createShaderModules(r_pipelineContext, "shaders/triangle.vert.spirv", "shaders/triangle.frag.spirv");
 		if (!shaderModuleResult) [[unlikely]]
 		{
 			clz::log::error("Could not create shader modules for main pipeline");
@@ -121,39 +109,29 @@ namespace clz::renderer
 		fragShaderStageInfo.module = r_pipelineContext.fragmentShader;
 		fragShaderStageInfo.pName = "main";
 
-		VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,
-								  fragShaderStageInfo};
+		VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
 		// Pipeline creation
 
-		std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
-							     VK_DYNAMIC_STATE_SCISSOR};
+		std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
 		VkPipelineDynamicStateCreateInfo dynamicState{};
 		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
-		std::array<VkVertexInputBindingDescription, 2> bindingDescriptions =
-		{
-			clz::renderer::VBuffer::getVertexBindingDescription(),
-			clz::renderer::UVBuffer::getUVBindingDescription()
-		};
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions =
-		{
-			clz::renderer::VBuffer::getVertexAttributeDescription(),
-			clz::renderer::UVBuffer::getUVAttributeDescription()
-		};
+		std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {clz::renderer::VBuffer::getVertexBindingDescription(),
+										      clz::renderer::UVBuffer::getUVBindingDescription()};
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {clz::renderer::VBuffer::getVertexAttributeDescription(),
+											  clz::renderer::UVBuffer::getUVAttributeDescription()};
 
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.vertexBindingDescriptionCount = bindingDescriptions.size(),
-			.pVertexBindingDescriptions = bindingDescriptions.data(),
-			.vertexAttributeDescriptionCount = attributeDescriptions.size(),
-			.pVertexAttributeDescriptions = attributeDescriptions.data()};
-
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+									.pNext = nullptr,
+									.flags = 0,
+									.vertexBindingDescriptionCount = bindingDescriptions.size(),
+									.pVertexBindingDescriptions = bindingDescriptions.data(),
+									.vertexAttributeDescriptionCount = attributeDescriptions.size(),
+									.pVertexAttributeDescriptions = attributeDescriptions.data()};
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -184,7 +162,7 @@ namespace clz::renderer
 		// rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.cullMode = VK_CULL_MODE_NONE;
-		//rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		// rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.lineWidth = 1.0f;
 
@@ -193,8 +171,7 @@ namespace clz::renderer
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
-		depthStencil.sType =
-		    VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
 		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
@@ -203,8 +180,7 @@ namespace clz::renderer
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.colorWriteMask =
-		    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-		    VK_COLOR_COMPONENT_A_BIT;
+		    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -212,7 +188,6 @@ namespace clz::renderer
 		colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
-
 
 		std::array<VkPushConstantRange, 2> pushConstantRange;
 		pushConstantRange[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -222,15 +197,14 @@ namespace clz::renderer
 		pushConstantRange[1].offset = sizeof(MainPC::vertexData);
 		pushConstantRange[1].size = sizeof(MainPC::fragmentData);
 
-
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pushConstantRangeCount = pushConstantRange.size();
 		pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data();
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &clz::renderer::r_descriptorSetLayout;
-		if (vkCreatePipelineLayout(r_deviceContext.device, &pipelineLayoutInfo, nullptr,
-					   &r_pipelineContext.layout) != VK_SUCCESS) [[unlikely]]
+		if (vkCreatePipelineLayout(r_deviceContext.device, &pipelineLayoutInfo, nullptr, &r_pipelineContext.layout) != VK_SUCCESS)
+		    [[unlikely]]
 		{
 			clz::log::error("vulkan could not create pipeline layout of main pipeline");
 			return false;
@@ -259,9 +233,8 @@ namespace clz::renderer
 		pipelineInfo.renderPass = VK_NULL_HANDLE;
 		pipelineInfo.subpass = 0;
 
-		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE, 1,
-					      &pipelineInfo, nullptr,
-					      &r_pipelineContext.pipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &r_pipelineContext.pipeline) !=
+		    VK_SUCCESS)
 		{
 			clz::log::error("vulkan Could not create pipeline");
 			return false;
@@ -271,7 +244,7 @@ namespace clz::renderer
 
 		return true;
 	}
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -285,10 +258,8 @@ namespace clz::renderer
 		vkDestroyPipeline(r_deviceContext.device, r_pipelineContext.pipeline, nullptr);
 		vkDestroyPipelineLayout(r_deviceContext.device, r_pipelineContext.layout, nullptr);
 
-		vkDestroyShaderModule(r_deviceContext.device, r_pipelineContext.vertexShader,
-				      nullptr);
-		vkDestroyShaderModule(r_deviceContext.device, r_pipelineContext.fragmentShader,
-				      nullptr);
+		vkDestroyShaderModule(r_deviceContext.device, r_pipelineContext.vertexShader, nullptr);
+		vkDestroyShaderModule(r_deviceContext.device, r_pipelineContext.fragmentShader, nullptr);
 
 		clz::log::info("destroyed main pipeline");
 	}

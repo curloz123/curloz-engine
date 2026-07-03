@@ -1,9 +1,9 @@
 #pragma once
 
-#include "vec3.hpp"
 #include "quat.hpp"
-#include <cmath>
+#include "vec3.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace clz::math
 {
@@ -18,10 +18,7 @@ namespace clz::math
 		const float cz = cosf(euler.z * 0.5f);
 		const float sz = sinf(euler.z * 0.5f);
 
-		return {cx * cy * cz + sx * sy * sz,
-				sx * cy * cz - cx * sy * sz,
-				cx * sy * cz + sx * cy * sz,
-				cx * cy * sz - sx * sy * cz};
+		return {cx * cy * cz + sx * sy * sz, sx * cy * cz - cx * sy * sz, cx * sy * cz + sx * cy * sz, cx * cy * sz - sx * sy * cz};
 	}
 
 	inline vec3 quatToEulerXYZ(const quat& q)
@@ -44,4 +41,4 @@ namespace clz::math
 
 		return euler;
 	}
-}
+} // namespace clz::math

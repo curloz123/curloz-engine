@@ -24,9 +24,8 @@ namespace clz::renderer
 	 * @param fragmentShaderLocation Location of fragment shader
 	 * @return true if successfully created, else calls clz::error and returns false
 	 */
-	bool createShaderModules(PipelineContext& rPipelineContext,
-				const std::string& vertexShaderLocation,
-				const std::string& fragmentShaderLocation);
+	bool createShaderModules(PipelineContext& rPipelineContext, const std::string& vertexShaderLocation,
+				 const std::string& fragmentShaderLocation);
 
 	/**
 	 * @brief Creates the main pipeline
@@ -34,7 +33,7 @@ namespace clz::renderer
 	 * else prints what error happened and continues
 	 * Defined in mainpipeline.cpp
 	 */
-	 bool createMainPipeline();
+	bool createMainPipeline();
 } // namespace clz::renderer
 
 namespace clz::renderer

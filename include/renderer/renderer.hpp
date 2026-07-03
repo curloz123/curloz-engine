@@ -10,7 +10,6 @@
 
 #pragma once
 
-// Public Functions
 namespace clz::renderer
 {
 	/**

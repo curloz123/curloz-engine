@@ -63,8 +63,7 @@ namespace clz::config
 	 * @param defaultVal Value returned if section or key is missing.
 	 * @return The string value or defaultVal.
 	 */
-	std::string getString(std::string_view section, std::string_view key,
-			      std::string_view defaultVal);
+	std::string getString(std::string_view section, std::string_view key, std::string_view defaultVal);
 
 	/**
 	 * @brief Returns application name

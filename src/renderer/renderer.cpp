@@ -8,16 +8,16 @@
 #include "renderer/renderer.hpp"
 #include "core/logs.hpp"
 #include "renderer/assets/modeldata.hpp"
+#include "renderer/camera/camera.hpp"
 #include "renderer/context/commandcontext.hpp"
 #include "renderer/context/devicecontext.hpp"
 #include "renderer/context/framecontext.hpp"
 #include "renderer/context/pipelinecontext.hpp"
 #include "renderer/context/swapchaincontext.hpp"
+#include "renderer/editor/editor.hpp"
 #include "renderer/mainloop.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/camera/camera.hpp"
-#include "renderer/editor/editor.hpp"
 #include <vector>
 
 namespace clz::renderer
@@ -60,11 +60,6 @@ namespace clz::renderer
 			clz::log::error("Could not initialize renderer");
 			return false;
 		}
-		if (!camera::initializeCameras())
-		{
-			clz::log::error("Could not initialize cameras");
-			return false;
-		}
 
 		clz::log::info("initialized all renderer context's");
 
@@ -77,8 +72,6 @@ namespace clz::renderer
 #endif
 
 		clz::log::info("Initialized renderer");
-
-
 
 		return true;
 	}
@@ -93,28 +86,21 @@ namespace clz::renderer
 			r_recreateSwapchain = false;
 		}
 		waitForGPU(r_frameContext.inFlightFences[r_currentFrame]);
-		acquireNextImage(r_frameContext.renderReadySemaphores[r_currentFrame],
-				 r_imageIndex);
+		acquireNextImage(r_frameContext.renderReadySemaphores[r_currentFrame], r_imageIndex);
 		if (r_recreateSwapchain) [[unlikely]]
 			return;
 		resetFence(r_frameContext.inFlightFences[r_currentFrame]);
 		startCommandBuffer(r_commandContext.commandBuffer[r_currentFrame]);
 		// Main loop part1 - end
 
-
-
 		// Main loop part2 - start
 		// Everything that's not defined in mainloop.hpp, shall go inside this function
 		recordCommandBuffer(r_commandContext.commandBuffer[r_currentFrame], r_imageIndex);
 		// Main loop part2 - end
 
-
-
 		// Main loop part3 - submit
-		submitCommandBuffer(r_commandContext.commandBuffer[r_currentFrame],
-				    r_frameContext.renderReadySemaphores[r_currentFrame],
-				    r_frameContext.presentReadySemaphores[r_imageIndex],
-				    r_frameContext.inFlightFences[r_currentFrame]);
+		submitCommandBuffer(r_commandContext.commandBuffer[r_currentFrame], r_frameContext.renderReadySemaphores[r_currentFrame],
+				    r_frameContext.presentReadySemaphores[r_imageIndex], r_frameContext.inFlightFences[r_currentFrame]);
 
 		present(r_frameContext.presentReadySemaphores[r_imageIndex],
 			r_imageIndex); // Internally can also r_recreateSwapchain = true

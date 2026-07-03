@@ -14,16 +14,16 @@
 #pragma once
 
 #include "componentstorage.hpp"
-#include "entity.hpp"
 #include "core/logs.hpp"
+#include "entitymanager.hpp"
 
 namespace clz::ecs
 {
 	/// @brief Flat array of all component storages, indexed by component ID.
-	inline std::vector<IComponentStorage*> ecs_componentStorages;
+	inline std::vector<IComponentStorage*> componentStorages;
 
 	/// @brief Auto-incrementing counter for assigning unique component IDs.
-	inline uint32_t ecs_componentCounter = 0;
+	inline uint32_t componentCounter = 0;
 
 } // namespace clz::ecs
 
@@ -40,7 +40,7 @@ namespace clz::ecs
 	 */
 	template <typename T> uint32_t componentID()
 	{
-		static uint32_t id = ecs_componentCounter++;
+		static uint32_t id = componentCounter++;
 		return id;
 	}
 
@@ -56,12 +56,12 @@ namespace clz::ecs
 	template <typename T> ComponentStorage<T>& getStorage()
 	{
 		auto id = componentID<T>();
-		if (id >= ecs_componentStorages.size())
+		if (id >= componentStorages.size())
 		{
-			ecs_componentStorages.resize(id + 1, nullptr);
-			ecs_componentStorages[id] = new ComponentStorage<T>;
+			componentStorages.resize(id + 1, nullptr);
+			componentStorages[id] = new ComponentStorage<T>;
 		}
-		return static_cast<ComponentStorage<T>&>(*ecs_componentStorages[id]);
+		return static_cast<ComponentStorage<T>&>(*componentStorages[id]);
 	}
 
 	/**
@@ -71,9 +71,9 @@ namespace clz::ecs
 	 */
 	inline void deleteAllComponents()
 	{
-		for (auto& storage : ecs_componentStorages)
+		for (auto& storage : componentStorages)
 			delete storage;
-		ecs_componentStorages.clear();
+		componentStorages.clear();
 	}
 
 	/**
@@ -134,7 +134,7 @@ namespace clz::ecs
 	 */
 	inline void removeAllComponentsForEntity(const entity e)
 	{
-		for (const auto& storage : ecs_componentStorages)
+		for (const auto& storage : componentStorages)
 			storage->removeEntityData(e);
 	}
 

@@ -6,8 +6,8 @@
 
 #include "renderer/shaderdata/bufferarray/uvbuffer.hpp"
 #include "core/logs.hpp"
-#include "renderer/utility/buffer.hpp"
 #include "math/vec2.hpp"
+#include "renderer/utility/buffer.hpp"
 #include "renderer/vk_types.hpp"
 #include <memory.h>
 
@@ -18,10 +18,9 @@ namespace clz::renderer::UVBuffer
 		return r_globalUVArray.size();
 	}
 
-	void registerUVs(const std::vector<clz::math::vec2> &UVs)
+	void registerUVs(const std::vector<clz::math::vec2>& UVs)
 	{
-		r_globalUVArray.insert(r_globalUVArray.end(),
-					UVs.begin(), UVs.end());
+		r_globalUVArray.insert(r_globalUVArray.end(), UVs.begin(), UVs.end());
 	}
 
 	bool submitUVBuffer()
@@ -35,9 +34,8 @@ namespace clz::renderer::UVBuffer
 		const VkDeviceSize bufferSize = sizeof(r_globalUVArray[0]) * r_globalUVArray.size();
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		if (!createBuffer(stagingBuffer, stagingBufferMemory, "Main UV staging buffer",
-				bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+		if (!createBuffer(stagingBuffer, stagingBufferMemory, "Main UV staging buffer", bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 		{
 			clz::log::error("Could not create main UV buffer");
 			return false;
@@ -48,16 +46,14 @@ namespace clz::renderer::UVBuffer
 		memcpy(data, r_globalUVArray.data(), bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		if (!createBuffer(r_uvBuffer, r_uvBufferMemory, "main UV buffer",
-			bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+		if (!createBuffer(r_uvBuffer, r_uvBufferMemory, "main UV buffer", bufferSize,
+				  VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
 		{
 			clz::log::error("Could not create main UV buffer");
 			return false;
 		}
 
-		if (!copyBuffer(stagingBuffer, r_uvBuffer, bufferSize,
-				"UV staging buffer", "UV main buffer"))
+		if (!copyBuffer(stagingBuffer, r_uvBuffer, bufferSize, "UV staging buffer", "UV main buffer"))
 		{
 			clz::log::error("Could not create main UV buffer");
 			return false;
@@ -68,7 +64,6 @@ namespace clz::renderer::UVBuffer
 
 		clz::log::info("Created main UV buffer");
 		return true;
-
 	}
 
 	void destroyUVBuffer()
@@ -78,7 +73,6 @@ namespace clz::renderer::UVBuffer
 		vkFreeMemory(device, r_uvBufferMemory, nullptr);
 		clz::log::info("Destroyed UV buffer");
 	}
-
 
 	VkVertexInputBindingDescription getUVBindingDescription()
 	{
@@ -101,4 +95,4 @@ namespace clz::renderer::UVBuffer
 		return attributeDescription;
 	}
 
-}
+} // namespace clz::renderer::UVBuffer
