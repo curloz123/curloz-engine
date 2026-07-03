@@ -3,7 +3,7 @@
  * @brief SIMD accelerated 4x4 matrix
  * @author curl0z
  *
- * Uses SSE4.1 and FMA instrinsics
+ * Uses SSE4.1 and FMA intrinsics
  */
 #pragma once
 
@@ -77,10 +77,10 @@ namespace clz::math
 		{
 			mat4 result;
 
-			result.r0 = _mm_add_ps(result.r0, mat.r0);
-			result.r1 = _mm_add_ps(result.r1, mat.r1);
-			result.r2 = _mm_add_ps(result.r2, mat.r2);
-			result.r3 = _mm_add_ps(result.r3, mat.r3);
+			result.r0 = _mm_add_ps(r0, mat.r0);
+			result.r1 = _mm_add_ps(r1, mat.r1);
+			result.r2 = _mm_add_ps(r2, mat.r2);
+			result.r3 = _mm_add_ps(r3, mat.r3);
 
 			return result;
 		}
