@@ -1,53 +1,96 @@
 {
-	"camera": [
-		{
-			"name": "game",
-			"maxvelocity": 5.0,
-			"sensitivity": 0.4,
-			"acceleration": 15.0,
-			"pitch": 0.0,
-			"yaw": -90.0,
-			"position": [0.0, 0.0, 0.0],
-			"localfront": [0.0, 0.0, -1.0],
-			"right": [1.0, 0.0, 0.0],
-			"fov": 45.0
-		},
-		{
-			"name": "editor",
-			"maxvelocity": 8.0,
-			"sensitivity": 0.4,
-			"acceleration": 20.0,
-			"pitch": 0.0,
-			"yaw": -90.0,
-			"position": [0.0, 0.0, 0.0],
-			"localfront": [0.0, 0.0, -1.0],
-			"right": [1.0, 0.0, 0.0],
-			"fov": 45.0
-		}
-	],
-
-	"entities": [
-		{
-			"name": "Backpack",
-			"transform": {
-				"position": [0, 0, -20],
-				"rotation": [1, 0, 0, 0],
-				"scale": [0.05, 0.05, 0.05]
-			},
-			"model": {
-				"path": "assets/models/backpack/scene.gltf"
-			}
-		},
-		{
-			"name": "helmet",
-			"transform": {
-				"position": [200, 0, -1],
-				"rotation": [1, 0, 0, 0],
-				"scale": [2.0, 2.0, 2.0]
-			},
-			"model": {
-				"path": "assets/models/helmet/scene.gltf"
-			}
-		}
-	]
+    "camera": [
+        {
+            "acceleration": 15.0,
+            "far": 100.0,
+            "fov": 35.0,
+            "id": 0,
+            "localfront": [
+                -0.8348566293716431,
+                -0.02355792559683323,
+                -0.5497412085533142
+            ],
+            "maxvelocity": 5.0,
+            "near": 0.10000000149011612,
+            "pitch": -1.3500595092773438,
+            "position": [
+                16.089237213134766,
+                16.38169288635254,
+                -8.763944625854492
+            ],
+            "sensitivity": 0.4000000059604645,
+            "yaw": -146.6356658935547
+        },
+        {
+            "acceleration": 20.0,
+            "far": 100.0,
+            "fov": 35.0,
+            "id": 1,
+            "localfront": [
+                -0.8348566293716431,
+                -0.02355792559683323,
+                -0.5497412085533142
+            ],
+            "maxvelocity": 8.0,
+            "near": 0.10000000149011612,
+            "pitch": -1.3500595092773438,
+            "position": [
+                16.089237213134766,
+                16.142383575439453,
+                -8.763944625854492
+            ],
+            "sensitivity": 0.4000000059604645,
+            "yaw": -146.6356658935547
+        }
+    ],
+    "entities": [
+        {
+            "model": {
+                "path": "assets/models/backpack/scene.gltf"
+            },
+            "name": "Backpack",
+            "transform": {
+                "position": [
+                    -4.768263339996338,
+                    16.00701904296875,
+                    -22.8941707611084
+                ],
+                "rotation": [
+                    0.9341217279434204,
+                    -0.3569546043872833,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    0.05000000074505806,
+                    0.0500006377696991,
+                    0.0007843798957765102
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/helmet/scene.gltf"
+            },
+            "name": "helmet",
+            "transform": {
+                "position": [
+                    9.72996711730957,
+                    7.296733856201172,
+                    -1.0
+                ],
+                "rotation": [
+                    0.7548390030860901,
+                    0.0389118529856205,
+                    -0.6545488238334656,
+                    -0.01642460934817791
+                ],
+                "scale": [
+                    2.785442352294922,
+                    2.9916493892669678,
+                    3.201347589492798
+                ]
+            }
+        }
+    ]
 }

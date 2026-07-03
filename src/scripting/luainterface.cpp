@@ -31,18 +31,17 @@ namespace clz::script
 
 	void log(const std::string& msg)
 	{
-		//clz::log::info(msg);
+		// clz::log::info(msg);
 	}
 
 	bool isKeyPressed(int key)
 	{
-		//return clz::window::isPressed(static_cast<clz::window::Key>(key));
+		// return clz::window::isPressed(static_cast<clz::window::Key>(key));
 	}
 
 	bool isKeyReleased(int key)
 	{
-		//return clz::window::isReleased(static_cast<clz::window::Key>(key));
+		// return clz::window::isReleased(static_cast<clz::window::Key>(key));
 	}
-
 
 } // namespace clz::script

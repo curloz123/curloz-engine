@@ -9,10 +9,10 @@
 #include "core/logs.hpp"
 #include "renderer/vk_types.hpp"
 #include <algorithm>
+#include <array>
 #include <config/config.hpp>
 #include <cstring>
 #include <vector>
-#include <array>
 #include <vulkan/vulkan.h>
 #include <window/vulkanhelper.hpp>
 
@@ -26,13 +26,9 @@ namespace clz::renderer
 
 	constexpr auto r_debugExtensionName = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 	constexpr auto r_validationLayers = "VK_LAYER_KHRONOS_validation";
-	constexpr std::array<const char*, 1> r_requiredDeviceExtensions =
-	{
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-	};
+	constexpr std::array<const char*, 1> r_requiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-}
-
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -107,16 +103,12 @@ namespace clz::renderer
 
 		for (auto requiredExtension : rRequiredExtensions)
 		{
-			const bool found = std::ranges::any_of(
-			    availableExtensions.begin(), availableExtensions.end(),
-			    [&](auto& availableExtension) {
-				    return std::strcmp(availableExtension.extensionName,
-						       requiredExtension) == 0;
-			    });
+			const bool found = std::ranges::any_of(availableExtensions.begin(), availableExtensions.end(), [&](auto& availableExtension) {
+				return std::strcmp(availableExtension.extensionName, requiredExtension) == 0;
+			});
 			if (!found)
 			{
-				clz::log::error("Extension: " + std::string(requiredExtension) +
-						" is not available");
+				clz::log::error("Extension: " + std::string(requiredExtension) + " is not available");
 				return false;
 			}
 		}
@@ -135,15 +127,12 @@ namespace clz::renderer
 
 		for (auto layer : rValidationLayers)
 		{
-			const bool found = std::ranges::any_of(
-			    availableLayers.begin(), availableLayers.end(),
-			    [&](auto availableLayer) {
-				    return std::strcmp(layer, availableLayer.layerName) == 0;
-			    });
+			const bool found = std::ranges::any_of(availableLayers.begin(), availableLayers.end(), [&](auto availableLayer) {
+				return std::strcmp(layer, availableLayer.layerName) == 0;
+			});
 			if (!found)
 			{
-				clz::log::error("Layer: " + std::string(layer) +
-						       " not available");
+				clz::log::error("Layer: " + std::string(layer) + " not available");
 				return false;
 			}
 		}
@@ -164,8 +153,7 @@ namespace clz::renderer
 		appInfo.pApplicationName = appName.c_str();
 		// Our application's version
 		appInfo.applicationVersion =
-		    VK_MAKE_VERSION(clz::config::getInt("engine", "version_major", 0),
-				    clz::config::getInt("engine", "version_minor", 0),
+		    VK_MAKE_VERSION(clz::config::getInt("engine", "version_major", 0), clz::config::getInt("engine", "version_minor", 0),
 				    clz::config::getInt("engine", "version_patch", 0));
 
 		// Our application's name
@@ -211,9 +199,7 @@ namespace clz::renderer
 			instanceInfo.ppEnabledLayerNames = nullptr;
 		}
 
-
-		if (vkCreateInstance(&instanceInfo, nullptr,
-				&r_deviceContext.instance)!= VK_SUCCESS)
+		if (vkCreateInstance(&instanceInfo, nullptr, &r_deviceContext.instance) != VK_SUCCESS)
 		{
 			clz::log::error("Vulkan could not create instance");
 			return false;
@@ -223,28 +209,21 @@ namespace clz::renderer
 		return true;
 	}
 
-
-
-
 	// Debug messenger and validation layers
-	VKAPI_ATTR VkBool32 VKAPI_CALL
-	printMessage(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		     VkDebugUtilsMessageTypeFlagsEXT messageType,
-		     const VkDebugUtilsMessengerCallbackDataEXT* pMessageData, void* pUserData)
+	VKAPI_ATTR VkBool32 VKAPI_CALL printMessage(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+						    VkDebugUtilsMessageTypeFlagsEXT messageType,
+						    const VkDebugUtilsMessengerCallbackDataEXT* pMessageData, void* pUserData)
 	{
 		switch (messageSeverity)
 		{
 		case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT):
-			clz::log::info("VULKAN VALIDATION LAYERS: " +
-				       std::string(pMessageData->pMessage));
+			clz::log::info("VULKAN VALIDATION LAYERS: " + std::string(pMessageData->pMessage));
 			break;
 		case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT):
-			clz::log::warn("VULKAN VALIDATION LAYERS: " +
-				       std::string(pMessageData->pMessage));
+			clz::log::warn("VULKAN VALIDATION LAYERS: " + std::string(pMessageData->pMessage));
 			break;
 		case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT):
-			clz::log::error("VULKAN VALIDATION LAYERS: " +
-					std::string(pMessageData->pMessage));
+			clz::log::error("VULKAN VALIDATION LAYERS: " + std::string(pMessageData->pMessage));
 			break;
 		default:
 			break;
@@ -256,27 +235,22 @@ namespace clz::renderer
 	{
 		VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
 		messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-						VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 						VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		messengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-					    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+		messengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 					    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		messengerInfo.pfnUserCallback = printMessage;
 		messengerInfo.pUserData = nullptr; // Optional
 
-		const auto createMessenger =
-		    reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
-			r_deviceContext.instance, "vkCreateDebugUtilsMessengerEXT"));
+		const auto createMessenger = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+		    vkGetInstanceProcAddr(r_deviceContext.instance, "vkCreateDebugUtilsMessengerEXT"));
 		if (!createMessenger)
 		{
-			clz::log::error(
-			    "renderer: Could not find the debug messenger creator function");
+			clz::log::error("renderer: Could not find the debug messenger creator function");
 			return false;
 		}
 
-		if (createMessenger(r_deviceContext.instance, &messengerInfo, nullptr,
-				    &r_deviceContext.debugMessenger) != VK_SUCCESS)
+		if (createMessenger(r_deviceContext.instance, &messengerInfo, nullptr, &r_deviceContext.debugMessenger) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan Could not create debug messenger");
 			return false;
@@ -288,9 +262,7 @@ namespace clz::renderer
 
 	bool createSurface()
 	{
-		if (auto surfaceResult = clz::window::createVulkanSurface(r_deviceContext.instance,
-									  r_deviceContext.surface);
-		    !surfaceResult)
+		if (auto surfaceResult = clz::window::createVulkanSurface(r_deviceContext.instance, r_deviceContext.surface); !surfaceResult)
 		{
 			clz::log::error("Vulkan could not create surface");
 			return false;
@@ -305,8 +277,7 @@ namespace clz::renderer
 		uint32_t numPhysicalDevices = 0;
 		vkEnumeratePhysicalDevices(r_deviceContext.instance, &numPhysicalDevices, nullptr);
 		std::vector<VkPhysicalDevice> physicalDevices(numPhysicalDevices);
-		vkEnumeratePhysicalDevices(r_deviceContext.instance, &numPhysicalDevices,
-					   physicalDevices.data());
+		vkEnumeratePhysicalDevices(r_deviceContext.instance, &numPhysicalDevices, physicalDevices.data());
 
 		uint32_t maxScore = 0;
 		for (const auto physicalDevice : physicalDevices)
@@ -315,27 +286,22 @@ namespace clz::renderer
 			vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 			if (deviceProperties.apiVersion < VK_API_VERSION_1_3)
 			{
-				clz::log::warn(
-				    "Physical Device: " + std::string(deviceProperties.deviceName) +
-				    ", Does not support vulkan 1.3");
+				clz::log::warn("Physical Device: " + std::string(deviceProperties.deviceName) + ", Does not support vulkan 1.3");
 				continue;
 			}
 
 			// check graphics support
 			uint32_t queueFamilyCount = 0;
-			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
-								 nullptr);
+			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 			std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
-								 queueFamilies.data());
+			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
 
 			bool graphicsSupport = false;
 			bool presentSupport = false;
 			for (int j = 0; j < queueFamilies.size(); ++j)
 			{
 				// Graphics Support
-				if (!graphicsSupport &&
-				    queueFamilies[j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				if (!graphicsSupport && queueFamilies[j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 				{
 					r_deviceContext.graphicsFamily = j;
 					graphicsSupport = true;
@@ -345,9 +311,7 @@ namespace clz::renderer
 				if (!presentSupport)
 				{
 					VkBool32 presentFamilyFound = VK_FALSE;
-					vkGetPhysicalDeviceSurfaceSupportKHR(
-					    physicalDevice, j, r_deviceContext.surface,
-					    &presentFamilyFound);
+					vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, j, r_deviceContext.surface, &presentFamilyFound);
 					if (presentFamilyFound == VK_TRUE)
 					{
 						r_deviceContext.presentFamily = j;
@@ -360,8 +324,7 @@ namespace clz::renderer
 
 			if (!graphicsSupport || !presentSupport)
 			{
-				clz::log::warn("GPU: " + std::string(deviceProperties.deviceName) +
-					       "is not suitable");
+				clz::log::warn("GPU: " + std::string(deviceProperties.deviceName) + "is not suitable");
 				continue;
 			}
 
@@ -384,7 +347,7 @@ namespace clz::renderer
 			}
 		}
 
-		if (r_deviceContext.physicalDevice== VK_NULL_HANDLE)
+		if (r_deviceContext.physicalDevice == VK_NULL_HANDLE)
 		{
 			clz::log::error("No Suitable GPU found");
 			return false;
@@ -408,25 +371,20 @@ namespace clz::renderer
 	bool checkDeviceExtensions()
 	{
 		uint32_t deviceExtensionCount = 0;
-		vkEnumerateDeviceExtensionProperties(r_deviceContext.physicalDevice, nullptr,
-						     &deviceExtensionCount, nullptr);
+		vkEnumerateDeviceExtensionProperties(r_deviceContext.physicalDevice, nullptr, &deviceExtensionCount, nullptr);
 		std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
-		vkEnumerateDeviceExtensionProperties(r_deviceContext.physicalDevice, nullptr,
-						     &deviceExtensionCount,
+		vkEnumerateDeviceExtensionProperties(r_deviceContext.physicalDevice, nullptr, &deviceExtensionCount,
 						     availableDeviceExtensions.data());
 
 		for (auto requiredDeviceExtension : r_requiredDeviceExtensions)
 		{
-			const bool found = std::ranges::any_of(
-				availableDeviceExtensions, [&](auto availableExtension) {
-				    return std::strcmp(requiredDeviceExtension,
-							availableExtension.extensionName) == 0;
-			    });
+			const bool found = std::ranges::any_of(availableDeviceExtensions, [&](auto availableExtension) {
+				return std::strcmp(requiredDeviceExtension, availableExtension.extensionName) == 0;
+			});
 
 			if (!found)
 			{
-				clz::log::error("required vulkan device extension: " +
-						std::string(requiredDeviceExtension) +
+				clz::log::error("required vulkan device extension: " + std::string(requiredDeviceExtension) +
 						" is not supported by the selected GPU");
 				return false;
 			}
@@ -482,7 +440,6 @@ namespace clz::renderer
 		descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
 		descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
 
-
 		// Vulkan 1.3 device Features — enable dynamic rendering
 		VkPhysicalDeviceVulkan13Features features13 = {};
 		features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -493,37 +450,32 @@ namespace clz::renderer
 		// Normal device features
 		VkPhysicalDeviceFeatures2 deviceFeatures = {};
 		deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		deviceFeatures.pNext = &features13;	// chain features 13
+		deviceFeatures.pNext = &features13; // chain features 13
 		deviceFeatures.features.samplerAnisotropy = VK_TRUE;
 
 		VkDeviceCreateInfo deviceInfo = {};
 		deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceInfo.pNext = &deviceFeatures;	// chain all required features
+		deviceInfo.pNext = &deviceFeatures; // chain all required features
 		deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
 		deviceInfo.pQueueCreateInfos = queueInfos.data();
-		deviceInfo.enabledExtensionCount =
-		    static_cast<uint32_t>(r_requiredDeviceExtensions.size());
+		deviceInfo.enabledExtensionCount = static_cast<uint32_t>(r_requiredDeviceExtensions.size());
 		deviceInfo.ppEnabledExtensionNames = r_requiredDeviceExtensions.data();
 
-		if (vkCreateDevice(r_deviceContext.physicalDevice, &deviceInfo, nullptr,
-				   &r_deviceContext.device) != VK_SUCCESS)
+		if (vkCreateDevice(r_deviceContext.physicalDevice, &deviceInfo, nullptr, &r_deviceContext.device) != VK_SUCCESS)
 		{
 			clz::log::error("Failed to create renderer's logical device");
 			return false;
 		}
 		clz::log::info("created vulkan logical device");
 
-		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.graphicsFamily.value(), 0,
-				 &r_deviceContext.graphicsQueue);
-		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.presentFamily.value(), 0,
-				 &r_deviceContext.presentQueue);
+		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.graphicsFamily.value(), 0, &r_deviceContext.graphicsQueue);
+		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.presentFamily.value(), 0, &r_deviceContext.presentQueue);
 
 		clz::log::info("created logical device");
 
 		return true;
 	}
-}
-
+} // namespace clz::renderer
 
 // Destroyers
 namespace clz::renderer
@@ -546,13 +498,11 @@ namespace clz::renderer
 
 	void destroyDebugMessenger()
 	{
-		const auto destroyMessenger =
-		    reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
-			r_deviceContext.instance, "vkDestroyDebugUtilsMessengerEXT"));
+		const auto destroyMessenger = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+		    vkGetInstanceProcAddr(r_deviceContext.instance, "vkDestroyDebugUtilsMessengerEXT"));
 		if (destroyMessenger != nullptr)
 		{
-			destroyMessenger(r_deviceContext.instance, r_deviceContext.debugMessenger,
-					 nullptr);
+			destroyMessenger(r_deviceContext.instance, r_deviceContext.debugMessenger, nullptr);
 		}
 		clz::log::info("Destroyed debug messenger");
 	}

@@ -10,4 +10,4 @@ namespace clz::renderer::camera
 
 	math::mat4 getViewMatrix();
 	math::mat4 getProjectionMatrix();
-}
+} // namespace clz::renderer::camera

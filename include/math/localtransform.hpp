@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vec3.hpp"
 #include "quat.hpp"
+#include "vec3.hpp"
 #include <cmath>
 
 namespace clz::math
@@ -21,14 +21,9 @@ namespace clz::math
 		const float half = rad * 0.5f;
 		const float s = std::sin(half);
 
-		const quat delta(
-			std::cos(half),
-			axis.x * s,
-			axis.y * s,
-			axis.z * s);
+		const quat delta(std::cos(half), axis.x * s, axis.y * s, axis.z * s);
 
 		return q * delta;
 	}
-
 
 } // namespace clz::math

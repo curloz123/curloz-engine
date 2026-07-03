@@ -24,13 +24,11 @@ namespace clz::renderer::camera
 	 */
 	void processKeyBoardInput(const CameraID id);
 
-
 	/**
 	 * @brief Computer forward and right vectors for camera @p id
 	 * @param id camera id
 	 */
 	void updateCameraVectors(const CameraID id);
-
 
 	/**
 	 * @brief Updates pitch/yaw for camera @p id from raw cursor position.
@@ -47,4 +45,4 @@ namespace clz::renderer::camera
 	 */
 	void processMouseScroll(const CameraID id, const float yOffset);
 
-}
+} // namespace clz::renderer::camera

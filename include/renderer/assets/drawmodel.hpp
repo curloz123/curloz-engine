@@ -20,4 +20,4 @@ namespace clz::renderer
 	 * @param commandBuffer Command buffer currently recording draw commands.
 	 */
 	void drawEntitiesMainPipeline(VkCommandBuffer commandBuffer);
-}
+} // namespace clz::renderer

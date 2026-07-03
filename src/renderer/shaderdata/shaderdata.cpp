@@ -1,8 +1,8 @@
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "core/logs.hpp"
 #include "renderer/shaderdata/bufferarray/indexbuffer.hpp"
-#include "renderer/shaderdata/bufferarray/vertexbuffer.hpp"
 #include "renderer/shaderdata/bufferarray/uvbuffer.hpp"
+#include "renderer/shaderdata/bufferarray/vertexbuffer.hpp"
 #include "renderer/shaderdata/descriptor/descriptor.hpp"
 #include "renderer/shaderdata/descriptor/texture.hpp"
 
@@ -46,7 +46,7 @@ namespace clz::renderer
 			clz::log::error("Could not create textures");
 			return false;
 		}
-		
+
 		if (!createDescriptors())
 		{
 			clz::log::error("Could not intiialize descrtiptors");
@@ -68,4 +68,4 @@ namespace clz::renderer
 		IBuffer::destroyIndexBuffer();
 		VBuffer::destroyVertexBuffer();
 	}
-}
+} // namespace clz::renderer

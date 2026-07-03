@@ -19,4 +19,4 @@ namespace clz::editor
 	 * @brief Draws the 3d transform gizmo
 	 */
 	void drawGizmo();
-}
+} // namespace clz::editor

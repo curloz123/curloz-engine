@@ -21,7 +21,9 @@ namespace clz::math
 		float x, y, z;
 
 		/// @brief Initializes all components to zero.
-		vec3() : x(0.0f), y(0.0f), z(0.0f) {}
+		vec3() : x(0.0f), y(0.0f), z(0.0f)
+		{
+		}
 
 		/**
 		 * @brief Constructs a vec3 from three float values.
@@ -29,15 +31,18 @@ namespace clz::math
 		 * @param y Y component.
 		 * @param z Z component.
 		 */
-		vec3(const float x, const float y, const float z) : x(x), y(y), z(z) {}
+		vec3(const float x, const float y, const float z) : x(x), y(y), z(z)
+		{
+		}
 
 		/**
 		 * @brief Constructs a vec3
 		 * with x y z all set to a single float value
 		 * @param value Initialize x,y,z to this value
 		 */
-		explicit vec3(const float value) : x(value), y(value), z(value) {}
-
+		explicit vec3(const float value) : x(value), y(value), z(value)
+		{
+		}
 
 		/**
 		 * @brief Constructs a vec3 directly from a __m128 register.
@@ -56,7 +61,7 @@ namespace clz::math
 		 * @brief Operator overloaded addition of current to rhs vector
 		 * @param rhs Source SSE register.
 		 */
-		void operator += (const vec3& rhs)
+		void operator+=(const vec3& rhs)
 		{
 			x += rhs.x;
 			y += rhs.y;
@@ -66,7 +71,7 @@ namespace clz::math
 		 * @brief Operator overloaded subtraction of current to rhs vector
 		 * @param rhs Source SSE register.
 		 */
-		void operator -= (const vec3& rhs)
+		void operator-=(const vec3& rhs)
 		{
 			x -= rhs.x;
 			y -= rhs.y;
@@ -185,12 +190,7 @@ namespace clz::math
 	 */
 	inline vec3 cross(const vec3& lhs, const vec3& rhs)
 	{
-		return
-		{
-			lhs.y * rhs.z - lhs.z * rhs.y,
-			lhs.z * rhs.x - lhs.x * rhs.z,
-			lhs.x * rhs.y - lhs.y * rhs.x
-		};
+		return {lhs.y * rhs.z - lhs.z * rhs.y, lhs.z * rhs.x - lhs.x * rhs.z, lhs.x * rhs.y - lhs.y * rhs.x};
 	}
 
 	/**
@@ -204,7 +204,6 @@ namespace clz::math
 		const __m128 lSquare = _mm_dp_ps(vec, vec, 0x71);
 		return _mm_cvtss_f32(_mm_sqrt_ss(lSquare));
 	}
-
 
 	/**
 	 * @brief Computes the square length (magnitude) of a vec3.
@@ -241,14 +240,15 @@ namespace clz::math
 	 */
 	struct Axis
 	{
-		union
-		{
+		union {
 			vec3 vector;
-			struct { float x, y, z; };
+			struct
+			{
+				float x, y, z;
+			};
 		};
 
-		Axis(const float a, const float b, const float c)
-		: vector(vec3(a, b, c))
+		Axis(const float a, const float b, const float c) : vector(vec3(a, b, c))
 		{
 		}
 

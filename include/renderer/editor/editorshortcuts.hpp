@@ -21,4 +21,4 @@ namespace clz::editor
 		}
 	}
 
-}
+} // namespace clz::editor

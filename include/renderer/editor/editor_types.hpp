@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "scene/entity/entitymanager.hpp"
 #include <imgui.h>
-#include "ecs/entitymanager.hpp"
 #include <optional>
+#include <vulkan/vulkan.h>
 
 namespace clz::editor
 {
@@ -18,4 +18,4 @@ namespace clz::editor
 	inline ImFont* fontSansBold;
 	inline ImFont* fontMono;
 	inline ImFont* fontMonoBold;
-}
+} // namespace clz::editor

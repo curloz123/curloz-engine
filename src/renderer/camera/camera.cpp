@@ -5,9 +5,9 @@
  */
 
 #include "renderer/camera/camera.hpp"
+#include "core/logs.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/camera/camerafunctions.hpp"
-#include "core/logs.hpp"
 
 namespace clz::renderer::camera
 {
@@ -21,18 +21,16 @@ namespace clz::renderer::camera
 			Pitch[id] = Pitch[previousActiveCamera];
 			Position[id] = Position[previousActiveCamera];
 			localFront[id] = localFront[previousActiveCamera];
-			Right[id] = Right[previousActiveCamera];
+			localRight[id] = localRight[previousActiveCamera];
 			LastX[id] = LastX[previousActiveCamera];
 			LastY[id] = LastY[previousActiveCamera];
 			Fov[id] = Fov[previousActiveCamera];
-			FirstTime[id] = true;
-			FovChanged[id] = true;
-
 		}
 #endif
 
+		FirstTime[id] = true;
+		FovChanged[id] = true;
 		activeCamera = id;
-
 	}
 
 	bool initializeCameras()
@@ -64,4 +62,4 @@ namespace clz::renderer::camera
 		processMouseInput(id, xPos, yPos);
 		processMouseScroll(id, scroll);
 	}
-}
+} // namespace clz::renderer::camera

@@ -44,7 +44,7 @@ namespace clz::renderer
 	 * else returns false and calls clz::error
 	 */
 	bool createSyncObjects();
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {

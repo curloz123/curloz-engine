@@ -89,4 +89,4 @@ namespace clz::input
 		F11 = GLFW_KEY_F11,
 		F12 = GLFW_KEY_F12,
 	};
-}
+} // namespace clz::input

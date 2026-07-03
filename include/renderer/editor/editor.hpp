@@ -30,4 +30,4 @@ namespace clz::editor
 
 	/// @brief Shuts down ImGui backends, destroys context and descriptor pool.
 	void shutdown();
-}
+} // namespace clz::editor

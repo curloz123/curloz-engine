@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <string>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -22,9 +22,8 @@ namespace clz::renderer
 	 * @param properties Buffer properties
 	 * @return True if creation was successful, false if not
 	 */
-	bool createBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory,
-			const std::string& bufferName, VkDeviceSize size,
-			VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+	bool createBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory, const std::string& bufferName, VkDeviceSize size, VkBufferUsageFlags usage,
+			  VkMemoryPropertyFlags properties);
 
 	/**
 	 * @brief Copies buffer from src to dst
@@ -36,6 +35,6 @@ namespace clz::renderer
 	 * @param dstBufferName Dst buffer name, required for debugging purposes
 	 * @return True if creation was successful, false if not
 	 */
-	bool copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size,
-		const std::string& srcBufferName, const std::string& dstBufferName);
-}
+	bool copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const std::string& srcBufferName,
+			const std::string& dstBufferName);
+} // namespace clz::renderer

@@ -6,29 +6,27 @@
 
 #define JSON_HAS_STATIC_RTTI 0
 #define JSON_NOEXCEPTION
-#include <nlohmann/json.hpp>
 #include "renderer/camera/camerafunctions.hpp"
-#include <fstream>
-#include "window/inputmanager.hpp"
-#include "math/angle.hpp"
-#include "core/logs.hpp"
 #include "core/enginestate.hpp"
+#include "core/logs.hpp"
 #include "core/time.hpp"
+#include "math/angle.hpp"
+#include "window/inputmanager.hpp"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 namespace clz::renderer::camera
 {
 	bool loadCamera(const std::string& name, const CameraID id)
 	{
-		if (const std::filesystem::path file = "config/scene.json";
-			!std::filesystem::exists(file))
+		if (const std::filesystem::path file = "config/scene.json"; !std::filesystem::exists(file))
 		{
 			clz::log::error("No file named 'scene.json' found in config directory");
 			return false;
 		}
 
 		std::ifstream file("config/scene.json");
-		const nlohmann::json data = nlohmann::json::parse(file,
-					nullptr, false);
+		const nlohmann::json data = nlohmann::json::parse(file, nullptr, false);
 		if (data.is_discarded())
 		{
 			clz::log::error("Failed to load camera in json");
@@ -39,12 +37,12 @@ namespace clz::renderer::camera
 			if (cam["name"] != name)
 				continue;
 
-			MaxVelocity[id]  = cam["maxvelocity"].get<float>();
-			Sensitivity[id]  = cam["sensitivity"].get<float>();
+			MaxVelocity[id] = cam["maxvelocity"].get<float>();
+			Sensitivity[id] = cam["sensitivity"].get<float>();
 			Acceleration[id] = cam["acceleration"].get<float>();
-			Pitch[id]        = cam["pitch"].get<float>();
-			Yaw[id]          = cam["yaw"].get<float>();
-			Fov[id]           = cam["fov"].get<float>();
+			Pitch[id] = cam["pitch"].get<float>();
+			Yaw[id] = cam["yaw"].get<float>();
+			Fov[id] = cam["fov"].get<float>();
 
 			const auto& pos = cam["position"];
 			Position[id] = math::vec3(pos[0].get<float>(), pos[1].get<float>(), pos[2].get<float>());
@@ -53,7 +51,7 @@ namespace clz::renderer::camera
 			auto jFront = math::vec3(front[0].get<float>(), front[1].get<float>(), front[2].get<float>());
 			localFront[id] = math::normalize(jFront);
 
-			Right[id] = math::cross(localFront[id], WorldUp);
+			localRight[id] = math::cross(localFront[id], WorldUp);
 
 			return true;
 		}
@@ -67,12 +65,18 @@ namespace clz::renderer::camera
 		auto dir = math::vec3(0.0f, 0.0f, 0.0f);
 		const float dt = time::getDeltaTime();
 
-		if (window::isKeyPressed(input::Key::W)) dir += localFront[id];
-		if (window::isKeyPressed(input::Key::S)) dir -= localFront[id];
-		if (window::isKeyPressed(input::Key::A)) dir -= Right[id];
-		if (window::isKeyPressed(input::Key::D)) dir += Right[id];
-		if (window::isKeyPressed(input::Key::Space)) dir += WorldUp;
-		if (window::isKeyPressed(input::Key::LeftShift)) dir -= WorldUp;
+		if (window::isKeyPressed(input::Key::W))
+			dir += localFront[id];
+		if (window::isKeyPressed(input::Key::S))
+			dir -= localFront[id];
+		if (window::isKeyPressed(input::Key::A))
+			dir -= localRight[id];
+		if (window::isKeyPressed(input::Key::D))
+			dir += localRight[id];
+		if (window::isKeyPressed(input::Key::Space))
+			dir += WorldUp;
+		if (window::isKeyPressed(input::Key::LeftShift))
+			dir -= WorldUp;
 
 		if (math::getLengthSquared(dir) > 0.0f)
 		{
@@ -104,10 +108,8 @@ namespace clz::renderer::camera
 		localFront[id].z = std::sin(math::radians(Yaw[id])) * std::cos(math::radians(Pitch[id]));
 		localFront[id] = math::normalize(localFront[id]);
 
-		Right[id] = math::normalize(math::cross(localFront[id], WorldUp));
-
+		localRight[id] = math::normalize(math::cross(localFront[id], WorldUp));
 	}
-
 
 	void processMouseInput(const CameraID id, const float xPos, const float yPos)
 	{
@@ -118,8 +120,7 @@ namespace clz::renderer::camera
 			FirstTime[id] = false;
 		}
 
-		if (state::g_engineState == state::EngineState::Sandbox &&
-			!window::isMousePressed(input::Mouse::MouseRight))
+		if (state::g_engineState == state::EngineState::Sandbox && !window::isMousePressed(input::Mouse::MouseRight))
 		{
 			LastX[id] = xPos;
 			LastY[id] = yPos;
@@ -132,8 +133,7 @@ namespace clz::renderer::camera
 		LastX[id] = xPos;
 		LastY[id] = yPos;
 
-
-		Yaw[id]   += xOff * Sensitivity[id];
+		Yaw[id] += xOff * Sensitivity[id];
 		Pitch[id] += yOff * Sensitivity[id];
 		Pitch[id] = std::clamp(Pitch[id], -89.0f, 89.0f);
 
@@ -158,4 +158,4 @@ namespace clz::renderer::camera
 		}
 		FovChanged[id] = true;
 	}
-}
+} // namespace clz::renderer::camera

@@ -36,13 +36,13 @@ namespace clz::renderer
 	{
 		VkInstance instance = VK_NULL_HANDLE;			  ///< Vulkan instance
 		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE; ///< Debug messenger
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;	     ///< Selected physical device
-		VkDevice device = VK_NULL_HANDLE;	     ///< Logical device
-		VkSurfaceKHR surface = VK_NULL_HANDLE;	     ///< Window surface
-		VkQueue graphicsQueue = VK_NULL_HANDLE;	     ///< Graphics queue
-		VkQueue presentQueue = VK_NULL_HANDLE;	     ///< Presentation queue
-		std::optional<uint32_t> graphicsFamily = {}; ///< Graphics queue family index
-		std::optional<uint32_t> presentFamily = {};  ///< Present queue family index
+		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;	  ///< Selected physical device
+		VkDevice device = VK_NULL_HANDLE;			  ///< Logical device
+		VkSurfaceKHR surface = VK_NULL_HANDLE;			  ///< Window surface
+		VkQueue graphicsQueue = VK_NULL_HANDLE;			  ///< Graphics queue
+		VkQueue presentQueue = VK_NULL_HANDLE;			  ///< Presentation queue
+		std::optional<uint32_t> graphicsFamily = {};		  ///< Graphics queue family index
+		std::optional<uint32_t> presentFamily = {};		  ///< Present queue family index
 	};
 
 	struct GPUInfo
@@ -53,8 +53,8 @@ namespace clz::renderer
 
 	struct CommandContext
 	{
-		VkCommandPool commandPool = VK_NULL_HANDLE;	     ///< Command pool
-		std::vector<VkCommandBuffer> commandBuffer = {};     ///< Command buffers per image
+		VkCommandPool commandPool = VK_NULL_HANDLE;	 ///< Command pool
+		std::vector<VkCommandBuffer> commandBuffer = {}; ///< Command buffers per image
 	};
 
 	/**
@@ -70,11 +70,11 @@ namespace clz::renderer
 	struct SwapchainContext
 	{
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE; ///< Swapchain handle
-		VkSurfaceFormatKHR format;		///< Selected surface format
-		VkPresentModeKHR presentMode;		///< Presentation mode
-		VkExtent2D extent;			///< Swapchain resolution
-		std::vector<VkImage> images;		///< Swapchain images
-		std::vector<VkImageView> imageViews;	///< Image views for rendering
+		VkSurfaceFormatKHR format;		   ///< Selected surface format
+		VkPresentModeKHR presentMode;		   ///< Presentation mode
+		VkExtent2D extent;			   ///< Swapchain resolution
+		std::vector<VkImage> images;		   ///< Swapchain images
+		std::vector<VkImageView> imageViews;	   ///< Image views for rendering
 
 		VkImage depthImage = VK_NULL_HANDLE;
 		VkImageView depthImageView = VK_NULL_HANDLE;
@@ -115,9 +115,8 @@ namespace clz::renderer
 	 */
 	struct FrameContext
 	{
-		std::vector<VkSemaphore> renderReadySemaphores = {}; ///< Signals image acquisition
-		std::vector<VkSemaphore> presentReadySemaphores =
-		    {};					  ///< Signals rendering completion
-		std::vector<VkFence> inFlightFences = {}; ///< CPU-GPU synchronization fences
+		std::vector<VkSemaphore> renderReadySemaphores = {};  ///< Signals image acquisition
+		std::vector<VkSemaphore> presentReadySemaphores = {}; ///< Signals rendering completion
+		std::vector<VkFence> inFlightFences = {};	      ///< CPU-GPU synchronization fences
 	};
 } // namespace clz::renderer

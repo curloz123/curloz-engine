@@ -4,8 +4,7 @@
 
 namespace clz::audio
 {
-	std::expected<void, std::string> initializeOpenAL(ALCdevice*& rp_device,
-							  ALCcontext*& rp_context)
+	std::expected<void, std::string> initializeOpenAL(ALCdevice*& rp_device, ALCcontext*& rp_context)
 	{
 		rp_device = alcOpenDevice(nullptr);
 		if (!rp_device)

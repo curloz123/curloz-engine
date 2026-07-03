@@ -15,11 +15,10 @@
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "core/time.hpp"
-#include "ecs/ecs.hpp"
 #include "renderer/renderer.hpp"
+#include "scene/scene.hpp"
 #include "scripting/scripting.hpp"
 #include "window/window.hpp"
-#include "window/mouse.hpp"
 
 int main()
 {
@@ -31,36 +30,24 @@ int main()
 	clz::log::info("Welcome to " + clz::config::getAppName());
 	clz::config::printAppVersion();
 
-
-
 	// Start clock, Whole system uses it, so make sure to start it first
 	clz::time::init();
-
-
 
 	// Initialize Window. Should be the first subsystem to initialize
 	if (!clz::window::init()) [[unlikely]]
 		return 1;
 
-
-
 	// Initialize renderer
 	if (!clz::renderer::init()) [[unlikely]]
 		return 1;
 
-
-
 	// Initialize audio
 	clz::audio::init();
 
-
-
-	// Initialize entities
-	clz::ecs::init();
+	// Initialize Scene
+	clz::scene::loadScene();
 	if (clz::log::errorOccurred()) [[unlikely]]
 		return 1;
-
-
 
 	// Initialize script at last
 	clz::script::init();
@@ -75,8 +62,8 @@ int main()
 	}
 
 	// Shut down
+	clz::scene::saveScene();
 	clz::audio::shutdown();
-	clz::ecs::shutdown();
 	clz::renderer::shutdown();
 	clz::window::shutdown();
 	clz::log::info("Exiting successfully");

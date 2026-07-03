@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include "math/vec2.hpp"
+#include <GLFW/glfw3.h>
 
 namespace clz::window
 {
@@ -19,4 +19,4 @@ namespace clz::window
 	inline math::vec2 w_cursorPosition;
 	/// Cursor Scroll offset
 	inline float w_scrollOffset;
-}
+} // namespace clz::window

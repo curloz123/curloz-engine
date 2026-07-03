@@ -4,21 +4,20 @@
  * base-color material/texture resolution.
  */
 
-
+#include "renderer/assets/modeldata.hpp"
 #include "core/assert.hpp"
 #include "core/logs.hpp"
 #include "math/vec2.hpp"
-#include "renderer/assets/modeldata.hpp"
 #include "renderer/shaderdata/bufferarray/indexbuffer.hpp"
 #include "renderer/shaderdata/bufferarray/uvbuffer.hpp"
 #include "renderer/shaderdata/bufferarray/vertexbuffer.hpp"
 #include "renderer/shaderdata/descriptor/texture.hpp"
 
+#include "../../../include/scene/entity/components.hpp"
 #include <assimp/Importer.hpp>
+#include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <assimp/material.h>
-#include "ecs/components.hpp"
 
 namespace clz::renderer::Asset
 {
@@ -30,8 +29,8 @@ namespace clz::renderer::Asset
 	 * @param modelID ID of the model currently being loaded.
 	 * @param modelPath Path of the model file, used for log/diagnostic messages.
 	 */
-	void processNode(const aiNode* node, const aiMatrix4x4& parentTransform, const aiScene* scene,
-			const ModelID modelID, const std::string& modelPath);
+	void processNode(const aiNode* node, const aiMatrix4x4& parentTransform, const aiScene* scene, const ModelID modelID,
+			 const std::string& modelPath);
 
 	/**
 	 * @brief Registers a single Assimp mesh's vertices, indices, UVs, and material.
@@ -42,8 +41,8 @@ namespace clz::renderer::Asset
 	 * @param modelPath Path of the model file, used for log/diagnostic messages.
 	 * @return The ModelMeshID of the newly registered mesh.
 	 */
-	ModelMeshID processMesh(const aiMesh* mesh, const aiMatrix4x4& localTransform,
-			const aiNode* node, const aiScene* scene, const std::string& modelPath);
+	ModelMeshID processMesh(const aiMesh* mesh, const aiMatrix4x4& localTransform, const aiNode* node, const aiScene* scene,
+				const std::string& modelPath);
 
 	/**
 	 * @brief Resolves and registers the first texture of a given type on a material.
@@ -53,10 +52,9 @@ namespace clz::renderer::Asset
 	 * @param modelPath Path of the model file, used for log/diagnostic messages.
 	 * @return The TextureID of the resolved texture, or r_NULL_TEXTURE if none was found.
 	 */
-	TextureID processBaseMaterial(const aiMaterial* mat, aiTextureType type,
-			const aiNode* node,  const std::string& modelPath);
+	TextureID processBaseMaterial(const aiMaterial* mat, aiTextureType type, const aiNode* node, const std::string& modelPath);
 
-}
+} // namespace clz::renderer::Asset
 namespace clz::renderer::Asset
 {
 	ModelID loadModel(const std::string& modelPath)
@@ -69,10 +67,9 @@ namespace clz::renderer::Asset
 		++r_numModelCount;
 
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(modelPath.c_str(),
-		aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* scene = importer.ReadFile(modelPath.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
 
-		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
 			clz::log::error("Assimp error: " + std::string(importer.GetErrorString()));
 			clz::log::error("Could not load file" + modelPath);
@@ -106,8 +103,8 @@ namespace clz::renderer::Asset
 	 * @param modelID ID of the model currently being loaded.
 	 * @param modelPath Path of the model file, used for log/diagnostic messages.
 	 */
-	void processNode(const aiNode* node, const aiMatrix4x4& parentTransform, const aiScene* scene,
-			const ModelID modelID, const std::string& modelPath)
+	void processNode(const aiNode* node, const aiMatrix4x4& parentTransform, const aiScene* scene, const ModelID modelID,
+			 const std::string& modelPath)
 	{
 		const aiMatrix4x4 localTransform = parentTransform * node->mTransformation;
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
@@ -122,15 +119,14 @@ namespace clz::renderer::Asset
 		}
 	}
 
-
 	// Mesh Processor
-	ModelMeshID processMesh(const aiMesh* mesh, const aiMatrix4x4& localTransform, const aiNode* node,
-			const aiScene* scene, const std::string& modelPath)
+	ModelMeshID processMesh(const aiMesh* mesh, const aiMatrix4x4& localTransform, const aiNode* node, const aiScene* scene,
+				const std::string& modelPath)
 	{
 		uint32_t indexCount = NULL_MESH;
 		uint32_t firstIndex = NULL_MESH;
 		uint32_t baseVertex = NULL_MESH;
-		//ModelMaterialID texture = NULL_MATERIAL;
+		// ModelMaterialID texture = NULL_MATERIAL;
 
 		TextureID baseTextureID = r_NULL_TEXTURE;
 
@@ -144,7 +140,7 @@ namespace clz::renderer::Asset
 
 			// Process UVs
 			clz::CLZ_ASSERT(mesh->mTextureCoords[0] != nullptr, "Artist-san "
-						    "you forgot about uv coordinates of some vertex");
+									    "you forgot about uv coordinates of some vertex");
 			clz::math::vec2 vec;
 			vec.x = mesh->mTextureCoords[0][i].x;
 			vec.y = mesh->mTextureCoords[0][i].y;
@@ -153,22 +149,16 @@ namespace clz::renderer::Asset
 
 		if (vertices.empty())
 		{
-			clz::log::warn("Model: " + modelPath + "\n"
-					+ "Node: " + node->mName.C_Str() + "\n"
-					+ "Has no vertices");
+			clz::log::warn("Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "Has no vertices");
 		}
 		if (UVs.empty())
 		{
-			clz::log::warn("Model: " + modelPath + "\n"
-					+ "Node: " + node->mName.C_Str() + "\n"
-					+ "Has no UVs");
+			clz::log::warn("Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "Has no UVs");
 		}
 		if (UVs.size() != vertices.size())
 		{
 			CLZ_ASSERT(UVs.size() == vertices.size(),
-				"Model: " + modelPath + "\n"
-					+ "Node: " + node->mName.C_Str() + "\n"
-					+ "has irregular uv's and vertex's");
+				   "Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "has irregular uv's and vertex's");
 		}
 
 		// Process indices
@@ -183,9 +173,7 @@ namespace clz::renderer::Asset
 		}
 		if (indices.empty())
 		{
-			log::warn("Model: " + modelPath + "\n"
-					+ "Node: " + node->mName.C_Str() + "\n"
-					+ "Has no indices");
+			log::warn("Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "Has no indices");
 		}
 
 		// Register Only Vertex, UVs and indices for now
@@ -201,8 +189,6 @@ namespace clz::renderer::Asset
 			firstIndex = first;
 			indexCount = count;
 		}
-
-
 
 		// Part 2 - Register textures
 
@@ -226,11 +212,9 @@ namespace clz::renderer::Asset
 		mesh::meshLUT.material.emplace_back(mesh::baseMaterialLUT.texture.size() - 1);
 
 		return mesh::meshLUT.indexCount.size() - 1;
-
 	}
 
-	TextureID processBaseMaterial(const aiMaterial* mat, const aiTextureType type,
-			const aiNode* node,  const std::string& modelPath)
+	TextureID processBaseMaterial(const aiMaterial* mat, const aiTextureType type, const aiNode* node, const std::string& modelPath)
 	{
 		const std::string parentDir = modelPath.substr(0, modelPath.find_last_of('/'));
 		for (uint32_t i = 0; i < mat->GetTextureCount(type); ++i)
@@ -251,7 +235,6 @@ namespace clz::renderer::Asset
 
 		clz::log::warn("Model: " + modelPath + " has no base texture, retrying...");
 		return r_NULL_TEXTURE;
-
 	}
 
-}
+} // namespace clz::renderer::Asset

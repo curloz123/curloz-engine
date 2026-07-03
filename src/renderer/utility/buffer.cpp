@@ -14,9 +14,8 @@
 
 namespace clz::renderer
 {
-	bool createBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory,
-		const std::string& bufferName, const VkDeviceSize size,
-		const VkBufferUsageFlags usage, const VkMemoryPropertyFlags properties)
+	bool createBuffer(VkBuffer& buffer, VkDeviceMemory& bufferMemory, const std::string& bufferName, const VkDeviceSize size,
+			  const VkBufferUsageFlags usage, const VkMemoryPropertyFlags properties)
 	{
 		const auto& device = clz::renderer::r_deviceContext.device;
 		VkBufferCreateInfo bufferInfo{};
@@ -50,8 +49,8 @@ namespace clz::renderer
 		return true;
 	}
 
-	bool copyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size,
-		const std::string& srcBufferName, const std::string& dstBufferName)
+	bool copyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size, const std::string& srcBufferName,
+			const std::string& dstBufferName)
 	{
 		const auto& device = clz::renderer::r_deviceContext.device;
 		const auto& commandPool = clz::renderer::r_commandContext.commandPool;
@@ -67,7 +66,8 @@ namespace clz::renderer
 		if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) [[unlikely]]
 		{
 			clz::log::error("could not allocate single time command buffer while"
-					" copying buffer: " + srcBufferName + " to " + dstBufferName);
+					" copying buffer: " +
+					srcBufferName + " to " + dstBufferName);
 			clz::CLZ_ASSERT(false, "could not allocate single time command buffer");
 			return false;
 		}
@@ -92,7 +92,8 @@ namespace clz::renderer
 		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan could not"
-					" copy buffer: " + srcBufferName + " to " + dstBufferName);
+					" copy buffer: " +
+					srcBufferName + " to " + dstBufferName);
 			clz::CLZ_ASSERT(false, "could not copy src to dst buffer");
 			return false;
 		}
@@ -101,4 +102,4 @@ namespace clz::renderer
 
 		return true;
 	}
-}
+} // namespace clz::renderer

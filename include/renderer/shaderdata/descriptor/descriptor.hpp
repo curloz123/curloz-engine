@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -19,7 +19,7 @@ namespace clz::renderer
 
 	/// Descriptor sets
 	inline std::vector<VkDescriptorSet> r_descriptorSets;
-}
+} // namespace clz::renderer
 
 namespace clz::renderer
 {
@@ -51,4 +51,4 @@ namespace clz::renderer
 	 * @brief Destroys all descriptors
 	 */
 	void destroyDescriptors();
-}
+} // namespace clz::renderer

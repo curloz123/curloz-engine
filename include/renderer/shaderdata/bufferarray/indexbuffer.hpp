@@ -11,60 +11,59 @@
  */
 #pragma once
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <cstdint>
 
 namespace clz::renderer::IBuffer
 {
-        /**
-         * @brief CPU-side storage for all mesh indices.
-         *
-         * Indices are appended as models are loaded and later uploaded
-         * into a single GPU index buffer.
-         */
-        inline std::vector<uint32_t> r_globalIndexVector;
+	/**
+	 * @brief CPU-side storage for all mesh indices.
+	 *
+	 * Indices are appended as models are loaded and later uploaded
+	 * into a single GPU index buffer.
+	 */
+	inline std::vector<uint32_t> r_globalIndexVector;
 
-        /**
-         * @brief Device local Vulkan index buffer.
-         */
-        inline VkBuffer r_indexBuffer;
+	/**
+	 * @brief Device local Vulkan index buffer.
+	 */
+	inline VkBuffer r_indexBuffer;
 
-        /**
-         * @brief Memory backing the global index buffer.
-         */
-        inline VkDeviceMemory r_indexBufferMemory;
+	/**
+	 * @brief Memory backing the global index buffer.
+	 */
+	inline VkDeviceMemory r_indexBufferMemory;
 
-        /**
-         * @brief Registers mesh indices inside the global index array.
-         *
-         * Appends the supplied indices to the global index vector and returns
-         * the offset and number of inserted indices. The returned values should
-         * be stored by the mesh and later supplied to vkCmdDrawIndexed().
-         *
-         * @param indices Indices belonging to the mesh being loaded.
-         *
-         * @return Tuple containing:
-         *         - First index of the mesh inside the global index buffer.
-         *         - Number of indices belonging to the mesh.
-         */
-        std::tuple<uint32_t, uint32_t>
-        registerIndices(const std::vector<uint32_t>& indices);
+	/**
+	 * @brief Registers mesh indices inside the global index array.
+	 *
+	 * Appends the supplied indices to the global index vector and returns
+	 * the offset and number of inserted indices. The returned values should
+	 * be stored by the mesh and later supplied to vkCmdDrawIndexed().
+	 *
+	 * @param indices Indices belonging to the mesh being loaded.
+	 *
+	 * @return Tuple containing:
+	 *         - First index of the mesh inside the global index buffer.
+	 *         - Number of indices belonging to the mesh.
+	 */
+	std::tuple<uint32_t, uint32_t> registerIndices(const std::vector<uint32_t>& indices);
 
-        /**
-         * @brief Uploads the global index array to GPU memory.
-         *
-         * Creates a host-visible staging buffer, copies index data into it,
-         * and transfers the data into a device local index buffer suitable
-         * for indexed rendering.
-         *
-         * @return True if upload succeeded.
-         */
-        bool submitIndexBuffer();
+	/**
+	 * @brief Uploads the global index array to GPU memory.
+	 *
+	 * Creates a host-visible staging buffer, copies index data into it,
+	 * and transfers the data into a device local index buffer suitable
+	 * for indexed rendering.
+	 *
+	 * @return True if upload succeeded.
+	 */
+	bool submitIndexBuffer();
 
-        /**
-         * @brief Destroys GPU resources associated with the index buffer.
-         */
-        void destroyIndexBuffer();
-}
+	/**
+	 * @brief Destroys GPU resources associated with the index buffer.
+	 */
+	void destroyIndexBuffer();
+} // namespace clz::renderer::IBuffer

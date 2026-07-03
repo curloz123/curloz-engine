@@ -4,16 +4,17 @@
  * @brief Implementation of transform gizmo
  */
 #include "renderer/editor/gizmo.hpp"
-#include "ecs/components.hpp"
+#include "math/angle.hpp"
+#include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameramatrices.hpp"
 #include "renderer/editor/editor_types.hpp"
+#include "renderer/editor/inspector.hpp"
 #include "renderer/vk_types.hpp"
+#include "scene/entity/componentmanager.hpp"
+#include "scene/entity/components.hpp"
 #include <ImGuizmo.h>
 #include <imgui.h>
-#include "renderer/editor/inspector.hpp"
-#include "math/quateulerconv.hpp"
-#include "math/angle.hpp"
 
 namespace clz::editor
 {
@@ -41,32 +42,25 @@ namespace clz::editor
 
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
-		ImGuizmo::SetRect(0, 0, renderer::r_swapchainContext.extent.width,
-			renderer::r_swapchainContext.extent.height);
+		ImGuizmo::SetRect(0, 0, renderer::r_swapchainContext.extent.width, renderer::r_swapchainContext.extent.height);
 
 		ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 		switch (ActiveTransform)
 		{
-		case(TransformType::TRANSLATE):
+		case (TransformType::TRANSLATE):
 			operation = ImGuizmo::TRANSLATE;
 			break;
 
-		case(TransformType::SCALE):
+		case (TransformType::SCALE):
 			operation = ImGuizmo::SCALE;
 			break;
 
-		case(TransformType::ROTATE):
+		case (TransformType::ROTATE):
 			operation = ImGuizmo::ROTATE;
 			break;
 		}
 
-		ImGuizmo::Manipulate(
-		    view.data,
-		    proj.data,
-		    operation,
-		    ImGuizmo::LOCAL,
-		    model.data
-		);
+		ImGuizmo::Manipulate(view.data, proj.data, operation, ImGuizmo::LOCAL, model.data);
 
 		// decompose mat back into position/rotation/scale
 		float pos[3], rot[3], scale[3];
@@ -76,6 +70,5 @@ namespace clz::editor
 		transform.position = math::vec3(pos[0], pos[1], pos[2]);
 		transform.rotation = math::quatFromEuler(math::radians(eulerRot.rotation));
 		transform.scale = math::vec3(scale[0], scale[1], scale[2]);
-
 	}
-}
+} // namespace clz::editor

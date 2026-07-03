@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include "ecs/components.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include <filesystem>
-#include "shaderdata/shaderdata.hpp"
+#include "../scene/entity/components.hpp"
 #include "core/logs.hpp"
+#include "renderer/assets/modeldata.hpp"
+#include "shaderdata/shaderdata.hpp"
+#include <filesystem>
 
 namespace clz::renderer
 {
@@ -44,4 +44,4 @@ namespace clz::renderer
 		ecs::ModelComponent modelComponent(modelID);
 		return modelComponent;
 	}
-}
+} // namespace clz::renderer

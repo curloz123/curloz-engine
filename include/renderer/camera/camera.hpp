@@ -12,10 +12,6 @@ namespace clz::renderer::camera
 	/// @brief Switches the active camera and resets its mouse-delta tracking.
 	void setActiveCamera(const CameraID id);
 
-	/// @brief Loads game (and editor, if enabled) camera config at startup.
-	/// @return true if all required cameras loaded successfully.
-	bool initializeCameras();
-
 	/// @brief Drives input handling for the currently active camera.
 	void update(const float xPos, const float yPos, const float scroll);
 
@@ -36,4 +32,4 @@ namespace clz::renderer::camera
 	{
 		return Fov[activeCamera];
 	}
-}
+} // namespace clz::renderer::camera

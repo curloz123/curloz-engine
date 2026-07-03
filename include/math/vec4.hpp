@@ -42,8 +42,7 @@ namespace clz::math
 		 * @param z Z component.
 		 * @param w W component.
 		 */
-		vec4(const float x, const float y, const float z, const float w)
-		    : xmm(_mm_set_ps(w, z, y, x))
+		vec4(const float x, const float y, const float z, const float w) : xmm(_mm_set_ps(w, z, y, x))
 		{
 		}
 

@@ -1,14 +1,13 @@
 #pragma once
 
-#include <immintrin.h>
 #include <cmath>
+#include <immintrin.h>
 
 namespace clz::math
 {
 	struct quat
 	{
-		union
-		{
+		union {
 			__m128 xmm;
 			struct
 			{
@@ -21,12 +20,9 @@ namespace clz::math
 
 		quat() : w(1.0f), x(0.0f), y(0.0f), z(0.0f)
 		{
-
 		}
 
-		quat(const float w, const float x,
-			const float y, const float z) :
-				xmm(_mm_set_ps(z, y, x, w))
+		quat(const float w, const float x, const float y, const float z) : xmm(_mm_set_ps(z, y, x, w))
 		{
 		}
 
@@ -34,16 +30,11 @@ namespace clz::math
 		{
 		}
 
-		quat operator*(const quat &q) const
+		quat operator*(const quat& q) const
 		{
-			return {w*q.w - x*q.x - y*q.y - x*q.z,
-					w*q.x + x*q.w + y*q.z - z*q.y,
-					w*q.y - x*q.z + y*q.w + z*q.x,
-					w*q.z + x*q.y - y*q.x + z*q.w};
+			return {w * q.w - x * q.x - y * q.y - x * q.z, w * q.x + x * q.w + y * q.z - z * q.y, w * q.y - x * q.z + y * q.w + z * q.x,
+				w * q.z + x * q.y - y * q.x + z * q.w};
 		}
-
 	};
 
-
-
-}
+} // namespace clz::math

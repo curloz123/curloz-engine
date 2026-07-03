@@ -5,13 +5,13 @@
  */
 
 #include "renderer/editor/inspector.hpp"
-#include <imgui.h>
-#include "ecs/entitymanager.hpp"
-#include "ecs/components.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
-#include "renderer/editor/editor_types.hpp"
 #include "renderer/assets/modeldata.hpp"
+#include "renderer/editor/editor_types.hpp"
+#include "scene/entity/componentmanager.hpp"
+#include "scene/entity/components.hpp"
+#include <imgui.h>
 
 namespace clz::editor
 {
@@ -20,7 +20,7 @@ namespace clz::editor
 
 	/// @brief Renders the Model component section in the inspector, if present.
 	void showModelComponentHeader();
-}
+} // namespace clz::editor
 
 namespace clz::editor
 {
@@ -38,14 +38,12 @@ namespace clz::editor
 			showTransformComponentHeader();
 			ImGui::Separator();
 			showModelComponentHeader();
-
 		}
 		else
 		{
 			ImGui::TextDisabled("No entity selected");
 		}
 		ImGui::End();
-
 	}
 
 	void showTransformComponentHeader()
@@ -94,15 +92,12 @@ namespace clz::editor
 			return;
 		}
 
-		const renderer::ModelID id = ecs::getComponent<ecs::ModelComponent>(
-						currentSelectedEntity.value()).modelID;
+		const renderer::ModelID id = ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID;
 		const auto name = renderer::Asset::getModelName(id);
 
 		ImGui::PushFont(fontMono);
 		ImGui::Text("Model Path: %s", name.c_str());
 		ImGui::Separator();
 		ImGui::PopFont();
-
-
 	}
-}
+} // namespace clz::editor

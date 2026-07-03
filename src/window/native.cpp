@@ -27,8 +27,7 @@ namespace clz::window
 		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(),
-					    nullptr, nullptr);
+		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(), nullptr, nullptr);
 		if (!(*pWindow))
 		{
 			log::error("Could not create GLFW window");
@@ -53,8 +52,7 @@ namespace clz::window
 
 		if (glfwWindowShouldClose(*pWindow))
 		{
-			clz::state::setEngineState(clz::state::EngineState::Shutdown,
-						   "window poll events");
+			clz::state::setEngineState(clz::state::EngineState::Shutdown, "window poll events");
 		}
 	}
 } // namespace clz::window

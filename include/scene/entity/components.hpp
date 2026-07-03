@@ -24,21 +24,19 @@ namespace clz::ecs
 	 */
 	struct TransformComponent
 	{
-		clz::math::quat rotation = {1, 0, 0, 0};	///< Quaternion rotation
-		clz::math::vec3 position = {0, 0, 0};		///< World space position.
+		clz::math::quat rotation = {1, 0, 0, 0}; ///< Quaternion rotation
+		clz::math::vec3 position = {0, 0, 0};	 ///< World space position.
 		float pad0 = 0.0f;
-		clz::math::vec3 scale	 = {1, 1, 1};		///< Non-uniform scale.
+		clz::math::vec3 scale = {1, 1, 1}; ///< Non-uniform scale.
 		float pad1 = 0.0f;
 
-		TransformComponent() : rotation(math::quat(1.0f, 0.0f, 0.0f, 0.0f)),
-					position(math::vec3(0.0f, 0.0f, 0.0f)),
-					scale(math::vec3(1.0f, 1.0f, 1.0f))
+		TransformComponent()
+		    : rotation(math::quat(1.0f, 0.0f, 0.0f, 0.0f)), position(math::vec3(0.0f, 0.0f, 0.0f)), scale(math::vec3(1.0f, 1.0f, 1.0f))
 		{
 		}
 
-		TransformComponent(const clz::math::quat& rotation, const clz::math::vec3& position,
-				   const clz::math::vec3& scale): rotation(rotation),
-								position(position), scale(scale)
+		TransformComponent(const clz::math::quat& rotation, const clz::math::vec3& position, const clz::math::vec3& scale)
+		    : rotation(rotation), position(position), scale(scale)
 		{
 		}
 	};
@@ -54,13 +52,12 @@ namespace clz::ecs
 
 	/**
 	 * @brief Stores a renderable ModelID, that can be used to draw models
-	 * @note Dependancies -> TransformComponent
+	 * @note Dependencies -> TransformComponent
 	 */
 	struct ModelComponent
 	{
 		clz::renderer::ModelID modelID;
-		explicit ModelComponent(const clz::renderer::ModelID modelID)
-			: modelID(modelID)
+		explicit ModelComponent(const clz::renderer::ModelID modelID) : modelID(modelID)
 		{
 		}
 	};

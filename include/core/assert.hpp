@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cassert>
+#include <print>
 #include <source_location>
 #include <string_view>
-#include <print>
 
 namespace clz
 {
@@ -18,8 +18,7 @@ namespace clz
 		constexpr const char* green = "\033[32m";
 	} // namespace color
 
-	inline void CLZ_ASSERT(const bool condition, std::string_view msg,
-			       const std::source_location location = std::source_location::current())
+	inline void CLZ_ASSERT(const bool condition, std::string_view msg, const std::source_location location = std::source_location::current())
 	{
 #ifdef CLZ_DEBUG
 		if (condition)

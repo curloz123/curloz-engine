@@ -6,11 +6,11 @@
 
 #pragma once
 
+#include <filesystem>
 #include <limits>
 #include <stb_image.h>
-#include <vulkan/vulkan.h>
 #include <vector>
-#include <filesystem>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
@@ -26,7 +26,7 @@ namespace clz::renderer
 
 		std::vector<stbi_uc*> raw_data;
 	};
-}
+} // namespace clz::renderer
 namespace clz::renderer
 {
 	using TextureID = uint32_t;
@@ -34,10 +34,10 @@ namespace clz::renderer
 	constexpr uint32_t r_TEXTURE_DESCRIPTOR_BIND_POINT = 1;
 	constexpr uint32_t r_NULL_TEXTURE = std::numeric_limits<uint32_t>::max();
 
-	inline Texture		r_textures;
-	inline uint32_t		r_numRegisteredTextures = 0;
-	inline VkDeviceMemory	r_textureDeviceMemory;
-	inline VkSampler	r_sampler;
+	inline Texture r_textures;
+	inline uint32_t r_numRegisteredTextures = 0;
+	inline VkDeviceMemory r_textureDeviceMemory;
+	inline VkSampler r_sampler;
 
 	/**
 	 * @brief Initializes texture subsystem state.
@@ -83,4 +83,4 @@ namespace clz::renderer
 	 * @brief Destroys the global texture sampler.
 	 */
 	void destroySampler();
-}
+} // namespace clz::renderer

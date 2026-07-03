@@ -4,7 +4,7 @@
  * @brief Inspector window's functions
  * Inspector window shows all components
  * of current selected entity
-*/
+ */
 
 #pragma once
 
@@ -22,4 +22,4 @@ namespace clz::editor
 		SCALE,
 	};
 	inline TransformType ActiveTransform = TransformType::TRANSLATE;
-}
+} // namespace clz::editor

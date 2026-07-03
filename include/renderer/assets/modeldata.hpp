@@ -10,13 +10,11 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <limits>
-#include <vector>
-#include <string>
 #include "renderer/shaderdata/descriptor/texture.hpp"
-
-
+#include <limits>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace clz::renderer
 {
@@ -35,7 +33,6 @@ namespace clz::renderer
 	/// Sentinel value indicating no valid material/UV data was produced.
 	constexpr uint32_t NULL_MATERIAL = std::numeric_limits<ModelID>::max();
 
-
 	namespace mesh
 	{
 
@@ -49,7 +46,7 @@ namespace clz::renderer
 		 */
 		struct BaseMaterials
 		{
-			std::vector<TextureID> texture;   ///< Base-color texture used by this mesh.
+			std::vector<TextureID> texture; ///< Base-color texture used by this mesh.
 		};
 
 		/**
@@ -60,17 +57,17 @@ namespace clz::renderer
 		 */
 		struct Meshes
 		{
-			std::vector<uint32_t> indexCount;        ///< Number of indices belonging to this mesh.
-			std::vector<uint32_t> firstIndex;         ///< Offset of this mesh's first index in the global index buffer.
-			std::vector<int32_t> baseVertex;         ///< Base offset into the global vertex buffer for this mesh's vertices.
-			std::vector<ModelMaterialID> material;    ///< Index into BaseMaterials for this mesh's material.
+			std::vector<uint32_t> indexCount;      ///< Number of indices belonging to this mesh.
+			std::vector<uint32_t> firstIndex;      ///< Offset of this mesh's first index in the global index buffer.
+			std::vector<int32_t> baseVertex;       ///< Base offset into the global vertex buffer for this mesh's vertices.
+			std::vector<ModelMaterialID> material; ///< Index into BaseMaterials for this mesh's material.
 		};
 
 		/// Global Look up Table of base-color material data, one entry per mesh.
 		inline BaseMaterials baseMaterialLUT;
 		/// Global Look up Table of mesh draw data, one entry per mesh.
 		inline Meshes meshLUT;
-	}
+	} // namespace mesh
 
 	namespace Asset
 	{
@@ -111,6 +108,6 @@ namespace clz::renderer
 		 * @return name std::string name
 		 */
 		std::string getModelName(const ModelID id);
-	}
+	} // namespace Asset
 
-}
+} // namespace clz::renderer
