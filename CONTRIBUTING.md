@@ -30,11 +30,14 @@ Every subsystem's architecture and patterns
 | Window | @curl0z    | Everything under **src or include/window/** |
 | Renderer | @curl0z    | Everything under **src or include/renderer/** |
 | Math | @curl0z | Everything under **include/math/** |
-| ECS | @curl0z | Everything under **src or include/ecs/** |
-| Physics | unassigned |  |
-| Audio | unassigned | |
+| Scene / ECS | @curl0z | Everything under **src or include/scene/** (entity, camera) |
+| Config | @curl0z | Everything under **src or include/config/** |
+| Model Loading | @curl0z | Everything under **src or include/renderer/assets/** |
+| Editor / Gizmo | @curl0z | Everything under **src or include/renderer/editor/** |
 | Website | @harleen05 | index.html |
 | Documentation | @harleen05 | index.html |
+| Physics | unassigned |  |
+| Audio | unassigned | |
 
 **Do not touch code outside your area without discussing it first.** If you need something from another area, ask. Don't patch it yourself.
 
