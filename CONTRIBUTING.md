@@ -23,7 +23,7 @@ The main loop in main.cpp is the only place that knows about every subsystem at 
 Every subsystem's architecture and patterns
 ---
 
-## Who mainting what
+## Who maintaining what
 
 | Subsystem | Owner      | Scope |
 |---|------------|---|
