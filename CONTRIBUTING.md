@@ -20,7 +20,6 @@ Every subsystem shall stay decoupled from everything else, on purpose. We don't 
 
 The main loop in main.cpp is the only place that knows about every subsystem at once, calling each one's init in dependency order at startup, update every frame, and shutdown in reverse order at the end.
 
-Every subsystem's architecture and patterns
 ---
 
 ## Subsystem Lifecycle
@@ -95,7 +94,7 @@ For example:
 * Configuration is initialized first because other parts of the engine read application configuration.
 * Time is initialized before entering the main loop.
 * The window is initialized before the renderer because rendering requires a valid windowing environment.
-* Audio is initialized after the renderer.
+* Audio is initialized after the core window and rendering systems are available.
 * Scene data is loaded after the core runtime systems are available.
 
 When adding a subsystem, determine its dependencies before choosing where its initialization belongs.
@@ -110,7 +109,7 @@ The current update order is:
 Time → Window → Renderer
 ```
 
-Conceptually, each frame performs:
+The current main loop performs:
 
 ```cpp
 while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
