@@ -20,8 +20,151 @@ Every subsystem shall stay decoupled from everything else, on purpose. We don't 
 
 The main loop in main.cpp is the only place that knows about every subsystem at once, calling each one's init in dependency order at startup, update every frame, and shutdown in reverse order at the end.
 
-Every subsystem's architecture and patterns
 ---
+
+## Subsystem Lifecycle
+
+Curloz Engine is organized as a set of independent subsystems. Each subsystem is responsible for a specific part of the engine and is coordinated from `src/main.cpp`.
+
+The engine lifecycle has three main phases:
+
+1. Initialization
+2. Per-frame update
+3. Shutdown
+
+Not every subsystem requires every lifecycle function. Some systems only perform initialization or shutdown work, while others participate in the main loop and update every frame.
+
+### Lifecycle Overview
+
+```text
+Initialization
+──────────────
+
+Config
+  ↓
+Time
+  ↓
+Window
+  ↓
+Renderer
+  ↓
+Audio
+  ↓
+Scene Load
+
+
+Main Loop
+─────────
+
+Compute Time
+  ↓
+Window Update
+  ↓
+Renderer Update
+  ↓
+Repeat until EngineState::Shutdown
+
+
+Shutdown
+────────
+
+Scene Save
+  ↓
+Audio Shutdown
+  ↓
+Renderer Shutdown
+  ↓
+Window Shutdown
+```
+
+### Initialization Order
+
+Subsystems are initialized in dependency order.
+
+The current startup flow in `src/main.cpp` is:
+
+```text
+Config → Time → Window → Renderer → Audio → Scene
+```
+
+The order matters because later systems may depend on state created by earlier systems.
+
+For example:
+
+* Configuration is initialized first because other parts of the engine read application configuration.
+* Time is initialized before entering the main loop.
+* The window is initialized before the renderer because rendering requires a valid windowing environment.
+* Audio is initialized after the core window and rendering systems are available.
+* Scene data is loaded after the core runtime systems are available.
+
+When adding a subsystem, determine its dependencies before choosing where its initialization belongs.
+
+### Per-Frame Update Flow
+
+After initialization and scene loading complete, the engine enters the main loop.
+
+The current update order is:
+
+```text
+Time → Window → Renderer
+```
+
+The current main loop performs:
+
+```cpp
+while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
+{
+	clz::time::computeTime();
+	clz::window::update();
+	clz::renderer::update();
+}
+```
+
+The loop continues until the global engine state changes to `EngineState::Shutdown`.
+
+Not every subsystem needs a per-frame update. A subsystem should only participate in the main loop when it has work that must be performed every frame.
+
+### Shutdown Order
+
+The current shutdown flow is:
+
+```text
+Scene Save → Audio → Renderer → Window
+```
+
+Scene state is saved before runtime systems are destroyed. Audio is shut down before the renderer and window, and the window is destroyed after the renderer has finished using it.
+
+When adding shutdown logic, consider dependencies carefully. A subsystem should not attempt to use another subsystem that has already been destroyed.
+
+### Subsystem Boundaries
+
+Subsystems should remain independent and communicate through clearly defined interfaces.
+
+A subsystem should:
+
+* own the state related to its responsibility;
+* expose only the operations and data required by other systems;
+* avoid directly managing another subsystem's internal state;
+* avoid unnecessary dependencies on unrelated systems;
+* be initialized, updated, and shut down from the central engine flow when lifecycle coordination is required.
+
+For example, the renderer should not become responsible for ECS behavior. It may consume the render data required to draw entities, but entity-management responsibilities should remain outside the renderer.
+
+This separation keeps subsystems easier to understand, test, modify, and replace without creating unnecessary coupling.
+
+### Adding a New Subsystem
+
+Before adding a new subsystem to the engine lifecycle:
+
+1. Define what the subsystem owns.
+2. Identify which existing systems it depends on.
+3. Place initialization after its required dependencies.
+4. Add a per-frame update only when continuous processing is necessary.
+5. Place shutdown logic so dependent resources are released safely.
+6. Keep subsystem-specific behavior inside the subsystem instead of adding unrelated logic to `main.cpp`.
+
+`main.cpp` should coordinate subsystem lifecycle order. It should not contain the internal implementation details of each subsystem.
+
 
 ## Who maintaining what
 
