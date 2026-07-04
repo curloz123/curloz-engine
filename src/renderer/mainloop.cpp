@@ -142,9 +142,10 @@ namespace clz::renderer
 
 		vkCmdEndRendering(commandBuffer);
 
-		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
-					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
+		transition_image_layout(r_swapchainContext.images[imageIndex],
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
+				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
 					VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) [[unlikely]]

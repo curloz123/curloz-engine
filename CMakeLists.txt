@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.25)
 project(CurlozEngine VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
@@ -83,6 +85,10 @@ target_include_directories(imgui PUBLIC
         external/imgui
         external/imgui/backends
 )
+target_link_libraries(imgui PUBLIC
+        Vulkan::Vulkan
+        glfw
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
 
 #IMGUIZMO
@@ -95,3 +101,7 @@ target_include_directories(imguizmo PUBLIC
 target_link_libraries(imguizmo PUBLIC imgui)
 target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
+
+#BOX3D
+add_subdirectory(external/box3d)
+target_link_libraries(${PROJECT_NAME} PRIVATE box3d::box3d)
