@@ -8,6 +8,8 @@
  * Press 'r' to rotate and
  * Press 's' to scale
  *
+ * Also Saves a snapshot upon every change made
+ *
  * @note must be called inside editor::render() after ImGui::BeginFrame
  * has been called
  */

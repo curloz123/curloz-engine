@@ -75,8 +75,8 @@ namespace clz::renderer::camera
 			dir += localRight[id];
 		if (window::isKeyPressed(input::Key::Space))
 			dir += WorldUp;
-		if (window::isKeyPressed(input::Key::LeftShift))
-			dir -= WorldUp;
+		// if (window::isKeyPressed(input::Key::LeftShift))
+		// dir -= WorldUp;
 
 		if (math::getLengthSquared(dir) > 0.0f)
 		{

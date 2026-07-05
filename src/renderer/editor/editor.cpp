@@ -11,7 +11,7 @@
 #include "renderer/editor/editorshortcuts.hpp"
 #include "renderer/editor/gizmo.hpp"
 #include "renderer/editor/inspector.hpp"
-#include "renderer/editor/playertable.hpp"
+#include "renderer/editor/scenetable.hpp"
 #include "renderer/vk_types.hpp"
 #include <cmath>
 #include <imgui.h>
@@ -32,7 +32,7 @@ namespace clz::editor
 		ImGui::PopFont();
 		if (ImGui::BeginTabBar("Players"))
 		{
-			showEntityTab();
+			showSceneTab();
 			ImGui::EndTabBar();
 		}
 

@@ -77,8 +77,6 @@ namespace clz::renderer::Asset
 		}
 
 		Asset::processNode(scene->mRootNode, aiMatrix4x4(), scene, modelID, modelPath);
-		clz::log::debug("vertices size: " + std::to_string(VBuffer::r_globalVertexVector.size()));
-		clz::log::debug("indices size: " + std::to_string(IBuffer::r_globalIndexVector.size()));
 
 		Asset::textureLoadedThisModel.clear();
 		return modelID;
@@ -138,22 +136,26 @@ namespace clz::renderer::Asset
 			const aiVector3D vertex = localTransform * mesh->mVertices[i];
 			vertices.emplace_back(math::vec3(vertex.x, vertex.y, vertex.z));
 
-			// Process UVs
-			clz::CLZ_ASSERT(mesh->mTextureCoords[0] != nullptr, "Artist-san "
-									    "you forgot about uv coordinates of some vertex");
 			clz::math::vec2 vec;
-			vec.x = mesh->mTextureCoords[0][i].x;
-			vec.y = mesh->mTextureCoords[0][i].y;
+			// Process UVs
+			if (mesh->mTextureCoords[0])
+			{
+				vec.x = mesh->mTextureCoords[0][i].x;
+				vec.y = mesh->mTextureCoords[0][i].y;
+			}
+			else
+			{
+				vec.x = 0.0f;
+				vec.y = 0.0f;
+				log::debug("Artist-san you forgot about uv coordinates of some vertex");
+			}
 			UVs.emplace_back(vec);
+
 		}
 
 		if (vertices.empty())
 		{
 			clz::log::warn("Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "Has no vertices");
-		}
-		if (UVs.empty())
-		{
-			clz::log::warn("Model: " + modelPath + "\n" + "Node: " + node->mName.C_Str() + "\n" + "Has no UVs");
 		}
 		if (UVs.size() != vertices.size())
 		{
@@ -163,10 +165,10 @@ namespace clz::renderer::Asset
 
 		// Process indices
 		std::vector<uint32_t> indices;
-		for (auto i = 0; i < mesh->mNumFaces; ++i)
+		for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
 		{
 			const aiFace face = mesh->mFaces[i];
-			for (auto j = 0; j < face.mNumIndices; ++j)
+			for (uint32_t j = 0; j < face.mNumIndices; ++j)
 			{
 				indices.push_back(face.mIndices[j]);
 			}
@@ -201,7 +203,8 @@ namespace clz::renderer::Asset
 		}
 		if (baseTextureID == r_NULL_TEXTURE)
 		{
-			log::error("Model: " + modelPath + "\n" + "has no base texture");
+			log::warn("Model: " + modelPath + "\n" + "has no base texture"
+					    "will apply grey color");
 		}
 
 		mesh::baseMaterialLUT.texture.emplace_back(baseTextureID);
@@ -229,7 +232,6 @@ namespace clz::renderer::Asset
 
 			const TextureID textureID = registerTexture(filePath.string());
 			Asset::textureLoadedThisModel[filePath.string()] = textureID;
-			clz::log::debug("TextureID: " + std::to_string(textureID));
 			return textureID;
 		}
 

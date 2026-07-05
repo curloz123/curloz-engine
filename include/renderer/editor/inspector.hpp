@@ -4,6 +4,8 @@
  * @brief Inspector window's functions
  * Inspector window shows all components
  * of current selected entity
+ *
+ * Also Saves a snapshot upon every change made
  */
 
 #pragma once

@@ -125,6 +125,19 @@ namespace clz::ecs
 	}
 
 	/**
+	 * @brief Set's a component of an entity to @p value
+	 * Mainly useful for editor undo-redo
+	 * @tparam T Component type
+	 * @param e Entity to set component
+	 * @param component the actual component
+	 */
+	template <typename T> void setComponent(entity e, T& component)
+	{
+		auto& componentStorage = getStorage<T>();
+		componentStorage.storage[componentStorage.sparse[e]] = component;
+	}
+
+	/**
 	 * @brief Removes all components from entity @p e across all storages.
 	 *
 	 * Iterates all registered storages and calls removeEntityData.

@@ -4,11 +4,11 @@
  * @brief Camera Matrices implementation file
  */
 
+#include "renderer/camera/cameramatrices.hpp"
 #include "math/angle.hpp"
 #include "math/mat4x4.hpp"
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameradata.hpp"
-#include "renderer/camera/cameramatrices.hpp"
 #include "renderer/vk_types.hpp"
 
 namespace clz::renderer::camera
@@ -24,8 +24,8 @@ namespace clz::renderer::camera
 		if (FovChanged[activeCamera])
 		{
 			projection = math::makePerspectiveMatrix(
-			    100.0f, 1.0f, static_cast<float>(r_swapchainContext.extent.width) / r_swapchainContext.extent.height,
-			    math::radians(Fov[activeCamera]));
+			    Far[activeCamera], Near[activeCamera],
+			    static_cast<float>(r_swapchainContext.extent.width) / r_swapchainContext.extent.height, math::radians(Fov[activeCamera]));
 
 			FovChanged[activeCamera] = false;
 			return projection.value();
