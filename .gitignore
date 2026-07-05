@@ -4,6 +4,8 @@ build
 compile_commands.json
 docs
 imgui.ini
+zipmaker.sh
+CurlozEngine.zip
 
 # shader binaries
 shader/triangle.vert.spirv
