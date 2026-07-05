@@ -18,6 +18,7 @@
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
+#include "physics/physics.hpp"
 
 int main()
 {
@@ -55,6 +56,8 @@ int main()
 		clz::window::update();
 		clz::renderer::update();
 	}
+
+	clz::physics::init();
 
 	// Shut down
 	clz::scene::saveScene();
