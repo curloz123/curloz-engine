@@ -2,7 +2,7 @@
  * @file editor.hpp
  * @author curl0z
  *
- * @brief Native editor's variables
+ * @brief Displays everything in scene's biodiversity
  */
 
 #pragma once
@@ -10,5 +10,5 @@
 namespace clz::editor
 {
 	/// @brief Renders the Entities tab — a selectable list of all scene entities.
-	void showEntityTab();
+	void showSceneTab();
 } // namespace clz::editor
