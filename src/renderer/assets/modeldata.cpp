@@ -77,8 +77,6 @@ namespace clz::renderer::Asset
 		}
 
 		Asset::processNode(scene->mRootNode, aiMatrix4x4(), scene, modelID, modelPath);
-		clz::log::debug("vertices size: " + std::to_string(VBuffer::r_globalVertexVector.size()));
-		clz::log::debug("indices size: " + std::to_string(IBuffer::r_globalIndexVector.size()));
 
 		Asset::textureLoadedThisModel.clear();
 		return modelID;
@@ -163,10 +161,10 @@ namespace clz::renderer::Asset
 
 		// Process indices
 		std::vector<uint32_t> indices;
-		for (auto i = 0; i < mesh->mNumFaces; ++i)
+		for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
 		{
 			const aiFace face = mesh->mFaces[i];
-			for (auto j = 0; j < face.mNumIndices; ++j)
+			for (uint32_t j = 0; j < face.mNumIndices; ++j)
 			{
 				indices.push_back(face.mIndices[j]);
 			}
@@ -229,7 +227,6 @@ namespace clz::renderer::Asset
 
 			const TextureID textureID = registerTexture(filePath.string());
 			Asset::textureLoadedThisModel[filePath.string()] = textureID;
-			clz::log::debug("TextureID: " + std::to_string(textureID));
 			return textureID;
 		}
 

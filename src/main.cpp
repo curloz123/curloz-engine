@@ -48,7 +48,6 @@ int main()
 	if (clz::log::errorOccurred()) [[unlikely]]
 		return 1;
 
-
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{

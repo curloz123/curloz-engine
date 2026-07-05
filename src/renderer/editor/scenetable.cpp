@@ -1,17 +1,19 @@
 /**
- * @file playertable.cpp
+ * @file scenetable.cpp
  * @author curl0z
  * @brief Entities window's implementation
+ *
+ * Show's the
  */
 
-#include "renderer/editor/playertable.hpp"
+#include "renderer/editor/scenetable.hpp"
 #include "renderer/editor/editor_types.hpp"
 #include "scene/entity/entitymanager.hpp"
 #include <imgui.h>
 
 namespace clz::editor
 {
-	void showEntityTab()
+	void showSceneTab()
 	{
 		ImGui::PushFont(fontMonoBold);
 		if (!ImGui::BeginTabItem("Entities"))

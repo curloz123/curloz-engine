@@ -5,8 +5,8 @@ version_minor = 3
 version_patch = 4
 
 [window]
-width = 1920
-height = 1080
+width = 800
+height = 600
 vsync = false
 refreshrate = 120
 triplebuffering = true

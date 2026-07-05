@@ -18,11 +18,11 @@ namespace clz::log
 	/// @brief ANSI color codes for terminal output.
 	namespace color
 	{
-		constexpr const char* reset = "\033[0m";
-		constexpr const char* red = "\033[31m";
-		constexpr const char* yellow = "\033[33m";
-		constexpr const char* blue = "\033[34m";
-		constexpr const char* green = "\033[32m";
+		constexpr auto reset = "\033[0m";
+		constexpr auto red = "\033[31m";
+		constexpr auto yellow = "\033[33m";
+		constexpr auto blue = "\033[34m";
+		constexpr auto green = "\033[32m";
 	} // namespace color
 
 	/// @brief Set to true when error() is called. Never resets automatically.
@@ -40,8 +40,9 @@ namespace clz::log
 	/**
 	 * @brief Logs a warning message.
 	 * @param warn Warning.
+	 * @param loc Retrieves location of caller, don't pass this yourself
 	 */
-	inline void warn(std::string_view warn, std::source_location loc = std::source_location::current())
+	inline void warn(std::string_view warn, const std::source_location loc = std::source_location::current())
 	{
 		std::println("{}[WARN]{} {}", color::yellow, color::reset, warn);
 		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
@@ -51,17 +52,17 @@ namespace clz::log
 	 * @brief Logs a debug message.
 	 * @param debug message
 	 */
-	inline void debug(std::string_view debug, std::source_location loc = std::source_location::current())
+	inline void debug(std::string_view debug)
 	{
 		std::println("{}[DEBUG]{} {}", color::blue, color::reset, debug);
-		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
 	}
 
 	/**
 	 * @brief Logs an error message and sets hadError to true.
 	 * @param error The error
+	 * @param loc Retrieves location of caller, don't pass this yourself
 	 */
-	inline void error(std::string_view error, std::source_location loc = std::source_location::current())
+	inline void error(std::string_view error, const std::source_location loc = std::source_location::current())
 	{
 		hadError = true;
 		std::println("{}[ERROR]{} {}", color::red, color::reset, error);

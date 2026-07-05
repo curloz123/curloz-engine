@@ -26,6 +26,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:RelWithDebInfo>:CLZ_RELEASE CLZ_ENABLE_LOGS>
         $<$<CONFIG:Release>:CLZ_RELEASE>
 )
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:-Wall -Wextra -Wsign-compare>
+)
 
 #SSE 4.1 instruction sets
 target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
