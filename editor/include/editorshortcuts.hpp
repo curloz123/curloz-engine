@@ -1,10 +1,18 @@
+/**
+ * @file editorshortcuts.hpp
+ * @author curl0z
+ * @brief Maintains all editor shortcuts.
+ * For example if foo key is pressed,
+ * perform bar operation.
+ */
 #pragma once
 
-#include "inspector.hpp"
+#include "inspector/inspector.hpp"
 #include "window/inputmanager.hpp"
 
 namespace clz::editor
 {
+	/// @brief Polls for input, and checks if any shortcut is registered
 	inline void processShortcuts()
 	{
 		if (window::isKeyPressed(input::Key::T))

@@ -3,23 +3,23 @@
         {
             "acceleration": 15.0,
             "far": 1000.0,
-            "fov": 51.0,
+            "fov": 53.0,
             "id": 0,
             "localfront": [
-                -0.06549511849880219,
-                -0.6392135620117188,
-                0.7660759091377258
+                0.020749220624566078,
+                -0.2455740123987198,
+                -0.9691557288169861
             ],
             "maxvelocity": 5.0,
             "near": 0.10000000149011612,
-            "pitch": -39.739013671875,
+            "pitch": -14.21575927734375,
             "position": [
-                -17.263492584228516,
-                22.626070022583008,
-                -16.883310317993164
+                -17.46588134765625,
+                22.716938018798828,
+                9.498461723327637
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 94.88658142089844
+            "yaw": -448.77349853515625
         },
         {
             "acceleration": 20.0,
@@ -49,11 +49,28 @@
                 "path": "assets/models/backpack/scene.gltf"
             },
             "name": "Backpack",
+            "rigidbody": {
+                "angulardamping": 1.0,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.019999999552965164,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "mass": 1.0,
+                "type": "dynamic"
+            },
             "transform": {
                 "position": [
-                    -100.0,
-                    100.0,
-                    -100.0
+                    -98.25601196289063,
+                    128.0178985595703,
+                    -89.82499694824219
                 ],
                 "rotation": [
                     0.984869658946991,
@@ -62,7 +79,7 @@
                     0.0
                 ],
                 "scale": [
-                    0.12401159852743149,
+                    0.009999999776482582,
                     0.15009468793869019,
                     0.42746737599372864
                 ]
@@ -73,6 +90,23 @@
                 "path": "assets/models/metro/Metro_9.gltf"
             },
             "name": "Metro",
+            "rigidbody": {
+                "angulardamping": 1.0,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "mass": 0.5,
+                "type": "dynamic"
+            },
             "transform": {
                 "position": [
                     -17.81890296936035,
@@ -97,6 +131,23 @@
                 "path": "assets/models/helmet/scene.gltf"
             },
             "name": "helmet",
+            "rigidbody": {
+                "angulardamping": 1.0,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "mass": 1.0899999141693115,
+                "type": "dynamic"
+            },
             "transform": {
                 "position": [
                     -1.2329999208450317,

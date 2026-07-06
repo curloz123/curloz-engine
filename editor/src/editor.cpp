@@ -5,14 +5,14 @@
  * @brief Sandbox editor implementation
  */
 
-#include "renderer/editor/editor.hpp"
+#include "../include/editor.hpp"
+#include "../include/editor_types.hpp"
+#include "../include/editorshortcuts.hpp"
+#include "../include/inspector/inspector.hpp"
 #include "core/logs.hpp"
-#include "renderer/editor/editor_types.hpp"
-#include "renderer/editor/editorshortcuts.hpp"
-#include "renderer/editor/gizmo.hpp"
-#include "renderer/editor/inspector.hpp"
-#include "renderer/editor/scenetable.hpp"
+#include "../include/gizmo.hpp"
 #include "renderer/vk_types.hpp"
+#include "../include/scenetable.hpp"
 #include <cmath>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -26,22 +26,21 @@ namespace clz::editor
 	void render()
 	{
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-
 		ImGui::PushFont(fontSansBold);
-		ImGui::Begin("Players");
+
+		ImGui::Begin("Scene");
 		ImGui::PopFont();
-		if (ImGui::BeginTabBar("Players"))
+		if (ImGui::BeginTabBar("Scene"))
 		{
 			showSceneTab();
 			ImGui::EndTabBar();
 		}
-
 		processShortcuts();
 		drawGizmo();
+		showInspector();
 
 		ImGui::End();
 
-		showInspector();
 	}
 	bool init()
 	{
@@ -148,6 +147,7 @@ namespace clz::editor
 
 	void shutdown()
 	{
+		vkDeviceWaitIdle(clz::renderer::r_deviceContext.device);
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();

@@ -1,19 +1,24 @@
 cmake_minimum_required(VERSION 3.25)
-project(CurlozEngine VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 23)
+project(CurlozEngine
+        VERSION 0.3.6
+        DESCRIPTION "A 3D Game Engine"
+        HOMEPAGE_URL "https://curlozengine.vercel.app/"
+        LANGUAGES C CXX
+)
+
 set(CMAKE_C_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 ## Sources
-file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp editor/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE include editor)
 
 ## Find Packages Section
 find_package(Vulkan REQUIRED)
@@ -21,10 +26,12 @@ find_package(Vulkan REQUIRED)
 ## Compile options
 
 # Compile Profile
+
+
 set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
-        $<$<CONFIG:Sandbox>:CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Sandbox>:CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
         $<$<CONFIG:RelWithDebInfo>:CLZ_RELEASE CLZ_ENABLE_LOGS>
         $<$<CONFIG:Release>:CLZ_RELEASE>
 )
@@ -32,14 +39,14 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:-Wall -Wextra -Wsign-compare>
 )
 
-#SSE 4.1 instruction sets
+##instruction sets
 target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
 
 
-## Always use static libs
-set(BUILD_SHARED_LIBS OFF)
-
 ## External Libs, This should be the last section, everything below this is just linking third party libraries
+
+# Always use static libs
+set(BUILD_SHARED_LIBS OFF)
 
 #Vulkan
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)

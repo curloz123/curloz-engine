@@ -1,3 +1,9 @@
+/**
+ * @file editor_types.hpp
+ * @author curl0z
+ * @brief Stores editor's internal data and
+ * global variables.
+ */
 #pragma once
 
 #include "scene/entity/entitymanager.hpp"

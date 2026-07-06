@@ -10,15 +10,16 @@
  * as all other subsystems read from it.
  */
 
+#include "../editor/include/editor.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "core/time.hpp"
+#include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
-#include "physics/physics.hpp"
 
 int main()
 {
@@ -37,9 +38,17 @@ int main()
 	if (!clz::window::init()) [[unlikely]]
 		return 1;
 
+	// Initialize physics
+	if (!clz::physics::init()) [[unlikely]]
+		return 1;
+
 	// Initialize renderer
 	if (!clz::renderer::init()) [[unlikely]]
 		return 1;
+#ifdef CLZ_ENABLE_EDITOR
+	if (!clz::editor::init()) [[unlikely]]
+		return 1;
+#endif
 
 	// Initialize audio
 	clz::audio::init();
@@ -54,6 +63,7 @@ int main()
 	{
 		clz::time::computeTime();
 		clz::window::update();
+		clz::physics::update();
 		clz::renderer::update();
 	}
 
@@ -62,7 +72,11 @@ int main()
 	// Shut down
 	clz::scene::saveScene();
 	clz::audio::shutdown();
+#ifdef CLZ_ENABLE_EDITOR
+	clz::editor::shutdown();
+#endif
 	clz::renderer::shutdown();
+	clz::physics::shutdown();
 	clz::window::shutdown();
 	clz::log::info("Exiting successfully");
 	return 0;

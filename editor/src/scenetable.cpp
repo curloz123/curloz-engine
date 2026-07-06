@@ -1,13 +1,13 @@
 /**
  * @file scenetable.cpp
  * @author curl0z
- * @brief Entities window's implementation
+ * @brief Scene window implementation
  *
- * Show's the
+ * Show's the scene's data like entities, lights etc...
  */
 
-#include "renderer/editor/scenetable.hpp"
-#include "renderer/editor/editor_types.hpp"
+#include "../include/scenetable.hpp"
+#include "../include/editor_types.hpp"
 #include "scene/entity/entitymanager.hpp"
 #include <imgui.h>
 

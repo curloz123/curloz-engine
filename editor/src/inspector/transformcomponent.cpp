@@ -1,63 +1,25 @@
 /**
- * @file inspector.cpp
+ * @file transformcomponent.cpp
  * @author curl0z
- * @brief Inspector window's implementation.
- *
- * Each editable field follows the same undo/redo capture pattern:
- * IsItemActivated() captures the pre-edit component state, and
- * IsItemDeactivatedAfterEdit() commits a snapshot once the edit is
- * confirmed complete (covers mouse drag, keyboard entry, tab-away — any
- * input method ImGui recognizes as "editing finished").
+ * @brief displays model component's data n all
+ * in inspector. Internally can change rigid body's
+ * data and body's attributes.
  */
 
-#include "renderer/editor/inspector.hpp"
-#include "math/angle.hpp"
-#include "math/quateulerconv.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include "renderer/editor/editor_types.hpp"
-#include "renderer/editor/timemachine.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
+#include "../../include/inspector/transformcomponent.hpp"
+#include "../../include/inspector/inspector.hpp"
+#include "../../include/editor_types.hpp"
+#include "../../include/timemachine.hpp"
 #include <imgui.h>
+#include "math/quateulerconv.hpp"
+#include "math/angle.hpp"
+#include "scene/entity/components.hpp"
+#include "scene/entity/componentmanager.hpp"
 
 namespace clz::editor
 {
-	/// @brief Renders the Transform component section in the inspector.
-	void showTransformComponentHeader();
-
 	/// @brief Component state captured at the start of the current edit, used as the undo "before" value.
-	ecs::TransformComponent previousTransform;
-
-	/// @brief Renders the Model component section in the inspector, if present.
-	void showModelComponentHeader();
-} // namespace clz::editor
-
-namespace clz::editor
-{
-	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-	void showInspector()
-	{
-		ImGui::Begin("Inspector");
-		if (currentSelectedEntity.has_value())
-		{
-			ImGui::PushFont(fontMonoBold);
-			ImGui::Text("Selected Entity: %s", ecs::getEntityName(currentSelectedEntity.value()).c_str());
-			ImGui::Separator();
-			ImGui::PopFont();
-
-			showTransformComponentHeader();
-			ImGui::Separator();
-			showModelComponentHeader();
-		}
-		else
-		{
-			ImGui::TextDisabled("No entity selected");
-		}
-		ImGui::End();
-
-		// Check if undo or redo has to be performed
-		timeTravel();
-	}
+	 ecs::TransformComponent previousTransform;
 
 	/// @brief Draws Position/Rotation/Scale sliders and records a snapshot when an edit completes.
 	void showTransformComponentHeader()
@@ -116,20 +78,4 @@ namespace clz::editor
 		}
 	}
 
-	/// @brief Displays read-only Model component info, if the entity has one.
-	void showModelComponentHeader()
-	{
-		if (!ecs::hasComponent<ecs::ModelComponent>(currentSelectedEntity.value()))
-			return;
-		if (!ImGui::CollapsingHeader("Model"))
-			return;
-
-		const renderer::ModelID id = ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID;
-		const auto name = renderer::Asset::getModelName(id);
-
-		ImGui::PushFont(fontMono);
-		ImGui::Text("Model Path: %s", name.c_str());
-		ImGui::Separator();
-		ImGui::PopFont();
-	}
-} // namespace clz::editor
+}

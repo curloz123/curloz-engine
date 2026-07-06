@@ -18,6 +18,7 @@
 #pragma once
 
 #include <string>
+#include <toml++/toml.hpp>
 
 namespace clz::config
 {

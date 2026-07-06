@@ -11,6 +11,7 @@
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
 #include "renderer/assets/modeldata.hpp"
+#include "physics/body.hpp"
 
 namespace clz::ecs
 {
@@ -60,6 +61,15 @@ namespace clz::ecs
 		explicit ModelComponent(const clz::renderer::ModelID modelID) : modelID(modelID)
 		{
 		}
+	};
+
+	struct RigidBodyComponent
+	{
+		physics::BodyId bodyId;
+	};
+	struct RigidBodyDataComponent
+	{
+		physics::BodyData bodyData;
 	};
 
 } // namespace clz::ecs

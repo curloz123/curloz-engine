@@ -9,17 +9,17 @@
  * and also true on pure hover) rather than edge-triggered — so the
  * false->true / true->false transitions are tracked manually here.
  */
-#include "renderer/editor/gizmo.hpp"
+#include "../include/gizmo.hpp"
+#include "../include/editor_types.hpp"
+#include "../include/inspector/inspector.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameramatrices.hpp"
-#include "renderer/editor/editor_types.hpp"
-#include "renderer/editor/inspector.hpp"
-#include "renderer/editor/timemachine.hpp"
 #include "renderer/vk_types.hpp"
 #include "scene/entity/componentmanager.hpp"
 #include "scene/entity/components.hpp"
+#include "../include/timemachine.hpp"
 #include <ImGuizmo.h>
 #include <imgui.h>
 

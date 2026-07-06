@@ -6,15 +6,13 @@
  */
 
 #include "renderer/renderer.hpp"
+#include "../../editor/include/editor.hpp"
 #include "core/logs.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include "renderer/camera/camera.hpp"
 #include "renderer/context/commandcontext.hpp"
 #include "renderer/context/devicecontext.hpp"
 #include "renderer/context/framecontext.hpp"
 #include "renderer/context/pipelinecontext.hpp"
 #include "renderer/context/swapchaincontext.hpp"
-#include "renderer/editor/editor.hpp"
 #include "renderer/mainloop.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/vk_types.hpp"
@@ -63,13 +61,6 @@ namespace clz::renderer
 
 		clz::log::info("initialized all renderer context's");
 
-#ifdef CLZ_ENABLE_SANDBOX
-		if (!editor::init())
-		{
-			clz::log::error("Could not initialize editor");
-			return false;
-		}
-#endif
 
 		clz::log::info("Initialized renderer");
 
@@ -112,8 +103,6 @@ namespace clz::renderer
 	void shutdown()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
-
-		editor::shutdown();
 
 		destroyFrameContext();
 		destroyPipelineContext();

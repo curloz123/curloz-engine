@@ -5,11 +5,11 @@
  */
 
 #include "renderer/mainloop.hpp"
+#include "../../editor/include/editor.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/assets/drawmodel.hpp"
 #include "renderer/camera/camera.hpp"
-#include "renderer/editor/editor.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/utility/image.hpp"
@@ -21,15 +21,15 @@ namespace clz::renderer
 {
 	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
 	{
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		if (window::isKeyPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
 		{
 			window::enableCursor();
 			camera::setActiveCamera(camera::EditorCam);
-			setEngineState(state::EngineState::Sandbox, "KEY->ESCAPE, mid render loop");
+			setEngineState(state::EngineState::Editor, "KEY->ESCAPE, mid render loop");
 		}
 		if (window::isKeyPressed(input::Key::LeftControl) && window::isKeyPressed(input::Key::G) &&
-		    state::g_engineState == state::EngineState::Sandbox)
+		    state::g_engineState == state::EngineState::Editor)
 		{
 			window::disableCursor();
 			camera::setActiveCamera(camera::GameCam);
@@ -43,8 +43,8 @@ namespace clz::renderer
 		updateShaderData(commandBuffer, currentFrame);
 		drawEntitiesMainPipeline(commandBuffer);
 
-#ifdef CLZ_ENABLE_SANDBOX
-		if (state::g_engineState == state::EngineState::Sandbox)
+#ifdef CLZ_ENABLE_EDITOR
+		if (state::g_engineState == state::EngineState::Editor)
 			editor::update(commandBuffer);
 #endif
 	}

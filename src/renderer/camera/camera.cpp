@@ -13,7 +13,7 @@ namespace clz::renderer::camera
 {
 	void setActiveCamera(const CameraID id)
 	{
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		const auto previousActiveCamera = activeCamera;
 		if (id == EditorCam && previousActiveCamera == GameCam)
 		{
@@ -41,7 +41,7 @@ namespace clz::renderer::camera
 			return false;
 		}
 
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		if (!loadCamera("editor", EditorCam))
 		{
 			clz::log::error("Could not load editor camera");
