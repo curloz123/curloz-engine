@@ -4,7 +4,7 @@ This document is for contributors working on Curloz Engine. Read this before wri
 
 ## General Architecture
 
-Curloz Engine is built as a collection of independent subsystems under the clz:: namespace, each following the same lifecycle pattern: an init() to set up state, an update() that runs once per frame, and a shutdown() that tears everything down in reverse order of initialization. Ofcourse not all subsystems require special init and destruction. 
+Curloz Engine is built as a collection of independent subsystems under the clz:: namespace, each following the same lifecycle pattern: an init() to set up state, an update() that runs once per frame, and a shutdown() that tears everything down in reverse order of initialization. Ofcourse not all subsystems require special init and destruction.
 
 ```bash
 curloz-engine/
@@ -91,11 +91,11 @@ The order matters because later systems may depend on state created by earlier s
 
 For example:
 
-* Configuration is initialized first because other parts of the engine read application configuration.
-* Time is initialized before entering the main loop.
-* The window is initialized before the renderer because rendering requires a valid windowing environment.
-* Audio is initialized after the core window and rendering systems are available.
-* Scene data is loaded after the core runtime systems are available.
+- Configuration is initialized first because other parts of the engine read application configuration.
+- Time is initialized before entering the main loop.
+- The window is initialized before the renderer because rendering requires a valid windowing environment.
+- Audio is initialized after the core window and rendering systems are available.
+- Scene data is loaded after the core runtime systems are available.
 
 When adding a subsystem, determine its dependencies before choosing where its initialization belongs.
 
@@ -142,11 +142,11 @@ Subsystems should remain independent and communicate through clearly defined int
 
 A subsystem should:
 
-* own the state related to its responsibility;
-* expose only the operations and data required by other systems;
-* avoid directly managing another subsystem's internal state;
-* avoid unnecessary dependencies on unrelated systems;
-* be initialized, updated, and shut down from the central engine flow when lifecycle coordination is required.
+- own the state related to its responsibility;
+- expose only the operations and data required by other systems;
+- avoid directly managing another subsystem's internal state;
+- avoid unnecessary dependencies on unrelated systems;
+- be initialized, updated, and shut down from the central engine flow when lifecycle coordination is required.
 
 For example, the renderer should not become responsible for ECS behavior. It may consume the render data required to draw entities, but entity-management responsibilities should remain outside the renderer.
 
@@ -165,21 +165,19 @@ Before adding a new subsystem to the engine lifecycle:
 
 `main.cpp` should coordinate subsystem lifecycle order. It should not contain the internal implementation details of each subsystem.
 
-
 ## Who maintaining what
 
-| Subsystem | Owner      | Scope |
-|---|------------|---|
-| Window | @curl0z    | Everything under **src or include/window/** |
-| Renderer | @curl0z    | Everything under **src or include/renderer/** |
-| Math | @curl0z | Everything under **include/math/** |
-| Website | @harleen05 | index.html |
-| Documentation | @harleen05 | index.html |
-| Physics | unassigned |  |
-| Audio | unassigned | |
+| Subsystem     | Owner      | Scope                                         |
+| ------------- | ---------- | --------------------------------------------- |
+| Window        | @curl0z    | Everything under **src or include/window/**   |
+| Renderer      | @curl0z    | Everything under **src or include/renderer/** |
+| Math          | @curl0z    | Everything under **include/math/**            |
+| Website       | @harleen05 | index.html                                    |
+| Documentation | @harleen05 | index.html                                    |
+| Physics       | unassigned |                                               |
+| Audio         | unassigned |                                               |
 
 **Do not touch code outside your area without discussing it first.** If you need something from another area, ask. Don't patch it yourself.
-
 
 ---
 
@@ -252,11 +250,43 @@ Types: `feature`, `fix`, `refactor`
 
 No "fixed stuff". No "wip" on main. No giant commits that touch everything.
 
+### Example Commit Messages
+
+```text
+feature: add physics subsystem initialization
+
+fix: correct renderer initialization bug
+
+docs: add practical contributing examples to CONTRIBUTING.md
+
+refactor: simplify subsystem lifecycle documentation
+```
+
 ### PRs
 
 - Every branch merge goes through a PR, even between friends
 - Write what you did and why in the PR description
 - At least one review before merge
+
+### Example Pull Request
+
+**Title**
+
+```text
+docs: add practical contributing examples to CONTRIBUTING.md
+```
+
+**Description**
+
+```md
+## Summary
+
+- Added sample commit message examples
+- Added sample pull request description template
+- Documentation only, no code changes
+
+Fixes #28
+```
 
 ---
 
@@ -315,6 +345,7 @@ Every `.cpp` and `.hpp` file starts with:
  * @brief Brief one line description of what this file contains
  */
 ```
+
 mentioning the author and a little brief about what it does.
 
 ### Structs and Classes
@@ -326,7 +357,7 @@ mentioning the author and a little brief about what it does.
  * This is the handshake between the ECS and physics systems.
  * Do not modify the layout without consulting @curl0z.
  */
-struct TransformComponent 
+struct TransformComponent
 {
         glm::vec3 position; ///< World space position
         glm::quat rotation; ///< Rotation as quaternion
@@ -362,18 +393,19 @@ enum class BodyState
 
 ### Quick Reference
 
-| Tag | Use |
-|---|---|
-| `@file` | File name |
-| `@author` | Who wrote it |
-| `@brief` | One line summary |
-| `@param` | Function parameter |
-| `@return` | Return value |
-| `@note` | Extra info |
+| Tag        | Use                         |
+| ---------- | --------------------------- |
+| `@file`    | File name                   |
+| `@author`  | Who wrote it                |
+| `@brief`   | One line summary            |
+| `@param`   | Function parameter          |
+| `@return`  | Return value                |
+| `@note`    | Extra info                  |
 | `@warning` | Something that can go wrong |
-| `@todo` | Planned work |
- 
+| `@todo`    | Planned work                |
+
 ---
+
 ## Doxygen Docs
 
 Docs are **not committed to the repo**. If you want to view the docs, you need to generate them locally via doxxygen.
