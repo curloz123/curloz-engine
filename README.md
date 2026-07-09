@@ -143,10 +143,11 @@ cmake --build build/debug
 curloz-engine/
 ├── src/                # Source files (.cpp)
 ├── include/            # Header files (.hpp)
+│   └── core/           # Utility functions, basically helpers used in entire engine
 ├── shaders/            # GLSL shaders, compiled to .spv
 ├── assets/             # Models, textures, audio
+├── config/             # Engine/scene configuration (engine.toml, scene.json)
 ├── external/           # Git submodules (do not modify manually)
-├── core/               # Utility functions, basically helpers used in entire engine
 ├── .clang-format       # clang-format configuration
 ├── .editorconfig       # editorconfig configuration
 ├── CMakeLists.txt      # CMake build configuration

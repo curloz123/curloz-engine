@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Read the README
+    url: https://github.com/curl0z/curloz-engine/blob/main/README.md
+    about: Project overview, build instructions, and troubleshooting steps.
+  - name: Read the Contributing Guide
+    url: https://github.com/curl0z/curloz-engine/blob/main/CONTRIBUTING.md
+    about: Architecture, subsystem ownership, git workflow, and code style before you open an issue or PR.

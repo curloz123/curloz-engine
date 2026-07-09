@@ -19,7 +19,7 @@ find_package(Vulkan REQUIRED)
 ## Compile options
 
 # Compile Profile
-set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Debug;Sandbox;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
         $<$<CONFIG:Sandbox>:CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>

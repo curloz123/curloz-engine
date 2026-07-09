@@ -8,8 +8,7 @@ zipmaker.sh
 CurlozEngine.zip
 
 # shader binaries
-shader/triangle.vert.spirv
-shader/triangle.frag.spirv
+shaders/*.spirv
 
 # Test models
 assets/models/*

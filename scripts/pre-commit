@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook for Curloz Engine.
+# Rejects the commit if any staged .cpp/.hpp/.h file doesn't match .clang-format.
+#
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -euo pipefail
+
+if ! command -v clang-format >/dev/null 2>&1; then
+	echo "pre-commit: clang-format not found on PATH, skipping style check" >&2
+	exit 0
+fi
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.cpp' '*.hpp' '*.h')
+
+if [ -z "$staged_files" ]; then
+	exit 0
+fi
+
+failed=0
+
+while IFS= read -r file; do
+	[ -f "$file" ] || continue
+	if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1; then
+		echo "pre-commit: $file is not clang-format clean" >&2
+		failed=1
+	fi
+done <<< "$staged_files"
+
+if [ "$failed" -ne 0 ]; then
+	echo "" >&2
+	echo "Formatting check failed. Fix with:" >&2
+	echo "  find src include -name \"*.cpp\" -o -name \"*.hpp\" | xargs clang-format -i" >&2
+	exit 1
+fi
+
+exit 0
