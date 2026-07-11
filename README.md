@@ -32,7 +32,7 @@ A Vulkan 1.3 game engine written in C++23.
 * CMake 3.25+
 * Ninja
 * clang-format (for code style enforcement)
-* GCC or Clang with C++23 support
+* GCC 13+ or Clang 17+ with C++23 support
 
 On Gentoo:
 
@@ -51,7 +51,7 @@ sudo apt install cmake ninja-build clang-format vulkan-tools libvulkan-dev
 * CMake 3.25+
 * Ninja
 * Vulkan SDK from [lunarg.com](https://vulkan.lunarg.com)
-* MSVC or MinGW with C++23 support
+* MSVC 19.38+ (Visual Studio 2022 17.8+) or MinGW using GCC 13+
 
 ---
 
@@ -180,6 +180,12 @@ cmake --build build/debug
 ### Compiler does not support the required C++ standard
 
 Curloz Engine is configured to use C++23. Configuration or compilation may fail when the selected compiler does not support the required language features or when CMake selects a different compiler than expected.
+
+For a stable build, use one of the following minimum compiler versions:
+
+- GCC 13 or newer
+- Clang 17 or newer
+- MSVC 19.38 or newer, included with Visual Studio 2022 version 17.8 or newer
 
 Check the active compiler version before configuring the project.
 
