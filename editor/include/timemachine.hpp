@@ -22,7 +22,6 @@
 #include "scene/entity/componentmanager.hpp"
 #include "scene/entity/entitymanager.hpp"
 #include "window/inputmanager.hpp"
-#include <memory>
 
 namespace clz::snapshot
 {
@@ -30,20 +29,23 @@ namespace clz::snapshot
 	constexpr uint8_t MAX_SNAPSHOTS = 30;
 
 	/// @brief Type-erased base for a single undoable/redoable change.
-	struct ISnapshotBase
+	class ISnapshotBase
 	{
+	public:
 		virtual ~ISnapshotBase() = default;
 
 		/// @brief Reverts the entity's component to its pre-edit state.
-		virtual void undo(const ecs::entity e) = 0;
+		virtual void undo(ecs::entity e) = 0;
 
 		/// @brief Reapplies the entity's component to its post-edit state.
-		virtual void redo(const ecs::entity e) = 0;
+		virtual void redo(ecs::entity e) = 0;
 	};
 
 	/// @brief Concrete snapshot holding the before/after value of one component type.
-	template <typename T> struct Snapshot : ISnapshotBase
+	template <typename T>
+	class Snapshot : public ISnapshotBase
 	{
+	public:
 		T oldSnapshot;
 		T newSnapshot;
 
@@ -125,7 +127,7 @@ namespace clz::editor
 			}
 		}
 
-		snapshot::Snapshot<T>* snapshot = new snapshot::Snapshot<T>;
+		auto* snapshot = new snapshot::Snapshot<T>;
 		snapshot->oldSnapshot = oldSnapshot;
 		snapshot->newSnapshot = newSnapshot;
 		snapshot::Snapshots.push_back(snapshot);

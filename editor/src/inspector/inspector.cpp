@@ -11,18 +11,23 @@
  */
 
 #include "../../include/inspector/inspector.hpp"
+#include "../../../include/renderer/entitydata/modeldata.hpp"
 #include "../../include/editor_types.hpp"
-#include "../../include/timemachine.hpp"
-#include "../../include/inspector/transformcomponent.hpp"
 #include "../../include/inspector/modelcomponent.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include <imgui.h>
+#include "../../include/inspector/transformcomponent.hpp"
+#include "../../include/timemachine.hpp"
 #include "include/inspector/rigidbodycomponent.hpp"
+#include "scene/entity/components.hpp"
+#include <imgui.h>
 
 namespace clz::editor
 {
+	void showComponentSpecificWindows();
+}
+namespace clz::editor
+{
 	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-	void showInspector()
+	void showInspector(VkCommandBuffer commandBuffer)
 	{
 		ImGui::Begin("Inspector");
 		if (currentSelectedEntity.has_value())
@@ -32,11 +37,17 @@ namespace clz::editor
 			ImGui::Separator();
 			ImGui::PopFont();
 
+			// Every entity has transform component
 			showTransformComponentHeader();
 			ImGui::Separator();
-			showModelComponentHeader();
+
+			if (ecs::hasComponent<ecs::ModelComponent>(currentSelectedEntity.value()))
+				showModelComponentHeader();
 			ImGui::Separator();
-			showRigidBodyHeader();
+
+			if (ecs::hasComponent<ecs::RigidBodyComponent>(currentSelectedEntity.value()))
+				showRigidBodyHeader();
+			ImGui::Separator();
 		}
 		else
 		{
@@ -44,7 +55,14 @@ namespace clz::editor
 		}
 		ImGui::End();
 
+		showComponentSpecificWindows();
+
 		// Check if undo or redo has to be performed
 		timeTravel();
+	}
+
+	void showComponentSpecificWindows()
+	{
+
 	}
 } // namespace clz::editor

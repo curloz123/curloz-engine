@@ -11,6 +11,7 @@
 #include "core/logs.hpp"
 #include "core/time.hpp"
 #include "math/angle.hpp"
+#include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -75,8 +76,8 @@ namespace clz::renderer::camera
 			dir += localRight[id];
 		if (window::isKeyPressed(input::Key::Space))
 			dir += WorldUp;
-		// if (window::isKeyPressed(input::Key::LeftShift))
-		// dir -= WorldUp;
+		if (window::isKeyPressed(input::Key::LeftAlt))
+			dir -= WorldUp;
 
 		if (math::getLengthSquared(dir) > 0.0f)
 		{
@@ -156,6 +157,6 @@ namespace clz::renderer::camera
 		{
 			Fov[id] = 89.0f;
 		}
-		FovChanged[id] = true;
+		updateProjectionMatrix();
 	}
 } // namespace clz::renderer::camera

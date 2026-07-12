@@ -8,6 +8,11 @@
 #include "core/logs.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/camera/camerafunctions.hpp"
+#include "math/vec2.hpp"
+#include "window/mouse.hpp"
+#include "window/inputmanager.hpp"
+#include "core/enginestate.hpp"
+#include "include/offscreen/offscreentarget.hpp"
 
 namespace clz::renderer::camera
 {
@@ -29,7 +34,7 @@ namespace clz::renderer::camera
 #endif
 
 		FirstTime[id] = true;
-		FovChanged[id] = true;
+		updateProjectionMatrix();
 		activeCamera = id;
 	}
 
@@ -55,11 +60,35 @@ namespace clz::renderer::camera
 		return true;
 	}
 
-	void update(const float xPos, const float yPos, const float scroll)
+	void update()
 	{
+#ifdef CLZ_ENABLE_EDITOR
+		if (window::isKeyPressed(input::Key::Escape))
+		{
+			window::enableCursor();
+			setActiveCamera(EditorCam);
+			setEngineState(state::EngineState::Editor, "KEY->ESCAPE, mid render loop");
+		}
+		if (window::isKeyPressed(input::Key::LeftControl) && window::isKeyPressed(input::Key::G) &&
+		    state::g_engineState == state::EngineState::Editor)
+		{
+			window::disableCursor();
+			setActiveCamera(GameCam);
+			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
+		}
+
+		if (editor::isCurrentlyShowingOffscreenTargets())
+		{
+			return;
+		}
+
+#endif
+
+		const math::vec2 cursorPos = window::getCursorPosition();
+		const float scroll = window::getScrollOffset();
 		const auto id = activeCamera;
 		processKeyBoardInput(id);
-		processMouseInput(id, xPos, yPos);
+		processMouseInput(id, cursorPos.x, cursorPos.y);
 		processMouseScroll(id, scroll);
 	}
 } // namespace clz::renderer::camera

@@ -1,0 +1,28 @@
+
+/**
+ * @file rendermodel.hpp
+ * @brief Rendering helpers for drawing ECS entities using the main graphics pipeline.
+ */
+#pragma once
+
+#include "math/mat4x4.hpp"
+#include "modeldata.hpp"
+#include <vulkan/vulkan.h>
+
+namespace clz::renderer
+{
+	/**
+	 * @brief Draws all entities containing a ModelComponent using the main pipeline.
+	 *
+	 * Iterates over all entities that contain both a ModelComponent and a
+	 * TransformComponent, binds the required vertex/index buffers and push
+	 * constants, then submits indexed draw calls for every mesh belonging
+	 * to the model.
+	 *
+	 * @param commandBuffer Command buffer currently recording draw commands.
+	 */
+	void renderEntities(VkCommandBuffer commandBuffer);
+
+	void renderEntity(VkCommandBuffer commandBuffer, ModelID modelID,
+		const math::mat4 &model);
+} // namespace clz::renderer

@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include "../../renderer/entitydata/modeldata.hpp"
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
-#include "renderer/assets/modeldata.hpp"
 #include "physics/body.hpp"
+#include "physics/shape.hpp"
 
 namespace clz::ecs
 {
@@ -69,7 +70,8 @@ namespace clz::ecs
 	};
 	struct RigidBodyDataComponent
 	{
-		physics::BodyData bodyData;
+		physics::BodyData bodyData{};
+		std::vector<physics::BoxShape> boxShapes;
 	};
 
 } // namespace clz::ecs

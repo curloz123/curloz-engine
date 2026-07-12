@@ -22,6 +22,9 @@ namespace clz::window
 			return false;
 		}
 
+		// Initialize resizing
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 		// Initialize all callback functions
 		glfwSetFramebufferSizeCallback(w_window, hintRendererAboutResize);
 		glfwSetCursorPosCallback(w_window, cursorCallback);

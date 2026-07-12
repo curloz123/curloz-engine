@@ -12,9 +12,6 @@
 
 namespace clz::physics
 {
-	/// @brief For external use
-	using BodyId = b3BodyId;
-
 	/// @brief BodyType
 	enum class BodyType
 	{

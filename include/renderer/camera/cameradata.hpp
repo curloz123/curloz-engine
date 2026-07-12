@@ -49,7 +49,9 @@ namespace clz::renderer::camera
 
 	/// @brief Per-camera field of view, in degrees.
 	inline std::array<float, NumCameras> Fov = {60.0f, 60.0f};
-	inline std::array<bool, NumCameras> FovChanged = {true, true};
+
+	/// @brief Hints that projection matrix should be recalculated
+	inline std::array<bool, NumCameras> ProjMatrixChanged = {true, true};
 
 	/// @brief Per-camera current velocity vector.
 	inline std::array<math::vec3, NumCameras> Velocity = {math::vec3(0.0f), math::vec3(0.0f)};

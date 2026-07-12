@@ -5,13 +5,15 @@
  */
 
 #include "scene/entity/entity.hpp"
+#include "../../../include/renderer/entitydata/modeldata.hpp"
+#include "include/editor.hpp"
+#include "include/offscreen/offscreentarget.hpp"
 #include "math/quateulerconv.hpp"
-#include "renderer/assets/modeldata.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "scene/entity/componentloader/loader.hpp"
 #include "scene/entity/componentmanager.hpp"
 #include "scene/entity/components.hpp"
 #include "scene/entity/entitymanager.hpp"
-#include "scene/entity/componentloader/loader.hpp"
 
 namespace clz::ecs
 {
@@ -65,6 +67,7 @@ namespace clz::ecs
 
 		// Entities loaded flag
 		renderer::flagRenderComponentsLoaded();
+		editor::flagOffscreenTargetsEntitiesLoaded();
 
 		clz::log::info("Loaded entities");
 		return true;

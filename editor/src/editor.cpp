@@ -8,11 +8,12 @@
 #include "../include/editor.hpp"
 #include "../include/editor_types.hpp"
 #include "../include/editorshortcuts.hpp"
-#include "../include/inspector/inspector.hpp"
-#include "core/logs.hpp"
 #include "../include/gizmo.hpp"
-#include "renderer/vk_types.hpp"
+#include "../include/inspector/inspector.hpp"
 #include "../include/scenetable.hpp"
+#include "core/logs.hpp"
+#include "include/offscreen/offscreentarget.hpp"
+#include "renderer/vk_types.hpp"
 #include <cmath>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -23,11 +24,11 @@
 
 namespace clz::editor
 {
-	void render()
+	void render(VkCommandBuffer commandBuffer)
 	{
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-		ImGui::PushFont(fontSansBold);
 
+		ImGui::PushFont(fontSansBold);
 		ImGui::Begin("Scene");
 		ImGui::PopFont();
 		if (ImGui::BeginTabBar("Scene"))
@@ -37,7 +38,7 @@ namespace clz::editor
 		}
 		processShortcuts();
 		drawGizmo();
-		showInspector();
+		showInspector(commandBuffer);
 
 		ImGui::End();
 
@@ -45,17 +46,19 @@ namespace clz::editor
 	bool init()
 	{
 		/// Create ImGui's descriptor pool
-		std::vector<VkDescriptorPoolSize> poolSizes = {{VK_DESCRIPTOR_TYPE_SAMPLER, 100},
-							       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100},
-							       {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100},
-							       {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100},
-							       {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100},
-							       {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100},
-							       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100},
-							       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100},
-							       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100},
-							       {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100},
-							       {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100}};
+		std::vector<VkDescriptorPoolSize> poolSizes = {
+			{VK_DESCRIPTOR_TYPE_SAMPLER, 10},
+			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10},
+			{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 10},
+			{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10},
+			{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 10},
+			{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 10},
+			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10},
+			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10},
+			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10},
+			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 10},
+			{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 10}
+		};
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -126,6 +129,8 @@ namespace clz::editor
 		initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineRenderingInfo;
 
 		ImGui_ImplVulkan_Init(&initInfo);
+		createOffscreenTargets();
+
 
 		clz::log::info("Initialized editor");
 
@@ -139,7 +144,8 @@ namespace clz::editor
 		ImGui::NewFrame();
 
 		/// All Rendering functions go here
-		render();
+		render(commandBuffer);
+		presentOffscreenWindows();
 
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
@@ -148,6 +154,7 @@ namespace clz::editor
 	void shutdown()
 	{
 		vkDeviceWaitIdle(clz::renderer::r_deviceContext.device);
+		destroyOffscreenTargets();
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -159,7 +166,7 @@ namespace clz::editor
 		// Rest style by AaronBeardless from ImThemes (Thank you AaronBeardless)
 		ImGuiStyle& style = ImGui::GetStyle();
 
-		style.Alpha = 0.8f;
+		style.Alpha = 1.0 ;
 		style.DisabledAlpha = 0.5f;
 		style.WindowPadding = ImVec2(13.0f, 10.0f);
 		style.WindowRounding = 0.0f;

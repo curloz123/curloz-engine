@@ -17,6 +17,7 @@ namespace clz::physics
 		UnInitialized,
 		None
 	};
+
 }
 
 namespace clz::physics

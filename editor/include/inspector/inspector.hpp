@@ -10,12 +10,14 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 namespace clz::editor
 {
 	/**
 	 * @brief Renders the Inspector panel for the currently selected entity.
 	 */
-	void showInspector();
+	void showInspector(VkCommandBuffer commandBuffer);
 
 	enum class TransformType
 	{
