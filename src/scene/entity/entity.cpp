@@ -63,7 +63,7 @@ namespace clz::ecs
 			if (entityData.contains("transform"))
 			{
 				addComponent<TransformComponent>(e, retrieveTransformComponent(entityData["transform"]));
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 				addComponent<EulerRotationComponent>(e, {math::quatToEulerXYZ(getComponent<TransformComponent>(e).rotation)});
 #endif
 			}

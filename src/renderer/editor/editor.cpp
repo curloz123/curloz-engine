@@ -2,7 +2,7 @@
  * @file editor.cpp
  * @author curl0z
  *
- * @brief Sandbox editor implementation
+ * @brief Editor implementation
  */
 
 #include "renderer/editor/editor.hpp"

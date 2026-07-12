@@ -63,7 +63,7 @@ namespace clz::renderer
 
 		clz::log::info("initialized all renderer context's");
 
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		if (!editor::init())
 		{
 			clz::log::error("Could not initialize editor");

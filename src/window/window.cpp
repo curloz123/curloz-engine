@@ -28,7 +28,7 @@ namespace clz::window
 		glfwSetScrollCallback(w_window, scrollCallback);
 
 		// Cursor's initial state
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		enableCursor();
 #else
 		disableCursor();

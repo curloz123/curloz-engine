@@ -120,7 +120,7 @@ namespace clz::renderer::camera
 			FirstTime[id] = false;
 		}
 
-		if (state::g_engineState == state::EngineState::Sandbox && !window::isMousePressed(input::Mouse::MouseRight))
+		if (state::g_engineState == state::EngineState::Editor && !window::isMousePressed(input::Mouse::MouseRight))
 		{
 			LastX[id] = xPos;
 			LastY[id] = yPos;
