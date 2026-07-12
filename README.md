@@ -32,7 +32,7 @@ A Vulkan 1.3 game engine written in C++23.
 * CMake 3.25+
 * Ninja
 * clang-format (for code style enforcement)
-* GCC or Clang with C++23 support
+* GCC 13+ or Clang 17+ with C++23 support
 
 On Gentoo:
 
@@ -51,7 +51,7 @@ sudo apt install cmake ninja-build clang-format vulkan-tools libvulkan-dev
 * CMake 3.25+
 * Ninja
 * Vulkan SDK from [lunarg.com](https://vulkan.lunarg.com)
-* MSVC or MinGW with C++23 support
+* MSVC 19.38+ (Visual Studio 2022 17.8+) or MinGW using GCC 13+
 
 ---
 
@@ -59,7 +59,7 @@ sudo apt install cmake ninja-build clang-format vulkan-tools libvulkan-dev
 
 ```bash
 # Clone with submodules
-git clone --recursive https://github.com/curl0z/curloz-engine.git
+git clone --recursive https://github.com/curloz123/curloz-engine.git
 cd curloz-engine
 
 # If you forgot --recursive
@@ -134,6 +134,106 @@ cmake -E remove_directory build/debug
 cmake -B build/debug -G Ninja
 cmake --build build/debug
 ```
+
+### Git submodules are missing or not initialized
+
+The project uses Git submodules for third-party dependencies stored under the `external/` directory. If CMake reports missing source directories, missing `CMakeLists.txt` files, or errors while adding external libraries, verify that all submodules have been initialized.
+
+Check the current submodule status:
+
+```bash
+git submodule status
+```
+
+If a submodule has not been initialized, its status may be prefixed with `-`.
+
+Initialize and update all submodules recursively:
+
+```bash
+git submodule update --init --recursive
+```
+
+If the repository was cloned without submodules, the same command can be run from the repository root after cloning.
+
+Alternatively, clone the repository and initialize submodules in one step:
+
+```bash
+git clone --recursive https://github.com/curloz123/curloz-engine.git
+cd curloz-engine
+```
+
+If submodule URLs or references appear out of sync, synchronize them before updating:
+
+```bash
+git submodule sync --recursive
+git submodule update --init --recursive
+```
+
+After restoring the submodules, remove the previous build directory and configure the project again:
+
+```bash
+cmake -E remove_directory build/debug
+cmake -B build/debug -G Ninja
+cmake --build build/debug
+```
+
+### Compiler does not support the required C++ standard
+
+Curloz Engine is configured to use C++23. Configuration or compilation may fail when the selected compiler does not support the required language features or when CMake selects a different compiler than expected.
+
+For a stable build, use one of the following minimum compiler versions:
+
+- GCC 13 or newer
+- Clang 17 or newer
+- MSVC 19.38 or newer, included with Visual Studio 2022 version 17.8 or newer
+
+Check the active compiler version before configuring the project.
+
+For GCC:
+
+```bash
+g++ --version
+```
+
+For Clang:
+
+```bash
+clang++ --version
+```
+
+For MSVC, open a Visual Studio Developer Command Prompt and run:
+
+```powershell
+cl
+```
+
+If multiple compilers are installed, CMake may select a compiler different from the one you intended to use.
+
+To explicitly configure with GCC:
+
+```bash
+cmake -B build/debug -G Ninja \
+  -DCMAKE_C_COMPILER=gcc \
+  -DCMAKE_CXX_COMPILER=g++
+```
+
+To explicitly configure with Clang:
+
+```bash
+cmake -B build/debug -G Ninja \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++
+```
+
+When switching compilers, do not reuse an existing configured build directory. Remove it before running CMake again:
+
+```bash
+cmake -E remove_directory build/debug
+cmake -B build/debug -G Ninja
+cmake --build build/debug
+```
+
+If compilation still fails, verify that the selected compiler has suitable C++23 support and that CMake is detecting the intended compiler during configuration.
 
 ---
 
