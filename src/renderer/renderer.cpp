@@ -16,6 +16,7 @@
 #include "renderer/mainloop.hpp"
 #include "renderer/vk_types.hpp"
 #include <vector>
+#include "renderer/entitydata/entitydata.hpp"
 
 namespace clz::renderer
 {
@@ -90,13 +91,13 @@ namespace clz::renderer
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
 
+		/// --- First Destroy Entity Data ---
+		destroyEntityData();
+
+		/// --- Destroy all context's
 		destroyFrameContext();
 		destroyPipelineContexts();
 		destroySwapchainContext();
-
-		// TEST
-		// TEST
-
 		destroyCommandContext();
 		destroyDeviceContext();
 
