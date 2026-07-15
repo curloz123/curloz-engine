@@ -131,7 +131,7 @@ namespace clz::ecs
 	 * @param e Entity to set component
 	 * @param component the actual component
 	 */
-	template <typename T> void setComponent(entity e, T& component)
+	template <typename T> void setComponent(entity e, const T& component)
 	{
 		auto& componentStorage = getStorage<T>();
 		componentStorage.storage[componentStorage.sparse[e]] = component;
@@ -195,7 +195,7 @@ namespace clz::ecs
 	 * Returns a tuple of references. Modifications affect
 	 * the actual storage data.
 	 *
-	 * @note Dont use this function directly in hot loops.
+	 * @note Don't use this function directly in hot loops.
 	 * Tuple construction adds overhead not suitable for tight iteration.
 	 *
 	 * @tparam Components Component types to retrieve.

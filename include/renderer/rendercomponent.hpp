@@ -7,10 +7,16 @@
  */
 #pragma once
 
-#include "../scene/entity/components.hpp"
 #include "core/logs.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include "shaderdata/shaderdata.hpp"
+#include "renderer/entitydata/indexbuffer.hpp"
+#include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/entitydata/uvbuffer.hpp"
+#include "renderer/entitydata/texture.hpp"
+#include "entitydata/modeldata.hpp"
+#include "pipelineinput/mainpipeline.hpp"
+#include "renderer/context/pipelinecontext.hpp"
+#include "scene/entity/components.hpp"
+#include "vk_types.hpp"
 #include <filesystem>
 
 namespace clz::renderer
@@ -18,15 +24,20 @@ namespace clz::renderer
 	/**
 	 * @brief This function kind of acts like a flag,
 	 * that is set whenever the ecs subsystem has finished
-	 * loading render components of all entites
+	 * loading render components of all entities
 	 *
 	 * Initializes entity data, which further allocates
 	 * memory and relevant stuff internally
 	 */
 	inline void flagRenderComponentsLoaded()
 	{
-		clz::log::info("Loading entities render components");
-		createEntityData();
+		VBuffer::submitVertexBuffer();
+		IBuffer::submitIndexBuffer();
+		UVBuffer::submitUVBuffer();
+		createTextures();
+
+		clz::log::info("Updating pipeline input, after entities have loaded");
+		updateTextureData(r_pipelineContext);
 	}
 
 	/**

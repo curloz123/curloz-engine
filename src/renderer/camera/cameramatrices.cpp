@@ -10,24 +10,27 @@
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/vk_types.hpp"
+#include "core/logs.hpp"
 
 namespace clz::renderer::camera
 {
 	math::mat4 getViewMatrix()
 	{
 		view = makeViewMatrix(Position[activeCamera], Position[activeCamera] + localFront[activeCamera], WorldUp);
-		;
 		return view.value();
 	}
 	math::mat4 getProjectionMatrix()
 	{
-		if (FovChanged[activeCamera])
+		if (ProjMatrixChanged[activeCamera])
 		{
+			const auto width = static_cast<float>(r_swapchainContext.extent.width);
+			const auto height =  static_cast<float>(r_swapchainContext.extent.height);
 			projection = math::makePerspectiveMatrix(
 			    Far[activeCamera], Near[activeCamera],
-			    static_cast<float>(r_swapchainContext.extent.width) / r_swapchainContext.extent.height, math::radians(Fov[activeCamera]));
+			    width / height, math::radians(Fov[activeCamera]));
 
-			FovChanged[activeCamera] = false;
+			ProjMatrixChanged[activeCamera] = false;
+			clz::log::debug("Updating projection matrix");
 			return projection.value();
 		}
 

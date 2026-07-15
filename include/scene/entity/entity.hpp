@@ -1,7 +1,8 @@
 /**
  * @file entity.hpp
  * @author curl0z
- * @brief Main file for entity system
+ * @brief Main file for entity system,
+ * Handles all loading, saving, destroying process for entities
  */
 
 #pragma once
@@ -12,13 +13,13 @@ namespace clz::ecs
 {
 	/**
 	 * @brief Loads all entities from JSON file
-	 * @param entityJson nlohmann::json object that has already parsed the JSON
+	 * @param entityJson JSON's entity-table containing entity data
 	 */
 	bool loadEntities(const nlohmann::json& entityJson);
 
 	/**
 	 * @brief Writes back entity scene data to JSON file
-	 * @param entityJson Json Entity table
+	 * @param entityJson JSON Entity table
 	 */
 	void saveEntities(nlohmann::json& entityJson);
 

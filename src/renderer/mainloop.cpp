@@ -5,48 +5,40 @@
  */
 
 #include "renderer/mainloop.hpp"
+#include "../../editor/include/editor.hpp"
+#include "../../editor/include/offscreen/offscreentarget.hpp"
+#include "../../include/renderer/entitydata/rendermodel.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
-#include "renderer/assets/drawmodel.hpp"
 #include "renderer/camera/camera.hpp"
-#include "renderer/editor/editor.hpp"
+#include "renderer/camera/cameramatrices.hpp"
+#include "renderer/pipelineinput/mainpipeline.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shaderdata/shaderdata.hpp"
+#include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
-#include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 
 namespace clz::renderer
 {
-	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
+	void render(VkCommandBuffer commandBuffer)
 	{
-#ifdef CLZ_ENABLE_SANDBOX
-		if (window::isKeyPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
-		{
-			window::enableCursor();
-			camera::setActiveCamera(camera::EditorCam);
-			setEngineState(state::EngineState::Sandbox, "KEY->ESCAPE, mid render loop");
-		}
-		if (window::isKeyPressed(input::Key::LeftControl) && window::isKeyPressed(input::Key::G) &&
-		    state::g_engineState == state::EngineState::Sandbox)
-		{
-			window::disableCursor();
-			camera::setActiveCamera(camera::GameCam);
-			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
-		}
+		camera::update();
+		// Pipeline
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.pipeline);
+		// Descriptor sets
+		MainPipeline::updateCameraUBO(camera::getProjectionMatrix(), camera::getViewMatrix());
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.layout, 0, 1,
+					&r_pipelineContext.descriptorSets[r_currentFrame], 0, nullptr);
+
+		renderEntities(commandBuffer);
+
+#ifdef CLZ_ENABLE_EDITOR
+		if (state::g_engineState == state::EngineState::Editor)
+		editor::update(commandBuffer);
 #endif
 
-		const math::vec2 cursorPos = window::getCursorPosition();
-		const float scroll = window::getScrollOffset();
-		camera::update(cursorPos.x, cursorPos.y, scroll);
-		updateShaderData(commandBuffer, currentFrame);
-		drawEntitiesMainPipeline(commandBuffer);
-
-#ifdef CLZ_ENABLE_SANDBOX
-		if (state::g_engineState == state::EngineState::Sandbox)
-			editor::update(commandBuffer);
-#endif
 	}
 
 	void waitForGPU(VkFence fence)
@@ -132,20 +124,21 @@ namespace clz::renderer
 		    .maxDepth = 1.0f,
 		};
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
 		const VkRect2D scissor{{0, 0}, r_swapchainContext.extent};
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.pipeline);
-
-		render(commandBuffer, r_currentFrame);
-
+		render(commandBuffer);
 		vkCmdEndRendering(commandBuffer);
-
-		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
-					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
+		transition_image_layout(r_swapchainContext.images[imageIndex],
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
+				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
 					VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+
+#ifdef CLZ_ENABLE_EDITOR
+		/// @brief Draws editor's On window images
+		editor::drawOffscreenTargets(commandBuffer);
+#endif
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) [[unlikely]]
 		{

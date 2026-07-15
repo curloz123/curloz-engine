@@ -15,7 +15,6 @@
 #include "scene/camera/camera.hpp"
 #include "scene/entity/entity.hpp"
 #include "scene/scene.hpp"
-#include <filesystem>
 #include <fstream>
 
 namespace clz::scene
@@ -77,7 +76,7 @@ namespace clz::scene
 		saveCameras(sceneFile);
 		ecs::saveEntities(sceneFile);
 
-		// Finally desstroy entities
+		// Finally destroy entities
 		ecs::destroyEntities();
 
 		// Write back

@@ -46,6 +46,14 @@ namespace clz::renderer
 	inline PipelineContext r_pipelineContext{};
 
 	/**
+	 * @brief Shapes pipeline context.
+	 *
+	 * A utility pipeline helpful to draw shapes
+	 * such as cubes, cuboids, cylinder, spheres etc.
+	 */
+	inline PipelineContext r_shapePipelineContext{};
+
+	/**
 	 * @brief Global frame context.
 	 */
 	inline FrameContext r_frameContext{};

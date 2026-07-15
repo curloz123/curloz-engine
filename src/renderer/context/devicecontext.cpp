@@ -15,6 +15,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/vulkanhelper.hpp>
+#include "core/assert.hpp"
 
 namespace clz::renderer
 {
@@ -224,6 +225,7 @@ namespace clz::renderer
 			break;
 		case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT):
 			clz::log::error("VULKAN VALIDATION LAYERS: " + std::string(pMessageData->pMessage));
+			// clz::CLZ_ASSERT(false, "fuck off");
 			break;
 		default:
 			break;
