@@ -24,5 +24,7 @@ namespace clz::physics
 {
 	/// @brief typename identifiers for external subsystems to use
 	using BodyId = b3BodyId;
+	inline const b3BodyId NullBodyId = b3_nullBodyId;
 	using ShapeId = b3BodyId;
+	inline const b3ShapeId NullShapeId = b3_nullShapeId;
 }

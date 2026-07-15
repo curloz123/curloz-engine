@@ -67,8 +67,6 @@ int main()
 		clz::renderer::update();
 	}
 
-	clz::physics::init();
-
 	// Shut down
 	clz::scene::saveScene();
 	clz::audio::shutdown();

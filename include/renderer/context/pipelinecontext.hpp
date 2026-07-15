@@ -62,6 +62,6 @@ namespace clz::renderer
 	 * @param pipelineContext PipelineContext object
 	 * @param uboMemory Memory of uniform buffers attached
 	 */
-	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory uboMemory);
+	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory& uboMemory);
 
 } // namespace clz::renderer

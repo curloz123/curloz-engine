@@ -24,6 +24,17 @@ namespace clz::physics
 	}
 
 	/**
+	 * @brief converts physics engine's internal vec3 data type
+	 * to engine's native.
+	 * @param vec Physics engine's internal vec3 data type
+	 * @return equivalent math::vec3
+	 */
+	inline math::vec3 fromVec3(const b3Vec3& vec)
+	{
+		return {vec.x, vec.y, vec.z};
+	}
+
+	/**
 	 * @brief Converts clz::math::quat to b3Quat
 	 *
 	 * @param quat clz::math::quat Quaternion value
@@ -31,9 +42,22 @@ namespace clz::physics
 	 */
 	inline b3Quat toQuat(const math::quat& quat)
 	{
-		b3Quat q;
-		q.s = quat.w;
-		q.v = (b3Vec3){quat.x, quat.y, quat.z};
-		return q;
+		return b3Quat{
+			.v = (b3Vec3){quat.x, quat.y, quat.z},
+			.s = quat.w,
+		};
 	}
+
+	/**
+	 * @brief converts physics engine's internal quaternion data type
+	 * to engine's native.
+	 * @param quat Physics engine's internal vec3 data type
+	 * @return equivalent math::vec3
+	 */
+	inline math::quat fromQuat(const b3Quat& quat)
+	{
+		const auto [x, y, z] = quat.v;
+		return {quat.s , x, y, z};
+	}
+
 }

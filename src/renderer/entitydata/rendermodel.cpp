@@ -7,6 +7,7 @@
 #include "renderer/vk_types.hpp"
 #include "scene/entity/componentmanager.hpp"
 #include "scene/entity/components.hpp"
+#include "core/enginestate.hpp"
 
 namespace clz::renderer
 {
@@ -15,10 +16,27 @@ namespace clz::renderer
 		const auto& entities = ecs::getEntitiesWithComponent<ecs::ModelComponent>();
 		for (const auto& entity : entities)
 		{
+			const auto name = ecs::getEntityName(entity);
 			const auto& modelComponent = ecs::getComponent<ecs::ModelComponent>(entity);
+			math::mat4 model;
+#ifdef CLZ_ENABLE_EDITOR
+			if (state::g_engineState == state::EngineState::Editor)
+			{
+				const auto& transformComponent = ecs::getComponent<ecs::EditorTransformComponent>(entity);
+				model = math::getModelMatrix(transformComponent.rotation,
+							transformComponent.position, transformComponent.scale);
+			}
+			else
+			{
+				const auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
+				model = math::getModelMatrix(transformComponent.rotation,
+							transformComponent.position, transformComponent.scale);
+			}
+#else
 			const auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
-			const math::mat4 model = math::getModelMatrix(transformComponent.rotation,
+			model = math::getModelMatrix(transformComponent.rotation,
 						transformComponent.position, transformComponent.scale);
+#endif
 
 			renderEntity(commandBuffer, modelComponent.modelID, model);
 		}

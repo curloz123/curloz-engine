@@ -45,7 +45,7 @@ namespace clz::editor
 				showModelComponentHeader();
 			ImGui::Separator();
 
-			if (ecs::hasComponent<ecs::RigidBodyComponent>(currentSelectedEntity.value()))
+			if (ecs::hasComponent<ecs::BodyComponent>(currentSelectedEntity.value()))
 				showRigidBodyHeader();
 			ImGui::Separator();
 		}

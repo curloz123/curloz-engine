@@ -6,7 +6,6 @@
 
 #include "scene/entity/entity.hpp"
 #include "../../../include/renderer/entitydata/modeldata.hpp"
-#include "include/editor.hpp"
 #include "include/offscreen/offscreentarget.hpp"
 #include "math/quateulerconv.hpp"
 #include "renderer/rendercomponent.hpp"
@@ -17,10 +16,23 @@
 
 namespace clz::ecs
 {
+	/**
+	 * @brief Loads all entities from JSON file
+	 * Iteratively loops over all entities inside the "entities" table inside JSON
+	 * And retrieves the components registered under that entity index
+	 * by calling that component's respective loader function.
+	 * If editor is enabled, function will load create extra euler rotation and
+	 * editor transform component for editor purposes.
+	 * After loading, it will flag each subsystem that entities have been loaded.
+	 *
+	 * @param entityJson JSON's entity-table containing entity data
+	 * @note It is necessary for each entity to have a name, if not it will be marked "Unnamed Entity"
+	 */
 	bool loadEntities(const nlohmann::json& entityJson)
 	{
 		for (auto& entityData : entityJson)
 		{
+			/// @brief Name is always retrieved first
 			ecs::entity e;
 			if (!entityData.contains("name"))
 			{
@@ -39,15 +51,20 @@ namespace clz::ecs
 		      	 			"Does not have transform component"
 		      	 			"Assigning it identity transform component");
 				addComponent<TransformComponent>(e, TransformComponent());
-
 			}
 			else
 			{
-				addComponent<TransformComponent>(e, retrieveTransformComponent(entityData["transform"]));
-			}
+				const auto transform = retrieveTransformComponent(entityData["transform"]);
+				addComponent<TransformComponent>(e, transform);
 #ifdef CLZ_ENABLE_EDITOR
-			addComponent<EulerRotationComponent>(e, {math::quatToEulerXYZ(getComponent<TransformComponent>(e).rotation)});
+				/// @brief If Editor is enabled,
+				/// only then create these components
+				addComponent<EulerRotationComponent>(e,
+					EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
+				addComponent<EditorTransformComponent>(e,
+					EditorTransformComponent(transform));
 #endif
+			}
 
 			// Attach ModelComponent if present
 			if (entityData.contains("model"))
@@ -58,10 +75,10 @@ namespace clz::ecs
 			// Attach physics Component if present
 			if (entityData.contains("rigidbody"))
 			{
-				auto [body, data] =
-					retrieveBodyComponent(entityData["rigidbody"], ecs::getComponent<TransformComponent>(e));
-				addComponent<RigidBodyComponent>(e, body);
-				addComponent<RigidBodyDataComponent>(e, data);
+				const auto& [body, shapes] =
+					retrieveBodyComponent(entityData["rigidbody"], e);
+				addComponent<BodyComponent>(e, body);
+				addComponent<ShapeComponent>(e, shapes);
 			}
 		}
 
@@ -73,6 +90,8 @@ namespace clz::ecs
 		return true;
 	}
 
+	/// @brief Writes back all entity data inside the entity.json file
+	/// @param sceneJson The main scene's JSON file
 	void saveEntities(nlohmann::json& sceneJson)
 	{
 		sceneJson["entities"] = nlohmann::json::array();
@@ -92,15 +111,16 @@ namespace clz::ecs
 				saveModelComponent(getComponent<ModelComponent>(entity), entityJson["model"]);
 			}
 
-			if (hasComponent<RigidBodyDataComponent>(entity))
+			if (hasComponent<BodyComponent>(entity))
 			{
-				saveRigidBodyComponent(std::make_tuple(getComponent<RigidBodyComponent>(entity),
-					getComponent<RigidBodyDataComponent>(entity)), entityJson["rigidbody"]);
+				saveRigidBodyComponent(std::make_tuple(getComponent<BodyComponent>(entity),
+					getComponent<ShapeComponent>(entity)), entityJson["rigidbody"]);
 			}
 			sceneJson["entities"].push_back(entityJson);
 		}
 	}
 
+	/// @brief destroys all entites after they have been saved
 	void destroyEntities()
 	{
 		clearEntities();

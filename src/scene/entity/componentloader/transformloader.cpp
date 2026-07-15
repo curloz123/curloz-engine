@@ -1,7 +1,16 @@
+/**
+ * @file transformloader.cpp
+ * @author curl0z
+ * @brief Loads/Save transform data of an entity from/to JSON
+ * @note not required to pass entity, just pass their data!!
+ */
 #include "scene/entity/componentloader/loader.hpp"
 
 namespace clz::ecs
 {
+	/// @brief Retrieves transform component of any entity.
+	/// @param componentData JSON index of entity
+	/// @return TransformComponent of given entity
 	TransformComponent retrieveTransformComponent(const nlohmann::basic_json<>& componentData)
 	{
 		const clz::math::quat q(componentData["rotation"][0], componentData["rotation"][1], componentData["rotation"][2],
@@ -12,6 +21,9 @@ namespace clz::ecs
 		return {q, t, s};
 	}
 
+	/// @brief Saves transform component of any entity.
+	/// @param tc TransformComponent of given entity
+	/// @param componentData JSON index of entity
 	void saveTransformComponent(const TransformComponent& tc, nlohmann::json& componentData)
 	{
 		componentData["rotation"][0] = tc.rotation.w;

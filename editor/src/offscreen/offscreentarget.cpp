@@ -1,3 +1,11 @@
+/**
+ * @file offscreentarget.cpp
+ * @author curl0z
+ * @brief Lifecycle management for editor offscreen render targets:
+ * creation/destruction of the color+depth image pair, sampler, and ImGui
+ * texture registration, plus per-frame dispatch of draw/present calls for
+ * every currently-open offscreen window.
+ */
 #include "../../include/offscreen/offscreentarget.hpp"
 #include "../../include/offscreen/backend/backend.hpp"
 #include "core/logs.hpp"
@@ -16,6 +24,8 @@ namespace clz::editor
 
 namespace clz::editor
 {
+	/// @brief Initializes the offscreen backend (pipeline, descriptors) and
+	/// creates every offscreen target the editor uses.
 	bool createOffscreenTargets()
 	{
 		// Initialize backend
@@ -35,6 +45,7 @@ namespace clz::editor
 		return true;
 	}
 
+	/// @brief Shuts down the offscreen backend and frees every offscreen target's resources.
 	void destroyOffscreenTargets()
 	{
 		backend::shutdown();
@@ -43,6 +54,9 @@ namespace clz::editor
 		clz::log::info("closed offscreen targets");
 	}
 
+	/// @brief Issues the scene render pass for each offscreen target that's
+	/// currently open, and updates whether any offscreen target is active
+	/// (used to suppress main camera input while a preview owns focus).
 	void drawOffscreenTargets(VkCommandBuffer commandBuffer)
 	{
 		bool isDrawing = false;
@@ -57,6 +71,7 @@ namespace clz::editor
 		IsCurrentlyShowingOffscreenTargets = isDrawing;
 	}
 
+	/// @brief Draws the ImGui window for each offscreen target that's currently open.
 	void presentOffscreenWindows()
 	{
 		bool isPresenting = false;
@@ -69,16 +84,21 @@ namespace clz::editor
 		IsCurrentlyShowingOffscreenTargets = isPresenting;
 	}
 
+	/// @brief Whether any offscreen target window is currently open.
 	bool isCurrentlyShowingOffscreenTargets()
 	{
 		return IsCurrentlyShowingOffscreenTargets;
 	}
 
+	/// @brief Forwards the "entity data ready" signal to the offscreen backend.
 	void flagOffscreenTargetsEntitiesLoaded()
 	{
 		backend::flagBackendComponentsLoaded();
 	}
 
+	/// @brief Destroys and recreates a target's Vulkan resources at a new
+	/// size. Waits for the device to go idle first, since the target's
+	/// current image may still be referenced by an in-flight frame.
 	bool recreateOffscreenTarget(OffscreenTarget& target, uint32_t width, uint32_t height)
 	{
 		vkDeviceWaitIdle(renderer::r_deviceContext.device);
@@ -97,6 +117,10 @@ namespace clz::editor
 
 namespace clz::editor
 {
+	/// @brief Creates one offscreen target's full resource set: color image,
+	/// its memory/view, a sampler, a depth image/memory/view (required since
+	/// the shared editor pipeline has depth testing enabled), and registers
+	/// the color view with ImGui for display via ImGui::Image().
 	bool createOffscreenTarget(OffscreenTarget& target, const uint32_t width, const uint32_t height)
 	{
 		if (width == 0 || height == 0)
@@ -135,7 +159,6 @@ namespace clz::editor
 			return false;
 		}
 
-		// Sampler
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -156,7 +179,7 @@ namespace clz::editor
 		{
 			clz::log::error("failed to create sampler");
 			return false;
-	
+
 		}
 
 		if (renderer::r_swapchainContext.depthFormat == VK_FORMAT_UNDEFINED) [[unlikely]]
@@ -220,6 +243,8 @@ namespace clz::editor
 		return true;
 	}
 
+	/// @brief Frees every Vulkan resource owned by an offscreen target,
+	/// including unregistering its ImGui texture.
 	void destroyOffscreenTarget(OffscreenTarget& target)
 	{
 		ImGui_ImplVulkan_RemoveTexture(target.descriptorSet);

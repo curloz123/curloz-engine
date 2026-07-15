@@ -44,15 +44,15 @@ namespace clz::state
 		switch (g_engineState)
 		{
 		case EngineState::Game:
-			clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
+			//clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
 			break;
 
 		case EngineState::Editor:
-			clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
+			//clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
 			break;
 
 		case EngineState::Shutdown:
-			clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
+			//clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
 			break;
 		}
 	}

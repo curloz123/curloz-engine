@@ -30,7 +30,7 @@ namespace clz::gizmo
 	bool gizmoUsedThisFrame = false;
 
 	/// @brief Transform captured at the start of the current gizmo drag, used as the undo "before" value.
-	inline ecs::TransformComponent previousTransform;
+	inline ecs::EditorTransformComponent previousTransform;
 } // namespace clz::gizmo
 
 namespace clz::editor
@@ -46,17 +46,17 @@ namespace clz::editor
 			return;
 		}
 
-		auto transform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
-		auto eulerRot = ecs::getComponent<ecs::EulerRotationComponent>(currentSelectedEntity.value());
+		auto& editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value());
+		auto& eulerRot = ecs::getComponent<ecs::EulerRotationComponent>(currentSelectedEntity.value());
 
 		gizmo::gizmoUsedThisFrame = ImGuizmo::IsUsingAny();
 		if (gizmo::gizmoUsedThisFrame && !gizmo::gizmoUsedLastFrame)
 		{
 			// Drag just started — capture the pre-drag state
-			gizmo::previousTransform = transform;
+			gizmo::previousTransform = editorTransform;
 		}
 
-		math::mat4 model = math::getModelMatrix(transform.rotation, transform.position, transform.scale);
+		math::mat4 model = math::getModelMatrix(editorTransform.rotation, editorTransform.position, editorTransform.scale);
 		const math::mat4 view = renderer::camera::getViewMatrix();
 		math::mat4 proj = renderer::camera::getProjectionMatrix();
 		// Flip Y — ImGuizmo assumes an OpenGL-style projection, ours is Vulkan (Y-flipped)
@@ -85,18 +85,20 @@ namespace clz::editor
 		// Decompose the manipulated matrix back into position/rotation/scale
 		float pos[3], rot[3], scale[3];
 		ImGuizmo::DecomposeMatrixToComponents(model.data, pos, rot, scale);
-		eulerRot.rotation = math::vec3(rot[0], rot[1], rot[2]);
-		ecs::setComponent<ecs::EulerRotationComponent>(currentSelectedEntity.value(), eulerRot);
 
-		transform.position = math::vec3(pos[0], pos[1], pos[2]);
-		transform.rotation = math::quatFromEuler(math::radians(eulerRot.rotation));
-		transform.scale = math::vec3(scale[0], scale[1], scale[2]);
+		eulerRot.rotation = math::vec3(rot[0], rot[1], rot[2]);
+		editorTransform.position = math::vec3(pos[0], pos[1], pos[2]);
+		editorTransform.rotation = math::quatFromEuler(math::radians(eulerRot.rotation));
+		editorTransform.scale = math::vec3(scale[0], scale[1], scale[2]);
+
+		const auto transform = ecs::TransformComponent(
+			editorTransform.rotation, editorTransform.position, editorTransform.scale);
 		ecs::setComponent<ecs::TransformComponent>(currentSelectedEntity.value(), transform);
 
 		if (!gizmo::gizmoUsedThisFrame && gizmo::gizmoUsedLastFrame)
 		{
 			// Drag just ended, create a snapshot
-			createSnapshot<ecs::TransformComponent>(currentSelectedEntity.value(), gizmo::previousTransform, transform);
+			createSnapshot<ecs::EditorTransformComponent>(currentSelectedEntity.value(), gizmo::previousTransform, editorTransform);
 		}
 		gizmo::gizmoUsedLastFrame = gizmo::gizmoUsedThisFrame;
 	}

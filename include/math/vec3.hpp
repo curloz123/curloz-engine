@@ -67,16 +67,7 @@ namespace clz::math
 			y += rhs.y;
 			z += rhs.z;
 		}
-		/**
-		 * @brief Operator overloaded subtraction of current to rhs vector
-		 * @param rhs Source SSE register.
-		 */
-		void operator-=(const vec3& rhs)
-		{
-			x -= rhs.x;
-			y -= rhs.y;
-			z -= rhs.z;
-		}
+
 
 		/**
 		 * @brief Operator overloaded addition with another vector
@@ -87,6 +78,17 @@ namespace clz::math
 			return {x + rhs.x, y + rhs.y, z + rhs.z};
 		}
 
+
+		/**
+		 * @brief Operator overloaded subtraction of current to rhs vector
+		 * @param rhs Source SSE register.
+		 */
+		void operator-=(const vec3& rhs)
+		{
+			x -= rhs.x;
+			y -= rhs.y;
+			z -= rhs.z;
+		}
 		/**
 		 * @brief Operator overloaded subtraction with another vector
 		 * @param rhs Source SSE register.
@@ -96,6 +98,16 @@ namespace clz::math
 			return {x - rhs.x, y - rhs.y, z - rhs.z};
 		}
 
+		/**
+		 * @brief Operator overloaded multiplication of a
+		 * vec3 with current one
+		 * @param rhs Other vec3 to multiply with
+		 * @return multiplication of two vectors
+		 */
+		inline vec3 operator*=(const vec3& rhs) const
+		{
+			return {x * rhs.x, y * rhs.y, z * rhs.z};
+		}
 		/**
 		 * @brief Operator overloaded subtraction with a scalar
 		 * @param scalar Source SSE register.

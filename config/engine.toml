@@ -1,8 +1,8 @@
 [engine]
 name = "Curloz Engine"
 version_major = 0
-version_minor = 3
-version_patch = 6
+version_minor = 4
+version_patch = 0
 
 [window]
 width = 800
@@ -13,5 +13,5 @@ triplebuffering = true
 
 [physics]
 substepcount = 4
-reversetimestep = 0.0167 # 1.0/60.0
+timestep = 0.0167 # 1.0/60.0
 enablesleep = false

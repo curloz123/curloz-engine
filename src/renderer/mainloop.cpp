@@ -39,9 +39,6 @@ namespace clz::renderer
 		editor::update(commandBuffer);
 #endif
 
-		/*drawShape(commandBuffer, Shape::BOX, camera::getProjectionMatrix(),
-				camera::getViewMatrix(), math::mat4(1.0f), 
-				math::vec4(0.5f, 0.5f, 0.0f, 1.0f));*/
 	}
 
 	void waitForGPU(VkFence fence)
@@ -139,7 +136,7 @@ namespace clz::renderer
 					VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
 #ifdef CLZ_ENABLE_EDITOR
-		// Draw editor's On window images
+		/// @brief Draws editor's On window images
 		editor::drawOffscreenTargets(commandBuffer);
 #endif
 

@@ -10,20 +10,6 @@
 
 namespace clz::physics
 {
-	/// @brief Describes at which stage initialization failed
-	enum ERROR
-	{
-		WorldCreation,
-		UnInitialized,
-		None
-	};
-
-}
-
-namespace clz::physics
-{
-	inline ERROR p_err = ERROR::UnInitialized;
-
 	/// @brief Global physics world
 	inline b3WorldId p_world = b3_nullWorldId;
 	/// @brief Gravity
@@ -31,6 +17,8 @@ namespace clz::physics
 	/// @brief Time step
 	inline float p_timeStep = 1.0f/60.0f;
 	/// @brief Sub step count
-	inline float p_subStepCount = 4;
+	inline int p_subStepCount = 4;
+	/// @brief Accumulator
+	inline float p_accumulator = 0.0f;
 }
 

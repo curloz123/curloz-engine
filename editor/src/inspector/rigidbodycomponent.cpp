@@ -31,129 +31,129 @@
 namespace clz::editor
 {
 	/// @brief Stores previous data in rigid body data component
-	ecs::RigidBodyDataComponent previousRigidBodyData;
+	ecs::BodyComponent previousBodyData;
 	/// @brief Stores previous current in rigid body data component
-	ecs::RigidBodyDataComponent currentRigidBodyData;
-
-	bool showShapeWindow = false;
+	ecs::BodyComponent currentRigidBodyData;
 
 	/**
 	 * @brief Shows rigid body header in inspector
-	 * also stores a snapshot upon every change
+	 * Allows to edit physics-body data of current selected entity
+	 * Opens a new window for shape editor
+	 * @note It currently in-complete. Needs undo/redo work-done
 	 */
 	void showRigidBodyHeader()
 	{
 		if (!ImGui::CollapsingHeader("RigidBody"))
 			return;
 
-		const auto& body = ecs::getComponent<ecs::RigidBodyComponent>(currentSelectedEntity.value());
-		const auto& data = ecs::getComponent<ecs::RigidBodyDataComponent>(currentSelectedEntity.value());
-		currentRigidBodyData = data;
+		const auto& bodyId = ecs::getComponent<ecs::BodyComponent>(currentSelectedEntity.value()).bodyId;
+		const auto& boxShapes = ecs::getComponent<ecs::ShapeComponent>(currentSelectedEntity.value()).boxShapes;
 
 
 		ImGui::PushFont(fontMonoBold);
 		std::string type = "undefined";
-		if (data.bodyData.type == physics::BodyType::DynamicBody)
+		const auto& bodyType = physics::getBodyType(bodyId);
+		if (bodyType == physics::BodyType::DynamicBody)
 			type = "dynamic";
-		else if (data.bodyData.type == physics::BodyType::StaticBody)
+		else if (bodyType == physics::BodyType::StaticBody)
 			type = "static";
-		else if (data.bodyData.type == physics::BodyType::KinematicBody)
+		else if (bodyType == physics::BodyType::KinematicBody)
 			type = "kinematic";
 		else
 			clz::log::warn("In Editor, unable to identify body type");
-		ImGui::Text("Body Type: %s", type.c_str());
+		ImGui::Text("Body Type: ");
+		ImGui::SameLine();
 		ImGui::PopFont();
+		ImGui::PushFont(fontMono);
+		ImGui::Text(type.c_str());
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::PushFont(fontMonoBold);
+		if (ImGui::Button("Change type"))
+		{
+			ImGui::OpenPopup("Body type");
+			clz::log::debug("Changing body type");
+		}
+		ImGui::PopFont();
+		if (ImGui::BeginPopup("Body type"))
+		{
+			if (ImGui::MenuItem("Static"))
+			{
+				physics::setBodyType(bodyId, physics::BodyType::StaticBody);
+			}
+			if (ImGui::MenuItem("Kinematic"))
+			{
+				physics::setBodyType(bodyId, physics::BodyType::KinematicBody);
+			}
+			if (ImGui::MenuItem("Dynamic"))
+			{
+				physics::setBodyType(bodyId, physics::BodyType::DynamicBody);
+			}
 
-		bool anyEditFinished = false;
+			ImGui::EndPopup();
+		}
+
+
+		ImGui::PushFont(fontMono);
+		ImGui::Separator();
+		ImGui::Text("Computed Mass: %.2f", physics::getBodyMass(bodyId));
+		ImGui::Text("Mass is computed via\ndensity of shapes attached to it");
+		ImGui::Separator();
+
 		bool enterCommit = false;
 		bool defocusCommit = false;
 
-		ImGui::PushFont(fontMono);
-		ImGui::Text("Mass");
-		enterCommit = ImGui::InputFloat("##mass",
-			&currentRigidBodyData.bodyData.mass, 0.01f, 1000.0f,
-			"%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
-		defocusCommit = ImGui::IsItemDeactivatedAfterEdit();
-		if (enterCommit || defocusCommit)
-		{
-			physics::setMass(body.bodyId, currentRigidBodyData.bodyData.mass);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
-		}
-
+		float linearDamping = physics::getBodyLinearDamping(bodyId);
 		ImGui::Text("Linear Damping");
-		enterCommit = ImGui::InputFloat("##lineardamping: ",
-			&currentRigidBodyData.bodyData.linearDamping, 0.0f, 1.0f,
+		enterCommit = ImGui::InputFloat("##lineardamping: ", &linearDamping, 0.0f, 1.0f,
 			"%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
-		defocusCommit = ImGui::IsItemDeactivatedAfterEdit();
-		if (enterCommit || defocusCommit)
-		{
-			physics::setBodyLinearDamping(body.bodyId, currentRigidBodyData.bodyData.linearDamping);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
-		}
+		physics::setBodyLinearDamping(bodyId, linearDamping);
 
+		float angularDamping = physics::getBodyAngularDamping(bodyId);
 		ImGui::Text("Angular Damping");
-		enterCommit = ImGui::InputFloat("##angulardamping: ",
-			&currentRigidBodyData.bodyData.linearDamping, 0.0f, 1.0f,
+		enterCommit = ImGui::InputFloat("##angulardamping: ", &angularDamping, 0.0f, 1.0f,
 			"%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
-		defocusCommit = ImGui::IsItemDeactivatedAfterEdit();
-		if (enterCommit || defocusCommit)
-		{
-			physics::setBodyAngularDamping(body.bodyId, currentRigidBodyData.bodyData.angularDamping);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
-		}
+		physics::setBodyAngularDamping(bodyId, angularDamping);
 
+		bool sleepEnabled = physics::isSleepEnabled(bodyId);
 		ImGui::Text("Sleeping");
-		if (ImGui::Checkbox("##sleeping", &currentRigidBodyData.bodyData.enableSleep))
+		if (ImGui::Checkbox("##sleeping", &sleepEnabled))
 		{
-			physics::enableSleep(body.bodyId, currentRigidBodyData.bodyData.enableSleep);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::enableSleep(bodyId, sleepEnabled);
 		}
 
+		auto linearLocks = physics::getBodyLinearLocks(bodyId);
 		ImGui::Text("Linear lock");
-		if (ImGui::Checkbox("X##xlinear", &currentRigidBodyData.bodyData.linearLocks[0]))
+		if (ImGui::Checkbox("X##xlinear", &linearLocks[0]))
 		{
-			physics::setLinearLock(body.bodyId, currentRigidBodyData.bodyData.linearLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyLinearLocks(bodyId, linearLocks);
 		}
 		ImGui::SameLine();
-		if (ImGui::Checkbox("Y##ylinear", &currentRigidBodyData.bodyData.linearLocks[1]))
+		if (ImGui::Checkbox("Y##ylinear", &linearLocks[1]))
 		{
-			physics::setLinearLock(body.bodyId, currentRigidBodyData.bodyData.linearLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyLinearLocks(bodyId, linearLocks);
 		}
 		ImGui::SameLine();
-		if (ImGui::Checkbox("Z##zlinear", &currentRigidBodyData.bodyData.linearLocks[2]))
+		if (ImGui::Checkbox("Z##zlinear", &linearLocks[2]))
 		{
-			physics::setLinearLock(body.bodyId, currentRigidBodyData.bodyData.linearLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyLinearLocks(bodyId, linearLocks);
 		}
+
+		auto angularLocks = physics::getBodyAngularLocks(bodyId);
 		ImGui::Text("Angular lock");
-		if (ImGui::Checkbox("X##xangular", &currentRigidBodyData.bodyData.angularLocks[0]))
+		if (ImGui::Checkbox("X##xangular", &angularLocks[0]))
 		{
-			physics::setAngularLock(body.bodyId, currentRigidBodyData.bodyData.angularLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyAngularLocks(bodyId, angularLocks);
 		}
 		ImGui::SameLine();
-		if (ImGui::Checkbox("Y##yangular", &currentRigidBodyData.bodyData.angularLocks[1]))
+		if (ImGui::Checkbox("Y##yangular", &angularLocks[1]))
 		{
-			physics::setAngularLock(body.bodyId, currentRigidBodyData.bodyData.angularLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyAngularLocks(bodyId, angularLocks);
 		}
 		ImGui::SameLine();
-		if (ImGui::Checkbox("Z##zangular", &currentRigidBodyData.bodyData.angularLocks[2]))
+		if (ImGui::Checkbox("Z##zangular", &angularLocks[2]))
 		{
-			physics::setAngularLock(body.bodyId, currentRigidBodyData.bodyData.angularLocks);
-			previousRigidBodyData = data;
-			anyEditFinished = true;
+			physics::setBodyAngularLocks(bodyId, angularLocks);
 		}
 
 		if ((ImGui::Button("Add Shape") && !physicsBodyShapeImage.showTarget))
@@ -164,20 +164,13 @@ namespace clz::editor
 
 		ImGui::PopFont();
 
-
-		if (anyEditFinished)
-		{
-			ecs::setComponent<ecs::RigidBodyDataComponent>(currentSelectedEntity.value(), currentRigidBodyData);
-
-			clz::log::debug("Creating a snapshot of rigidbody component data");
-			createSnapshot<ecs::RigidBodyDataComponent>(currentSelectedEntity.value(), previousRigidBodyData, currentRigidBodyData);
-		}
 	}
 
 	void presentBodyEditorWindow()
 	{
-		const auto& shapes =
-			ecs::getComponent<ecs::RigidBodyDataComponent>(currentSelectedEntity.value()).boxShapes;
+		const auto bodyId = ecs::getComponent<ecs::BodyComponent>(currentSelectedEntity.value()).bodyId;
+		auto& shapeContainer = ecs::getComponent<ecs::ShapeComponent>(
+								currentSelectedEntity.value()).boxShapes;
 
 		ImGui::Begin("Shape Controls");
 
@@ -193,7 +186,6 @@ namespace clz::editor
 			{
 				physics::BoxShape boxShape{};
 				newShapes.emplace_back(boxShape);
-				changedShapes = shapes;
 				anyChanges = true;
 				clz::log::debug("Added box shape, click save to apply changes");
 			}
@@ -204,22 +196,22 @@ namespace clz::editor
 		ImGui::SameLine();
 		if (ImGui::Button("Save") && anyChanges)
 		{
-			for (auto index : changedShapesIndex)
+			for (const auto index : changedShapesIndex)
 			{
 				physics::BoxShape boxShape = physics::BoxShape(changedShapes[index].halfDimensions,
-					changedShapes[index].position, changedShapes[index].rotation);
+					changedShapes[index].position, changedShapes[index].rotation,
+					changedShapes[index].density, changedShapes[index].friction, changedShapes[index].restitution);
 
-				physics::modifyShapeByIndex(currentSelectedEntity.value(),
-					boxShape, index);
-
+				physics::modifyShapeByIndex(bodyId, boxShape, shapeContainer, index);
+				clz::log::debug("new density: " + std::to_string(changedShapes[index].density));
 			}
 			for (auto& newShape : newShapes)
 			{
 				physics::BoxShape boxShape = physics::BoxShape(newShape.halfDimensions,
-					newShape.position, newShape.rotation);
+					newShape.position, newShape.rotation,
+					newShape.density, newShape.friction, newShape.restitution);
 
-				physics::attachShapeToBody(currentSelectedEntity.value(),
-					boxShape);
+				physics::attachShapeToBody(bodyId, shapeContainer, boxShape);
 			}
 
 			changedShapes.clear();
@@ -230,10 +222,9 @@ namespace clz::editor
 			clz::log::debug("Saved changes");
 		}
 
-
 		if (!anyChanges)
 		{
-			changedShapes = shapes;
+			changedShapes = shapeContainer;
 		}
 		ImGui::Separator();
 		ImGui::PushFont(fontMonoBold);
@@ -244,33 +235,73 @@ namespace clz::editor
 		{
 			ImGui::PushFont(fontSans);
 			std::string shapeName = "Shape " + std::to_string(i);
-			if (shapes[i].position != changedShapes[i].position ||
-				shapes[i].rotation != changedShapes[i].rotation ||
-				shapes[i].halfDimensions != changedShapes[i].halfDimensions)
+			if (shapeContainer[i].position != changedShapes[i].position ||
+				shapeContainer[i].rotation != changedShapes[i].rotation ||
+				shapeContainer[i].halfDimensions != changedShapes[i].halfDimensions ||
+				shapeContainer[i].density != changedShapes[i].density ||
+				shapeContainer[i].friction != changedShapes[i].friction ||
+				shapeContainer[i].restitution != changedShapes[i].restitution)
 			{
 				shapeName += "*";
 			}
+			ImGui::PushID(shapeName.c_str());
 			ImGui::Text(shapeName.c_str());
 			ImGui::PopFont();
 
 
-			ImGui::SliderFloat3("Local position", &changedShapes[i].position.x, 0.1f, 30.0f, "%.2f");
-			if (ImGui::IsItemActivated())
+			if (ImGui::InputFloat("Density", &changedShapes[i].density, 0.01f, 100.0f, "%.2f"))
+			{
 				anyChanges = true;
+			}
 			if (ImGui::IsItemDeactivated())
+			{
 				changedShapesIndex.insert(i);
+			}
+			if (ImGui::InputFloat("Friction", &changedShapes[i].friction, 0.01f, 100.0f, "%.2f"))
+			{
+				anyChanges = true;
+			}
+			if (ImGui::IsItemDeactivated())
+			{
+				changedShapesIndex.insert(i);
+			}
+			if (ImGui::InputFloat("Restitution", &changedShapes[i].restitution, 0.01f, 1.0f, "%.2f"))
+			{
+				anyChanges = true;
+			}
+			if (ImGui::IsItemDeactivated())
+			{
+				changedShapesIndex.insert(i);
+			}
 
-			ImGui::SliderFloat3("Local rotation ", &changedShapes[i].rotation.x, -179.99f, 179.99f, "%.2f");
-			if (ImGui::IsItemActivated())
+			if (ImGui::SliderFloat3("Local position", &changedShapes[i].position.x, 0.1f, 30.0f, "%.2f"))
+			{
 				anyChanges = true;
+			}
 			if (ImGui::IsItemDeactivated())
+			{
 				changedShapesIndex.insert(i);
+			}
 
-			ImGui::SliderFloat3("Half dimensions", &changedShapes[i].halfDimensions.x, 0.1f, 30.0f, "%.2f");
-			if (ImGui::IsItemActivated())
+			if (ImGui::SliderFloat3("Local rotation", &changedShapes[i].rotation.x, -179.99f, 179.99f, "%.2f"))
+			{
 				anyChanges = true;
+			}
 			if (ImGui::IsItemDeactivated())
+			{
 				changedShapesIndex.insert(i);
+			}
+
+			if (ImGui::SliderFloat3("Half dimensions", &changedShapes[i].halfDimensions.x, 0.1f, 30.0f, "%.2f"))
+			{
+				anyChanges = true;
+			}
+			if (ImGui::IsItemDeactivated())
+			{
+				changedShapesIndex.insert(i);
+			}
+
+			ImGui::PopID();
 		}
 		ImGui::Separator();
 		ImGui::Text("New box shapes");
@@ -278,13 +309,17 @@ namespace clz::editor
 		{
 			ImGui::PushFont(fontSans);
 			std::string shapeName = "Shape " + std::to_string(i + changedShapes.size());
+			ImGui::PushID(shapeName.c_str());
 			ImGui::Text(shapeName.c_str());
 			ImGui::PopFont();
 
 
-			ImGui::SliderFloat3("Local position", &newShapes[i].position.x, 0.1f, 30.0f, "%.2f");
-			ImGui::SliderFloat3("Local rotation ", &newShapes[i].rotation.x, -179.99f, 179.99f, "%.2f");
+			ImGui::SliderFloat("Density", &newShapes[i].density, 0.01f, 100.0f, "%.2f");
+			ImGui::SliderFloat("Friction", &newShapes[i].friction, 0.01f, 100.0f, "%.2f");
+			ImGui::SliderFloat3("Local position", &newShapes[i].position.x, -30.0f, 30.0f, "%.2f");
+			ImGui::SliderFloat3("Local rotation", &newShapes[i].rotation.x, -179.99f, 179.99f, "%.2f");
 			ImGui::SliderFloat3("Half dimensions", &newShapes[i].halfDimensions.x, 0.1f, 30.0f, "%.2f");
+			ImGui::PopID();
 		}
 
 		ImGui::End();
@@ -404,16 +439,16 @@ namespace clz::editor
 			0, 1, &backend::editorPipelineContext.descriptorSets[renderer::r_currentFrame],
 			0, nullptr);
 
-		renderer::renderEntity(commandBuffer,
-			ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID,
-			math::mat4(1.0f));
+		renderer::renderEntity(commandBuffer, ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID,
+			math::getModelMatrix(math::quat(1.0f, 0.0f, 0.0f, 0.0f),
+				math::vec3(0.0f), ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value()).scale));
 
 
 		if (!anyChanges)
 		{
-			const auto& shapes =
-				ecs::getComponent<ecs::RigidBodyDataComponent>(currentSelectedEntity.value());
-			for (const auto& boxShape : shapes.boxShapes)
+			const auto& boxShapes =
+				ecs::getComponent<ecs::ShapeComponent>(currentSelectedEntity.value()).boxShapes;
+			for (const auto& boxShape : boxShapes)
 			{
 				const auto quat = math::quatFromEuler(boxShape.rotation);
 				const auto pos = boxShape.position;

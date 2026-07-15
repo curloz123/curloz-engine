@@ -301,7 +301,7 @@ namespace clz::renderer
 		clz::log::info("destroyed shape pipeline context");
 	}
 
-	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory uboMemory)
+	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory& uboMemory)
 	{
 		destroyDescriptor(pipelineContext, uboMemory);
 		vkDestroyPipeline(r_deviceContext.device, pipelineContext.pipeline, nullptr);

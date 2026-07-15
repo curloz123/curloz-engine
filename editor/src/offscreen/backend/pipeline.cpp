@@ -161,7 +161,6 @@ namespace clz::editor::backend
 
 	void destroyEditorPipeline()
 	{
-		renderer::destroyUniformBuffer(uboMemory);
 		renderer::destroyPipelineContext(editorPipelineContext, uboMemory);
 		clz::log::info("destroyed editor's pipeline");
 	}

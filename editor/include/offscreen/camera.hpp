@@ -1,3 +1,12 @@
+/**
+ * @file camera.hpp
+ * @author curl0z
+ * @brief Free-floating offscreen preview camera used by editor offscreen
+ * targets (physics-body shape editor, model viewer, etc). Since only one
+ * offscreen target is ever shown at a time, this is deliberately global
+ * state rather than a per-instance object.
+ * Whenever a new instance is shown, it is recommended to run reset Camera.
+ */
 #pragma once
 
 #include "core/time.hpp"
@@ -12,30 +21,42 @@
 
 namespace clz::editor::camera
 {
+	/// @brief Shared world-space up reference used for basis derivation.
 	const auto WorldUp = math::vec3(0.0f, 1.0f, 0.0f);
 
 	constexpr float Near = 0.1f;
 	constexpr float Far = 100.0f;
 
+	/// @brief Camera world-space position.
 	inline math::vec3 Position = math::vec3(0.0f, 0.0f, 3.0f);
+
+	/// @brief Camera forward vector, derived from Yaw/Pitch.
 	inline math::vec3 localFront = math::vec3(0.0f, 0.0f, -1.0f);
+
+	/// @brief Camera right vector, derived from localFront x WorldUp.
 	inline math::vec3 localRight = math::vec3(1.0f, 0.0f, 0.0f);
 
 	inline float Pitch = 0.0f;
 	inline float Yaw = -90.0f;
 	constexpr float Sensitivity = 0.4f;
 
+	/// @brief Current movement velocity, with acceleration/friction applied per frame.
 	inline math::vec3 Velocity = math::vec3(0.0f, 0.0f, 0.0f);
 	constexpr float MaxVelocity = 5.0f;
 	constexpr float Acceleration = 2.0f;
 
 	inline float Fov = 45.0f;
+
+	/// @brief Last recorded cursor position, for mouse delta calculation.
 	inline math::vec2 LastMousePos = math::vec2(0.0f, 0.0f);
+
+	/// @brief Avoids a mouse-delta snap on first use.
 	inline bool FirstTime = true;
 }
 
 namespace clz::editor::camera
 {
+	/// @brief Processes WASD movement and right-click-drag look/scroll-zoom for one frame.
 	inline void update()
 	{
 		// Process Event
@@ -138,17 +159,21 @@ namespace clz::editor::camera
 
 	}
 
+	/// @brief Returns the current view matrix, looking from Position toward Position + localFront.
 	inline math::mat4 getViewMatrix()
 	{
 		return makeViewMatrix(Position, Position + localFront, WorldUp);
 	}
 
+	/// @brief Returns the current perspective projection matrix for the given aspect ratio.
 	inline math::mat4 getProjectionMatrix(const float AspectRatio)
 	{
 		return math::makePerspectiveMatrix(
 			Far, Near, AspectRatio, math::radians(Fov));
 	}
 
+	/// @brief Resets the camera to its default position/orientation/velocity.
+	/// Called when opening a new offscreen preview target.
 	inline void resetCamera()
 	{
 		Position = math::vec3(0.0f, 0.0f, 3.0f);

@@ -1,3 +1,10 @@
+/**
+ * @file shape.hpp
+ * @author curl0z
+ * @brief Physics shape header file
+ * Provides BoxShape Data-Structure which holds
+ * All the data of any shape attached to a body
+ */
 #pragma once
 
 #include "math/vec3.hpp"
@@ -19,42 +26,63 @@ namespace clz::physics
 		math::vec3 position;
 		math::vec3 rotation;
 
-		BoxShape() : shapeId(b3_nullShapeId), halfDimensions(math::vec3(1.0f))
-		{
-		}
+		/// @brief shape properties
+		float density;
+		float friction;
+		float restitution;
+
+		BoxShape() : shapeId(b3_nullShapeId), halfDimensions(math::vec3(1.0f)),
+			density(10.0f), friction(0.1f), restitution(0.5f)
+		{}
 
 		/**
 		 * @brief Initializes cube shape
 		 * @param halfDimensions Vector3 half dimensions of cuboid
 		 * @param position local position of cube relative to its parent body
 		 * @param rotation local euler rotation of cube relative to its parent body
+		 * @param density density of shape, this parameter is necessary to apply
+		 * @param friction friction of the shape
+		 * @param restitution restitution value of the shape
 		 */
 		BoxShape(const math::vec3& halfDimensions,
-			const math::vec3& position, const math::vec3& rotation) :
+			const math::vec3& position, const math::vec3& rotation,
+			const float density, const float friction, const float restitution) :
 			shapeId(b3_nullShapeId), halfDimensions(halfDimensions),
-			position(position), rotation(rotation)
-		{
-		}
+			position(position), rotation(rotation),
+			density(density), friction(friction), restitution(restitution)
+		{}
 
 	};
 
-
 	/**
 	 * @brief Attaches this shape to a given body
-	 * @param entityId entity to which this shape has to be attached
+	 * @param bodyId Id of body to which this shape has to be attached
+	 * @param boxShapeContainer container of body which holds the shapes
 	 * @param shape The shape to attach
 	 */
-	void attachShapeToBody(const ecs::entity& entityId, BoxShape& shape);
-
-	void modifyShapeByIndex(const ecs::entity& entityId, BoxShape& shape, uint32_t index);
+	void attachShapeToBody(const b3BodyId& bodyId,
+		std::vector<BoxShape>& boxShapeContainer, BoxShape& shape);
 
 	/**
-	 * @brief Destroys a shape.
-	 * No need to pass BodyId specifically. Shape is removed automatically.
-	 * And mass is updated too depending upon density of shape being removed.
+	 * @brief Modifies a current existing shape
+	 * @param bodyId Id of body whose shape has to be modified
+	 * @param shape New shape
+	 * @param boxShapeContainer container of body which holds the shapes
+	 * @param index Index in provided array
+	 */
+	void modifyShapeByIndex(const b3BodyId& bodyId, BoxShape& shape,
+		std::vector<BoxShape>& boxShapeContainer, uint32_t index);
+
+	/**
+	 * @brief Destroys shape of a body.
+	 * Mass is updated too depending upon density of shape being removed.
 	 * Also, this is not required to call this directly, all shapes of
 	 * any body are destroyed when world is destroying all bodies.
+	 * @param bodyId Id of body whose shape has to be removed
+	 * @param boxShapeContainer container of body which holds the shapes
 	 * @param shapeId ID of shape to be destroyed
 	 */
-	void destroyShape(const ecs::entity& entityId, b3ShapeId& shapeId);
+	void destroyShape(const b3BodyId& bodyId,
+		std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId);
+
 }
