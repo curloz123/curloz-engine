@@ -13,10 +13,10 @@
 #include "renderer/context/framecontext.hpp"
 #include "renderer/context/pipelinecontext.hpp"
 #include "renderer/context/swapchaincontext.hpp"
+#include "renderer/entitydata/entitydata.hpp"
 #include "renderer/mainloop.hpp"
 #include "renderer/vk_types.hpp"
 #include <vector>
-#include "renderer/entitydata/entitydata.hpp"
 
 namespace clz::renderer
 {
@@ -52,9 +52,9 @@ namespace clz::renderer
 		clz::log::info("Initialized renderer");
 		return true;
 
-		failure:
-			clz::log::error("Could not initialize renderer");
-			return false;
+	failure:
+		clz::log::error("Could not initialize renderer");
+		return false;
 	}
 
 	void update()

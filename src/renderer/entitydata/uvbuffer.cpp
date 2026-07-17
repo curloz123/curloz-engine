@@ -8,12 +8,13 @@
 #include "core/logs.hpp"
 #include "math/vec2.hpp"
 #include "renderer/utility/buffer.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <memory.h>
 
-namespace clz::renderer::UVBuffer
+namespace clz::renderer
 {
-	uint32_t getBaseVertex()
+	uint32_t getUVBaseIndex()
 	{
 		return r_globalUVArray.size();
 	}
@@ -23,7 +24,7 @@ namespace clz::renderer::UVBuffer
 		r_globalUVArray.insert(r_globalUVArray.end(), UVs.begin(), UVs.end());
 	}
 
-	bool submitUVBuffer()
+	bool createUVBuffer()
 	{
 		if (r_globalUVArray.empty())
 		{
@@ -52,6 +53,8 @@ namespace clz::renderer::UVBuffer
 			clz::log::error("Could not create main UV buffer");
 			return false;
 		}
+		setHandleName(reinterpret_cast<uint64_t>(r_uvBuffer), VK_OBJECT_TYPE_BUFFER, "entity UV buffer");
+		setHandleName(reinterpret_cast<uint64_t>(r_uvBufferMemory), VK_OBJECT_TYPE_DEVICE_MEMORY, "entity UV buffer memory");
 
 		if (!copyBuffer(stagingBuffer, r_uvBuffer, bufferSize, "UV staging buffer", "UV main buffer"))
 		{
@@ -95,4 +98,4 @@ namespace clz::renderer::UVBuffer
 		return attributeDescription;
 	}
 
-} // namespace clz::renderer::UVBuffer
+} // namespace clz::renderer

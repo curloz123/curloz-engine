@@ -16,7 +16,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-namespace clz::renderer::IBuffer
+namespace clz::renderer
 {
 	/**
 	 * @brief CPU-side storage for all mesh indices.
@@ -60,10 +60,10 @@ namespace clz::renderer::IBuffer
 	 *
 	 * @return True if upload succeeded.
 	 */
-	bool submitIndexBuffer();
+	bool createIndexBuffer();
 
 	/**
 	 * @brief Destroys GPU resources associated with the index buffer.
 	 */
 	void destroyIndexBuffer();
-} // namespace clz::renderer::IBuffer
+} // namespace clz::renderer

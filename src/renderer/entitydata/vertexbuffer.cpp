@@ -7,12 +7,13 @@
 #include "../../../include/renderer/entitydata/vertexbuffer.hpp"
 #include "core/logs.hpp"
 #include "renderer/utility/buffer.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <memory.h>
 
-namespace clz::renderer::VBuffer
+namespace clz::renderer
 {
-	uint32_t getBaseVertex()
+	uint32_t getVertexBaseIndex()
 	{
 		return r_globalVertexVector.size();
 	}
@@ -22,7 +23,7 @@ namespace clz::renderer::VBuffer
 		r_globalVertexVector.insert(r_globalVertexVector.end(), vertices.begin(), vertices.end());
 	}
 
-	bool submitVertexBuffer()
+	bool createVertexBuffer()
 	{
 		if (r_globalVertexVector.empty())
 		{
@@ -52,7 +53,8 @@ namespace clz::renderer::VBuffer
 			clz::log::error("Could not create main vertex buffer");
 			return false;
 		}
-
+		setHandleName(reinterpret_cast<uint64_t>(r_vertexBuffer), VK_OBJECT_TYPE_BUFFER, "entity vertex buffer");
+		setHandleName(reinterpret_cast<uint64_t>(r_vertexBufferMemory), VK_OBJECT_TYPE_DEVICE_MEMORY, "entity vertex buffer memory");
 		if (!copyBuffer(stagingBuffer, r_vertexBuffer, bufferSize, "staging buffer", "main vertex buffer"))
 		{
 			clz::log::error("Could not create main vertex buffer");
@@ -95,4 +97,4 @@ namespace clz::renderer::VBuffer
 		return attributeDescription;
 	}
 
-} // namespace clz::renderer::VBuffer
+} // namespace clz::renderer

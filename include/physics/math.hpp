@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <box3d/box3d.h>
-#include "math/vec3.hpp"
 #include "math/quat.hpp"
+#include "math/vec3.hpp"
+#include <box3d/box3d.h>
 
 namespace clz::physics
 {
@@ -43,8 +43,8 @@ namespace clz::physics
 	inline b3Quat toQuat(const math::quat& quat)
 	{
 		return b3Quat{
-			.v = (b3Vec3){quat.x, quat.y, quat.z},
-			.s = quat.w,
+		    .v = (b3Vec3){quat.x, quat.y, quat.z},
+		    .s = quat.w,
 		};
 	}
 
@@ -57,7 +57,7 @@ namespace clz::physics
 	inline math::quat fromQuat(const b3Quat& quat)
 	{
 		const auto [x, y, z] = quat.v;
-		return {quat.s , x, y, z};
+		return {quat.s, x, y, z};
 	}
 
-}
+} // namespace clz::physics

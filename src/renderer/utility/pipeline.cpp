@@ -62,8 +62,8 @@ namespace clz::renderer
 		return true;
 	}
 
-	bool createPipelineLayout(PipelineContext& rPipelineContext, uint32_t pushConstantSize,
-				uint32_t setLayoutCount, const VkDescriptorSetLayout* pSetLayouts)
+	bool createPipelineLayout(PipelineContext& rPipelineContext, const uint32_t pushConstantSize, const uint32_t setLayoutCount,
+				  const VkDescriptorSetLayout* pSetLayouts)
 	{
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -85,19 +85,16 @@ namespace clz::renderer
 
 		pipelineLayoutInfo.setLayoutCount = setLayoutCount;
 		pipelineLayoutInfo.pSetLayouts = pSetLayouts;
-		if (vkCreatePipelineLayout(r_deviceContext.device, &pipelineLayoutInfo, nullptr, &rPipelineContext.layout) != VK_SUCCESS)
-			[[unlikely]]
+		if (vkCreatePipelineLayout(r_deviceContext.device, &pipelineLayoutInfo, nullptr, &rPipelineContext.layout) != VK_SUCCESS) [[unlikely]]
 		{
 			clz::log::error("vulkan could not create pipeline layout of main pipeline");
 			return false;
 		}
 
 		return true;
-
 	}
 
-	VkPipelineShaderStageCreateInfo createShaderStageInfo(VkShaderModule& shaderModule,
-		ShaderStage stage)
+	VkPipelineShaderStageCreateInfo createShaderStageInfo(VkShaderModule& shaderModule, ShaderStage stage)
 	{
 		VkPipelineShaderStageCreateInfo shaderStageInfo{};
 		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -111,7 +108,6 @@ namespace clz::renderer
 		return shaderStageInfo;
 	}
 
-
 	VkPipelineDynamicStateCreateInfo createDynamicStates(const std::vector<VkDynamicState>& dynamicStates)
 	{
 		VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -122,7 +118,7 @@ namespace clz::renderer
 		return dynamicState;
 	}
 
-	VkVertexInputBindingDescription	createBindingDescription(uint32_t binding, uint32_t stride)
+	VkVertexInputBindingDescription createBindingDescription(uint32_t binding, uint32_t stride)
 	{
 		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = binding;
@@ -130,10 +126,8 @@ namespace clz::renderer
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		return bindingDescription;
-
 	}
-	VkVertexInputAttributeDescription createAttributeDescription(uint32_t binding,
-		uint32_t location, VkFormat format, uint32_t offset)
+	VkVertexInputAttributeDescription createAttributeDescription(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset)
 	{
 		VkVertexInputAttributeDescription attributeDescription{};
 		attributeDescription.binding = binding;
@@ -143,18 +137,17 @@ namespace clz::renderer
 
 		return attributeDescription;
 	}
-	VkPipelineVertexInputStateCreateInfo createVertexInputInfo(
-		std::span<VkVertexInputBindingDescription> bindingDescriptions,
-		std::span<VkVertexInputAttributeDescription> attributeDescriptions)
+	VkPipelineVertexInputStateCreateInfo createVertexInputInfo(std::span<VkVertexInputBindingDescription> bindingDescriptions,
+								   std::span<VkVertexInputAttributeDescription> attributeDescriptions)
 	{
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size()),
-			.pVertexBindingDescriptions = bindingDescriptions.data(),
-			.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
-			.pVertexAttributeDescriptions = attributeDescriptions.data()};
+		    .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+		    .pNext = nullptr,
+		    .flags = 0,
+		    .vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size()),
+		    .pVertexBindingDescriptions = bindingDescriptions.data(),
+		    .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+		    .pVertexAttributeDescriptions = attributeDescriptions.data()};
 
 		return vertexInputInfo;
 	}
@@ -169,24 +162,18 @@ namespace clz::renderer
 		return inputAssembly;
 	}
 
-
 	VkViewport createViewport(const VkExtent2D extent)
 	{
-		return VkViewport{
-			.x = 0.0f,
-			.y = 0.0f,
-			.width = static_cast<float>(extent.width),
-			.height = static_cast<float>(extent.height),
-			.minDepth = 0.0f,
-			.maxDepth = 1.0f
-		};
+		return VkViewport{.x = 0.0f,
+				  .y = 0.0f,
+				  .width = static_cast<float>(extent.width),
+				  .height = static_cast<float>(extent.height),
+				  .minDepth = 0.0f,
+				  .maxDepth = 1.0f};
 	}
 	VkRect2D createScissor(const VkExtent2D extent)
 	{
-		return VkRect2D{
-			.offset = {0, 0},
-			.extent = extent
-		};
+		return VkRect2D{.offset = {0, 0}, .extent = extent};
 	}
 
 	VkPipelineViewportStateCreateInfo createViewportState(const VkViewport& viewport, const VkRect2D& scissor)
@@ -203,9 +190,8 @@ namespace clz::renderer
 		return viewportState;
 	}
 
-	VkPipelineRasterizationStateCreateInfo createRasterizer(
-		VkPolygonMode polygonMode, float lineWidth,
-		VkCullModeFlags cullMode, VkFrontFace frontFace)
+	VkPipelineRasterizationStateCreateInfo createRasterizer(VkPolygonMode polygonMode, float lineWidth, VkCullModeFlags cullMode,
+								VkFrontFace frontFace)
 	{
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -236,8 +222,8 @@ namespace clz::renderer
 		return depthStencil;
 	}
 
-	VkPipelineRenderingCreateInfo createPipelineRenderingInfo(const uint32_t attachmentCount,
-		const std::vector<VkFormat>& attachmentFormats, const VkFormat depthFormat)
+	VkPipelineRenderingCreateInfo createPipelineRenderingInfo(const uint32_t attachmentCount, const std::vector<VkFormat>& attachmentFormats,
+								  const VkFormat depthFormat)
 	{
 		clz::CLZ_ASSERT(attachmentFormats.size() == attachmentCount, "attachmentFormats size and attachmentCount must be the same");
 
@@ -249,4 +235,4 @@ namespace clz::renderer
 
 		return pipelineRenderingCI;
 	}
-}
+} // namespace clz::renderer

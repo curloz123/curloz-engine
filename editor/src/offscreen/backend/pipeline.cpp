@@ -1,10 +1,12 @@
 #include "../../../include/offscreen/backend/pipeline.hpp"
 #include "renderer/entitydata/uvbuffer.hpp"
-#include "renderer/utility/descriptor.hpp"
-#include "core/logs.hpp"
-#include "renderer/context/pipelinecontext.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/context/pipelinecontext.hpp"
+#include "renderer/pipelinedata/sampler.hpp"
+#include "renderer/pipelinedata/pushconstants.hpp"
+#include "core/logs.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/utility/namer.hpp"
 
 namespace clz::editor::backend
 {
@@ -17,13 +19,13 @@ namespace clz::editor::backend
 			clz::log::error("could not create editor shaders");
 			return false;
 		}
+		renderer::setHandleName(reinterpret_cast<uint64_t>(editorPipelineContext.vertexShader), VK_OBJECT_TYPE_SHADER_MODULE, "editor vertex shader module");
+		renderer::setHandleName(reinterpret_cast<uint64_t>(editorPipelineContext.fragmentShader), VK_OBJECT_TYPE_SHADER_MODULE, "editor fragment shader module");
 
-		createDescriptorSetLayout();
-		std::vector<renderer::UBO*> pUniformBuffers = {&CameraUBO};
-		renderer::createDescriptor(editorPipelineContext, true,
-					pUniformBuffers, uboMemory, true);
+		// Use the camera and sampler layout from renderer
+		std::array layouts = {renderer::cameraUBOLayout, renderer::combinedSamplerLayout};
 		if (!renderer::createPipelineLayout(editorPipelineContext,
-				sizeof(renderer::ModelDataPC), 1, &editorPipelineContext.descriptorSetLayout))
+				sizeof(renderer::ModelDataPC), 2, layouts.data()))
 		{
 			clz::log::error("could not create editor pipeline layout");
 			return false;
@@ -52,10 +54,10 @@ namespace clz::editor::backend
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
-		std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {clz::renderer::VBuffer::getVertexBindingDescription(),
-										      clz::renderer::UVBuffer::getUVBindingDescription()};
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {clz::renderer::VBuffer::getVertexAttributeDescription(),
-											  clz::renderer::UVBuffer::getUVAttributeDescription()};
+		std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {clz::renderer::getVertexBindingDescription(),
+										      clz::renderer::getUVBindingDescription()};
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {clz::renderer::getVertexAttributeDescription(),
+											  clz::renderer::getUVAttributeDescription()};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -161,12 +163,7 @@ namespace clz::editor::backend
 
 	void destroyEditorPipeline()
 	{
-		renderer::destroyPipelineContext(editorPipelineContext, uboMemory);
+		renderer::destroyPipelineContext(editorPipelineContext);
 		clz::log::info("destroyed editor's pipeline");
-	}
-
-	void updateTextureBufferObject()
-	{
-		renderer::updateTextureData(editorPipelineContext);
 	}
 }

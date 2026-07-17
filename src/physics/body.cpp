@@ -4,13 +4,13 @@
  * @brief Box3D's body implementation file
  */
 #include "physics/body.hpp"
+#include "core/assert.hpp"
+#include "core/logs.hpp"
 #include "math/quateulerconv.hpp"
-#include "physics/physics_types.hpp"
 #include "physics/math.hpp"
+#include "physics/physics_types.hpp"
 #include "physics/shape.hpp"
 #include <box3d/box3d.h>
-#include "core/logs.hpp"
-#include "core/assert.hpp"
 
 namespace clz::physics
 {
@@ -28,15 +28,12 @@ namespace clz::physics
 		bodyDef.linearDamping = def.linearDamping;
 		bodyDef.angularDamping = def.angularDamping;
 		bodyDef.enableSleep = def.enableSleep;
-		bodyDef.motionLocks = b3MotionLocks
-		{
-			.linearX = def.linearLocks[0],
-			.linearY = def.linearLocks[1],
-			.linearZ = def.linearLocks[2],
-			.angularX = def.angularLocks[0],
-			.angularY = def.angularLocks[1],
-			.angularZ = def.angularLocks[2]
-		};
+		bodyDef.motionLocks = b3MotionLocks{.linearX = def.linearLocks[0],
+						    .linearY = def.linearLocks[1],
+						    .linearZ = def.linearLocks[2],
+						    .angularX = def.angularLocks[0],
+						    .angularY = def.angularLocks[1],
+						    .angularZ = def.angularLocks[2]};
 
 		b3BodyId bodyId = b3CreateBody(p_world, &bodyDef);
 
@@ -101,12 +98,7 @@ namespace clz::physics
 	/// @param mass New mass value
 	void setMass(const b3BodyId bodyId, const float mass)
 	{
-		b3MassData massData
-		{
-			.mass = mass,
-			.center = b3Body_GetLocalCenterOfMass(bodyId),
-			.inertia = b3Body_GetLocalRotationalInertia(bodyId)
-		};
+		b3MassData massData{.mass = mass, .center = b3Body_GetLocalCenterOfMass(bodyId), .inertia = b3Body_GetLocalRotationalInertia(bodyId)};
 		b3Body_SetMassData(bodyId, massData);
 	}
 	/**
@@ -129,8 +121,7 @@ namespace clz::physics
 	 */
 	void setBodyPosition(const b3BodyId bodyId, const math::vec3& position)
 	{
-		b3Body_SetTransform(bodyId, toVec3(position),
-					b3Body_GetRotation(bodyId));
+		b3Body_SetTransform(bodyId, toVec3(position), b3Body_GetRotation(bodyId));
 	}
 
 	/**
@@ -151,8 +142,7 @@ namespace clz::physics
 	 */
 	void setBodyRotation(const b3BodyId bodyId, const math::quat& rotation)
 	{
-		b3Body_SetTransform(bodyId, b3Body_GetPosition(bodyId),
-				toQuat(rotation));
+		b3Body_SetTransform(bodyId, b3Body_GetPosition(bodyId), toQuat(rotation));
 	}
 
 	/**
@@ -174,10 +164,10 @@ namespace clz::physics
 		b3Body_SetLinearDamping(bodyId, linearDamping);
 	}
 	/**
-	* @brief retrieves linear damping of a body
-	* @param bodyId Id of body to retrieve data
-	* @return linear damping od body
-	*/
+	 * @brief retrieves linear damping of a body
+	 * @param bodyId Id of body to retrieve data
+	 * @return linear damping od body
+	 */
 	float getBodyLinearDamping(const b3BodyId bodyId)
 	{
 		return b3Body_GetLinearDamping(bodyId);
@@ -260,4 +250,4 @@ namespace clz::physics
 		const b3MotionLocks current = b3Body_GetMotionLocks(bodyId);
 		return {current.angularX, current.angularY, current.angularZ};
 	}
-}
+} // namespace clz::physics

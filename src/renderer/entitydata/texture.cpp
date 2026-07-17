@@ -4,6 +4,7 @@
 #include "renderer/utility/buffer.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/utility/offsetalignment.hpp"
 #include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
@@ -53,6 +54,9 @@ namespace clz::renderer
 			clz::log::error("Could not create texture: " + filePath.string());
 			clz::CLZ_ASSERT(false, "could not initialize all textures");
 		}
+
+		setHandleName(reinterpret_cast<uint64_t>(r_textures.image[index]), VK_OBJECT_TYPE_IMAGE,
+			      (std::string(filePath) + std::to_string(r_numRegisteredTextures)).c_str());
 
 		return r_numRegisteredTextures++;
 	}
@@ -130,7 +134,6 @@ namespace clz::renderer
 				return false;
 			}
 		}
-
 
 		VkCommandBuffer commandBuffer = startSingleTimeCommand();
 		VkDeviceSize totalDeviceLocalOffset = 0;

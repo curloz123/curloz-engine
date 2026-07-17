@@ -6,7 +6,9 @@
  */
 
 #include "renderer/context/devicecontext.hpp"
+#include "core/assert.hpp"
 #include "core/logs.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <algorithm>
 #include <array>
@@ -15,7 +17,6 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/vulkanhelper.hpp>
-#include "core/assert.hpp"
 
 namespace clz::renderer
 {
@@ -207,6 +208,7 @@ namespace clz::renderer
 		}
 
 		clz::log::info("renderer: created instance");
+
 		return true;
 	}
 
@@ -477,7 +479,6 @@ namespace clz::renderer
 		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.presentFamily.value(), 0, &r_deviceContext.presentQueue);
 
 		clz::log::info("created logical device");
-
 		return true;
 	}
 } // namespace clz::renderer

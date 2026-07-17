@@ -66,9 +66,7 @@ namespace clz::math
 		 */
 		quat operator*(const quat& q) const
 		{
-			return {w * q.w - x * q.x - y * q.y - z * q.z,
-				w * q.x + x * q.w + y * q.z - z * q.y,
-				w * q.y - x * q.z + y * q.w + z * q.x,
+			return {w * q.w - x * q.x - y * q.y - z * q.z, w * q.x + x * q.w + y * q.z - z * q.y, w * q.y - x * q.z + y * q.w + z * q.x,
 				w * q.z + x * q.y - y * q.x + z * q.w};
 		}
 
@@ -93,7 +91,6 @@ namespace clz::math
 			const __m128 length = _mm_dp_ps(xmm, xmm, 0xff);
 			xmm = _mm_mul_ps(xmm, _mm_rsqrt_ps(length));
 		}
-
 	};
 
 	inline quat operator*(const quat& q, const float s)

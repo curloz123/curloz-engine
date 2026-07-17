@@ -4,8 +4,8 @@
  * @brief Loads model component of an entity
  */
 
-#include "scene/entity/componentloader/loader.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "scene/entity/componentloader/loader.hpp"
 
 namespace clz::ecs
 {

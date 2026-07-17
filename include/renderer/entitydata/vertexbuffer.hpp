@@ -14,7 +14,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-namespace clz::renderer::VBuffer
+namespace clz::renderer
 {
 	/**
 	 * @brief CPU-side storage for all registered mesh vertices.
@@ -33,10 +33,7 @@ namespace clz::renderer::VBuffer
 	 * @brief Memory backing the main vertex buffer.
 	 */
 	inline VkDeviceMemory r_vertexBufferMemory;
-} // namespace clz::renderer::VBuffer
 
-namespace clz::renderer::VBuffer
-{
 	/**
 	 * @brief Returns the starting vertex index for the next mesh.
 	 *
@@ -45,7 +42,7 @@ namespace clz::renderer::VBuffer
 	 *
 	 * @return Index of the first vertex that will be inserted next.
 	 */
-	uint32_t getBaseVertex();
+	uint32_t getVertexBaseIndex();
 
 	/**
 	 * @brief Appends vertices to the global vertex array.
@@ -63,7 +60,7 @@ namespace clz::renderer::VBuffer
 	 *
 	 * @return True if upload succeeded.
 	 */
-	bool submitVertexBuffer();
+	bool createVertexBuffer();
 
 	/**
 	 * @brief Destroys GPU resources associated with the vertex buffer.
@@ -88,4 +85,4 @@ namespace clz::renderer::VBuffer
 	 * @return Vertex attribute description.
 	 */
 	VkVertexInputAttributeDescription getVertexAttributeDescription();
-} // namespace clz::renderer::VBuffer
+} // namespace clz::renderer

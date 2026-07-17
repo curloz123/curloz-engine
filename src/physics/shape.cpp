@@ -3,11 +3,11 @@
  * @author curl0z
  * @brief Physics shape implementation file
  */
-#include "scene/entity/components.hpp"
-#include "math/quateulerconv.hpp"
-#include "physics/math.hpp"
 #include "physics/shape.hpp"
 #include "core/assert.hpp"
+#include "math/quateulerconv.hpp"
+#include "physics/math.hpp"
+#include "scene/entity/components.hpp"
 
 namespace clz::physics
 {
@@ -26,8 +26,8 @@ namespace clz::physics
 		shapeDef.density = shape.density;
 		shapeDef.baseMaterial.friction = shape.friction;
 		shapeDef.baseMaterial.restitution = shape.restitution;
-		const b3BoxHull cuboid = b3MakeTransformedBoxHull(
-			shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z, localTransform);
+		const b3BoxHull cuboid =
+		    b3MakeTransformedBoxHull(shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z, localTransform);
 
 		shape.shapeId = b3CreateHullShape(bodyId, &shapeDef, &cuboid.base);
 		b3Body_ApplyMassFromShapes(bodyId);
@@ -41,11 +41,9 @@ namespace clz::physics
 	 * @param boxShapeContainer Container which holds the body's shapes, indexing is done on this container
 	 * @param index Index of the shape which needs to be changed
 	 */
-	void modifyShapeByIndex(const b3BodyId &bodyId, BoxShape& shape,
-		std::vector<BoxShape>& boxShapeContainer, uint32_t index)
+	void modifyShapeByIndex(const b3BodyId& bodyId, BoxShape& shape, std::vector<BoxShape>& boxShapeContainer, uint32_t index)
 	{
-		CLZ_ASSERT(index < boxShapeContainer.size(),
-			"Invalid index passed while modifying shape data");
+		CLZ_ASSERT(index < boxShapeContainer.size(), "Invalid index passed while modifying shape data");
 
 		b3DestroyShape(boxShapeContainer[index].shapeId, true);
 		const b3Vec3 pos = toVec3(shape.position);
@@ -55,14 +53,12 @@ namespace clz::physics
 		shapeDef.density = shape.density;
 		shapeDef.baseMaterial.friction = shape.friction;
 		shapeDef.baseMaterial.restitution = shape.restitution;
-		const b3BoxHull cuboid = b3MakeTransformedBoxHull(
-			shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z,
-			localTransform);
+		const b3BoxHull cuboid =
+		    b3MakeTransformedBoxHull(shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z, localTransform);
 
 		shape.shapeId = b3CreateHullShape(bodyId, &shapeDef, &cuboid.base);
 		boxShapeContainer[index] = shape;
 		b3Body_ApplyMassFromShapes(bodyId);
-
 	}
 
 	/**
@@ -70,8 +66,7 @@ namespace clz::physics
 	 * @param boxShapeContainer Container holding all the shapes for this body
 	 * @param shapeId ID of shape
 	 */
-	void destroyShape(const b3BodyId& bodyId,
-		std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId)
+	void destroyShape(const b3BodyId& bodyId, std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId)
 	{
 		b3DestroyShape(shapeId, true);
 
@@ -86,4 +81,4 @@ namespace clz::physics
 		}
 		*/
 	}
-}
+} // namespace clz::physics

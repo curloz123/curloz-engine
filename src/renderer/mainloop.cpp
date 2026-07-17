@@ -7,12 +7,14 @@
 #include "renderer/mainloop.hpp"
 #include "../../editor/include/editor.hpp"
 #include "../../editor/include/offscreen/offscreentarget.hpp"
+#include "../../external/assimp/code/AssetLib/Collada/ColladaHelper.h"
 #include "../../include/renderer/entitydata/rendermodel.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/camera/cameramatrices.hpp"
-#include "renderer/pipelineinput/mainpipeline.hpp"
+#include "renderer/pipelinedata/descriptor.hpp"
+#include "renderer/pipelinedata/ubo.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
@@ -26,19 +28,26 @@ namespace clz::renderer
 		camera::update();
 		// Pipeline
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.pipeline);
-		// Descriptor sets
-		MainPipeline::updateCameraUBO(camera::getProjectionMatrix(), camera::getViewMatrix());
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.layout, 0, 1,
-					&r_pipelineContext.descriptorSets[r_currentFrame], 0, nullptr);
+		// Descriptor sets
+		const CameraShaderUBO cameraShaderUBO = {
+		    .projection = camera::getProjectionMatrix(),
+		    .view = camera::getViewMatrix(),
+		};
+		updateUniformBuffers(cameraShaderUBO);
+		const std::array descriptorSets = {
+		    cameraDescriptorSets[r_currentFrame], // binding point is 1
+		    samplerDescriptorSets[r_currentFrame] // As sampler's binding point is 0
+		};
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.layout, 0, descriptorSets.size(),
+					descriptorSets.data(), 0, nullptr);
 
 		renderEntities(commandBuffer);
 
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
-		editor::update(commandBuffer);
+			editor::update(commandBuffer);
 #endif
-
 	}
 
 	void waitForGPU(VkFence fence)
@@ -89,13 +98,14 @@ namespace clz::renderer
 					VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
 					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
-		const VkRenderingAttachmentInfoKHR colorAttachment{.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
-								   .pNext = nullptr,
-								   .imageView = r_swapchainContext.imageViews[imageIndex],
-								   .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-								   .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-								   .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-								   .clearValue = {{0.0f, 0.0f, 0.0f, 1.0f}}};
+		VkRenderingAttachmentInfoKHR colorAttachment = {};
+		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+		colorAttachment.pNext = nullptr;
+		colorAttachment.imageView = r_swapchainContext.imageViews[imageIndex];
+		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.clearValue = {.color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}};
 
 		VkRenderingAttachmentInfoKHR depthAttachment = {};
 		depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
@@ -105,14 +115,15 @@ namespace clz::renderer
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthAttachment.clearValue.depthStencil.depth = 1.0f;
 
-		const VkRenderingInfoKHR renderingInfo{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
-						       .pNext = nullptr,
-						       .flags = 0,
-						       .renderArea = {{0, 0}, r_swapchainContext.extent},
-						       .layerCount = 1,
-						       .colorAttachmentCount = 1,
-						       .pColorAttachments = &colorAttachment,
-						       .pDepthAttachment = &depthAttachment};
+		VkRenderingInfoKHR renderingInfo = {};
+		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+		renderingInfo.pNext = nullptr;
+		renderingInfo.flags = 0;
+		renderingInfo.renderArea = {{0, 0}, r_swapchainContext.extent};
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.pColorAttachments = &colorAttachment;
+		renderingInfo.pDepthAttachment = &depthAttachment;
 		vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
 		const VkViewport viewport{
@@ -129,10 +140,9 @@ namespace clz::renderer
 
 		render(commandBuffer);
 		vkCmdEndRendering(commandBuffer);
-		transition_image_layout(r_swapchainContext.images[imageIndex],
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
-				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
+		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
+					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
 					VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
 #ifdef CLZ_ENABLE_EDITOR

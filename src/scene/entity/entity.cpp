@@ -48,8 +48,8 @@ namespace clz::ecs
 			if (!entityData.contains("transform"))
 			{
 				clz::log::warn("Entity: " + entityName[e] +
-		      	 			"Does not have transform component"
-		      	 			"Assigning it identity transform component");
+					       "Does not have transform component"
+					       "Assigning it identity transform component");
 				addComponent<TransformComponent>(e, TransformComponent());
 			}
 			else
@@ -59,10 +59,8 @@ namespace clz::ecs
 #ifdef CLZ_ENABLE_EDITOR
 				/// @brief If Editor is enabled,
 				/// only then create these components
-				addComponent<EulerRotationComponent>(e,
-					EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
-				addComponent<EditorTransformComponent>(e,
-					EditorTransformComponent(transform));
+				addComponent<EulerRotationComponent>(e, EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
+				addComponent<EditorTransformComponent>(e, EditorTransformComponent(transform));
 #endif
 			}
 
@@ -75,8 +73,7 @@ namespace clz::ecs
 			// Attach physics Component if present
 			if (entityData.contains("rigidbody"))
 			{
-				const auto& [body, shapes] =
-					retrieveBodyComponent(entityData["rigidbody"], e);
+				const auto& [body, shapes] = retrieveBodyComponent(entityData["rigidbody"], e);
 				addComponent<BodyComponent>(e, body);
 				addComponent<ShapeComponent>(e, shapes);
 			}
@@ -84,7 +81,6 @@ namespace clz::ecs
 
 		// Entities loaded flag
 		renderer::flagRenderComponentsLoaded();
-		editor::flagOffscreenTargetsEntitiesLoaded();
 
 		clz::log::info("Loaded entities");
 		return true;
@@ -113,8 +109,8 @@ namespace clz::ecs
 
 			if (hasComponent<BodyComponent>(entity))
 			{
-				saveRigidBodyComponent(std::make_tuple(getComponent<BodyComponent>(entity),
-					getComponent<ShapeComponent>(entity)), entityJson["rigidbody"]);
+				saveRigidBodyComponent(std::make_tuple(getComponent<BodyComponent>(entity), getComponent<ShapeComponent>(entity)),
+						       entityJson["rigidbody"]);
 			}
 			sceneJson["entities"].push_back(entityJson);
 		}

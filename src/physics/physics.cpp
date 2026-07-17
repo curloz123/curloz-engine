@@ -5,15 +5,15 @@
  */
 
 #include "physics/physics.hpp"
-#include "physics/physics_types.hpp"
-#include "core/logs.hpp"
 #include "config/config.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
-#include "physics/body.hpp"
 #include "core/enginestate.hpp"
+#include "core/logs.hpp"
 #include "core/time.hpp"
 #include "math/interpolate.hpp"
+#include "physics/body.hpp"
+#include "physics/physics_types.hpp"
+#include "scene/entity/componentmanager.hpp"
+#include "scene/entity/components.hpp"
 
 namespace clz::physics
 {
@@ -52,9 +52,7 @@ namespace clz::physics
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState != state::EngineState::Game)
 		{
-			for (auto& entities =
-				ecs::getEntitiesWithComponent<ecs::BodyComponent>();
-				auto& entity : entities)
+			for (auto& entities = ecs::getEntitiesWithComponent<ecs::BodyComponent>(); auto& entity : entities)
 			{
 				auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
 				const auto& transformComponent = ecs::getComponent<ecs::EditorTransformComponent>(entity);
@@ -88,7 +86,6 @@ namespace clz::physics
 				body.newPosition = getBodyPosition(body.bodyId);
 				body.newRotation = getBodyRotation(body.bodyId);
 			}
-
 		}
 		const float alpha = p_accumulator / p_timeStep;
 
@@ -97,13 +94,10 @@ namespace clz::physics
 			auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
 			const auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
 
-			transformComponent.position =
-				math::lerp(body.prevPosition, body.newPosition, alpha);
-			transformComponent.rotation =
-				math::slerp(body.prevRotation, body.newRotation, alpha);
+			transformComponent.position = math::lerp(body.prevPosition, body.newPosition, alpha);
+			transformComponent.rotation = math::slerp(body.prevRotation, body.newRotation, alpha);
 		}
 	}
-
 
 	/// @brief Shuts down the physics engine
 	void shutdown()
@@ -111,4 +105,4 @@ namespace clz::physics
 		b3DestroyWorld(p_world);
 		clz::log::info("Destroyed physics world");
 	}
-}
+} // namespace clz::physics

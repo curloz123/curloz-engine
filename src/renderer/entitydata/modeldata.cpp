@@ -5,13 +5,13 @@
  */
 
 #include "renderer/entitydata/modeldata.hpp"
-#include "renderer/entitydata/texture.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
-#include "renderer/entitydata/indexbuffer.hpp"
-#include "renderer/entitydata/uvbuffer.hpp"
 #include "core/assert.hpp"
 #include "core/logs.hpp"
 #include "math/vec2.hpp"
+#include "renderer/entitydata/indexbuffer.hpp"
+#include "renderer/entitydata/texture.hpp"
+#include "renderer/entitydata/uvbuffer.hpp"
+#include "renderer/entitydata/vertexbuffer.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
@@ -148,7 +148,6 @@ namespace clz::renderer::Asset
 				log::debug("Artist-san you forgot about uv coordinates of some vertex");
 			}
 			UVs.emplace_back(vec);
-
 		}
 
 		if (vertices.empty())
@@ -179,13 +178,13 @@ namespace clz::renderer::Asset
 		// Register Only Vertex, UVs and indices for now
 		if (!vertices.empty())
 		{
-			baseVertex = VBuffer::getBaseVertex();
-			VBuffer::registerVertices(vertices);
-			UVBuffer::registerUVs(UVs);
+			baseVertex = getVertexBaseIndex();
+			registerVertices(vertices);
+			registerUVs(UVs);
 		}
 		if (!indices.empty())
 		{
-			auto [first, count] = IBuffer::registerIndices(indices);
+			auto [first, count] = registerIndices(indices);
 			firstIndex = first;
 			indexCount = count;
 		}
@@ -201,8 +200,9 @@ namespace clz::renderer::Asset
 		}
 		if (baseTextureID == r_NULL_TEXTURE)
 		{
-			log::warn("Model: " + modelPath + "\n" + "has no base texture"
-					    "will apply grey color");
+			log::warn("Model: " + modelPath + "\n" +
+				  "has no base texture"
+				  "will apply grey color");
 		}
 
 		mesh::baseMaterialLUT.texture.emplace_back(baseTextureID);

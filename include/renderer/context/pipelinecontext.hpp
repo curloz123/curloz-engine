@@ -7,7 +7,6 @@
 
 #include "renderer/context/context.hpp"
 #include <string>
-#include "renderer/utility/ubo.hpp"
 
 namespace clz::renderer
 {
@@ -32,8 +31,8 @@ namespace clz::renderer
 	 * @param pSetLayouts Pointer to an array of descriptor layouts
 	 * @warning Supports passing only 1 push constant, that too to only vertex shader
 	 */
-	bool createPipelineLayout(PipelineContext& rPipelineContext, uint32_t pushConstantSize,
-		uint32_t setLayoutCount, const VkDescriptorSetLayout* pSetLayouts);
+	bool createPipelineLayout(PipelineContext& rPipelineContext, uint32_t pushConstantSize, uint32_t setLayoutCount,
+				  const VkDescriptorSetLayout* pSetLayouts);
 
 	/**
 	 * @brief Creates the main pipeline
@@ -60,8 +59,7 @@ namespace clz::renderer
 	/**
 	 * @brief Destroys the pipeline context.
 	 * @param pipelineContext PipelineContext object
-	 * @param uboMemory Memory of uniform buffers attached
 	 */
-	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory& uboMemory);
+	void destroyPipelineContext(PipelineContext& pipelineContext);
 
 } // namespace clz::renderer

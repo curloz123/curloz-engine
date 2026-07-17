@@ -6,6 +6,7 @@
  */
 #include "renderer/context/framecontext.hpp"
 #include "core/logs.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <vulkan/vulkan.h>
 
@@ -38,6 +39,9 @@ namespace clz::renderer
 				clz::log::error("vulkan could not create semaphores");
 				return false;
 			}
+			std::string semaphoreName = "renderer-ready-semaphore_" + std::to_string(i);
+			setHandleName(reinterpret_cast<uint64_t>(r_frameContext.renderReadySemaphores[i]), VK_OBJECT_TYPE_SEMAPHORE,
+				      semaphoreName.c_str());
 
 			VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 			if (vkCreateFence(r_deviceContext.device, &fenceInfo, nullptr, &r_frameContext.inFlightFences[i]) != VK_SUCCESS)
@@ -45,6 +49,8 @@ namespace clz::renderer
 				clz::log::error("vulkan could not create fence");
 				return false;
 			}
+			std::string fenceName = "fence_" + std::to_string(i);
+			setHandleName(reinterpret_cast<uint64_t>(r_frameContext.inFlightFences[i]), VK_OBJECT_TYPE_FENCE, fenceName.c_str());
 		}
 
 		r_frameContext.presentReadySemaphores.resize(r_swapchainContext.images.size());
@@ -58,6 +64,10 @@ namespace clz::renderer
 				clz::log::error("vulkan Could not create semaphores");
 				return false;
 			}
+
+			std::string semaphoreName = "renderer-ready-semaphore_" + std::to_string(i);
+			setHandleName(reinterpret_cast<uint64_t>(r_frameContext.presentReadySemaphores[i]), VK_OBJECT_TYPE_SEMAPHORE,
+				      semaphoreName.c_str());
 		}
 
 		clz::log::info("created All semaphores and fences");

@@ -90,12 +90,6 @@ namespace clz::editor
 		return IsCurrentlyShowingOffscreenTargets;
 	}
 
-	/// @brief Forwards the "entity data ready" signal to the offscreen backend.
-	void flagOffscreenTargetsEntitiesLoaded()
-	{
-		backend::flagBackendComponentsLoaded();
-	}
-
 	/// @brief Destroys and recreates a target's Vulkan resources at a new
 	/// size. Waits for the device to go idle first, since the target's
 	/// current image may still be referenced by an in-flight frame.

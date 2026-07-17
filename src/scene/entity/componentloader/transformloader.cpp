@@ -37,4 +37,4 @@ namespace clz::ecs
 		componentData["scale"][1] = tc.scale.y;
 		componentData["scale"][2] = tc.scale.z;
 	}
-}
+} // namespace clz::ecs

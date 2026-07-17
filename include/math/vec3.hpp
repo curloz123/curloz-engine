@@ -68,7 +68,6 @@ namespace clz::math
 			z += rhs.z;
 		}
 
-
 		/**
 		 * @brief Operator overloaded addition with another vector
 		 * @param rhs Source SSE register.
@@ -77,7 +76,6 @@ namespace clz::math
 		{
 			return {x + rhs.x, y + rhs.y, z + rhs.z};
 		}
-
 
 		/**
 		 * @brief Operator overloaded subtraction of current to rhs vector

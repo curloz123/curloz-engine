@@ -70,9 +70,6 @@ namespace clz::editor
 	/// @brief Draws the ImGui windows for every currently-open offscreen target.
 	void presentOffscreenWindows();
 
-	/// @brief Notifies the offscreen backend that entity data is ready to be used for rendering.
-	void flagOffscreenTargetsEntitiesLoaded();
-
 	/// @brief Whether any offscreen target window is currently open.
 	/// Used to suppress main viewport camera updates while an offscreen
 	/// preview camera should have input focus instead.

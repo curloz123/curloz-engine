@@ -5,14 +5,14 @@
  */
 
 #include "renderer/camera/camera.hpp"
+#include "core/enginestate.hpp"
 #include "core/logs.hpp"
+#include "include/offscreen/offscreentarget.hpp"
+#include "math/vec2.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/camera/camerafunctions.hpp"
-#include "math/vec2.hpp"
-#include "window/mouse.hpp"
 #include "window/inputmanager.hpp"
-#include "core/enginestate.hpp"
-#include "include/offscreen/offscreentarget.hpp"
+#include "window/mouse.hpp"
 
 namespace clz::renderer::camera
 {

@@ -6,9 +6,9 @@
 
 #define TOML_EXCEPTIONS 0
 #include "config/config.hpp"
+#include "core/assert.hpp"
 #include "core/logs.hpp"
 #include <toml++/toml.hpp>
-#include "core/assert.hpp"
 
 namespace clz::config
 {

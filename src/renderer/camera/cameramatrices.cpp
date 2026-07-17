@@ -5,12 +5,12 @@
  */
 
 #include "renderer/camera/cameramatrices.hpp"
+#include "core/logs.hpp"
 #include "math/angle.hpp"
 #include "math/mat4x4.hpp"
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/vk_types.hpp"
-#include "core/logs.hpp"
 
 namespace clz::renderer::camera
 {
@@ -24,10 +24,9 @@ namespace clz::renderer::camera
 		if (ProjMatrixChanged[activeCamera])
 		{
 			const auto width = static_cast<float>(r_swapchainContext.extent.width);
-			const auto height =  static_cast<float>(r_swapchainContext.extent.height);
-			projection = math::makePerspectiveMatrix(
-			    Far[activeCamera], Near[activeCamera],
-			    width / height, math::radians(Fov[activeCamera]));
+			const auto height = static_cast<float>(r_swapchainContext.extent.height);
+			projection =
+			    math::makePerspectiveMatrix(Far[activeCamera], Near[activeCamera], width / height, math::radians(Fov[activeCamera]));
 
 			ProjMatrixChanged[activeCamera] = false;
 			clz::log::debug("Updating projection matrix");

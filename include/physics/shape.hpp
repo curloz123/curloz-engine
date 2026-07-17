@@ -8,8 +8,8 @@
 #pragma once
 
 #include "math/vec3.hpp"
-#include "scene/entity/entitymanager.hpp"
 #include "physics.hpp"
+#include "scene/entity/entitymanager.hpp"
 
 namespace clz::physics
 {
@@ -31,9 +31,9 @@ namespace clz::physics
 		float friction;
 		float restitution;
 
-		BoxShape() : shapeId(b3_nullShapeId), halfDimensions(math::vec3(1.0f)),
-			density(10.0f), friction(0.1f), restitution(0.5f)
-		{}
+		BoxShape() : shapeId(b3_nullShapeId), halfDimensions(math::vec3(1.0f)), density(10.0f), friction(0.1f), restitution(0.5f)
+		{
+		}
 
 		/**
 		 * @brief Initializes cube shape
@@ -44,14 +44,12 @@ namespace clz::physics
 		 * @param friction friction of the shape
 		 * @param restitution restitution value of the shape
 		 */
-		BoxShape(const math::vec3& halfDimensions,
-			const math::vec3& position, const math::vec3& rotation,
-			const float density, const float friction, const float restitution) :
-			shapeId(b3_nullShapeId), halfDimensions(halfDimensions),
-			position(position), rotation(rotation),
-			density(density), friction(friction), restitution(restitution)
-		{}
-
+		BoxShape(const math::vec3& halfDimensions, const math::vec3& position, const math::vec3& rotation, const float density,
+			 const float friction, const float restitution)
+		    : shapeId(b3_nullShapeId), halfDimensions(halfDimensions), position(position), rotation(rotation), density(density),
+		      friction(friction), restitution(restitution)
+		{
+		}
 	};
 
 	/**
@@ -60,8 +58,7 @@ namespace clz::physics
 	 * @param boxShapeContainer container of body which holds the shapes
 	 * @param shape The shape to attach
 	 */
-	void attachShapeToBody(const b3BodyId& bodyId,
-		std::vector<BoxShape>& boxShapeContainer, BoxShape& shape);
+	void attachShapeToBody(const b3BodyId& bodyId, std::vector<BoxShape>& boxShapeContainer, BoxShape& shape);
 
 	/**
 	 * @brief Modifies a current existing shape
@@ -70,8 +67,7 @@ namespace clz::physics
 	 * @param boxShapeContainer container of body which holds the shapes
 	 * @param index Index in provided array
 	 */
-	void modifyShapeByIndex(const b3BodyId& bodyId, BoxShape& shape,
-		std::vector<BoxShape>& boxShapeContainer, uint32_t index);
+	void modifyShapeByIndex(const b3BodyId& bodyId, BoxShape& shape, std::vector<BoxShape>& boxShapeContainer, uint32_t index);
 
 	/**
 	 * @brief Destroys shape of a body.
@@ -82,7 +78,6 @@ namespace clz::physics
 	 * @param boxShapeContainer container of body which holds the shapes
 	 * @param shapeId ID of shape to be destroyed
 	 */
-	void destroyShape(const b3BodyId& bodyId,
-		std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId);
+	void destroyShape(const b3BodyId& bodyId, std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId);
 
-}
+} // namespace clz::physics

@@ -7,26 +7,28 @@
  */
 
 #include "../../include/inspector/rigidbodycomponent.hpp"
-#include "math/quateulerconv.hpp"
-#include "renderer/entitydata/indexbuffer.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
-#include "../../include/offscreen/backend/pipeline.hpp"
-#include "renderer/pipelineinput/mainpipeline.hpp"
 #include "../../include/editor_types.hpp"
-#include "renderer/entitydata/rendermodel.hpp"
+#include "../../include/offscreen/backend/pipeline.hpp"
+#include "../../include/offscreen/backend/descriptor.hpp"
+#include "../../include/offscreen/backend/ubo.hpp"
 #include "../../include/offscreen/camera.hpp"
 #include "../../include/timemachine.hpp"
 #include "core/logs.hpp"
 #include "imgui.h"
 #include "include/offscreen/offscreentarget.hpp"
+#include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
-#include "window/inputmanager.hpp"
+#include "physics/shape.hpp"
+#include "renderer/entitydata/indexbuffer.hpp"
+#include "renderer/pipelinedata/descriptor.hpp"
+#include "renderer/entitydata/rendermodel.hpp"
+#include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "scene/entity/componentmanager.hpp"
 #include "scene/entity/components.hpp"
-#include "renderer/shapes.hpp"
-#include "physics/shape.hpp"
+#include "window/inputmanager.hpp"
 
 namespace clz::editor
 {
@@ -390,7 +392,11 @@ namespace clz::editor
 		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.clearValue = {{{1.0f, 0.0f, 0.0f, 1.0f}}};
+		colorAttachment.clearValue = {
+			.color = {
+				.float32 = {0.0f, 0.0f, 0.0f, 1.0f}
+			}
+		};
 
 		VkRenderingAttachmentInfoKHR depthAttachment = {};
 		depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
@@ -434,9 +440,14 @@ namespace clz::editor
 			.projection = p,
 			.view = v
 		};
-		memcpy(backend::CameraUBO.mapped[renderer::r_currentFrame], &ubo, sizeof(ubo));
+		memcpy(backend::editorCameraUBO.mapped[renderer::r_currentFrame], &ubo, sizeof(ubo));
+
+		const std::array descriptorSets = {
+			backend::cameraDescriptorSets [renderer::r_currentFrame],	// binding set is 1
+			renderer::samplerDescriptorSets[renderer::r_currentFrame]	// As sampler's binding set is 0
+		};
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, backend::editorPipelineContext.layout,
-			0, 1, &backend::editorPipelineContext.descriptorSets[renderer::r_currentFrame],
+			0, descriptorSets.size(), descriptorSets.data(),
 			0, nullptr);
 
 		renderer::renderEntity(commandBuffer, ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID,
@@ -455,7 +466,7 @@ namespace clz::editor
 				const auto scale = boxShape.halfDimensions * 2;
 				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
 					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.0f, 0.5f, 0.5f, 1.0f));
+					math::vec4(0.0f, 0.5f, 0.0f, 1.0f));
 
 			}
 		}
@@ -468,7 +479,7 @@ namespace clz::editor
 				const auto scale = shape.halfDimensions * 2;
 				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
 					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.0f, 0.5f, 0.5f, 1.0f));
+					math::vec4(0.5f, 0.5f, 0.0f, 1.0f));
 			}
 			for (const auto& boxShape : newShapes)
 			{
@@ -477,7 +488,7 @@ namespace clz::editor
 				const auto scale = boxShape.halfDimensions * 2;
 				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
 					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.0f, 0.5f, 0.5f, 1.0f));
+					math::vec4(0.0f, 0.0f, 0.5f, 1.0f));
 			}
 		}
 

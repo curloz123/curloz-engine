@@ -11,7 +11,7 @@
 namespace clz::renderer::camera
 {
 	/// @brief Switches the active camera and resets its mouse-delta tracking.
-	void setActiveCamera( CameraID id);
+	void setActiveCamera(CameraID id);
 
 	/// @brief Drives input handling for the currently active camera and manage mode switching
 	void update();

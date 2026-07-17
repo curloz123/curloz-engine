@@ -3,26 +3,40 @@
  * @author curl0z
  * @brief Implementation of the initialization
  * and cleanup of pipeline context
+ * InitPipelineContexts initializes all the pipelines
+ * used in main rendering only. Editor's pipeline must
+ * be managed seperately.
+ *
+ * @note Before creating any pipeline context,
+ * make sure to run "createPipelineData".
+ * It prepares all the descriptor layouts sets ubo's etc...
  */
 
 #include "renderer/context/pipelinecontext.hpp"
-#include "../../../include/renderer/entitydata/uvbuffer.hpp"
-#include "../../../include/renderer/pipelineinput/mainpipeline.hpp"
 #include "core/logs.hpp"
 #include "renderer/context/context.hpp"
-#include "renderer/pipelineinput/globalinput.hpp"
-#include "renderer/pipelineinput/shapepipeline.hpp"
+#include "renderer/entitydata/uvbuffer.hpp"
+#include "renderer/pipelinedata/pipelinedata.hpp"
+#include "renderer/pipelinedata/pushconstants.hpp"
+#include "renderer/pipelinedata/sampler.hpp"
+#include "renderer/pipelinedata/ubo.hpp"
 #include "renderer/shapes.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/utility/pipeline.hpp"
 #include "renderer/vk_types.hpp"
-#include <fstream>
+
 #include <vector>
-#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
 	bool initPipelineContexts()
 	{
+		// --- Initialize pipeline data ---
+		preparePipelineData();
+
+		// --- Now create all pipelines
+
+		/// --- Main pipeline ---
 		if (!createMainPipeline())
 		{
 			clz::log::error("Could not create main pipeline");
@@ -30,6 +44,7 @@ namespace clz::renderer
 			return false;
 		}
 
+		/// --- Shape pipeline ---
 		if (!createShapePipeline())
 		{
 			clz::log::error("Could not create shape pipeline");
@@ -41,36 +56,30 @@ namespace clz::renderer
 		return true;
 	}
 
-
 	bool createMainPipeline()
 	{
 		// Create shaders modules
-		if (!createShaderModules(r_pipelineContext,
-			"shaders/mainpipeline.vert.spirv",
-			"shaders/mainpipeline.frag.spirv"))
+		if (!createShaderModules(r_pipelineContext, "shaders/mainpipeline.vert.spirv", "shaders/mainpipeline.frag.spirv"))
 		{
 			clz::log::error("Could not create shader modules for main pipeline");
 			clz::log::error("Could not create main pipeline");
 			return false;
 		}
 		// Shader Create Info
-		auto vertShaderStageInfo = createShaderStageInfo(
-			r_pipelineContext.vertexShader, ShaderStage::VERTEX);
-		auto fragShaderStageInfo = createShaderStageInfo(
-			r_pipelineContext.fragmentShader, ShaderStage::FRAGMENT);
+		auto vertShaderStageInfo = createShaderStageInfo(r_pipelineContext.vertexShader, ShaderStage::VERTEX);
+		auto fragShaderStageInfo = createShaderStageInfo(r_pipelineContext.fragmentShader, ShaderStage::FRAGMENT);
 		std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
 		// Dynamic State
 		std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 		VkPipelineDynamicStateCreateInfo dynamicState = createDynamicStates(dynamicStates);
 
-		std::array bindingDescriptions = {createBindingDescription(0, sizeof(math::vec3)),
-							createBindingDescription(1, sizeof(math::vec2))};
+		std::array bindingDescriptions = {createBindingDescription(0, sizeof(math::vec3)), createBindingDescription(1, sizeof(math::vec2))};
 		std::array attributeDescriptions = {
-			createAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),
-			createAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, 0),
+		    createAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		    createAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, 0),
 		};
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo = createVertexInputInfo(bindingDescriptions,attributeDescriptions);
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo = createVertexInputInfo(bindingDescriptions, attributeDescriptions);
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = createInputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
@@ -87,8 +96,8 @@ namespace clz::renderer
 		VkPipelineDepthStencilStateCreateInfo depthStencil = createDepthStencilState(true, false);
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-							VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachment.colorWriteMask =
+		    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -97,20 +106,12 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-
-		MainPipeline::createDescriptorSetLayout();
-
-		std::vector<UBO*> pUniformBuffers = {&MainPipeline::cameraUBO};
-		createDescriptor(r_pipelineContext, true, pUniformBuffers,
-			MainPipeline::uboMemory, MainPipeline::enableTextures);
-		createPipelineLayout(r_pipelineContext, sizeof(ModelDataPC),
-			1, &r_pipelineContext.descriptorSetLayout);
-
+		std::vector layouts = {cameraUBOLayout, combinedSamplerLayout};
+		size_t pushConstantSize = sizeof(ModelDataPC);
+		createPipelineLayout(r_pipelineContext, pushConstantSize, layouts.size(), layouts.data());
 
 		std::vector<VkFormat> attachmentFormats = {r_swapchainContext.format.format};
-		VkPipelineRenderingCreateInfo pipelineRenderingCI =
-			createPipelineRenderingInfo(1, attachmentFormats,
-				r_swapchainContext.depthFormat);
+		VkPipelineRenderingCreateInfo pipelineRenderingCI = createPipelineRenderingInfo(1, attachmentFormats, r_swapchainContext.depthFormat);
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -129,8 +130,8 @@ namespace clz::renderer
 		pipelineInfo.renderPass = VK_NULL_HANDLE;
 		pipelineInfo.subpass = 0;
 
-		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE,
-			1, &pipelineInfo, nullptr, &r_pipelineContext.pipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &r_pipelineContext.pipeline) !=
+		    VK_SUCCESS)
 		{
 			clz::log::error("vulkan Could not create shape pipeline");
 			return false;
@@ -138,15 +139,15 @@ namespace clz::renderer
 
 		clz::log::info("created main pipeline");
 
+		setHandleName(reinterpret_cast<uint64_t>(r_pipelineContext.pipeline), VK_OBJECT_TYPE_PIPELINE, "main pipeline");
+
 		return true;
 	}
 
 	bool createShapePipeline()
 	{
 		// Create shaders modules
-		if (!createShaderModules(r_shapePipelineContext,
-			"shaders/shapes.vert.spirv",
-			"shaders/shapes.frag.spirv"))
+		if (!createShaderModules(r_shapePipelineContext, "shaders/shapes.vert.spirv", "shaders/shapes.frag.spirv"))
 		{
 			log::error("Could not create pipeline");
 			return false;
@@ -164,31 +165,24 @@ namespace clz::renderer
 		fragShaderStageInfo.module = r_shapePipelineContext.fragmentShader;
 		fragShaderStageInfo.pName = "main";
 
-		VkPipelineShaderStageCreateInfo shaderStages[] = {
-			vertShaderStageInfo, fragShaderStageInfo
-		};
+		VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
 		// Pipeline creation
 
-		std::vector<VkDynamicState> dynamicStates = {
-			VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR
-		};
+		std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
 		VkPipelineDynamicStateCreateInfo dynamicState{};
 		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
-
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.vertexBindingDescriptionCount = 0,
-			.pVertexBindingDescriptions = nullptr,
-			.vertexAttributeDescriptionCount = 0,
-			.pVertexAttributeDescriptions = nullptr
-		};
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+									.pNext = nullptr,
+									.flags = 0,
+									.vertexBindingDescriptionCount = 0,
+									.pVertexBindingDescriptions = nullptr,
+									.vertexAttributeDescriptionCount = 0,
+									.pVertexAttributeDescriptions = nullptr};
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -237,8 +231,7 @@ namespace clz::renderer
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.colorWriteMask =
-		    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-		    	VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -247,12 +240,7 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-		ShapePipeline::createDescriptorSetLayout();
-		std::vector<UBO*> pUniformBuffers = {&ShapePipeline::cameraUBO};
-		createDescriptor(r_shapePipelineContext, true, pUniformBuffers,
-			ShapePipeline::uboMemory, ShapePipeline::enableTextures);
-		createPipelineLayout(r_shapePipelineContext, sizeof(PushConstants),
-			1, &r_shapePipelineContext.descriptorSetLayout);
+		createPipelineLayout(r_shapePipelineContext, sizeof(PushConstants), 0, nullptr);
 
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 		pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
@@ -277,8 +265,8 @@ namespace clz::renderer
 		pipelineInfo.renderPass = VK_NULL_HANDLE;
 		pipelineInfo.subpass = 0;
 
-		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE,
-			1, &pipelineInfo, nullptr, &r_shapePipelineContext.pipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(r_deviceContext.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &r_shapePipelineContext.pipeline) !=
+		    VK_SUCCESS)
 		{
 			clz::log::error("vulkan Could not create shape pipeline");
 			return false;
@@ -286,8 +274,9 @@ namespace clz::renderer
 
 		clz::log::info("created shape pipeline");
 
-		return true;
+		setHandleName(reinterpret_cast<uint64_t>(r_shapePipelineContext.pipeline), VK_OBJECT_TYPE_PIPELINE, "shape pipeline");
 
+		return true;
 	}
 } // namespace clz::renderer
 
@@ -295,15 +284,18 @@ namespace clz::renderer
 {
 	void destroyPipelineContexts()
 	{
-		destroyPipelineContext(r_shapePipelineContext, ShapePipeline::uboMemory);
+		// --- Destroy pipeline data first
+		destroyPipelineData();
+
+		// --- Then Destroy pipeline context's
+		destroyPipelineContext(r_shapePipelineContext);
 		clz::log::info("destroyed main pipeline context");
-		destroyPipelineContext(r_pipelineContext, MainPipeline::uboMemory);
+		destroyPipelineContext(r_pipelineContext);
 		clz::log::info("destroyed shape pipeline context");
 	}
 
-	void destroyPipelineContext(PipelineContext& pipelineContext, UBOMemory& uboMemory)
+	void destroyPipelineContext(PipelineContext& pipelineContext)
 	{
-		destroyDescriptor(pipelineContext, uboMemory);
 		vkDestroyPipeline(r_deviceContext.device, pipelineContext.pipeline, nullptr);
 		vkDestroyPipelineLayout(r_deviceContext.device, pipelineContext.layout, nullptr);
 		vkDestroyShaderModule(r_deviceContext.device, pipelineContext.vertexShader, nullptr);

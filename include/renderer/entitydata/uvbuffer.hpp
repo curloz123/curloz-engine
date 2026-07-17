@@ -17,7 +17,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-namespace clz::renderer::UVBuffer
+namespace clz::renderer
 {
 	/**
 	 * @brief CPU-side storage for all registered texture coordinates.
@@ -45,7 +45,7 @@ namespace clz::renderer::UVBuffer
 	 *
 	 * @return Index of the first UV coordinate that will be inserted next.
 	 */
-	uint32_t getBaseVertex();
+	uint32_t getUVBaseIndex();
 
 	/**
 	 * @brief Appends UV coordinates to the global UV array.
@@ -63,7 +63,7 @@ namespace clz::renderer::UVBuffer
 	 *
 	 * @return True if upload succeeded.
 	 */
-	bool submitUVBuffer();
+	bool createUVBuffer();
 
 	/**
 	 * @brief Destroys GPU resources associated with the UV buffer.
@@ -88,4 +88,4 @@ namespace clz::renderer::UVBuffer
 	 * @return Vertex attribute description for UV data.
 	 */
 	VkVertexInputAttributeDescription getUVAttributeDescription();
-} // namespace clz::renderer::UVBuffer
+} // namespace clz::renderer

@@ -5,11 +5,11 @@
  */
 
 #pragma once
-#include <box3d/box3d.h>
-#include "math/vec3.hpp"
 #include "math/quat.hpp"
-#include <array>
+#include "math/vec3.hpp"
 #include "shape.hpp"
+#include <array>
+#include <box3d/box3d.h>
 
 namespace clz::physics
 {
@@ -35,7 +35,7 @@ namespace clz::physics
 
 		std::vector<BoxShape> boxShapes;
 	};
-}
+} // namespace clz::physics
 
 namespace clz::physics
 {
@@ -140,4 +140,4 @@ namespace clz::physics
 	 * @return Array of 3 bools indicating locked angular axes
 	 */
 	std::array<bool, 3> getBodyAngularLocks(const b3BodyId bodyId);
-}
+} // namespace clz::physics

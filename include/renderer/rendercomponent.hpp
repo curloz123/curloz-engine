@@ -8,15 +8,13 @@
 #pragma once
 
 #include "core/logs.hpp"
-#include "renderer/entitydata/indexbuffer.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
-#include "renderer/entitydata/uvbuffer.hpp"
-#include "renderer/entitydata/texture.hpp"
 #include "entitydata/modeldata.hpp"
-#include "pipelineinput/mainpipeline.hpp"
-#include "renderer/context/pipelinecontext.hpp"
+#include "renderer/entitydata/indexbuffer.hpp"
+#include "renderer/entitydata/texture.hpp"
+#include "renderer/entitydata/uvbuffer.hpp"
+#include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/pipelinedata/pipelinedata.hpp"
 #include "scene/entity/components.hpp"
-#include "vk_types.hpp"
 #include <filesystem>
 
 namespace clz::renderer
@@ -31,13 +29,13 @@ namespace clz::renderer
 	 */
 	inline void flagRenderComponentsLoaded()
 	{
-		VBuffer::submitVertexBuffer();
-		IBuffer::submitIndexBuffer();
-		UVBuffer::submitUVBuffer();
+		createVertexBuffer();
+		createIndexBuffer();
+		createUVBuffer();
 		createTextures();
 
-		clz::log::info("Updating pipeline input, after entities have loaded");
-		updateTextureData(r_pipelineContext);
+		updatePipelineData();
+		clz::log::info("Updated pipeline input, after entities have loaded");
 	}
 
 	/**

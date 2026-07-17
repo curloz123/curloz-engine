@@ -7,10 +7,11 @@
 #include "../../../include/renderer/entitydata/indexbuffer.hpp"
 #include "core/logs.hpp"
 #include "renderer/utility/buffer.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <memory.h>
 
-namespace clz::renderer::IBuffer
+namespace clz::renderer
 {
 	std::tuple<uint32_t, uint32_t> registerIndices(const std::vector<uint32_t>& indices)
 	{
@@ -21,7 +22,7 @@ namespace clz::renderer::IBuffer
 		return std::make_tuple(startIndex, indexCount);
 	}
 
-	bool submitIndexBuffer()
+	bool createIndexBuffer()
 	{
 		if (r_globalIndexVector.empty())
 		{
@@ -51,6 +52,8 @@ namespace clz::renderer::IBuffer
 			clz::log::error("Could not create main index buffer");
 			return false;
 		}
+		setHandleName(reinterpret_cast<uint64_t>(r_indexBuffer), VK_OBJECT_TYPE_BUFFER, "entity index buffer");
+		setHandleName(reinterpret_cast<uint64_t>(r_indexBufferMemory), VK_OBJECT_TYPE_DEVICE_MEMORY, "entity index buffer memory");
 
 		if (!copyBuffer(stagingBuffer, r_indexBuffer, bufferSize, "index staging buffer", "main index buffer"))
 		{
@@ -71,4 +74,4 @@ namespace clz::renderer::IBuffer
 		vkDestroyBuffer(device, r_indexBuffer, nullptr);
 		vkFreeMemory(device, r_indexBufferMemory, nullptr);
 	}
-} // namespace clz::renderer::IBuffer
+} // namespace clz::renderer

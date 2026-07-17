@@ -12,8 +12,8 @@
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
 #include "physics/body.hpp"
-#include "physics/shape.hpp"
 #include "physics/physics.hpp"
+#include "physics/shape.hpp"
 
 namespace clz::ecs
 {
@@ -29,14 +29,16 @@ namespace clz::ecs
 	{
 		clz::math::quat rotation = {1, 0, 0, 0}; ///< Quaternion rotation
 		clz::math::vec3 position = {0, 0, 0};	 ///< World space position.
-		clz::math::vec3 scale = {1, 1, 1};	///< Non-uniform scale.
+		clz::math::vec3 scale = {1, 1, 1};	 ///< Non-uniform scale.
 
 		TransformComponent()
-		{}
+		{
+		}
 
 		TransformComponent(const clz::math::quat& rotation, const clz::math::vec3& position, const clz::math::vec3& scale)
 		    : rotation(rotation), position(position), scale(scale)
-		{}
+		{
+		}
 	};
 	/**
 	 * @brief Stores transform component as set by the editor.
@@ -53,18 +55,21 @@ namespace clz::ecs
 	{
 		clz::math::quat rotation = {1, 0, 0, 0}; ///< Quaternion rotation
 		clz::math::vec3 position = {0, 0, 0};	 ///< World space position.
-		clz::math::vec3 scale = {1, 1, 1};	///< Non-uniform scale.
+		clz::math::vec3 scale = {1, 1, 1};	 ///< Non-uniform scale.
 
 		EditorTransformComponent()
-		{}
+		{
+		}
 
 		EditorTransformComponent(const clz::math::quat& rotation, const clz::math::vec3& position, const clz::math::vec3& scale)
 		    : rotation(rotation), position(position), scale(scale)
-		{}
+		{
+		}
 
-		explicit EditorTransformComponent(const TransformComponent& transformComponent):
-		rotation(transformComponent.rotation), position(transformComponent.position), scale(transformComponent.scale)
-		{}
+		explicit EditorTransformComponent(const TransformComponent& transformComponent)
+		    : rotation(transformComponent.rotation), position(transformComponent.position), scale(transformComponent.scale)
+		{
+		}
 	};
 
 	/**
@@ -86,7 +91,8 @@ namespace clz::ecs
 	{
 		clz::renderer::ModelID modelID;
 		explicit ModelComponent(const clz::renderer::ModelID modelID) : modelID(modelID)
-		{}
+		{
+		}
 	};
 
 	/**
@@ -104,15 +110,14 @@ namespace clz::ecs
 		math::vec3 newPosition;
 
 		explicit BodyComponent()
-		{}
+		{
+		}
 
-		explicit BodyComponent(const physics::BodyId bodyId,
-			const math::quat& prevRotation, const math::quat& newRotation,
-			const math::vec3& prevPosition, const math::vec3& newPosition)
-			: bodyId(bodyId),
-			prevRotation(prevRotation), newRotation(newRotation),
-			prevPosition(prevPosition), newPosition(newPosition)
-		{}
+		explicit BodyComponent(const physics::BodyId bodyId, const math::quat& prevRotation, const math::quat& newRotation,
+				       const math::vec3& prevPosition, const math::vec3& newPosition)
+		    : bodyId(bodyId), prevRotation(prevRotation), newRotation(newRotation), prevPosition(prevPosition), newPosition(newPosition)
+		{
+		}
 	};
 	/**
 	 * @brief Stores the shapes attached to the body of current entity.
@@ -122,8 +127,9 @@ namespace clz::ecs
 	struct ShapeComponent
 	{
 		std::vector<physics::BoxShape> boxShapes;
-		ShapeComponent(const std::vector<physics::BoxShape>& boxShapes): boxShapes(boxShapes)
-		{}
+		ShapeComponent(const std::vector<physics::BoxShape>& boxShapes) : boxShapes(boxShapes)
+		{
+		}
 	};
 
 } // namespace clz::ecs

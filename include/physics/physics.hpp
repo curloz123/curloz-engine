@@ -27,4 +27,4 @@ namespace clz::physics
 	inline const b3BodyId NullBodyId = b3_nullBodyId;
 	using ShapeId = b3BodyId;
 	inline const b3ShapeId NullShapeId = b3_nullShapeId;
-}
+} // namespace clz::physics

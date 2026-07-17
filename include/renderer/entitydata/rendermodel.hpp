@@ -23,6 +23,5 @@ namespace clz::renderer
 	 */
 	void renderEntities(VkCommandBuffer commandBuffer);
 
-	void renderEntity(VkCommandBuffer commandBuffer, ModelID modelID,
-		const math::mat4 &model);
+	void renderEntity(VkCommandBuffer commandBuffer, ModelID modelID, const math::mat4& model);
 } // namespace clz::renderer

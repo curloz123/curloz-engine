@@ -1,9 +1,9 @@
-#pragma once 
+#pragma once
 
 #include <vulkan/vulkan.h>
 
-namespace clz::renderer 
+namespace clz::renderer
 {
 	VkCommandBuffer startSingleTimeCommand();
 	void submitSingleTimeCommand(VkCommandBuffer commandBuffer);
-}
+} // namespace clz::renderer
