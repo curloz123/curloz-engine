@@ -52,9 +52,10 @@ namespace clz::renderer
 		clz::log::info("Initialized renderer");
 		return true;
 
-	failure:
+		failure:
 		clz::log::error("Could not initialize renderer");
 		return false;
+
 	}
 
 	void update()

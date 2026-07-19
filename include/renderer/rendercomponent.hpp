@@ -8,7 +8,7 @@
 #pragma once
 
 #include "core/logs.hpp"
-#include "entitydata/modeldata.hpp"
+#include "model/model.hpp"
 #include "renderer/entitydata/indexbuffer.hpp"
 #include "renderer/entitydata/texture.hpp"
 #include "renderer/entitydata/uvbuffer.hpp"
@@ -49,8 +49,12 @@ namespace clz::renderer
 	 */
 	inline ecs::ModelComponent createModelComponent(const std::filesystem::path& path)
 	{
-		const ModelID modelID = Asset::loadModel(path);
-		ecs::ModelComponent modelComponent(modelID);
-		return modelComponent;
+		if (const auto result = loadModel(path))
+		{
+			return ecs::ModelComponent(result.value());
+		}
+
+		log::warn("Could not load model, exiting");
+		return ecs::ModelComponent(NULL_MODEL);
 	}
 } // namespace clz::renderer

@@ -21,7 +21,7 @@
 #include "physics/shape.hpp"
 #include "renderer/entitydata/indexbuffer.hpp"
 #include "renderer/pipelinedata/descriptor.hpp"
-#include "renderer/entitydata/rendermodel.hpp"
+#include "renderer/model/model.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
@@ -450,9 +450,9 @@ namespace clz::editor
 			0, descriptorSets.size(), descriptorSets.data(),
 			0, nullptr);
 
-		renderer::renderEntity(commandBuffer, ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelID,
-			math::getModelMatrix(math::quat(1.0f, 0.0f, 0.0f, 0.0f),
-				math::vec3(0.0f), ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value()).scale));
+		renderer::drawModel(ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelId,
+			math::vec3(0.0f), math::quat(), math::vec3(1.0f),
+			commandBuffer);
 
 
 		if (!anyChanges)

@@ -8,12 +8,12 @@
 
 namespace clz::renderer
 {
-	/// @brief  Push constants
 	enum class Shape : uint32_t
 	{
 		BOX = 0,
 	};
-	struct PushConstants
+	/// @brief Push constants
+	struct ShapePushConstants
 	{
 		math::mat4 mvp;
 		math::vec4 color;
@@ -23,10 +23,10 @@ namespace clz::renderer
 	inline void drawShape(VkCommandBuffer commandBuffer, const Shape shape, const math::mat4& projection, const math::mat4& view,
 			      const math::mat4& model, const math::vec4& color)
 	{
-		PushConstants pc = {.mvp = model * view * projection, .color = color, .shape = shape};
+		ShapePushConstants pc = {.mvp = model * view * projection, .color = color, .shape = shape};
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_shapePipelineContext.pipeline);
 
-		vkCmdPushConstants(commandBuffer, r_shapePipelineContext.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &pc);
+		vkCmdPushConstants(commandBuffer, r_shapePipelineContext.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShapePushConstants), &pc);
 
 		switch (shape)
 		{

@@ -75,12 +75,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 #STB_IMAGE
 target_include_directories(${PROJECT_NAME} PRIVATE external/stb)
 
-# ASSIMP
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-add_subdirectory(external/assimp)
-target_compile_options(assimp PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
-target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+# FASTGLTF
+set(FASTGLTF_COMPILE_AS_CPP20 ON CACHE BOOL "" FORCE)
+add_subdirectory(external/fastgltf)
+target_link_libraries(${PROJECT_NAME} PRIVATE fastgltf)
 
 #IMGUI
 add_library(imgui STATIC

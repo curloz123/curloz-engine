@@ -7,8 +7,7 @@
 #include "renderer/mainloop.hpp"
 #include "../../editor/include/editor.hpp"
 #include "../../editor/include/offscreen/offscreentarget.hpp"
-#include "../../external/assimp/code/AssetLib/Collada/ColladaHelper.h"
-#include "../../include/renderer/entitydata/rendermodel.hpp"
+#include "renderer/model/model.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/camera/camera.hpp"
@@ -16,7 +15,6 @@
 #include "renderer/pipelinedata/descriptor.hpp"
 #include "renderer/pipelinedata/ubo.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/mouse.hpp"
@@ -42,7 +40,7 @@ namespace clz::renderer
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.layout, 0, descriptorSets.size(),
 					descriptorSets.data(), 0, nullptr);
 
-		renderEntities(commandBuffer);
+		drawAllModels(commandBuffer);
 
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
@@ -94,9 +92,15 @@ namespace clz::renderer
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, const uint32_t imageIndex)
 	{
-		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0,
-					VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
-					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+		transition_image_layout(
+			r_swapchainContext.images[imageIndex],
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			0,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
 		VkRenderingAttachmentInfoKHR colorAttachment = {};
 		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;

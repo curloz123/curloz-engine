@@ -240,7 +240,7 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-		createPipelineLayout(r_shapePipelineContext, sizeof(PushConstants), 0, nullptr);
+		createPipelineLayout(r_shapePipelineContext, sizeof(ShapePushConstants), 0, nullptr);
 
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 		pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;

@@ -5,8 +5,7 @@
  */
 
 #include "scene/entity/entity.hpp"
-#include "../../../include/renderer/entitydata/modeldata.hpp"
-#include "include/offscreen/offscreentarget.hpp"
+#include "renderer/model/model.hpp"
 #include "math/quateulerconv.hpp"
 #include "renderer/rendercomponent.hpp"
 #include "scene/entity/componentloader/loader.hpp"

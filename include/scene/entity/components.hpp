@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../../renderer/entitydata/modeldata.hpp"
+#include "renderer/model/model.hpp"
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
 #include "physics/body.hpp"
@@ -89,8 +89,8 @@ namespace clz::ecs
 	 */
 	struct ModelComponent
 	{
-		clz::renderer::ModelID modelID;
-		explicit ModelComponent(const clz::renderer::ModelID modelID) : modelID(modelID)
+		clz::renderer::ModelId modelId;
+		explicit ModelComponent(const clz::renderer::ModelId modelId) : modelId(modelId)
 		{
 		}
 	};
