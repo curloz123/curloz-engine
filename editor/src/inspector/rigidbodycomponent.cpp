@@ -450,8 +450,11 @@ namespace clz::editor
 			0, descriptorSets.size(), descriptorSets.data(),
 			0, nullptr);
 
-		renderer::drawModel(ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelId,
-			math::vec3(0.0f), math::quat(), math::vec3(1.0f),
+		renderer::drawModel(
+			ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelId,
+			math::vec3(0.0f),
+			math::quat(),
+			ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value()).scale,
 			commandBuffer);
 
 
