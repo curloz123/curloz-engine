@@ -20,9 +20,9 @@ namespace clz::renderer
 		std::vector<VkImageView> imageView;
 		std::vector<VkDeviceSize> imageSize;
 		std::vector<VkDeviceSize> offset;
-		std::vector<int> width;
-		std::vector<int> height;
-		std::vector<int> numChannels;
+		std::vector<int32_t> width;
+		std::vector<int32_t> height;
+		std::vector<int32_t> numChannels;
 
 		std::vector<stbi_uc*> raw_data;
 	};
@@ -41,7 +41,7 @@ namespace clz::renderer
 
 	/**
 	 * @brief Initializes texture subsystem state.
-	 * Currently creates the global texture sampler.
+	 * @note Right now we create only a single global texture sampler.
 	 *
 	 * @return True on success.
 	 */
@@ -57,6 +57,18 @@ namespace clz::renderer
 	 * @return Registered texture identifier.
 	 */
 	TextureID registerTexture(const std::filesystem::path& filePath);
+
+	/**
+	 * @brief Same as normal register texture function,
+	 * but instead of loading them, this one takes image data
+	 * as raw bytes. Aka already loaded in memory
+	 *
+	 * @param data Raw data, majorly used when loading GLB models
+	 * @param size Size of the raw data. So that we don't go out of bounds
+	 * @param textureName Name of this texture
+	 * @return Registered texture identifier
+	 */
+	TextureID registerTexture(const std::byte* data, size_t size, const std::string& textureName);
 
 	/**
 	 * @brief Uploads all registered textures to GPU memory.

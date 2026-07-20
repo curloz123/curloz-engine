@@ -17,7 +17,7 @@ namespace clz::ecs
 	ModelComponent retrieveModelComponent(const std::filesystem::path& path)
 	{
 		const ModelComponent modelComponent = renderer::createModelComponent(path);
-		if (modelComponent.modelID == renderer::NULL_ASSET)
+		if (modelComponent.modelId == renderer::NULL_MODEL)
 		{
 			clz::log::error("Could not load model component");
 		}
@@ -30,6 +30,6 @@ namespace clz::ecs
 	/// @param componentData JSON index of entity
 	void saveModelComponent(const ModelComponent& mc, nlohmann::json& componentData)
 	{
-		componentData["path"] = renderer::Asset::getModelName(mc.modelID);
+		componentData["path"] = renderer::getModelPath(mc.modelId);
 	}
 } // namespace clz::ecs

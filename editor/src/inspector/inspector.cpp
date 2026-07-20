@@ -11,7 +11,6 @@
  */
 
 #include "../../include/inspector/inspector.hpp"
-#include "../../../include/renderer/entitydata/modeldata.hpp"
 #include "../../include/editor_types.hpp"
 #include "../../include/inspector/modelcomponent.hpp"
 #include "../../include/inspector/transformcomponent.hpp"
