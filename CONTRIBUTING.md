@@ -32,7 +32,7 @@ Every subsystem's architecture and patterns
 | Math | @curl0z | Everything under **include/math/** |
 | Website | @harleen05 | index.html |
 | Documentation | @harleen05 | index.html |
-| Physics | unassigned |  |
+| Physics       | @curl0z    | Everything under **src or include/physics/**  |
 | Audio | unassigned | |
 
 **Do not touch code outside your area without discussing it first.** If you need something from another area, ask. Don't patch it yourself.
