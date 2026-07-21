@@ -39,8 +39,8 @@ namespace clz::renderer
 	 * @param flags which flags are these again??
 	 * @return True if successful, false if not
 	 */
-	bool createImage(VkImage& rImage, const std::string& name, const uint32_t width, const uint32_t height, const VkFormat format,
-			 VkImageTiling tiling, const VkImageUsageFlags usage, const VkImageCreateFlags flags);
+	bool createImage(VkImage& rImage, const std::string& name, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+			 VkImageUsageFlags usage, VkImageCreateFlags flags);
 
 	/**
 	 * @brief Creates an image view for an image
@@ -52,7 +52,6 @@ namespace clz::renderer
 	 * @param aspect What was this again??
 	 * @return True if successful, false if not
 	 */
-	bool createImageView(VkImageView& rImageView, const std::string& name, const VkImage image, const VkFormat format,
-			     const VkImageAspectFlags aspect);
+	bool createImageView(VkImageView& rImageView, const std::string& name, VkImage image, VkFormat format, VkImageAspectFlags aspect);
 
 } // namespace clz::renderer

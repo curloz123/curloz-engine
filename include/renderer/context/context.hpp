@@ -97,6 +97,10 @@ namespace clz::renderer
 		VkPipelineLayout layout = VK_NULL_HANDLE;	///< Pipeline layout
 		VkShaderModule vertexShader = VK_NULL_HANDLE;	///< Vertex shader module
 		VkShaderModule fragmentShader = VK_NULL_HANDLE; ///< Fragment shader module
+
+		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> descriptorSets;
 	};
 
 	/**

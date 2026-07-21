@@ -6,7 +6,9 @@
  */
 
 #include "renderer/context/devicecontext.hpp"
+#include "core/assert.hpp"
 #include "core/logs.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <algorithm>
 #include <array>
@@ -206,6 +208,7 @@ namespace clz::renderer
 		}
 
 		clz::log::info("renderer: created instance");
+
 		return true;
 	}
 
@@ -224,6 +227,7 @@ namespace clz::renderer
 			break;
 		case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT):
 			clz::log::error("VULKAN VALIDATION LAYERS: " + std::string(pMessageData->pMessage));
+			// clz::CLZ_ASSERT(false, "fuck off");
 			break;
 		default:
 			break;
@@ -475,7 +479,6 @@ namespace clz::renderer
 		vkGetDeviceQueue(r_deviceContext.device, r_deviceContext.presentFamily.value(), 0, &r_deviceContext.presentQueue);
 
 		clz::log::info("created logical device");
-
 		return true;
 	}
 } // namespace clz::renderer

@@ -6,14 +6,15 @@
 #pragma once
 
 #include "cameradata.hpp"
+#include "cameramatrices.hpp"
 
 namespace clz::renderer::camera
 {
 	/// @brief Switches the active camera and resets its mouse-delta tracking.
-	void setActiveCamera(const CameraID id);
+	void setActiveCamera(CameraID id);
 
-	/// @brief Drives input handling for the currently active camera.
-	void update(const float xPos, const float yPos, const float scroll);
+	/// @brief Drives input handling for the currently active camera and manage mode switching
+	void update();
 
 	/// @brief Returns the active camera's world-space position.
 	inline math::vec3 getPosition()
@@ -31,5 +32,11 @@ namespace clz::renderer::camera
 	inline float getFov()
 	{
 		return Fov[activeCamera];
+	}
+
+	/// @brief Hint's camera that projection matrix should be recalculated
+	inline void updateProjectionMatrix()
+	{
+		ProjMatrixChanged[activeCamera] = true;
 	}
 } // namespace clz::renderer::camera

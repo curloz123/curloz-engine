@@ -13,6 +13,7 @@
 #pragma once
 
 #include "config/config.hpp"
+#include "core/logs.hpp"
 #include <chrono>
 #include <thread>
 

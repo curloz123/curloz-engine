@@ -10,6 +10,8 @@
 #include "core/logs.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
+#include "renderer/utility/namer.hpp"
+#include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/window.hpp"
 #include <string>
@@ -182,6 +184,9 @@ namespace clz::renderer
 		}
 
 		clz::log::info("renderer: created swapchain");
+
+		setHandleName(reinterpret_cast<uint64_t>(r_swapchainContext.swapchain), VK_OBJECT_TYPE_SWAPCHAIN_KHR, "swapchain");
+
 		return true;
 	}
 
@@ -235,6 +240,7 @@ namespace clz::renderer
 			clz::log::error("Could not create depth image");
 			return false;
 		}
+		setHandleName(reinterpret_cast<uint64_t>(r_swapchainContext.depthImage), VK_OBJECT_TYPE_IMAGE, "swapchain depth image");
 
 		VkMemoryRequirements memRequirements;
 		vkGetImageMemoryRequirements(clz::renderer::r_deviceContext.device, r_swapchainContext.depthImage, &memRequirements);
@@ -250,6 +256,8 @@ namespace clz::renderer
 			clz::log::error("vulkan could not create depth memory");
 			return false;
 		}
+		setHandleName(reinterpret_cast<uint64_t>(r_swapchainContext.depthDeviceMemory), VK_OBJECT_TYPE_DEVICE_MEMORY,
+			      "swapchain depth memory");
 
 		vkBindImageMemory(clz::renderer::r_deviceContext.device, r_swapchainContext.depthImage, r_swapchainContext.depthDeviceMemory, 0);
 
@@ -259,6 +267,7 @@ namespace clz::renderer
 			clz::log::error("Could not create depth image view");
 			return false;
 		}
+		setHandleName(reinterpret_cast<uint64_t>(r_swapchainContext.depthImageView), VK_OBJECT_TYPE_IMAGE_VIEW, "swapchain depth image view");
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -266,13 +275,7 @@ namespace clz::renderer
 		allocInfo.commandPool = clz::renderer::r_commandContext.commandPool;
 		allocInfo.commandBufferCount = 1;
 
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(clz::renderer::r_deviceContext.device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		VkCommandBuffer commandBuffer = startSingleTimeCommand();
 
 		transition_image_layout(r_swapchainContext.depthImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 					VK_PIPELINE_STAGE_2_NONE,
@@ -280,14 +283,7 @@ namespace clz::renderer
 					VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 					VK_IMAGE_ASPECT_DEPTH_BIT, commandBuffer);
 
-		vkEndCommandBuffer(commandBuffer);
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(clz::renderer::r_deviceContext.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(clz::renderer::r_deviceContext.graphicsQueue);
+		submitSingleTimeCommand(commandBuffer);
 
 		clz::log::info("Created depth resources");
 		return true;

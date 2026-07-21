@@ -5,46 +5,45 @@
  */
 
 #include "renderer/mainloop.hpp"
+#include "../../editor/include/editor.hpp"
+#include "../../editor/include/offscreen/offscreentarget.hpp"
+#include "renderer/model/model.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
-#include "renderer/assets/drawmodel.hpp"
 #include "renderer/camera/camera.hpp"
-#include "renderer/editor/editor.hpp"
+#include "renderer/camera/cameramatrices.hpp"
+#include "renderer/pipelinedata/descriptor.hpp"
+#include "renderer/pipelinedata/ubo.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shaderdata/shaderdata.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
-#include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 
 namespace clz::renderer
 {
-	void render(VkCommandBuffer commandBuffer, const uint32_t currentFrame)
+	void render(VkCommandBuffer commandBuffer)
 	{
-#ifdef CLZ_ENABLE_SANDBOX
-		if (window::isKeyPressed(input::Key::Escape) && state::g_engineState == state::EngineState::Game)
-		{
-			window::enableCursor();
-			camera::setActiveCamera(camera::EditorCam);
-			setEngineState(state::EngineState::Sandbox, "KEY->ESCAPE, mid render loop");
-		}
-		if (window::isKeyPressed(input::Key::LeftControl) && window::isKeyPressed(input::Key::G) &&
-		    state::g_engineState == state::EngineState::Sandbox)
-		{
-			window::disableCursor();
-			camera::setActiveCamera(camera::GameCam);
-			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
-		}
-#endif
+		camera::update();
+		// Pipeline
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.pipeline);
 
-		const math::vec2 cursorPos = window::getCursorPosition();
-		const float scroll = window::getScrollOffset();
-		camera::update(cursorPos.x, cursorPos.y, scroll);
-		updateShaderData(commandBuffer, currentFrame);
-		drawEntitiesMainPipeline(commandBuffer);
+		// Descriptor sets
+		const CameraShaderUBO cameraShaderUBO = {
+		    .projection = camera::getProjectionMatrix(),
+		    .view = camera::getViewMatrix(),
+		};
+		updateUniformBuffers(cameraShaderUBO);
+		const std::array descriptorSets = {
+		    cameraDescriptorSets[r_currentFrame], // binding point is 1
+		    samplerDescriptorSets[r_currentFrame] // As sampler's binding point is 0
+		};
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.layout, 0, descriptorSets.size(),
+					descriptorSets.data(), 0, nullptr);
 
-#ifdef CLZ_ENABLE_SANDBOX
-		if (state::g_engineState == state::EngineState::Sandbox)
+		drawAllModels(commandBuffer);
+
+#ifdef CLZ_ENABLE_EDITOR
+		if (state::g_engineState == state::EngineState::Editor)
 			editor::update(commandBuffer);
 #endif
 	}
@@ -93,17 +92,24 @@ namespace clz::renderer
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, const uint32_t imageIndex)
 	{
-		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0,
-					VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
-					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+		transition_image_layout(
+			r_swapchainContext.images[imageIndex],
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			0,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
 
-		const VkRenderingAttachmentInfoKHR colorAttachment{.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
-								   .pNext = nullptr,
-								   .imageView = r_swapchainContext.imageViews[imageIndex],
-								   .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-								   .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-								   .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-								   .clearValue = {{0.0f, 0.0f, 0.0f, 1.0f}}};
+		VkRenderingAttachmentInfoKHR colorAttachment = {};
+		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+		colorAttachment.pNext = nullptr;
+		colorAttachment.imageView = r_swapchainContext.imageViews[imageIndex];
+		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.clearValue = {.color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}};
 
 		VkRenderingAttachmentInfoKHR depthAttachment = {};
 		depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
@@ -113,14 +119,15 @@ namespace clz::renderer
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthAttachment.clearValue.depthStencil.depth = 1.0f;
 
-		const VkRenderingInfoKHR renderingInfo{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
-						       .pNext = nullptr,
-						       .flags = 0,
-						       .renderArea = {{0, 0}, r_swapchainContext.extent},
-						       .layerCount = 1,
-						       .colorAttachmentCount = 1,
-						       .pColorAttachments = &colorAttachment,
-						       .pDepthAttachment = &depthAttachment};
+		VkRenderingInfoKHR renderingInfo = {};
+		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+		renderingInfo.pNext = nullptr;
+		renderingInfo.flags = 0;
+		renderingInfo.renderArea = {{0, 0}, r_swapchainContext.extent};
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.pColorAttachments = &colorAttachment;
+		renderingInfo.pDepthAttachment = &depthAttachment;
 		vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
 		const VkViewport viewport{
@@ -132,20 +139,20 @@ namespace clz::renderer
 		    .maxDepth = 1.0f,
 		};
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
 		const VkRect2D scissor{{0, 0}, r_swapchainContext.extent};
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_pipelineContext.pipeline);
-
-		render(commandBuffer, r_currentFrame);
-
+		render(commandBuffer);
 		vkCmdEndRendering(commandBuffer);
-
 		transition_image_layout(r_swapchainContext.images[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
 					VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
 					VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+
+#ifdef CLZ_ENABLE_EDITOR
+		/// @brief Draws editor's On window images
+		editor::drawOffscreenTargets(commandBuffer);
+#endif
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) [[unlikely]]
 		{

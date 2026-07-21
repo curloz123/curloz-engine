@@ -22,19 +22,22 @@ namespace clz::window
 			return false;
 		}
 
+		// Initialize resizing
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 		// Initialize all callback functions
 		glfwSetFramebufferSizeCallback(w_window, hintRendererAboutResize);
 		glfwSetCursorPosCallback(w_window, cursorCallback);
 		glfwSetScrollCallback(w_window, scrollCallback);
 
 		// Cursor's initial state
-#ifdef CLZ_ENABLE_SANDBOX
+#ifdef CLZ_ENABLE_EDITOR
 		enableCursor();
 #else
 		disableCursor();
 #endif
 
-		clz::log::debug("Initialized window system");
+		clz::log::info("Initialized window system");
 		return true;
 	}
 

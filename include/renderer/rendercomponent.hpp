@@ -7,10 +7,14 @@
  */
 #pragma once
 
-#include "../scene/entity/components.hpp"
 #include "core/logs.hpp"
-#include "renderer/assets/modeldata.hpp"
-#include "shaderdata/shaderdata.hpp"
+#include "model/model.hpp"
+#include "renderer/entitydata/indexbuffer.hpp"
+#include "renderer/entitydata/texture.hpp"
+#include "renderer/entitydata/uvbuffer.hpp"
+#include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/pipelinedata/pipelinedata.hpp"
+#include "scene/entity/components.hpp"
 #include <filesystem>
 
 namespace clz::renderer
@@ -18,15 +22,20 @@ namespace clz::renderer
 	/**
 	 * @brief This function kind of acts like a flag,
 	 * that is set whenever the ecs subsystem has finished
-	 * loading render components of all entites
+	 * loading render components of all entities
 	 *
 	 * Initializes entity data, which further allocates
 	 * memory and relevant stuff internally
 	 */
 	inline void flagRenderComponentsLoaded()
 	{
-		clz::log::info("Loading entities render components");
-		createEntityData();
+		createVertexBuffer();
+		createIndexBuffer();
+		createUVBuffer();
+		createTextures();
+
+		updatePipelineData();
+		clz::log::info("Updated pipeline input, after entities have loaded");
 	}
 
 	/**
@@ -40,8 +49,12 @@ namespace clz::renderer
 	 */
 	inline ecs::ModelComponent createModelComponent(const std::filesystem::path& path)
 	{
-		const ModelID modelID = Asset::loadModel(path);
-		ecs::ModelComponent modelComponent(modelID);
-		return modelComponent;
+		if (const auto result = loadModel(path))
+		{
+			return ecs::ModelComponent(result.value());
+		}
+
+		log::warn("Could not load model, exiting");
+		return ecs::ModelComponent(NULL_MODEL);
 	}
 } // namespace clz::renderer

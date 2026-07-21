@@ -1,17 +1,24 @@
 cmake_minimum_required(VERSION 3.25)
-project(CurlozEngine VERSION 0.1)
 
+project(CurlozEngine
+        VERSION 0.3.6
+        DESCRIPTION "A 3D Game Engine"
+        HOMEPAGE_URL "https://curlozengine.vercel.app/"
+        LANGUAGES C CXX
+)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 ## Sources
-file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp editor/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} PRIVATE include editor)
 
 ## Find Packages Section
 find_package(Vulkan REQUIRED)
@@ -19,22 +26,27 @@ find_package(Vulkan REQUIRED)
 ## Compile options
 
 # Compile Profile
+
+
 set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
-        $<$<CONFIG:Sandbox>:CLZ_ENABLE_SANDBOX CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
+        $<$<CONFIG:Sandbox>:CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
         $<$<CONFIG:RelWithDebInfo>:CLZ_RELEASE CLZ_ENABLE_LOGS>
         $<$<CONFIG:Release>:CLZ_RELEASE>
 )
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:-Wall -Wextra -Wsign-compare>
+)
 
-#SSE 4.1 instruction sets
+##instruction sets
 target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
 
 
-## Always use static libs
-set(BUILD_SHARED_LIBS OFF)
-
 ## External Libs, This should be the last section, everything below this is just linking third party libraries
+
+# Always use static libs
+set(BUILD_SHARED_LIBS OFF)
 
 #Vulkan
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
@@ -63,12 +75,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 #STB_IMAGE
 target_include_directories(${PROJECT_NAME} PRIVATE external/stb)
 
-# ASSIMP
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-add_subdirectory(external/assimp)
-target_compile_options(assimp PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
-target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+# FASTGLTF
+set(FASTGLTF_COMPILE_AS_CPP20 ON CACHE BOOL "" FORCE)
+add_subdirectory(external/fastgltf)
+target_link_libraries(${PROJECT_NAME} PRIVATE fastgltf)
 
 #IMGUI
 add_library(imgui STATIC
@@ -83,6 +93,10 @@ target_include_directories(imgui PUBLIC
         external/imgui
         external/imgui/backends
 )
+target_link_libraries(imgui PUBLIC
+        Vulkan::Vulkan
+        glfw
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
 
 #IMGUIZMO
@@ -95,3 +109,7 @@ target_include_directories(imguizmo PUBLIC
 target_link_libraries(imguizmo PUBLIC imgui)
 target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
+
+#BOX3D
+add_subdirectory(external/box3d)
+target_link_libraries(${PROJECT_NAME} PRIVATE box3d::box3d)

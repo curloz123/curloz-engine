@@ -13,9 +13,6 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb
-[submodule "external/assimp"]
-	path = external/assimp
-	url = https://github.com/assimp/assimp.git
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
@@ -23,3 +20,9 @@
 [submodule "external/ImGuizmo"]
 	path = external/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "external/box3d"]
+	path = external/box3d
+	url = https://github.com/erincatto/box3d
+[submodule "external/fastgltf"]
+    path = external/fastgltf
+    url = https://github.com/spnda/fastgltf.git
