@@ -13,8 +13,8 @@
 #include <imgui.h>
 #include "math/quateulerconv.hpp"
 #include "math/angle.hpp"
-#include "scene/entity/components.hpp"
-#include "scene/entity/componentmanager.hpp"
+#include "entity/components.hpp"
+#include "entity/componentmanager.hpp"
 
 namespace clz::editor
 {

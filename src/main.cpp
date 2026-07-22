@@ -18,6 +18,7 @@
 #include "core/time.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
+#include "entity/entity.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
 
@@ -53,6 +54,9 @@ int main()
 	// Initialize audio
 	clz::audio::init();
 
+	// Initialize entity system
+	clz::ecs::init();
+
 	// Initialize Scene
 	clz::scene::loadScene();
 	if (clz::log::errorOccurred()) [[unlikely]]
@@ -69,6 +73,7 @@ int main()
 
 	// Shut down
 	clz::scene::saveScene();
+	clz::ecs::shutdown();
 	clz::audio::shutdown();
 #ifdef CLZ_ENABLE_EDITOR
 	clz::editor::shutdown();

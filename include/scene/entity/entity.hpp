@@ -9,7 +9,7 @@
 
 #include <nlohmann/json.hpp>
 
-namespace clz::ecs
+namespace clz::scene
 {
 	/**
 	 * @brief Loads all entities from JSON file
@@ -22,10 +22,4 @@ namespace clz::ecs
 	 * @param entityJson JSON Entity table
 	 */
 	void saveEntities(nlohmann::json& entityJson);
-
-	/**
-	 * @brief Destroy's all entities
-	 * Clear's out all it's components too!!
-	 */
-	void destroyEntities();
 } // namespace clz::ecs

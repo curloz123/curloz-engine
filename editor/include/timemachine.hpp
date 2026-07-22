@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/entitymanager.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/entitymanager.hpp"
 #include "window/inputmanager.hpp"
 
 namespace clz::snapshot

@@ -4,14 +4,14 @@
  * @brief Loads/Save transform data of an entity from/to JSON
  * @note not required to pass entity, just pass their data!!
  */
-#include "scene/entity/componentloader/loader.hpp"
+#include "scene/entity/loader.hpp"
 
-namespace clz::ecs
+namespace clz::scene
 {
 	/// @brief Retrieves transform component of any entity.
 	/// @param componentData JSON index of entity
 	/// @return TransformComponent of given entity
-	TransformComponent retrieveTransformComponent(const nlohmann::basic_json<>& componentData)
+	ecs::TransformComponent retrieveTransformComponent(const nlohmann::basic_json<>& componentData)
 	{
 		const clz::math::quat q(componentData["rotation"][0], componentData["rotation"][1], componentData["rotation"][2],
 					componentData["rotation"][3]);
@@ -24,7 +24,7 @@ namespace clz::ecs
 	/// @brief Saves transform component of any entity.
 	/// @param tc TransformComponent of given entity
 	/// @param componentData JSON index of entity
-	void saveTransformComponent(const TransformComponent& tc, nlohmann::json& componentData)
+	void saveTransformComponent(const ecs::TransformComponent& tc, nlohmann::json& componentData)
 	{
 		componentData["rotation"][0] = tc.rotation.w;
 		componentData["rotation"][1] = tc.rotation.x;

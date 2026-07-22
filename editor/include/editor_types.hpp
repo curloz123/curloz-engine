@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "scene/entity/entitymanager.hpp"
+#include "entity/entitymanager.hpp"
 #include <imgui.h>
 #include <optional>
 #include <vulkan/vulkan.h>

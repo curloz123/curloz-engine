@@ -18,17 +18,17 @@
  * @note - TransformComponent must be present
  */
 #include "core/logs.hpp"
-#include "scene/entity/componentloader/loader.hpp"
-#include "scene/entity/componentmanager.hpp"
+#include "scene/entity/loader.hpp"
+#include "entity/componentmanager.hpp"
 
-namespace clz::ecs
+namespace clz::scene
 {
 	/// @brief Loads all body and shapes from JSON
 	/// @param physicsTable Physics table in JSON file
 	/// @param entity Entity for which we are creating this entity
 	/// @return std::tuple<BodyComponent, ShapeComponent> Both components
 	/// @note if a value is not present in JSON, will assign default value
-	std::tuple<BodyComponent, ShapeComponent> retrieveBodyComponent(const nlohmann::json& physicsTable, const entity& entity)
+	std::tuple<ecs::BodyComponent, ecs::ShapeComponent> retrieveBodyComponent(const nlohmann::json& physicsTable, const ecs::entity& entity)
 	{
 		physics::BodyData data{};
 
@@ -177,13 +177,13 @@ namespace clz::ecs
 			data.boxShapes = {};
 		}
 
-		BodyComponent bodyComponent(physics::createBody(data), tc.rotation, tc.rotation, tc.position, tc.position);
+		ecs::BodyComponent bodyComponent(physics::createBody(data), tc.rotation, tc.rotation, tc.position, tc.position);
 		std::vector<physics::BoxShape> boxShapesContainer = {};
 		for (auto& boxShape : boxShapes)
 		{
 			physics::attachShapeToBody(bodyComponent.bodyId, boxShapesContainer, boxShape);
 		}
-		ShapeComponent shapeComponent(boxShapesContainer);
+		ecs::ShapeComponent shapeComponent(boxShapesContainer);
 
 		return std::make_tuple(bodyComponent, shapeComponent);
 	}
@@ -191,7 +191,7 @@ namespace clz::ecs
 	/// @brief Saves back all physics data of entities to JSON
 	/// @param rigidBodyComponent Tuple containing both BodyComponent and ShapeComponent of entity
 	/// @param physicsTable JSON-array where we have to write back data
-	void saveRigidBodyComponent(const std::tuple<BodyComponent, ShapeComponent>& rigidBodyComponent, nlohmann::json& physicsTable)
+	void saveRigidBodyComponent(const std::tuple<ecs::BodyComponent, ecs::ShapeComponent>& rigidBodyComponent, nlohmann::json& physicsTable)
 	{
 		const auto& [bodyComponent, shapeComponent] = rigidBodyComponent;
 		const auto& bodyId = bodyComponent.bodyId;

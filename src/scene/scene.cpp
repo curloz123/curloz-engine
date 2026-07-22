@@ -11,9 +11,9 @@
 #define JSON_NOEXCEPTION
 #include <nlohmann/json.hpp>
 
+#include "scene/entity/entity.hpp"
 #include "core/logs.hpp"
 #include "scene/camera/camera.hpp"
-#include "scene/entity/entity.hpp"
 #include "scene/scene.hpp"
 #include <fstream>
 
@@ -57,7 +57,7 @@ namespace clz::scene
 			clz::log::error("Scene file does not have entities entry");
 			return false;
 		}
-		if (!ecs::loadEntities(sceneFile["entities"]))
+		if (!loadEntities(sceneFile["entities"]))
 		{
 			clz::log::error("Could not load entities");
 			return false;
@@ -74,15 +74,17 @@ namespace clz::scene
 
 		// Save camera and entities
 		saveCameras(sceneFile);
-		ecs::saveEntities(sceneFile);
-
-		// Finally destroy entities
-		ecs::destroyEntities();
+		saveEntities(sceneFile);
 
 		// Write back
 		std::ofstream out("config/scene.json");
 		out << sceneFile.dump(4);
 
 		clz::log::info("Saved scene");
+	}
+
+	void closeScene()
+	{
+		saveScene();
 	}
 } // namespace clz::scene

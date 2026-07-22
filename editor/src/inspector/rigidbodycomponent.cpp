@@ -26,8 +26,8 @@
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
 #include "window/inputmanager.hpp"
 
 namespace clz::editor

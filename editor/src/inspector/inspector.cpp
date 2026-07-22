@@ -16,7 +16,8 @@
 #include "../../include/inspector/transformcomponent.hpp"
 #include "../../include/timemachine.hpp"
 #include "include/inspector/rigidbodycomponent.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/components.hpp"
+#include "entity/componentmanager.hpp"
 #include <imgui.h>
 
 namespace clz::editor

@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "entity.hpp"
+#include "scene/entity/entity.hpp"
 #include <cstdint>
-#include <vector>
+#include <array>
 
 namespace clz::ecs
 {
@@ -21,17 +21,16 @@ namespace clz::ecs
 	using entity = uint32_t;
 
 	/// @brief Sentinel value representing an invalid or null entity.
-	constexpr entity NULL_ENTITY = std::numeric_limits<uint32_t>::max();
-
+	inline constexpr entity NULL_ENTITY = std::numeric_limits<uint32_t>::max();
 	/// @brief Initial sparse array size. Grows dynamically as needed.
-	constexpr entity MAX_ENTITIES = 256;
-
+	inline constexpr entity MAX_ENTITIES = 256;
 	/// @brief All entity IDs. Index is not the same as entity ID after removals.
 	inline std::vector<entity> entities;
+	/// @brief valid entity count
+	inline size_t entityCounter;
 
-	/// @brief Components of all entities
-	inline std::vector<uint32_t> entityComponents;
-
+	/// @brief Null name
+	inline constexpr auto NULL_ENTITY_NAME = "NULL_ENTITY_NAME";
 	/// @brief All entity's names
 	inline std::vector<std::string> entityName;
 
@@ -53,7 +52,7 @@ namespace clz::ecs
 	 *
 	 * @param e Entity to remove.
 	 */
-	void removeEntity(const entity e);
+	void removeEntity(entity e);
 
 	/**
 	 * @brief Clears the entity list also automatically
@@ -65,12 +64,12 @@ namespace clz::ecs
 	 * @brief Returns a const reference to entity array
 	 * @return entity(uint32_t) vector
 	 */
-	const std::vector<uint32_t>& getEntities();
+	const std::vector<entity>& getEntities();
 
 	/**
 	 * @brief Returns the name of entity
 	 * @return name string
 	 */
-	std::string getEntityName(const entity e);
+	std::string getEntityName(entity e);
 
 } // namespace clz::ecs

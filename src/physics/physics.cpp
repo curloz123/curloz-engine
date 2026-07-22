@@ -12,8 +12,8 @@
 #include "math/interpolate.hpp"
 #include "physics/body.hpp"
 #include "physics/physics_types.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
 
 namespace clz::physics
 {

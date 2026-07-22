@@ -62,4 +62,16 @@ namespace clz::window
 		return w_window;
 	}
 
+	/// @copydoc
+	void minimizeWindow()
+	{
+		glfwIconifyWindow(w_window);
+	}
+
+	/// @copydoc
+	void maximizeWindow()
+	{
+		glfwMaximizeWindow(w_window);
+	}
+
 } // namespace clz::window

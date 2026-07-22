@@ -14,7 +14,7 @@
 #include "renderer/entitydata/uvbuffer.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
 #include "renderer/pipelinedata/pipelinedata.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/components.hpp"
 #include <filesystem>
 
 namespace clz::renderer

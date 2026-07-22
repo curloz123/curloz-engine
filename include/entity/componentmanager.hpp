@@ -121,7 +121,7 @@ namespace clz::ecs
 			clz::log::warn("Attempt to remove a non existing component");
 			return;
 		}
-		componentStorage.removeEntityDat(e);
+		componentStorage.removeEntityData(e);
 	}
 
 	/**

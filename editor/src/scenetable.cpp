@@ -8,7 +8,7 @@
 
 #include "../include/scenetable.hpp"
 #include "../include/editor_types.hpp"
-#include "scene/entity/entitymanager.hpp"
+#include "entity/entitymanager.hpp"
 #include <imgui.h>
 
 namespace clz::editor

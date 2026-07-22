@@ -46,4 +46,14 @@ namespace clz::window
 	 * @return GLFWwindow handle
 	 */
 	GLFWwindow* getWindowHandle();
+
+	/**
+	 * @brief Minimizes window
+	 */
+	void minimizeWindow();
+
+	/**
+	 * @brief Maximizes window
+	 */
+	void maximizeWindow();
 } // namespace clz::window

@@ -4,16 +4,16 @@
  * @brief Entity subsystem implementation
  */
 
-#include "scene/entity/entity.hpp"
-#include "renderer/model/model.hpp"
+#include "../../../include/scene/entity/entity.hpp"
+#include "../../../include/scene/entity/loader.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
+#include "entity/entitymanager.hpp"
 #include "math/quateulerconv.hpp"
+#include "renderer/model/model.hpp"
 #include "renderer/rendercomponent.hpp"
-#include "scene/entity/componentloader/loader.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
-#include "scene/entity/entitymanager.hpp"
 
-namespace clz::ecs
+namespace clz::scene
 {
 	/**
 	 * @brief Loads all entities from JSON file
@@ -36,45 +36,51 @@ namespace clz::ecs
 			if (!entityData.contains("name"))
 			{
 				clz::log::warn("an entity is unnamed");
-				e = createEntity("Unnamed Entity");
+				e = ecs::createEntity("Unnamed Entity");
 			}
 			else
 			{
-				e = createEntity(entityData["name"]);
+				e = ecs::createEntity(entityData["name"]);
 			}
 
 			// Attach TransformComponent, should be present on every entity
 			if (!entityData.contains("transform"))
 			{
-				clz::log::warn("Entity: " + entityName[e] +
+				clz::log::warn("Entity: " + ecs::entityName[e] +
 					       "Does not have transform component"
 					       "Assigning it identity transform component");
-				addComponent<TransformComponent>(e, TransformComponent());
+				ecs::addComponent<ecs::TransformComponent>(e, ecs::TransformComponent());
 			}
 			else
 			{
 				const auto transform = retrieveTransformComponent(entityData["transform"]);
-				addComponent<TransformComponent>(e, transform);
+				addComponent<ecs::TransformComponent>(e, transform);
 #ifdef CLZ_ENABLE_EDITOR
 				/// @brief If Editor is enabled,
 				/// only then create these components
-				addComponent<EulerRotationComponent>(e, EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
-				addComponent<EditorTransformComponent>(e, EditorTransformComponent(transform));
+				ecs::addComponent<ecs::EulerRotationComponent>(
+					e,
+					ecs::EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
+				ecs::addComponent<ecs::EditorTransformComponent>(
+					e,
+					ecs::EditorTransformComponent(transform));
 #endif
 			}
 
 			// Attach ModelComponent if present
 			if (entityData.contains("model"))
 			{
-				addComponent<ModelComponent>(e, retrieveModelComponent(entityData["model"]["path"]));
+				ecs::addComponent<ecs::ModelComponent>(
+					e,
+					retrieveModelComponent(entityData["model"]["path"]));
 			}
 
 			// Attach physics Component if present
 			if (entityData.contains("rigidbody"))
 			{
 				const auto& [body, shapes] = retrieveBodyComponent(entityData["rigidbody"], e);
-				addComponent<BodyComponent>(e, body);
-				addComponent<ShapeComponent>(e, shapes);
+				addComponent<ecs::BodyComponent>(e, body);
+				addComponent<ecs::ShapeComponent>(e, shapes);
 			}
 		}
 
@@ -91,34 +97,35 @@ namespace clz::ecs
 	{
 		sceneJson["entities"] = nlohmann::json::array();
 
-		for (const auto& entity : entities)
+		for (const auto& entity : ecs::entities)
 		{
 			nlohmann::json entityJson;
-			entityJson["name"] = getEntityName(entity);
+			entityJson["name"] = ecs::getEntityName(entity);
 
-			if (hasComponent<TransformComponent>(entity))
+			if (ecs::hasComponent<ecs::TransformComponent>(entity))
 			{
-				saveTransformComponent(getComponent<TransformComponent>(entity), entityJson["transform"]);
+				saveTransformComponent(
+					ecs::getComponent<ecs::TransformComponent>(entity),
+					entityJson["transform"]);
 			}
 
-			if (hasComponent<ModelComponent>(entity))
+			if (ecs::hasComponent<ecs::ModelComponent>(entity))
 			{
-				saveModelComponent(getComponent<ModelComponent>(entity), entityJson["model"]);
+				saveModelComponent(
+					ecs::getComponent<ecs::ModelComponent>(entity),
+					entityJson["model"]);
 			}
 
-			if (hasComponent<BodyComponent>(entity))
+			if (ecs::hasComponent<ecs::BodyComponent>(entity))
 			{
-				saveRigidBodyComponent(std::make_tuple(getComponent<BodyComponent>(entity), getComponent<ShapeComponent>(entity)),
-						       entityJson["rigidbody"]);
+				saveRigidBodyComponent(
+					std::make_tuple(
+						ecs::getComponent<ecs::BodyComponent>(entity),
+						ecs::getComponent<ecs::ShapeComponent>(entity)),
+					entityJson["rigidbody"]);
 			}
 			sceneJson["entities"].push_back(entityJson);
 		}
 	}
 
-	/// @brief destroys all entites after they have been saved
-	void destroyEntities()
-	{
-		clearEntities();
-		clz::log::info("Destroyed Entities");
-	}
 } // namespace clz::ecs

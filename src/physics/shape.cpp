@@ -7,7 +7,7 @@
 #include "core/assert.hpp"
 #include "math/quateulerconv.hpp"
 #include "physics/math.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/components.hpp"
 
 namespace clz::physics
 {

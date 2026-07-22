@@ -17,8 +17,8 @@
 #include "renderer/entitydata/vertexbuffer.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
 
 namespace clz::renderer
 {

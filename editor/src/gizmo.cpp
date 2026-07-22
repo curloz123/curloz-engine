@@ -17,8 +17,8 @@
 #include "math/worldtransform.hpp"
 #include "renderer/camera/cameramatrices.hpp"
 #include "renderer/vk_types.hpp"
-#include "scene/entity/componentmanager.hpp"
-#include "scene/entity/components.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
 #include "../include/timemachine.hpp"
 #include <ImGuizmo.h>
 #include <imgui.h>

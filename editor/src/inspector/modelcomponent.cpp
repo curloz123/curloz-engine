@@ -8,8 +8,8 @@
 #include "../../include/inspector/modelcomponent.hpp"
 #include "../../include/editor_types.hpp"
 #include <imgui.h>
-#include "scene/entity/components.hpp"
-#include "scene/entity/componentmanager.hpp"
+#include "entity/components.hpp"
+#include "entity/componentmanager.hpp"
 #include "renderer/model/model.hpp"
 
 namespace clz::editor

@@ -9,7 +9,7 @@
 
 #include "math/vec3.hpp"
 #include "physics.hpp"
-#include "scene/entity/entitymanager.hpp"
+#include "entity/entitymanager.hpp"
 
 namespace clz::physics
 {

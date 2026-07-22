@@ -6,17 +6,17 @@
  * Any function related with entities.
  */
 
-#include "scene/entity/entitymanager.hpp"
-#include "scene/entity/componentmanager.hpp"
+#include "entity/entitymanager.hpp"
+#include "entity/componentmanager.hpp"
 
 namespace clz::ecs
 {
 	uint32_t createEntity(const std::string& name)
 	{
-		uint32_t id = entities.size();
-		entities.emplace_back(id);
+		const uint32_t index = entityCounter++;
+		entities.emplace_back(index);
 		entityName.emplace_back(name);
-		return id;
+		return index;
 	}
 	void removeEntity(const entity e)
 	{
@@ -27,20 +27,27 @@ namespace clz::ecs
 
 	void clearEntities()
 	{
-		for (auto entity : entities)
+		for (const auto entity : entities)
 		{
 			removeAllComponentsForEntity(entity);
 		}
 		entities.clear();
 	}
 
-	const std::vector<uint32_t>& getEntities()
+	const std::vector<entity>& getEntities()
 	{
 		return entities;
 	}
 
 	std::string getEntityName(const entity e)
 	{
+		if (entities[e] == NULL_ENTITY)
+		{
+			clz::log::warn("attempt to retrieve "
+					"name of an non existing"
+					"id: " + std::to_string(e));
+			return NULL_ENTITY_NAME;
+		}
 		return entityName[e];
 	}
 
