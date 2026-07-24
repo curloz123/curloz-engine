@@ -122,7 +122,7 @@ namespace clz::editor
 			clz::log::error("failed to re-create offscreen target");
 			return false;
 		}
-
+		target.outDated = false;
 
 		return true;
 	}

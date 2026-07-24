@@ -58,9 +58,17 @@ namespace clz::editor
 			gizmo::previousTransform = editorTransform;
 		}
 
-		math::mat4 model = math::getModelMatrix(editorTransform.rotation, editorTransform.position, editorTransform.scale);
+		math::mat4 model = math::getModelMatrix(
+					editorTransform.rotation,
+					editorTransform.position,
+					editorTransform.scale);
+
 		const math::mat4 view = renderer::getCameraViewMatrix(renderer::r_cameraId);
-		math::mat4 proj = renderer::getCameraProjMatrix(renderer::r_cameraId);
+
+		math::mat4 proj = renderer::getCameraProjMatrix(
+					renderer::r_cameraId,
+					mainViewportImage.extent.width,
+					mainViewportImage.extent.height);
 		// Flip Y — ImGuizmo assumes an OpenGL-style projection, ours is Vulkan (Y-flipped)
 		proj.data[5] *= -1;
 
@@ -86,7 +94,12 @@ namespace clz::editor
 			break;
 		}
 
-		ImGuizmo::Manipulate(view.data, proj.data, operation, ImGuizmo::LOCAL, model.data);
+		ImGuizmo::Manipulate(
+			view.data,
+			proj.data,
+			operation,
+			ImGuizmo::WORLD,
+			model.data);
 
 		// Decompose the manipulated matrix back into position/rotation/scale
 		float pos[3], rot[3], scale[3];

@@ -182,16 +182,10 @@ namespace clz::renderer
 	}
 
 	/// @copydoc
-	math::mat4 getCameraProjMatrix(const CameraId Id)
+	math::mat4 getCameraProjMatrix(const CameraId Id, const float width, const float height)
 	{
 		if (ChangeProjMatrix[Id])
 		{
-			const auto width = static_cast<float>(
-				r_swapchainContext.extent.width);
-
-			const auto height = static_cast<float>(
-				r_swapchainContext.extent.height);
-
 			ProjMatrix[Id] = math::makePerspectiveMatrix(
 							Far[Id],
 							Near[Id],
@@ -200,7 +194,6 @@ namespace clz::renderer
 
 			ChangeProjMatrix[Id] = false;
 			clz::log::debug("Updated projection matrix");
-			return ProjMatrix[Id];
 		}
 
 		return ProjMatrix[Id];
@@ -215,4 +208,10 @@ namespace clz::renderer
 		ChangeProjMatrix[Id] = true;
 	}
 
+	/// @copydoc
+	void setCameraFirstTime(CameraId Id)
+	{
+		CLZ_ASSERT(Id < NumCameras, "Invalid CameraId");
+		FirstTime[Id] = !FirstTime[Id];
+	}
 } // namespace clz::renderer

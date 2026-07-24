@@ -33,7 +33,7 @@ namespace clz::editor
 		setDockSpace();
 
 		ImGui::PushFont(fontSansBold);
-		ImGui::Begin("Curloz Engine");
+		ImGui::Begin("Scene");
 		ImGui::PopFont();
 		if (ImGui::BeginTabBar("Scene"))
 		{

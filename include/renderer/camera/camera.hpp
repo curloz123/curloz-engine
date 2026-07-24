@@ -103,9 +103,12 @@ namespace clz::renderer
 	/// @brief Retrieves projection matrix for a camera
 	/// @param Id Camera Id
 	/// @return Projection matrix of camera as a math::mat4
-	math::mat4 getCameraProjMatrix(CameraId Id);
+	math::mat4 getCameraProjMatrix(CameraId Id, float width, float height);
 	/// @brief Hints engine to update this camera's projection matrix
 	/// @param Id Camera Id
 	void updateCameraProjMatrix(CameraId Id);
 
+	/// @brief Enable camera'a first time flag
+	/// @param Id Camera Id
+	void setCameraFirstTime(CameraId Id);
 } // namespace clz::renderer::camera

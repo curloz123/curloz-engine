@@ -17,18 +17,31 @@ namespace clz::renderer
 	void lastMainDraw(const VkCommandBuffer commandBuffer)
 	{
 		CameraId cameraId = NULL_CAMERA;
+		math::mat4 view;
+		math::mat4 projection;
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
+			// editor handles camera updating itself
 			cameraId = editor::mainViewportImage.cameraId;
+			view = getCameraViewMatrix(cameraId);
+			projection = getCameraProjMatrix(
+				cameraId,
+				editor::mainViewportImage.extent.width,
+				editor::mainViewportImage.extent.height);
 		}
 		else
 #endif
 		{
+			useCamera(r_cameraId);
+			updateCamera(r_cameraId);
 			cameraId = r_cameraId;
+			view = getCameraViewMatrix(cameraId);
+			projection = getCameraProjMatrix(
+				cameraId,
+				r_swapchainContext.extent.width,
+				r_swapchainContext.extent.height);
 		}
-		useCamera(cameraId);
-		updateCamera(cameraId);
 
 		vkCmdBindPipeline(
 			commandBuffer,
@@ -38,8 +51,8 @@ namespace clz::renderer
 		// Descriptor sets
 
 		const CameraShaderUBO cameraShaderUBO = {
-			.projection = getCameraProjMatrix(cameraId),
-			.view = getCameraViewMatrix(cameraId)
+			.projection = projection,
+			.view = view
 		};
 		updateUniformBuffers(cameraShaderUBO);
 		const std::array descriptorSets = {

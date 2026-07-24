@@ -57,6 +57,7 @@ namespace clz::scene
 
 		/// Editor starts same as game camera
 		renderer::CameraDef editorCameraDef = gameCameraDef;
+		editorCameraDef.acceleration = 8192.0f;
 		editor::mainViewportImage.cameraId = renderer::createCamera(editorCameraDef);
 
 		/// --- 3. Load rigidbody shape editor camera ---
