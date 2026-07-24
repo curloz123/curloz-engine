@@ -22,6 +22,7 @@
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
 #include "../include/topbar.hpp"
+#include "../include/sceneview.hpp"
 
 namespace clz::editor
 {
@@ -32,13 +33,14 @@ namespace clz::editor
 		setDockSpace();
 
 		ImGui::PushFont(fontSansBold);
-		ImGui::Begin("Scene");
+		ImGui::Begin("Curloz Engine");
 		ImGui::PopFont();
 		if (ImGui::BeginTabBar("Scene"))
 		{
 			showSceneTab();
 			ImGui::EndTabBar();
 		}
+		drawSceneView();
 		processShortcuts();
 		drawGizmo();
 		showInspector(commandBuffer);
@@ -95,10 +97,18 @@ namespace clz::editor
 		}
 
 		/// Fonts
-		fontSans = io.Fonts->AddFontFromFileTTF("assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f);
-		fontSansBold = io.Fonts->AddFontFromFileTTF("assets/fonts/NotoSansNerdFont-Bold.ttf", 20.0f);
-		fontMono = io.Fonts->AddFontFromFileTTF("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f);
-		fontMonoBold = io.Fonts->AddFontFromFileTTF("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 19.0f);
+		fontSans = io.Fonts->AddFontFromFileTTF(
+				"assets/fonts/NotoSansNerdFont-Black.ttf",
+				18.0f);
+		fontSansBold = io.Fonts->AddFontFromFileTTF(
+				"assets/fonts/NotoSansNerdFont-Bold.ttf",
+				20.0f);
+		fontMono = io.Fonts->AddFontFromFileTTF(
+				"assets/fonts/JetBrainsMonoNerdFont-Regular.ttf",
+				17.0f);
+		fontMonoBold = io.Fonts->AddFontFromFileTTF(
+				"assets/fonts/JetBrainsMonoNerdFont-Bold.ttf",
+				19.0f);
 
 		if (!fontSans || !fontSansBold || !fontMono || !fontMonoBold)
 		{

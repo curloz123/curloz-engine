@@ -11,8 +11,8 @@
 #include "../../include/offscreen/backend/pipeline.hpp"
 #include "../../include/offscreen/backend/descriptor.hpp"
 #include "../../include/offscreen/backend/ubo.hpp"
-#include "../../include/offscreen/camera.hpp"
 #include "../../include/timemachine.hpp"
+#include "math/angle.hpp"
 #include "core/logs.hpp"
 #include "imgui.h"
 #include "include/offscreen/offscreentarget.hpp"
@@ -152,6 +152,7 @@ namespace clz::editor
 		{
 			physics::setBodyAngularLocks(bodyId, angularLocks);
 		}
+
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Z##zangular", &angularLocks[2]))
 		{
@@ -160,7 +161,7 @@ namespace clz::editor
 
 		if ((ImGui::Button("Add Shape") && !physicsBodyShapeImage.showTarget))
 		{
-			camera::resetCamera();
+			renderer::resetCamera(physicsBodyShapeImage.cameraId);
 			physicsBodyShapeImage.showTarget = true;
 		}
 
@@ -310,17 +311,44 @@ namespace clz::editor
 		for (size_t i = 0; i < newShapes.size(); i++)
 		{
 			ImGui::PushFont(fontSans);
-			std::string shapeName = "Shape " + std::to_string(i + changedShapes.size());
+			std::string shapeName =
+				"Shape " + std::to_string(i + changedShapes.size());
+
 			ImGui::PushID(shapeName.c_str());
 			ImGui::Text(shapeName.c_str());
 			ImGui::PopFont();
 
+			ImGui::SliderFloat(
+				"Density",
+				&newShapes[i].density,
+				0.01f, 100.0f,
+				"%.2f");
 
-			ImGui::SliderFloat("Density", &newShapes[i].density, 0.01f, 100.0f, "%.2f");
-			ImGui::SliderFloat("Friction", &newShapes[i].friction, 0.01f, 100.0f, "%.2f");
-			ImGui::SliderFloat3("Local position", &newShapes[i].position.x, -30.0f, 30.0f, "%.2f");
-			ImGui::SliderFloat3("Local rotation", &newShapes[i].rotation.x, -179.99f, 179.99f, "%.2f");
-			ImGui::SliderFloat3("Half dimensions", &newShapes[i].halfDimensions.x, 0.1f, 30.0f, "%.2f");
+			ImGui::SliderFloat(
+				"Friction",
+				&newShapes[i].friction,
+				0.01f, 100.0f,
+				"%.2f");
+
+			ImGui::SliderFloat3(
+				"Local position",
+				&newShapes[i].position.x,
+				-30.0f, 30.0f,
+				"%.2f");
+
+			ImGui::SliderFloat3(
+				"Local rotation",
+				&newShapes[i].rotation.x,
+				-179.99f,
+				179.99f,
+				"%.2f");
+
+			ImGui::SliderFloat3(
+				"Half dimensions",
+				&newShapes[i].halfDimensions.x,
+				0.1f, 30.0f,
+				"%.2f");
+
 			ImGui::PopID();
 		}
 
@@ -338,7 +366,7 @@ namespace clz::editor
 			if (ImGui::MenuItem("Sure"))
 			{
 				physicsBodyShapeImage.showTarget = false;
-				camera::resetCamera();
+				renderer::resetCamera(physicsBodyShapeImage.cameraId);
 				ImGui::EndPopup();
 				ImGui::End();
 				clz::log::debug("Exiting, hope you saved everything");
@@ -371,7 +399,9 @@ namespace clz::editor
 			return;
 		}
 
-		ImGui::Image((ImTextureID)physicsBodyShapeImage.descriptorSet, avail);
+		ImGui::Image(
+			(ImTextureID)physicsBodyShapeImage.descriptorSet,
+			avail);
 
 		ImGui::End();
 
@@ -379,11 +409,16 @@ namespace clz::editor
 
 	void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 	{
-		renderer::transition_image_layout(physicsBodyShapeImage.image,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
-			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-			VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+		renderer::transition_image_layout(
+			physicsBodyShapeImage.image,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			0,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer);
 
 		VkRenderingAttachmentInfoKHR colorAttachment = {};
 		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
@@ -426,48 +461,85 @@ namespace clz::editor
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+		vkCmdSetViewport(
+			commandBuffer,
+			0,
+			1,
+			&viewport);
+
 		const VkRect2D scissor{{0, 0}, physicsBodyShapeImage.extent};
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, backend::editorPipelineContext.pipeline);
+
+		vkCmdSetScissor(
+			commandBuffer,
+			0,
+			1,
+			&scissor);
+
+		vkCmdBindPipeline(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			backend::editorPipelineContext.pipeline);
 		// Update uniform buffers here
 
-		camera::update();
-		auto p = math::makePerspectiveMatrix(camera::Far, camera::Near,
-				viewport.width / viewport.height, math::radians(camera::Fov));
-		auto v = math::makeViewMatrix(camera::Position, camera::Position + camera::localFront, camera::WorldUp);
-		auto ubo = backend::CameraShaderUBO{
+		const auto cameraId = physicsBodyShapeImage.cameraId;
+		renderer::useCamera(cameraId);
+		renderer::updateCamera(cameraId);
+		const auto p = math::makePerspectiveMatrix(
+					renderer::getCameraFarPlane(cameraId),
+					renderer::getCameraNearPlane(cameraId),
+					viewport.width / viewport.height,
+					math::radians(
+					renderer::getCameraFov(cameraId)));
+		const auto v = math::makeViewMatrix(
+					renderer::getCameraPosition(cameraId),
+					renderer::getCameraTarget(cameraId),
+					renderer::WorldUp);
+		const auto ubo = backend::CameraShaderUBO{
 			.projection = p,
 			.view = v
 		};
 		memcpy(backend::editorCameraUBO.mapped[renderer::r_currentFrame], &ubo, sizeof(ubo));
 
 		const std::array descriptorSets = {
-			backend::cameraDescriptorSets [renderer::r_currentFrame],	// binding set is 1
-			renderer::samplerDescriptorSets[renderer::r_currentFrame]	// As sampler's binding set is 0
+			backend::cameraDescriptorSets [renderer::r_currentFrame], // binding set is 1
+			renderer::samplerDescriptorSets[renderer::r_currentFrame] // As sampler's binding set is 0
 		};
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, backend::editorPipelineContext.layout,
-			0, descriptorSets.size(), descriptorSets.data(),
-			0, nullptr);
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			backend::editorPipelineContext.layout,
+			0,
+			descriptorSets.size(),
+			descriptorSets.data(),
+			0,
+			nullptr);
 
 		renderer::drawModel(
-			ecs::getComponent<ecs::ModelComponent>(currentSelectedEntity.value()).modelId,
+			ecs::getComponent<ecs::ModelComponent>(
+				currentSelectedEntity.value()).modelId,
 			math::vec3(0.0f),
-			math::quat(),
-			ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value()).scale,
+			math::quat(1.0f, 0.0f, 0.0f, 0.0f),
+			ecs::getComponent<ecs::TransformComponent>(
+				currentSelectedEntity.value()).scale,
 			commandBuffer);
 
 
 		if (!anyChanges)
 		{
 			const auto& boxShapes =
-				ecs::getComponent<ecs::ShapeComponent>(currentSelectedEntity.value()).boxShapes;
+				ecs::getComponent<ecs::ShapeComponent>(
+					currentSelectedEntity.value()).boxShapes;
 			for (const auto& boxShape : boxShapes)
 			{
 				const auto quat = math::quatFromEuler(boxShape.rotation);
 				const auto pos = boxShape.position;
 				const auto scale = boxShape.halfDimensions * 2;
-				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
+				renderer::drawShape(
+					commandBuffer,
+					renderer::Shape::BOX,
+					p,
+					v,
 					math::getModelMatrix(quat, pos, scale),
 					math::vec4(0.0f, 0.5f, 0.0f, 1.0f));
 
@@ -480,7 +552,11 @@ namespace clz::editor
 				const auto quat = math::quatFromEuler(shape.rotation);
 				const auto pos = shape.position;
 				const auto scale = shape.halfDimensions * 2;
-				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
+				renderer::drawShape(
+					commandBuffer,
+					renderer::Shape::BOX,
+					p,
+					v,
 					math::getModelMatrix(quat, pos, scale),
 					math::vec4(0.5f, 0.5f, 0.0f, 1.0f));
 			}
@@ -489,17 +565,26 @@ namespace clz::editor
 				const auto quat = math::quatFromEuler(boxShape.rotation);
 				const auto pos = boxShape.position;
 				const auto scale = boxShape.halfDimensions * 2;
-				renderer::drawShape(commandBuffer, renderer::Shape::BOX, p, v,
+				renderer::drawShape(
+					commandBuffer,
+					renderer::Shape::BOX,
+					p,
+					v,
 					math::getModelMatrix(quat, pos, scale),
 					math::vec4(0.0f, 0.0f, 0.5f, 1.0f));
 			}
 		}
 
 		vkCmdEndRendering(commandBuffer);
-		renderer::transition_image_layout(physicsBodyShapeImage.image,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR, 0,
-				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
-				VK_IMAGE_ASPECT_COLOR_BIT, commandBuffer);
+		renderer::transition_image_layout(
+			physicsBodyShapeImage.image,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+			0,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer);
 	}
 } // namespace clz::editor

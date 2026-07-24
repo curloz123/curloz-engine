@@ -189,7 +189,7 @@ namespace clz::renderer
 	 * @brief Iterates through all ECS entities with a ModelComponent and draws them.
 	 * @param commandBuffer The Vulkan command buffer to record draw commands into.
 	 */
-	void drawAllModels(VkCommandBuffer& commandBuffer);
+	void drawAllModels(VkCommandBuffer commandBuffer);
 
 	/**
 	 * @brief Draws a specific model at a given transform.

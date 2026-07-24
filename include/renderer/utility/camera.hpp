@@ -1,29 +1,16 @@
-/**
- * @brief cameradata.hpp
- * @author curl0z
- * @brief Contains all camera's data
- */
 #pragma once
 
 #include "math/vec3.hpp"
 #include <vector>
 #include <cstdint>
-#include "math/mat4x4.hpp"
 
-/// --- data ---
+/// --- Data ---
 namespace clz::renderer
 {
 	/// @brief Index type used to select a camera slot.
-	using CameraId = uint8_t;
-
-	/// @brief Null camera Id
-	inline constexpr CameraId NULL_CAMERA = std::numeric_limits<CameraId>::max();
 
 	/// @brief Number of cameras
 	inline uint8_t NumCameras = 0;
-
-	/// @brief last active camera
-	inline CameraId LastActiveCamera;
 
 	/// @brief Shared world-space up reference used for basis derivation.
 	inline const math::vec3 WorldUp = math::vec3(0.0f, 1.0f, 0.0f);
@@ -56,8 +43,6 @@ namespace clz::renderer
 	/// @brief Per-camera right vector, derived from forward x WorldUp.
 	inline std::vector<math::vec3> LocalRight;
 
-	/// @brief Cached projection matrix
-	inline std::vector<math::mat4> ProjMatrix;
 	/// @brief Hints that projection matrix should be recalculated
 	inline std::vector<bool> ChangeProjMatrix;
 
@@ -68,5 +53,10 @@ namespace clz::renderer
 
 	/// @brief Per-camera flag to avoid a mouse-delta snap on first use.
 	inline std::vector<bool> FirstTime;
+}
 
-} // namespace clz::renderer::camera
+/// --- helper functions
+namespace clz::renderer
+{
+
+}

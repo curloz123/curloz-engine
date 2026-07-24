@@ -1,5 +1,5 @@
 /**
- * @file renderer.hpp
+* @file renderer.hpp
  * @author curl0z
  * @brief Public interface for renderer subsystem
  *

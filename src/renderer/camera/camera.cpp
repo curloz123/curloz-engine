@@ -5,90 +5,214 @@
  */
 
 #include "renderer/camera/camera.hpp"
-#include "core/enginestate.hpp"
 #include "core/logs.hpp"
-#include "include/offscreen/offscreentarget.hpp"
 #include "math/vec2.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/camera/camerafunctions.hpp"
-#include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
+#include "math/worldtransform.hpp"
+#include "math/angle.hpp"
+#include "renderer/vk_types.hpp"
 
-namespace clz::renderer::camera
+namespace clz::renderer
 {
-	void setActiveCamera(const CameraID id)
+	/// @copydoc
+	CameraId createCamera(const CameraDef& def)
 	{
-#ifdef CLZ_ENABLE_EDITOR
-		const auto previousActiveCamera = activeCamera;
-		if (id == EditorCam && previousActiveCamera == GameCam)
-		{
-			Yaw[id] = Yaw[previousActiveCamera];
-			Pitch[id] = Pitch[previousActiveCamera];
-			Position[id] = Position[previousActiveCamera];
-			localFront[id] = localFront[previousActiveCamera];
-			localRight[id] = localRight[previousActiveCamera];
-			LastX[id] = LastX[previousActiveCamera];
-			LastY[id] = LastY[previousActiveCamera];
-			Fov[id] = Fov[previousActiveCamera];
-		}
-#endif
+		constexpr float DEFAULT_FOV = 60.0f;
+		constexpr float DEFAULT_NEAR = 0.1f;
+		constexpr float DEFAULT_FAR = 100.0f;
+		constexpr float DEFAULT_MAX_VELOCITY = 10.0f;
+		constexpr float DEFAULT_SENSITIVITY = 0.1f;
+		constexpr float DEFAULT_ACCELERATION = 5.0f;
+		constexpr float DEFAULT_PITCH = 0.0f;
+		constexpr float DEFAULT_YAW = -90.0f;
+		const math::vec3 DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
+		const math::vec3 DEFAULT_FRONT = {0.0f, 0.0f, -1.0f};
+		const math::vec3 DEFAULT_RIGHT = {1.0f, 0.0f, 0.0f};
 
-		FirstTime[id] = true;
-		updateProjectionMatrix();
-		activeCamera = id;
+		Near.push_back(def.nearPlane.value_or(DEFAULT_NEAR));
+		Far.push_back(def.farPlane.value_or(DEFAULT_FAR));
+
+		MaxVelocity.push_back(def.maxVelocity.value_or(DEFAULT_MAX_VELOCITY));
+		Velocity.emplace_back(math::vec3(0.0f));
+		Sensitivity.push_back(def.sensitivity.value_or(DEFAULT_SENSITIVITY));
+		Acceleration.push_back(def.acceleration.value_or(DEFAULT_ACCELERATION));
+
+		Pitch.push_back(def.pitch.value_or(DEFAULT_PITCH));
+		Yaw.push_back(def.yaw.value_or(DEFAULT_YAW));
+
+		Fov.push_back(def.fov.value_or(DEFAULT_FOV));
+
+		Position.push_back(def.position.value_or(DEFAULT_POSITION));
+		LocalFront.push_back(def.localFront.value_or(DEFAULT_FRONT));
+		LocalRight.push_back(def.localRight.value_or(DEFAULT_RIGHT));
+
+		ProjMatrix.push_back(math::mat4(1.0f));
+		ChangeProjMatrix.push_back(true);
+
+		LastX.push_back(0.0f);
+		LastY.push_back(0.0f);
+
+		FirstTime.push_back(true);
+
+		return NumCameras++;
 	}
 
-	bool initializeCameras()
+	/// @copydoc
+	void useCamera(const CameraId id)
 	{
-		if (!loadCamera("game", GameCam))
-		{
-			clz::log::error("Could not load game camera");
-			return false;
-		}
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
 
-#ifdef CLZ_ENABLE_EDITOR
-		if (!loadCamera("editor", EditorCam))
-		{
-			clz::log::error("Could not load editor camera");
-			return false;
-		}
-		setActiveCamera(EditorCam);
-#else
-		setActiveCamera(GameCam);
-#endif
-
-		return true;
-	}
-
-	void update()
-	{
-#ifdef CLZ_ENABLE_EDITOR
-		if (window::isKeyPressed(input::Key::Escape))
-		{
-			window::enableCursor();
-			setActiveCamera(EditorCam);
-			setEngineState(state::EngineState::Editor, "KEY->ESCAPE, mid render loop");
-		}
-		if (window::isKeyPressed(input::Key::LeftControl) && window::isKeyPressed(input::Key::G) &&
-		    state::g_engineState == state::EngineState::Editor)
-		{
-			window::disableCursor();
-			setActiveCamera(GameCam);
-			setEngineState(state::EngineState::Game, "KEY->CTRL+G, mid render loop");
-		}
-
-		if (editor::isCurrentlyShowingOffscreenTargets())
-		{
+		if (LastActiveCamera == id)
 			return;
+
+		for (auto i = 0; i < NumCameras; i++)
+		{
+			FirstTime[i] = true;
 		}
 
-#endif
+		LastActiveCamera = id;
+	}
+
+	/// @copydoc
+	void resetCamera(const CameraId id)
+	{
+		Position[id] = math::vec3(0.0f, 0.0f, 0.0f);
+		LocalFront[id] = math::vec3(0.0f, 0.0f, -1.0f);
+		LocalRight[id] = math::vec3(1.0f, 0.0f, 0.0f);
+		Pitch[id] = 0.0f;
+		Yaw[id] = -90.0f;
+		Velocity[id] = math::vec3(0.0f, 0.0f, 0.0f);
+		FirstTime[id] = true;
+		ChangeProjMatrix[id] = true;
+	}
+
+	/// @copydoc
+	void updateCamera(const CameraId id)
+	{
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
+		CLZ_ASSERT(id == LastActiveCamera,
+			"You forgot to use useCamera function");
 
 		const math::vec2 cursorPos = window::getCursorPosition();
 		const float scroll = window::getScrollOffset();
-		const auto id = activeCamera;
 		processKeyBoardInput(id);
 		processMouseInput(id, cursorPos.x, cursorPos.y);
 		processMouseScroll(id, scroll);
 	}
-} // namespace clz::renderer::camera
+
+	/// @copydoc
+	math::vec3 getCameraPosition(const CameraId id)
+	{
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
+
+		return Position[id];
+	}
+
+	/// @copydoc
+	void setCameraPosition(const CameraId id, const math::vec3& pos)
+	{
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
+
+		Position[id] = pos;
+	}
+
+	/// @copydoc
+	math::vec3 getCameraTarget(const CameraId id)
+	{
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
+
+		return Position[id] + LocalFront[id];
+	}
+
+	/// @copydoc
+	float getCameraFov(const CameraId id)
+	{
+		CLZ_ASSERT(id < NumCameras,
+			"Invalid CameraId");
+
+		return Fov[id];
+	}
+	/// @copydoc
+	void setCameraFov(const CameraId Id, const float newFov)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+
+		Fov[Id] = newFov;
+	}
+
+
+
+	/// @copydoc
+	float getCameraNearPlane(const CameraId Id)
+	{
+		return Near[Id];
+	}
+	/// @copydoc
+	void setCameraNearPlane(const CameraId Id, const float newNearPlane)
+	{
+		Near[Id] = newNearPlane;
+	}
+
+	/// @copydoc
+	float getCameraFarPlane(const CameraId Id)
+	{
+		return Far[Id];
+	}
+	/// @copydoc
+	void setCameraFarPlane(const CameraId Id, const float newFarPlane)
+	{
+		Far[Id] = newFarPlane;
+	}
+
+	/// @copydoc
+	math::mat4 getCameraViewMatrix(const CameraId Id)
+	{
+		return math::makeViewMatrix(
+			Position[Id],
+			Position[Id] + LocalFront[Id],
+			WorldUp);
+	}
+
+	/// @copydoc
+	math::mat4 getCameraProjMatrix(const CameraId Id)
+	{
+		if (ChangeProjMatrix[Id])
+		{
+			const auto width = static_cast<float>(
+				r_swapchainContext.extent.width);
+
+			const auto height = static_cast<float>(
+				r_swapchainContext.extent.height);
+
+			ProjMatrix[Id] = math::makePerspectiveMatrix(
+							Far[Id],
+							Near[Id],
+							width / height,
+							math::radians(Fov[Id]));
+
+			ChangeProjMatrix[Id] = false;
+			clz::log::debug("Updated projection matrix");
+			return ProjMatrix[Id];
+		}
+
+		return ProjMatrix[Id];
+	}
+
+	/// @copydoc
+	void updateCameraProjMatrix(const CameraId Id)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+
+		ChangeProjMatrix[Id] = true;
+	}
+
+} // namespace clz::renderer

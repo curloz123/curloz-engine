@@ -5,7 +5,8 @@
  */
 #pragma once
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
+#include "renderer/camera/camera.hpp"
 
 namespace clz::editor
 {
@@ -22,6 +23,13 @@ namespace clz::editor
 	{
 		/// @brief Whether the owning editor window is currently open/visible.
 		bool showTarget = false;
+
+		/// @brief tells wheter image is outdated
+		bool outDated = true;
+
+		/// @brief image specific camera
+		/// @note is initialized by scene and scene ONLY!!
+		renderer::CameraId cameraId = renderer::NULL_CAMERA;
 
 		/// @brief Current pixel dimensions of the render target.
 		VkExtent2D extent = {.width = 256, .height = 256};
@@ -69,6 +77,9 @@ namespace clz::editor
 
 	/// @brief Draws the ImGui windows for every currently-open offscreen target.
 	void presentOffscreenWindows();
+
+	/// @brief prepare's offscreen target before it can be used
+	void prepareOffscreenTarget(OffscreenTarget& target);
 
 	/// @brief Whether any offscreen target window is currently open.
 	/// Used to suppress main viewport camera updates while an offscreen

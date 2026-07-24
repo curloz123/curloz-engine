@@ -7,6 +7,7 @@
  * every currently-open offscreen window.
  */
 #include "../../include/offscreen/offscreentarget.hpp"
+#include "../../include/sceneview.hpp"
 #include "../../include/offscreen/backend/backend.hpp"
 #include "core/logs.hpp"
 #include "imgui_impl_vulkan.h"
@@ -28,15 +29,19 @@ namespace clz::editor
 	/// creates every offscreen target the editor uses.
 	bool createOffscreenTargets()
 	{
-		// Initialize backend
+		/// --- Initialize backend ---
 		if (!backend::init())
 		{
 			clz::log::error("failed to initialize editor's offscreen backend");
 			return false;
 		}
 
-		// Create offscreen target's
-
+		/// --- Create offscreen target's ---
+		if (!createOffscreenTarget(mainViewportImage, 1024, 768))
+		{
+			clz::log::error("Could not create main viewport offscreen target for editor");
+			return false;
+		}
 		if (!createOffscreenTarget(physicsBodyShapeImage, 512, 512))
 		{
 			clz::log::error("Could not create physics body offscreen target for editor");
@@ -50,6 +55,7 @@ namespace clz::editor
 	{
 		backend::shutdown();
 		destroyOffscreenTarget(physicsBodyShapeImage);
+		destroyOffscreenTarget(mainViewportImage);
 
 		clz::log::info("closed offscreen targets");
 	}
@@ -66,7 +72,6 @@ namespace clz::editor
 			drawBodyEditorOffscreenImage(commandBuffer);
 			isDrawing = true;
 		}
-
 
 		IsCurrentlyShowingOffscreenTargets = isDrawing;
 	}
@@ -88,6 +93,20 @@ namespace clz::editor
 	bool isCurrentlyShowingOffscreenTargets()
 	{
 		return IsCurrentlyShowingOffscreenTargets;
+	}
+
+	/// @copydoc
+	void prepareOffscreenTarget(OffscreenTarget& target)
+	{
+		if (!target.outDated)
+		{
+			return;
+		}
+
+		recreateOffscreenTarget(
+			target,
+			target.extent.width,
+			target.extent.height);
 	}
 
 	/// @brief Destroys and recreates a target's Vulkan resources at a new

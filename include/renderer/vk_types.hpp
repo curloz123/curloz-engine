@@ -14,6 +14,7 @@
 #pragma once
 
 #include "context/context.hpp"
+#include "camera/camera.hpp"
 
 namespace clz::renderer
 {
@@ -71,5 +72,8 @@ namespace clz::renderer
 	/**
 	 * @brief Number of frames processed concurrently.
 	 */
-	constexpr uint8_t r_FRAMES_IN_FLIGHT = 3;
+	inline constexpr uint8_t r_FRAMES_IN_FLIGHT = 3;
+
+	/// @brief Game's main camera
+	inline CameraId r_cameraId = NULL_CAMERA;
 } // namespace clz::renderer

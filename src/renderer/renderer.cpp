@@ -5,7 +5,6 @@
  * of renderer subsystem
  */
 
-#include "renderer/renderer.hpp"
 #include "core/logs.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/context/commandcontext.hpp"
@@ -15,6 +14,7 @@
 #include "renderer/context/swapchaincontext.hpp"
 #include "renderer/entitydata/entitydata.hpp"
 #include "renderer/mainloop.hpp"
+#include "renderer/renderer.hpp"
 #include "renderer/vk_types.hpp"
 #include <vector>
 
@@ -66,7 +66,7 @@ namespace clz::renderer
 			recreateSwapchainContext();
 
 			// Update camera with current swapchain extents
-			camera::updateProjectionMatrix();
+			updateCameraProjMatrix(r_cameraId);
 			r_recreateSwapchain = false;
 		}
 		waitForGPU(r_frameContext.inFlightFences[r_currentFrame]);

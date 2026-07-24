@@ -67,7 +67,7 @@ namespace clz::renderer
 	/**
 	 * @copydoc drawAllModels
 	 */
-	void drawAllModels(VkCommandBuffer& commandBuffer)
+	void drawAllModels(const VkCommandBuffer commandBuffer)
 	{
 		const auto& model_entities = clz::ecs::getEntitiesWithComponent<ecs::ModelComponent>();
 

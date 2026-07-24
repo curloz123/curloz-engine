@@ -153,9 +153,27 @@ namespace clz::renderer
 			return false;
 		}
 
-		vkGetSwapchainImagesKHR(r_deviceContext.device, r_swapchainContext.swapchain, &imageCount, nullptr);
+		vkGetSwapchainImagesKHR(
+			r_deviceContext.device,
+			r_swapchainContext.swapchain,
+			&imageCount,
+			nullptr);
+
 		r_swapchainContext.images.resize(imageCount);
-		vkGetSwapchainImagesKHR(r_deviceContext.device, r_swapchainContext.swapchain, &imageCount, r_swapchainContext.images.data());
+
+		vkGetSwapchainImagesKHR(
+			r_deviceContext.device,
+			r_swapchainContext.swapchain,
+			&imageCount,
+			r_swapchainContext.images.data());
+
+		for (uint32_t i = 0; i < imageCount; i++)
+		{
+			setHandleName(
+				reinterpret_cast<uint64_t>(r_swapchainContext.images[i]),
+				VK_OBJECT_TYPE_IMAGE,
+				("swapchain image: " + std::to_string(i)).c_str());
+		}
 
 		// retrieving image views
 		r_swapchainContext.imageViews.resize(r_swapchainContext.images.size());
@@ -176,16 +194,27 @@ namespace clz::renderer
 			imageViewInfo.subresourceRange.baseArrayLayer = 0;
 			imageViewInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(r_deviceContext.device, &imageViewInfo, nullptr, &r_swapchainContext.imageViews[i]) != VK_SUCCESS)
+			if (vkCreateImageView(
+				r_deviceContext.device,
+				&imageViewInfo,
+				nullptr,
+				&r_swapchainContext.imageViews[i]) != VK_SUCCESS)
 			{
 				clz::log::error("Could not create swapchain image views");
 				return false;
 			}
+			setHandleName(
+				reinterpret_cast<uint64_t>(r_swapchainContext.imageViews[i]),
+				VK_OBJECT_TYPE_IMAGE_VIEW,
+				("swapchainImageView" + std::to_string(i)).c_str());
 		}
 
 		clz::log::info("renderer: created swapchain");
 
-		setHandleName(reinterpret_cast<uint64_t>(r_swapchainContext.swapchain), VK_OBJECT_TYPE_SWAPCHAIN_KHR, "swapchain");
+		setHandleName(
+			reinterpret_cast<uint64_t>(r_swapchainContext.swapchain),
+			VK_OBJECT_TYPE_SWAPCHAIN_KHR,
+			"swapchain");
 
 		return true;
 	}

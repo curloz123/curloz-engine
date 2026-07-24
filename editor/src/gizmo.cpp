@@ -12,14 +12,16 @@
 #include "../include/gizmo.hpp"
 #include "../include/editor_types.hpp"
 #include "../include/inspector/inspector.hpp"
+#include "../include/timemachine.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
+#include "../include/sceneview.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
-#include "renderer/camera/cameramatrices.hpp"
 #include "renderer/vk_types.hpp"
-#include "entity/componentmanager.hpp"
-#include "entity/components.hpp"
-#include "../include/timemachine.hpp"
+
+#include "renderer/vk_types.hpp"
 #include <ImGuizmo.h>
 #include <imgui.h>
 
@@ -57,14 +59,18 @@ namespace clz::editor
 		}
 
 		math::mat4 model = math::getModelMatrix(editorTransform.rotation, editorTransform.position, editorTransform.scale);
-		const math::mat4 view = renderer::camera::getViewMatrix();
-		math::mat4 proj = renderer::camera::getProjectionMatrix();
+		const math::mat4 view = renderer::getCameraViewMatrix(renderer::r_cameraId);
+		math::mat4 proj = renderer::getCameraProjMatrix(renderer::r_cameraId);
 		// Flip Y — ImGuizmo assumes an OpenGL-style projection, ours is Vulkan (Y-flipped)
 		proj.data[5] *= -1;
 
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
-		ImGuizmo::SetRect(0, 0, renderer::r_swapchainContext.extent.width, renderer::r_swapchainContext.extent.height);
+		ImGuizmo::SetRect(
+			0,
+			0,
+			mainViewportImage.extent.width,
+			mainViewportImage.extent.height);
 
 		ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 		switch (ActiveTransform)
