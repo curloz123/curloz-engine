@@ -19,6 +19,20 @@ namespace clz::editor
 	 */
 	void showInspector(VkCommandBuffer commandBuffer);
 
+	/// @brief Identifies which window is in current context right now.
+	/// Mainly used to check which window to inspect on.
+	/// State is handled by the window themselves
+	enum class CurrentFocusedWindow
+	{
+		/// @brief Main scene window
+		Scene,
+
+		/// @brief Body shapes editor window
+		/// Present in inspector
+		BodyEditor
+	};
+
+	/// @brief Gizmo Transform helper
 	enum class TransformType
 	{
 		TRANSLATE,
