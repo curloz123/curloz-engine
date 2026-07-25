@@ -8,6 +8,7 @@
 
 #include "logs.hpp"
 #include <string>
+#include "window/inputmanager.hpp"
 
 namespace clz::state
 {
@@ -44,17 +45,39 @@ namespace clz::state
 		switch (g_engineState)
 		{
 		case EngineState::Game:
-			// clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
+			clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
 			break;
 
 		case EngineState::Editor:
-			// clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
+			clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
 			break;
 
 		case EngineState::Shutdown:
-			// clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
+			clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
 			break;
 		}
+	}
+
+	inline void updateEngineState()
+	{
+#ifdef CLZ_ENABLE_EDITOR
+		if (g_engineState == EngineState::Game)
+		{
+			if (window::isKeyPressed(clz::input::Key::LeftControl) &&
+				window::isKeyPressed(clz::input::Key::E))
+			{
+				g_engineState = EngineState::Editor;
+			}
+		}
+		if (g_engineState == EngineState::Editor)
+		{
+			if (window::isKeyPressed(clz::input::Key::LeftControl) &&
+				window::isKeyPressed(clz::input::Key::G))
+			{
+				g_engineState = EngineState::Game;
+			}
+		}
+#endif
 	}
 
 } // namespace clz::state

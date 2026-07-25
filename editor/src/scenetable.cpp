@@ -13,6 +13,7 @@
 
 namespace clz::editor
 {
+	/// @copydoc
 	void showSceneTab()
 	{
 		ImGui::PushFont(fontMonoBold);

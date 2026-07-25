@@ -22,7 +22,8 @@
 
 namespace clz::renderer
 {
-	void waitForGPU(const VkFence fence)
+	/// @copydoc
+	void waitForGPU(VkFence fence)
 	{
 		if (vkWaitForFences(
 			renderer::r_deviceContext.device,
@@ -35,7 +36,8 @@ namespace clz::renderer
 		}
 	}
 
-	void acquireNextImage(const VkSemaphore semaphore, uint32_t& rImageIndex)
+	/// @copydoc
+	void acquireNextImage(VkSemaphore semaphore, uint32_t& rImageIndex)
 	{
 		const VkResult acquireResult = vkAcquireNextImageKHR(
 							r_deviceContext.device,
@@ -55,7 +57,8 @@ namespace clz::renderer
 		}
 	}
 
-	void resetFence(const VkFence fence)
+	/// @copydoc
+	void resetFence(VkFence fence)
 	{
 		if (vkResetFences(
 			r_deviceContext.device,
@@ -66,7 +69,8 @@ namespace clz::renderer
 		}
 	}
 
-	void startCommandBuffer(const VkCommandBuffer commandBuffer)
+	/// @copydoc
+	void startCommandBuffer(VkCommandBuffer commandBuffer)
 	{
 		if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS) [[unlikely]]
 		{
@@ -82,8 +86,11 @@ namespace clz::renderer
 		}
 	}
 
-	void recordCommandBuffer(const VkCommandBuffer commandBuffer, const uint32_t imageIndex)
+	/// @copydoc
+	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
+		/// --- In editor mode, offscreen image is usef as render target
+		/// --- else in game mode, swapchain image is used
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
@@ -306,11 +313,12 @@ namespace clz::renderer
 		}
 	}
 
+	/// @copydoc
 	void submitCommandBuffer(
-		const VkCommandBuffer commandBuffer,
-		const VkSemaphore renderReadySemaphore,
-		const VkSemaphore presentReadySemaphore,
-		const VkFence inFlightFence)
+		VkCommandBuffer commandBuffer,
+		VkSemaphore renderReadySemaphore,
+		VkSemaphore presentReadySemaphore,
+		VkFence inFlightFence)
 	{
 		const VkSemaphoreSubmitInfoKHR waitSemaphore = {
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR,
@@ -352,6 +360,7 @@ namespace clz::renderer
 		}
 	}
 
+	/// @copydoc
 	void present(VkSemaphore semaphore, uint32_t imageIndex)
 	{
 		VkPresentInfoKHR presentInfo = {};

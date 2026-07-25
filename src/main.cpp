@@ -66,6 +66,7 @@ int main()
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
 		clz::time::computeTime();
+		clz::state::updateEngineState();
 		clz::window::update();
 		clz::physics::update();
 		clz::renderer::update();

@@ -19,6 +19,7 @@
 #include "entity/components.hpp"
 #include "entity/componentmanager.hpp"
 #include <imgui.h>
+#include "../../include/scenetable.hpp"
 
 namespace clz::editor
 {

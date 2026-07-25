@@ -29,6 +29,7 @@
 #include "entity/componentmanager.hpp"
 #include "entity/components.hpp"
 #include "window/inputmanager.hpp"
+#include "../../include/scenetable.hpp"
 
 namespace clz::editor
 {

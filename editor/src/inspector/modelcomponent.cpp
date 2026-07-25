@@ -11,6 +11,7 @@
 #include "entity/components.hpp"
 #include "entity/componentmanager.hpp"
 #include "renderer/model/model.hpp"
+#include "../../include/scenetable.hpp"
 
 namespace clz::editor
 {

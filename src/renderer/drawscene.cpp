@@ -1,47 +1,79 @@
+/**
+ * @file drawscene.cpp
+ * @author curl0z
+ * @brief Scene's main drawing file
+ * A lot of compile time definitions have been used in if-else blocks
+ * Because we don't want any editor stuff in main game binary
+ */
+
 #include "core/enginestate.hpp"
 #include "renderer/drawscene.hpp"
 #include "renderer/model/model.hpp"
 #include "renderer/pipelinedata/descriptor.hpp"
 #include "renderer/pipelinedata/ubo.hpp"
-#include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include <array>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/offscreen/offscreentarget.hpp"
 #include "include/sceneview.hpp"
+#include "renderer/camera/camerafunctions.hpp"
 #endif
 
 namespace clz::renderer
 {
+	/// @copydoc
 	void lastMainDraw(const VkCommandBuffer commandBuffer)
 	{
-		CameraId cameraId = NULL_CAMERA;
+		CameraId activeCameraId = NULL_CAMERA;
 		math::mat4 view;
 		math::mat4 projection;
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
 			// editor handles camera updating itself
-			cameraId = editor::mainViewportImage.cameraId;
-			view = getCameraViewMatrix(cameraId);
+			activeCameraId = editor::mainViewportImage.cameraId;
+			view = getCameraViewMatrix(activeCameraId);
 			projection = getCameraProjMatrix(
-				cameraId,
+				activeCameraId,
 				editor::mainViewportImage.extent.width,
 				editor::mainViewportImage.extent.height);
 		}
 		else
 #endif
+		/// --- This part is an if-else block when editor is enabled
+		/// --- In main binary, its the only part
 		{
+			/// Rendering camera is handled by renderer itself
 			useCamera(r_cameraId);
 			updateCamera(r_cameraId);
-			cameraId = r_cameraId;
-			view = getCameraViewMatrix(cameraId);
+			activeCameraId = r_cameraId;
+			view = getCameraViewMatrix(activeCameraId);
 			projection = getCameraProjMatrix(
-				cameraId,
+				activeCameraId,
 				r_swapchainContext.extent.width,
 				r_swapchainContext.extent.height);
 		}
+#ifdef CLZ_ENABLE_EDITOR
+		if (state::g_engineState == state::EngineState::Game)
+		{
+			const auto editorCameraId =
+				editor::mainViewportImage.cameraId;
+
+			setCameraPosition(
+				editorCameraId,
+				getCameraPosition(r_cameraId));
+			setCameraPitch(
+				editorCameraId,
+				getCameraPitch(r_cameraId));
+			setCameraYaw(
+				editorCameraId,
+				getCameraYaw(r_cameraId));
+
+			updateCameraVectors(editorCameraId);
+		}
+#endif
+
 
 		vkCmdBindPipeline(
 			commandBuffer,
@@ -77,6 +109,7 @@ namespace clz::renderer
 
 namespace clz::renderer
 {
+	/// @copydoc
 	void drawScene(const VkCommandBuffer commandBuffer)
 	{
 		lastMainDraw(commandBuffer);

@@ -1,8 +1,8 @@
 /**
  * @brief camera.cpp
  * @author curl0z
- * @brief Contains implementation of scene camera
- * @warning not to be confused with renderer's camera
+ * @brief Contains scene camera loading function
+ * @warning not to be confused with renderer's camera.cpp
  */
 
 #include "scene/camera/camera.hpp"
@@ -18,6 +18,7 @@
 
 namespace clz::scene
 {
+	/// @copydoc
 	bool loadCameras(const nlohmann::json& cameraJson)
 	{
 		/// --- 1. load cameras that are saved in json ---
@@ -26,7 +27,7 @@ namespace clz::scene
 		for (const auto& cam : cameraJson)
 		{
 			const std::string name = cam["name"].get<std::string>();
-			if (name.compare("game") == 0)
+			if (name == "game")
 			{
 				gameCameraDef = {
 					.fov          = cam["fov"].get<float>(),

@@ -16,6 +16,7 @@
 
 namespace clz::renderer
 {
+	/// @copydoc
 	void processKeyBoardInput(const CameraId id)
 	{
 		auto dir = math::vec3(0.0f, 0.0f, 0.0f);
@@ -59,6 +60,7 @@ namespace clz::renderer
 
 
 
+	/// @copydoc
 	void processMouseInput(const CameraId id, const float xPos, const float yPos)
 	{
 		if (FirstTime[id])
@@ -81,6 +83,7 @@ namespace clz::renderer
 		updateCameraVectors(id);
 	}
 
+	/// @copydoc
 	void processMouseScroll(const CameraId id, const float yOffset)
 	{
 		if (yOffset == 0.0f)
@@ -101,6 +104,7 @@ namespace clz::renderer
 		ChangeProjMatrix[id] = true;
 	}
 
+	/// @copydoc
 	void updateCameraVectors(const CameraId id)
 	{
 		LocalFront[id].x = std::cos(math::radians(Yaw[id])) * std::cos(math::radians(Pitch[id]));

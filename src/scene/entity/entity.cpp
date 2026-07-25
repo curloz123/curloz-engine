@@ -58,9 +58,6 @@ namespace clz::scene
 #ifdef CLZ_ENABLE_EDITOR
 				/// @brief If Editor is enabled,
 				/// only then create these components
-				ecs::addComponent<ecs::EulerRotationComponent>(
-					e,
-					ecs::EulerRotationComponent(math::quatToEulerXYZ(transform.rotation)));
 				ecs::addComponent<ecs::EditorTransformComponent>(
 					e,
 					ecs::EditorTransformComponent(transform));

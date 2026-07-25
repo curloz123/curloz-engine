@@ -15,6 +15,7 @@
 #include "math/angle.hpp"
 #include "entity/components.hpp"
 #include "entity/componentmanager.hpp"
+#include "../../include/scenetable.hpp"
 
 namespace clz::editor
 {
@@ -28,7 +29,6 @@ namespace clz::editor
 			return;
 
 		auto& editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value());
-		auto& euler = ecs::getComponent<ecs::EulerRotationComponent>(currentSelectedEntity.value());
 
 		bool anyEditFinished = false;
 
@@ -43,7 +43,7 @@ namespace clz::editor
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			anyEditFinished = true;
 
-		ImGui::SliderFloat3("Rotation", &euler.rotation.x, -179.9f, 179.9f);
+		ImGui::SliderFloat3("Rotation", &editorTransform.rotation.x, -179.9f, 179.9f);
 		if (ImGui::IsItemActivated())
 		{
 			ActiveTransform = TransformType::ROTATE;
@@ -64,11 +64,10 @@ namespace clz::editor
 		ImGui::PopFont();
 
 		// Writing back data
-		editorTransform.rotation = math::quatFromEuler(math::radians(euler.rotation));
 
 		auto& transform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
 		transform.position = editorTransform.position;
-		transform.rotation = editorTransform.rotation;
+		transform.rotation = math::quatFromEuler(math::radians(editorTransform.rotation));
 		transform.scale = editorTransform.scale;
 
 		// Commit exactly one snapshot per completed edit, regardless of input method

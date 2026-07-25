@@ -23,9 +23,6 @@ namespace clz::editor
 	/// @brief ImGui's descriptor pool
 	inline VkDescriptorPool editorDescriptorPool;
 
-	/// @brief In player window, current selected entity
-	inline std::optional<ecs::entity> currentSelectedEntity;
-
 	inline bool isEditorUsingRenderer = false;
 
 	/// @brief Fonts

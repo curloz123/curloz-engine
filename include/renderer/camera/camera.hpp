@@ -96,6 +96,23 @@ namespace clz::renderer
 	/// @return Far Plane value of camera
 	void setCameraFarPlane(CameraId Id, float newFarPlane);
 
+	/// @brief Gets camera pitch
+	/// @param Id Camera id
+	/// @return pitch of given camera
+	float getCameraPitch(CameraId Id);
+	/// @brief Sets camera pitch
+	/// @param Id camera id
+	/// @param pitch New pitch value
+	void setCameraPitch(CameraId Id, float pitch);
+	/// @brief Gets camera yaw
+	/// @param Id Camera id
+	/// @return yaw of given camera
+	float getCameraYaw(CameraId Id);
+	/// @brief Sets camera yaw
+	/// @param Id camera id
+	/// @param yaw New yaw value
+	void setCameraYaw(CameraId Id, float yaw);
+
 	/// @brief Retrieves view matrix for a camera
 	/// @param Id Camera Id
 	/// @return View matrix of camera as a math::mat4

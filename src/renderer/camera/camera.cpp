@@ -153,23 +153,64 @@ namespace clz::renderer
 	/// @copydoc
 	float getCameraNearPlane(const CameraId Id)
 	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+
 		return Near[Id];
 	}
 	/// @copydoc
 	void setCameraNearPlane(const CameraId Id, const float newNearPlane)
 	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
 		Near[Id] = newNearPlane;
 	}
 
 	/// @copydoc
 	float getCameraFarPlane(const CameraId Id)
 	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
 		return Far[Id];
 	}
 	/// @copydoc
 	void setCameraFarPlane(const CameraId Id, const float newFarPlane)
 	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
 		Far[Id] = newFarPlane;
+	}
+
+
+	/// @copydoc
+	float getCameraPitch(const CameraId Id)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+		return Pitch[Id];
+	}
+	/// @copydoc
+	void setCameraPitch(const CameraId Id, const float pitch)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+		Pitch[Id] = pitch;
+	}
+	/// @copydoc
+	float getCameraYaw(const CameraId Id)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+
+		return Yaw[Id];
+	}
+	/// @copydoc
+	void setCameraYaw(const CameraId Id, const float yaw)
+	{
+		CLZ_ASSERT(Id < NumCameras,
+			"Invalid CameraId");
+
+		Yaw[Id] = yaw;
 	}
 
 	/// @copydoc

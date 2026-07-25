@@ -23,6 +23,7 @@ namespace clz::scene
 }
 namespace clz::scene
 {
+	/// @copydoc
 	bool loadScene()
 	{
 		// Parse Scene File
@@ -67,6 +68,7 @@ namespace clz::scene
 		return true;
 	}
 
+	/// @copydoc
 	void saveScene()
 	{
 		// Clear file, we're gonna write back to it.
@@ -83,6 +85,7 @@ namespace clz::scene
 		clz::log::info("Saved scene");
 	}
 
+	/// @copydoc
 	void closeScene()
 	{
 		saveScene();

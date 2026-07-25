@@ -13,6 +13,7 @@
 
 namespace clz::window
 {
+	/// @copydoc
 	bool init()
 	{
 		// Initialize window
@@ -41,22 +42,25 @@ namespace clz::window
 		return true;
 	}
 
+	/// @copydoc
 	void shutdown()
 	{
 		shutdownGLFW(&w_window);
 	}
 
+	/// @copydoc
 	void update()
 	{
 		pollEventsGLFW(&w_window);
 	}
 
-	// Other subsystems helper functions
+	/// @copydoc
 	void getFramebufferExtents(int* width, int* height)
 	{
 		glfwGetFramebufferSize(w_window, width, height);
 	}
 
+	/// @copydoc
 	GLFWwindow* getWindowHandle()
 	{
 		return w_window;

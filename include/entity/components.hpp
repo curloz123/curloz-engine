@@ -14,6 +14,7 @@
 #include "physics/body.hpp"
 #include "physics/physics.hpp"
 #include "physics/shape.hpp"
+#include "math/quateulerconv.hpp"
 
 namespace clz::ecs
 {
@@ -53,7 +54,7 @@ namespace clz::ecs
 	 */
 	struct EditorTransformComponent
 	{
-		clz::math::quat rotation = {1, 0, 0, 0}; ///< Quaternion rotation
+		math::vec3 rotation;
 		clz::math::vec3 position = {0, 0, 0};	 ///< World space position.
 		clz::math::vec3 scale = {1, 1, 1};	 ///< Non-uniform scale.
 
@@ -61,13 +62,15 @@ namespace clz::ecs
 		{
 		}
 
-		EditorTransformComponent(const clz::math::quat& rotation, const clz::math::vec3& position, const clz::math::vec3& scale)
+		EditorTransformComponent(const clz::math::vec3& rotation, const clz::math::vec3& position, const clz::math::vec3& scale)
 		    : rotation(rotation), position(position), scale(scale)
 		{
 		}
 
-		explicit EditorTransformComponent(const TransformComponent& transformComponent)
-		    : rotation(transformComponent.rotation), position(transformComponent.position), scale(transformComponent.scale)
+		explicit EditorTransformComponent(const TransformComponent& transformComponent):
+			rotation(math::quatToEulerXYZ(transformComponent.rotation)),
+			position(transformComponent.position),
+			scale(transformComponent.scale)
 		{
 		}
 	};
@@ -80,7 +83,6 @@ namespace clz::ecs
 	 */
 	struct EulerRotationComponent
 	{
-		math::vec3 rotation;
 	};
 
 	/**

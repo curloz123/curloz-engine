@@ -10,6 +10,7 @@
 
 namespace clz::window
 {
+	/// @copydoc
 	bool initializeGLFW(GLFWwindow** pWindow)
 	{
 		const int width = clz::config::getInt("window", "width", 800);
@@ -37,6 +38,7 @@ namespace clz::window
 		return true;
 	}
 
+	/// @copydoc
 	void shutdownGLFW(GLFWwindow** pWindow)
 	{
 		glfwDestroyWindow(*pWindow);
@@ -46,6 +48,7 @@ namespace clz::window
 		clz::log::info("Window shutdown successful");
 	}
 
+	/// @copydoc
 	void pollEventsGLFW(GLFWwindow** pWindow)
 	{
 		glfwPollEvents();

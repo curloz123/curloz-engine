@@ -55,7 +55,7 @@ namespace clz::physics
 			for (auto& entities = ecs::getEntitiesWithComponent<ecs::BodyComponent>(); auto& entity : entities)
 			{
 				auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
-				const auto& transformComponent = ecs::getComponent<ecs::EditorTransformComponent>(entity);
+				const auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
 				static size_t c = 0;
 				setBodyPosition(body.bodyId, transformComponent.position);
 				setBodyRotation(body.bodyId, transformComponent.rotation);

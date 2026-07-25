@@ -26,6 +26,8 @@
 
 namespace clz::editor
 {
+	/// @brief All editor rendering work is done here
+	/// @param commandBuffer Renderer's active command buffer
 	void render(VkCommandBuffer commandBuffer)
 	{
 		/// @brief top menu bar
@@ -42,7 +44,6 @@ namespace clz::editor
 		}
 		drawSceneView();
 		processShortcuts();
-		drawGizmo();
 		showInspector(commandBuffer);
 
 		ImGui::End();

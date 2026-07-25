@@ -2,8 +2,9 @@
  * @file scene.hpp
  * @author curl0z
  * @brief Scene loading. Parses entity JSON and populates the ECS registry.
- *
  * @note config::init() must be called before loadEntities().
+ * @warning Scene must always be the last subsystem to be initiated
+ * as it initializes entity data for them, they must be ready.
  */
 
 #pragma once
