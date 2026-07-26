@@ -20,13 +20,61 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE include editor)
 
+# ==============================================================================
+# Automatic Shader Compilation Setup (#39)
+# ==============================================================================
+
+# 1. Search for glslc or glslangValidator from Vulkan SDK
+find_program(GLSL_COMPILER NAMES glslc glslangValidator)
+
+if(NOT GLSL_COMPILER)
+    message(FATAL_ERROR "Could not find 'glslc' or 'glslangValidator'. Please install the Vulkan SDK.")
+endif()
+
+# 2. Glob all GLSL shader sources from shaders/ directory
+file(GLOB SHADER_SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.comp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.geom"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.tesc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.tese"
+)
+
+set(SPIRV_OUTPUTS "")
+
+# 3. Create a custom command for each shader file
+foreach(SHADER ${SHADER_SOURCES})
+    get_filename_component(SHADER_NAME ${SHADER} NAME)
+    
+    # Preserves actual name and extension: e.g. triangle.vert -> triangle.vert.spirv
+    set(SPIRV_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/shaders/${SHADER_NAME}.spirv")
+    
+    add_custom_command(
+        OUTPUT ${SPIRV_OUTPUT}
+        COMMAND ${GLSL_COMPILER} ${SHADER} -o ${SPIRV_OUTPUT}
+        DEPENDS ${SHADER}
+        COMMENT "Compiling shader ${SHADER_NAME} to ${SHADER_NAME}.spirv"
+        VERBATIM
+    )
+    
+    list(APPEND SPIRV_OUTPUTS ${SPIRV_OUTPUT})
+endforeach()
+
+# 4. Attach custom build target as a dependency for CurlozEngine
+if(SPIRV_OUTPUTS)
+    add_custom_target(Shaders ALL DEPENDS ${SPIRV_OUTPUTS})
+    add_dependencies(${PROJECT_NAME} Shaders)
+endif()
+
+# ==============================================================================
+
 ## Find Packages Section
 find_package(Vulkan REQUIRED)
 
 ## Compile options
 
 # Compile Profile
-
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE

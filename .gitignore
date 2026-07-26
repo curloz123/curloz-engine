@@ -7,9 +7,8 @@ imgui.ini
 zipmaker.sh
 CurlozEngine.zip
 
-# shader binaries
-shader/triangle.vert.spirv
-shader/triangle.frag.spirv
-
 # Test models
 assets/models/*
+
+# Compiled SPIR-V shaders
+shaders/*.spirv
