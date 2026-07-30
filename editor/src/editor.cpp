@@ -8,7 +8,6 @@
 #include "../include/editor.hpp"
 #include "../include/editor_types.hpp"
 #include "../include/editorshortcuts.hpp"
-#include "../include/gizmo.hpp"
 #include "../include/inspector/inspector.hpp"
 #include "../include/scenetable.hpp"
 #include "core/logs.hpp"

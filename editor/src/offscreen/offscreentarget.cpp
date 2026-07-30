@@ -37,11 +37,17 @@ namespace clz::editor
 		}
 
 		/// --- Create offscreen target's ---
+
+		/// --- Main viewport image
 		if (!createOffscreenTarget(mainViewportImage, 1024, 768))
 		{
 			clz::log::error("Could not create main viewport offscreen target for editor");
 			return false;
 		}
+		/// Always show th
+		mainViewportImage.showTarget = true;
+
+		/// --- Body editor window
 		if (!createOffscreenTarget(physicsBodyShapeImage, 512, 512))
 		{
 			clz::log::error("Could not create physics body offscreen target for editor");

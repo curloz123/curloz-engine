@@ -11,6 +11,7 @@
 #include "../include/gizmo/entitytransformgizmo.hpp"
 #include "../include/offscreen/offscreentarget.hpp"
 #include "core/logs.hpp"
+#include "include/inspector/rigidbodycomponent.hpp"
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 #include <imgui.h>
@@ -32,8 +33,8 @@ namespace clz::editor
 	 *
 	 * @par Decision: Tab bar for future multi‑view support
 	 *      Even though currently only one tab ("Game view") exists, the tab
-	 *      bar structure allows adding other views (e.g., "Scene view",
-	 *      "UV view") later.
+	 *      bar structure allows adding other views later.
+	 *      All other offscreen images shall be drawn here only.
 	 */
 	void drawSceneView()
 	{
@@ -42,11 +43,15 @@ namespace clz::editor
 			ImGui::End();
 			return;
 		}
-		if (ImGui::BeginTabBar("Scene View"))
-		{
+		/// --- Main Scene
+		if (mainViewportImage.showTarget)
 			drawMainViewPort();
-			ImGui::EndTabBar();
-		}
+
+		if (physicsBodyShapeImage.showTarget)
+			presentBodyEditorWindow();
+
+
+		/// --- Rigid body editor
 		ImGui::End();
 	}
 } // namespace clz::editor
@@ -80,15 +85,9 @@ namespace clz::editor
 	 */
 	void drawMainViewPort()
 	{
-		if (!ImGui::BeginTabItem("Game view"))
-		{
-			ImGui::EndTabItem();
-			return;
-		}
 		const ImVec2 avail = ImGui::GetContentRegionAvail();
 		if (avail.x < 1.0f || avail.y < 1.0f)
 		{
-			ImGui::EndTabItem();
 			clz::log::debug("wtf");
 			return;
 		}
@@ -103,22 +102,21 @@ namespace clz::editor
 			mainViewportImage.outDated = true;
 		}
 
+		/*
 		if (ImGui::IsWindowHovered())
 		{
 			ImGui::SetWindowFocus(ImGui::GetCurrentWindow()->Name);
 		}
+		*/
 		if (ImGui::IsWindowFocused())
 		{
 			static bool rightClickThisFrame = false;
 			static bool rightClickLastFrame = false;
+
 			if (window::isMousePressed(clz::input::Mouse::MouseRight))
-			{
 				rightClickThisFrame = true;
-			}
 			else
-			{
 				rightClickThisFrame = false;
-			}
 
 			if (rightClickThisFrame)
 			{
@@ -150,7 +148,6 @@ namespace clz::editor
 				  .height = mainViewportImage.extent.height};
 		drawEntityTransformGizmo(rect);
 
-		ImGui::EndTabItem();
 	}
 
 } // namespace clz::editor

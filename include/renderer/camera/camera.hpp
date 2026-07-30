@@ -32,7 +32,6 @@ namespace clz::renderer
 
 		// Derived vectors (typically set from pitch/yaw, but you want defaults if missing)
 		std::optional<math::vec3> localFront;
-		std::optional<math::vec3> localRight;
 	};
 
 }
@@ -46,7 +45,8 @@ namespace clz::renderer
 	/// so engine can ready some things in advance
 	void useCamera(CameraId id);
 
-	/// @brief Drives input handling for the currently active camera and manage mode switching
+	/// @brief Drives input handling
+	/// For the currently active camera and manage mode switching
 	/// @param id Camera ID
 	void updateCamera(CameraId id);
 

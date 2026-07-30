@@ -14,7 +14,8 @@
 #include "../../include/timemachine.hpp"
 #include "math/angle.hpp"
 #include "core/logs.hpp"
-#include "imgui.h"
+#include <imgui.h>
+#include <imgui_internal.h>
 #include "include/offscreen/offscreentarget.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
@@ -23,6 +24,7 @@
 #include "renderer/pipelinedata/descriptor.hpp"
 #include "renderer/model/model.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
+#include "window/mouse.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
@@ -33,11 +35,11 @@
 
 namespace clz::editor
 {
-	/// @brief Stores previous data in rigid body data component
-	ecs::BodyComponent previousBodyData;
-	/// @brief Stores previous current in rigid body data component
-	ecs::BodyComponent currentRigidBodyData;
-
+	void showBodySceneWindow();
+	void showBodyEditorWindow();
+}
+namespace clz::editor
+{
 	/**
 	 * @brief Shows rigid body header in inspector
 	 * Allows to edit physics-body data of current selected entity
@@ -49,13 +51,13 @@ namespace clz::editor
 		if (!ImGui::CollapsingHeader("RigidBody"))
 			return;
 
-		const auto& bodyId = ecs::getComponent<ecs::BodyComponent>(currentSelectedEntity.value()).bodyId;
-		const auto& boxShapes = ecs::getComponent<ecs::ShapeComponent>(currentSelectedEntity.value()).boxShapes;
-
+		const auto& rigidBodyId =
+			ecs::getComponent<ecs::RigidBodyComponent>(
+				currentSelectedEntity.value()).rigidBodyId;
 
 		ImGui::PushFont(fontMonoBold);
 		std::string type = "undefined";
-		const auto& bodyType = physics::getBodyType(bodyId);
+		const auto& bodyType = physics::getBodyType(rigidBodyId);
 		if (bodyType == physics::BodyType::DynamicBody)
 			type = "dynamic";
 		else if (bodyType == physics::BodyType::StaticBody)
@@ -82,15 +84,15 @@ namespace clz::editor
 		{
 			if (ImGui::MenuItem("Static"))
 			{
-				physics::setBodyType(bodyId, physics::BodyType::StaticBody);
+				physics::setBodyType(rigidBodyId, physics::BodyType::StaticBody);
 			}
 			if (ImGui::MenuItem("Kinematic"))
 			{
-				physics::setBodyType(bodyId, physics::BodyType::KinematicBody);
+				physics::setBodyType(rigidBodyId, physics::BodyType::KinematicBody);
 			}
 			if (ImGui::MenuItem("Dynamic"))
 			{
-				physics::setBodyType(bodyId, physics::BodyType::DynamicBody);
+				physics::setBodyType(rigidBodyId, physics::BodyType::DynamicBody);
 			}
 
 			ImGui::EndPopup();
@@ -99,84 +101,120 @@ namespace clz::editor
 
 		ImGui::PushFont(fontMono);
 		ImGui::Separator();
-		ImGui::Text("Computed Mass: %.2f", physics::getBodyMass(bodyId));
+		ImGui::Text("Computed Mass: %.2f", physics::getBodyMass(rigidBodyId));
 		ImGui::Text("Mass is computed via\ndensity of shapes attached to it");
 		ImGui::Separator();
 
-		bool enterCommit = false;
-		bool defocusCommit = false;
-
-		float linearDamping = physics::getBodyLinearDamping(bodyId);
+		float linearDamping = physics::getBodyLinearDamping(rigidBodyId);
 		ImGui::Text("Linear Damping");
-		enterCommit = ImGui::InputFloat("##lineardamping: ", &linearDamping, 0.0f, 1.0f,
-			"%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
-		physics::setBodyLinearDamping(bodyId, linearDamping);
+		if (ImGui::InputFloat("##lineardamping: ", &linearDamping))
+		{
+			physics::setBodyLinearDamping(rigidBodyId, linearDamping);
+		}
 
-		float angularDamping = physics::getBodyAngularDamping(bodyId);
+		float angularDamping = physics::getBodyAngularDamping(rigidBodyId);
 		ImGui::Text("Angular Damping");
-		enterCommit = ImGui::InputFloat("##angulardamping: ", &angularDamping, 0.0f, 1.0f,
-			"%.2f", ImGuiInputTextFlags_EnterReturnsTrue);
-		physics::setBodyAngularDamping(bodyId, angularDamping);
+		if (ImGui::InputFloat("##angulardamping: ", &angularDamping))
+		{
+			physics::setBodyAngularDamping(rigidBodyId, angularDamping);
+		}
 
-		bool sleepEnabled = physics::isSleepEnabled(bodyId);
+		bool sleepEnabled = physics::isSleepEnabled(rigidBodyId);
 		ImGui::Text("Sleeping");
 		if (ImGui::Checkbox("##sleeping", &sleepEnabled))
 		{
-			physics::enableSleep(bodyId, sleepEnabled);
+			physics::enableSleep(rigidBodyId, sleepEnabled);
 		}
 
-		auto linearLocks = physics::getBodyLinearLocks(bodyId);
+		auto linearLocks = physics::getBodyLinearLocks(rigidBodyId);
 		ImGui::Text("Linear lock");
 		if (ImGui::Checkbox("X##xlinear", &linearLocks[0]))
 		{
-			physics::setBodyLinearLocks(bodyId, linearLocks);
+			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
 		}
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Y##ylinear", &linearLocks[1]))
 		{
-			physics::setBodyLinearLocks(bodyId, linearLocks);
+			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
 		}
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Z##zlinear", &linearLocks[2]))
 		{
-			physics::setBodyLinearLocks(bodyId, linearLocks);
+			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
 		}
 
-		auto angularLocks = physics::getBodyAngularLocks(bodyId);
+		auto angularLocks = physics::getBodyAngularLocks(rigidBodyId);
 		ImGui::Text("Angular lock");
 		if (ImGui::Checkbox("X##xangular", &angularLocks[0]))
 		{
-			physics::setBodyAngularLocks(bodyId, angularLocks);
+			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
 		}
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Y##yangular", &angularLocks[1]))
 		{
-			physics::setBodyAngularLocks(bodyId, angularLocks);
+			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
 		}
 
 		ImGui::SameLine();
 		if (ImGui::Checkbox("Z##zangular", &angularLocks[2]))
 		{
-			physics::setBodyAngularLocks(bodyId, angularLocks);
+			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
 		}
 
 		if ((ImGui::Button("Add Shape") && !physicsBodyShapeImage.showTarget))
 		{
 			renderer::resetCamera(physicsBodyShapeImage.cameraId);
 			physicsBodyShapeImage.showTarget = true;
+
+			capturedBodyData = {
+				.entityId = currentSelectedEntity.value(),
+				.type = physics::getBodyType(rigidBodyId),
+				.enableSleep = physics::isSleepEnabled(rigidBodyId),
+				.position = physics::getBodyPosition(rigidBodyId),
+				.rotation = physics::getBodyRotation(rigidBodyId),
+				.linearDamping = physics::getBodyLinearDamping(rigidBodyId),
+				.angularDamping = physics::getBodyAngularDamping(rigidBodyId),
+				.linearLocks = physics::getBodyLinearLocks(rigidBodyId),
+				.angularLocks = physics::getBodyAngularLocks(rigidBodyId),
+			};
+			const auto& shapes = physics::getBodyShapes(rigidBodyId);
+			capturedBodyData.shapeData.reserve(shapes.size());
+			for (size_t i = 0; i < shapes.size(); ++i)
+			{
+				capturedBodyData.shapeData.emplace_back(shapes[i].getShapeData());
+			}
 		}
 
 		ImGui::PopFont();
 
 	}
 
-	void presentBodyEditorWindow()
+	void showBodyEditorWindow()
 	{
-		const auto bodyId = ecs::getComponent<ecs::BodyComponent>(currentSelectedEntity.value()).bodyId;
-		auto& shapeContainer = ecs::getComponent<ecs::ShapeComponent>(
-								currentSelectedEntity.value()).boxShapes;
+		if (!capturedBodyData.entityId.has_value())
+			return;
 
-		ImGui::Begin("Shape Controls");
+		if (!ImGui::Begin("Shape Controls"))
+		{
+			ImGui::End();
+			return;
+		}
+
+		ImGui::PushFont(fontMono);
+		ImGui::Text(("Currently editing: "));
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::PushFont(fontMonoBold);
+		ImGui::Text(ecs::getEntityName(
+				capturedBodyData.entityId.value()).c_str());
+
+		ImGui::PopFont();
+		ImGui::Separator();
+
+
+		const auto rigidBodyId =
+			ecs::getComponent<ecs::RigidBodyComponent>(
+				capturedBodyData.entityId.value()).rigidBodyId;
 
 		const char* shapeType = "Shape type";
 		if (ImGui::Button("Add Shape"))
@@ -188,189 +226,40 @@ namespace clz::editor
 		{
 			if (ImGui::MenuItem("Box"))
 			{
-				physics::BoxShape boxShape{};
-				newShapes.emplace_back(boxShape);
-				anyChanges = true;
+				physics::ShapeDef shapeDef(physics::ShapeType::BOX);
+				physics::attachShapeToBody(rigidBodyId, shapeDef);
+				capturedBodyData.shapeData.emplace_back(shapeDef);
+
 				clz::log::debug("Added box shape, click save to apply changes");
 			}
 			ImGui::EndPopup();
 		}
 
-
 		ImGui::SameLine();
-		if (ImGui::Button("Save") && anyChanges)
+		if (ImGui::Button("Save"))
 		{
-			for (const auto index : changedShapesIndex)
-			{
-				physics::BoxShape boxShape = physics::BoxShape(changedShapes[index].halfDimensions,
-					changedShapes[index].position, changedShapes[index].rotation,
-					changedShapes[index].density, changedShapes[index].friction, changedShapes[index].restitution);
-
-				physics::modifyShapeByIndex(bodyId, boxShape, shapeContainer, index);
-				clz::log::debug("new density: " + std::to_string(changedShapes[index].density));
-			}
-			for (auto& newShape : newShapes)
-			{
-				physics::BoxShape boxShape = physics::BoxShape(newShape.halfDimensions,
-					newShape.position, newShape.rotation,
-					newShape.density, newShape.friction, newShape.restitution);
-
-				physics::attachShapeToBody(bodyId, shapeContainer, boxShape);
-			}
-
-			changedShapes.clear();
-			changedShapesIndex.clear();
-			newShapes.clear();
-			anyChanges = false;
-
+			physics::refreshAttachedShapes(rigidBodyId);
 			clz::log::debug("Saved changes");
 		}
 
-		if (!anyChanges)
-		{
-			changedShapes = shapeContainer;
-		}
-		ImGui::Separator();
-		ImGui::PushFont(fontMonoBold);
-		ImGui::Text("Attached box shapes");
-		ImGui::PopFont();
-
-		for (size_t i = 0; i < changedShapes.size(); i++)
-		{
-			ImGui::PushFont(fontSans);
-			std::string shapeName = "Shape " + std::to_string(i);
-			if (shapeContainer[i].position != changedShapes[i].position ||
-				shapeContainer[i].rotation != changedShapes[i].rotation ||
-				shapeContainer[i].halfDimensions != changedShapes[i].halfDimensions ||
-				shapeContainer[i].density != changedShapes[i].density ||
-				shapeContainer[i].friction != changedShapes[i].friction ||
-				shapeContainer[i].restitution != changedShapes[i].restitution)
-			{
-				shapeName += "*";
-			}
-			ImGui::PushID(shapeName.c_str());
-			ImGui::Text(shapeName.c_str());
-			ImGui::PopFont();
-
-
-			if (ImGui::InputFloat("Density", &changedShapes[i].density, 0.01f, 100.0f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-			if (ImGui::InputFloat("Friction", &changedShapes[i].friction, 0.01f, 100.0f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-			if (ImGui::InputFloat("Restitution", &changedShapes[i].restitution, 0.01f, 1.0f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-
-			if (ImGui::SliderFloat3("Local position", &changedShapes[i].position.x, 0.1f, 30.0f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-
-			if (ImGui::SliderFloat3("Local rotation", &changedShapes[i].rotation.x, -179.99f, 179.99f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-
-			if (ImGui::SliderFloat3("Half dimensions", &changedShapes[i].halfDimensions.x, 0.1f, 30.0f, "%.2f"))
-			{
-				anyChanges = true;
-			}
-			if (ImGui::IsItemDeactivated())
-			{
-				changedShapesIndex.insert(i);
-			}
-
-			ImGui::PopID();
-		}
-		ImGui::Separator();
-		ImGui::Text("New box shapes");
-		for (size_t i = 0; i < newShapes.size(); i++)
-		{
-			ImGui::PushFont(fontSans);
-			std::string shapeName =
-				"Shape " + std::to_string(i + changedShapes.size());
-
-			ImGui::PushID(shapeName.c_str());
-			ImGui::Text(shapeName.c_str());
-			ImGui::PopFont();
-
-			ImGui::SliderFloat(
-				"Density",
-				&newShapes[i].density,
-				0.01f, 100.0f,
-				"%.2f");
-
-			ImGui::SliderFloat(
-				"Friction",
-				&newShapes[i].friction,
-				0.01f, 100.0f,
-				"%.2f");
-
-			ImGui::SliderFloat3(
-				"Local position",
-				&newShapes[i].position.x,
-				-30.0f, 30.0f,
-				"%.2f");
-
-			ImGui::SliderFloat3(
-				"Local rotation",
-				&newShapes[i].rotation.x,
-				-179.99f,
-				179.99f,
-				"%.2f");
-
-			ImGui::SliderFloat3(
-				"Half dimensions",
-				&newShapes[i].halfDimensions.x,
-				0.1f, 30.0f,
-				"%.2f");
-
-			ImGui::PopID();
-		}
-
-		ImGui::End();
-
-
-		ImGui::Begin("RigidBody Shape Editor");
-		const char* closeWindow = "Close window";
+		ImGui::SameLine();
+		const char* closeWindow = "Close";
 		if (ImGui::Button(closeWindow))
 		{
-			ImGui::OpenPopup("Close window");
+			ImGui::OpenPopup(closeWindow);
 		}
 		if (ImGui::BeginPopup(closeWindow))
 		{
 			if (ImGui::MenuItem("Sure"))
 			{
+				physics::refreshAttachedShapes(rigidBodyId);
 				physicsBodyShapeImage.showTarget = false;
-				renderer::resetCamera(physicsBodyShapeImage.cameraId);
+				renderer::resetCamera(
+					physicsBodyShapeImage.cameraId);
+
 				ImGui::EndPopup();
 				ImGui::End();
-				clz::log::debug("Exiting, hope you saved everything");
+				clz::log::debug("Exiting");
 				return;
 			}
 			if (ImGui::MenuItem("Not yet"))
@@ -380,6 +269,264 @@ namespace clz::editor
 			}
 			ImGui::EndPopup();
 		}
+		ImGui::Separator();
+
+		ImGui::Text("<--- Attached shapes --->");
+
+		auto& shapes = physics::getBodyShapes(rigidBodyId);
+		CLZ_ASSERT(capturedBodyData.shapeData.size() ==
+				shapes.size(),
+				"wtf have you done with shaped data");
+
+		for (size_t i = 0; i < capturedBodyData.shapeData.size(); ++i)
+		{
+			auto& shapeData = capturedBodyData.shapeData[i];
+			auto& shape = shapes[i];
+
+			ImGui::PushFont(fontSans);
+			std::string shapeName = "Shape " + std::to_string(i);
+
+			ImGui::PushID(shapeName.c_str());
+			ImGui::Button(shapeName.c_str());
+			ImGui::PopFont();
+
+
+			if (ImGui::InputFloat(
+				"Density",
+				&shapeData.density))
+			{
+				shape.setDensity(shapeData.density);
+			}
+
+			if (ImGui::InputFloat(
+				"Friction",
+				&shapeData.friction))
+			{
+				shape.setFriction(shapeData.friction);
+			}
+
+			if (ImGui::InputFloat(
+				"Restitution",
+				&shapeData.restitution))
+			{
+				shape.setRestitution(shapeData.restitution);
+			}
+
+			ImGui::InputFloat3(
+				"Local position",
+				&shapeData.position.x);
+			if (ImGui::IsItemDeactivated())
+			{
+				shapeData.position.x = std::clamp(shapeData.position.x, -30.0f, 30.0f);
+				shapeData.position.y = std::clamp(shapeData.position.y, -30.0f, 30.0f);
+				shapeData.position.z = std::clamp(shapeData.position.z, -30.0f, 30.0f);
+				shape.setPosition(shapeData.position);
+			}
+
+			if (ImGui::InputFloat3(
+				"Local rotation",
+				&shapeData.rotation.x))
+			{
+				shapeData.rotation.x = std::clamp(shapeData.rotation.x, -180.0f, 180.0f);
+				shapeData.rotation.y = std::clamp(shapeData.rotation.y, -180.0f, 180.0f);
+				shapeData.rotation.z = std::clamp(shapeData.rotation.z, -180.0f, 180.0f);
+				shape.setRotation(shapeData.rotation);
+			}
+
+			/// --- shape extents ---
+
+			auto showLBH = [](
+				physics::Shape& shape,
+				physics::ShapeDef& shapeData,
+				const physics::ShapeType type) -> void
+			{
+				switch (type)
+				{
+				case(physics::ShapeType::BOX): {
+					if (ImGui::InputFloat3(
+						"Half dimensions",
+						&shapeData.halfExtents.x))
+					{
+						shapeData.halfExtents.x =
+							std::clamp(
+								shapeData.halfExtents.x,
+								0.1f,
+								30.0f);
+
+						shapeData.halfExtents.y =
+							std::clamp(
+								shapeData.halfExtents.y,
+								0.1f,
+								30.0f);
+
+						shapeData.halfExtents.z =
+							std::clamp(
+								shapeData.halfExtents.z,
+								0.1f,
+								30.0f);
+
+						shape.setBoxHalfExtents(shapeData.halfExtents);
+					}
+					break;
+				}
+
+				case(physics::ShapeType::CAPSULE):
+				case(physics::ShapeType::CYLINDER): {
+					if (ImGui::InputFloat(
+						"Height",
+						&shapeData.height))
+					{
+						shapeData.height =
+							std::clamp(
+								shapeData.height,
+								0.1f,
+								30.0f);
+
+						shape.setCapsuleHeight(shapeData.height);
+					}
+					break;
+				}
+
+				default:
+				{
+					CLZ_ASSERT(
+						false,
+						"Unknown shape type passed while requesting LBH");
+				}
+				}
+			};
+
+			auto showRadius = [](
+				physics::Shape& shape,
+				physics::ShapeDef& shapeData,
+				const physics::ShapeType type) -> void
+			{
+				switch (type)
+				{
+				case(physics::ShapeType::SPHERE): {
+					if (ImGui::InputFloat(
+						"Radius",
+						&shapeData.radius))
+					{
+						shapeData.radius =
+							std::clamp(
+							shapeData.radius,
+							0.1f,
+							30.0f);
+
+						shape.setSphereRadius(shapeData.radius);
+					}
+				}
+				case(physics::ShapeType::CAPSULE):
+				case(physics::ShapeType::CYLINDER): {
+					auto radius = shape.getCapsuleRadius();
+					ImGui::SliderFloat(
+						"Radius",
+						&radius,
+						0.1f,
+						30.0f,
+						"%.2f");
+					if (ImGui::IsItemDeactivated())
+					{
+						shape.setCapsuleRadius(radius);
+					}
+
+					break;
+					}
+
+				default: {
+
+					CLZ_ASSERT(
+						false,
+						"Unknown shape type passed while requesting LBH");
+					}
+				}
+
+			};
+
+
+			switch (shape.getShapeType())
+			{
+				case(physics::ShapeType::BOX): {
+					ImGui::PushFont(fontMono);
+					ImGui::Text("Shape type: ");
+					ImGui::PopFont();
+					ImGui::SameLine();
+					ImGui::PushFont(fontMonoBold);
+					ImGui::Text("Box");
+					ImGui::PopFont();
+
+					showLBH(shape, shapeData, physics::ShapeType::BOX);
+
+					break;
+				}
+				case(physics::ShapeType::SPHERE): {
+					ImGui::PushFont(fontMono);
+					ImGui::Text("Shape type: ");
+					ImGui::PopFont();
+					ImGui::SameLine();
+					ImGui::PushFont(fontMonoBold);
+					ImGui::Text("Box");
+					ImGui::PopFont();
+
+					showRadius(shape, shapeData, physics::ShapeType::SPHERE);
+
+					break;
+
+				}
+				case(physics::ShapeType::CAPSULE): {
+					ImGui::PushFont(fontMono);
+					ImGui::Text("Shape type: ");
+					ImGui::PopFont();
+					ImGui::SameLine();
+					ImGui::PushFont(fontMonoBold);
+					ImGui::Text("Capsule");
+					ImGui::PopFont();
+
+					showLBH(shape, shapeData, physics::ShapeType::CAPSULE);
+					showRadius(shape, shapeData, physics::ShapeType::CAPSULE);
+				}
+				case(physics::ShapeType::CYLINDER): {
+					ImGui::PushFont(fontMono);
+					ImGui::Text("Shape type: ");
+					ImGui::PopFont();
+					ImGui::SameLine();
+					ImGui::PushFont(fontMonoBold);
+					ImGui::Text("Capsule");
+					ImGui::PopFont();
+
+					showLBH(shape, shapeData, physics::ShapeType::CYLINDER);
+					showRadius(shape, shapeData, physics::ShapeType::CYLINDER);
+				}
+
+			}
+
+			if (ImGui::Button("Delete Shape"))
+			{
+				shape.destroyShape();
+				capturedBodyData.shapeData.erase(
+					capturedBodyData.shapeData.begin() + i);
+
+				physics::refreshAttachedShapes(rigidBodyId);
+				ImGui::PopID();
+				break;
+			}
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+
+		ImGui::End();
+
+	}
+
+	void showBodySceneWindow()
+	{
+		if (!capturedBodyData.entityId.has_value())
+			return;
+
+		ImGui::Begin("RigidBody Shape Editor");
+
 		const ImVec2 avail = ImGui::GetContentRegionAvail();
 		if (avail.x < 1.0f || avail.y < 1.0f)
 		{
@@ -394,11 +541,50 @@ namespace clz::editor
 			height != physicsBodyShapeImage.extent.height) &&
 				clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
 		{
-			recreateOffscreenTarget(physicsBodyShapeImage, width, height);
+			physicsBodyShapeImage.extent.width = width;
+			physicsBodyShapeImage.extent.height = height;
+			renderer::updateCameraProjMatrix(physicsBodyShapeImage.cameraId);
+			physicsBodyShapeImage.outDated = true;
 			clz::log::debug("Won't show image this frame, resizing rn");
 			ImGui::End();
 			return;
 		}
+
+		if (ImGui::IsWindowFocused())
+		{
+			static bool rightClickThisFrame = false;
+			static bool rightClickLastFrame = false;
+			if (window::isMousePressed(clz::input::Mouse::MouseRight))
+			{
+				rightClickThisFrame = true;
+			}
+			else
+			{
+				rightClickThisFrame = false;
+			}
+
+			if (rightClickThisFrame)
+			{
+				clz::log::debug("updating body camera");
+				const auto Id = physicsBodyShapeImage.cameraId;
+				renderer::useCamera(Id);
+				renderer::updateCamera(Id);
+			}
+
+			if (rightClickThisFrame && !rightClickLastFrame)
+			{
+				window::disableCursor();
+			}
+			else if (!rightClickThisFrame && rightClickLastFrame)
+			{
+				window::enableCursor();
+				renderer::setCameraFirstTime(physicsBodyShapeImage.cameraId);
+			}
+
+			rightClickLastFrame = rightClickThisFrame;
+		}
+
+		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
 
 		ImGui::Image(
 			(ImTextureID)physicsBodyShapeImage.descriptorSet,
@@ -408,8 +594,19 @@ namespace clz::editor
 
 	}
 
+	void presentBodyEditorWindow()
+	{
+		showBodyEditorWindow();
+		showBodySceneWindow();
+	}
+
 	void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 	{
+		if (!capturedBodyData.entityId.has_value())
+		{
+			return;
+		}
+		prepareOffscreenTarget(physicsBodyShapeImage);
 		renderer::transition_image_layout(
 			physicsBodyShapeImage.image,
 			VK_IMAGE_LAYOUT_UNDEFINED,
@@ -484,8 +681,6 @@ namespace clz::editor
 		// Update uniform buffers here
 
 		const auto cameraId = physicsBodyShapeImage.cameraId;
-		renderer::useCamera(cameraId);
-		renderer::updateCamera(cameraId);
 		const auto p = math::makePerspectiveMatrix(
 					renderer::getCameraFarPlane(cameraId),
 					renderer::getCameraNearPlane(cameraId),
@@ -518,62 +713,44 @@ namespace clz::editor
 
 		renderer::drawModel(
 			ecs::getComponent<ecs::ModelComponent>(
-				currentSelectedEntity.value()).modelId,
+			capturedBodyData.entityId.value()).modelId,
 			math::vec3(0.0f),
 			math::quat(1.0f, 0.0f, 0.0f, 0.0f),
 			ecs::getComponent<ecs::TransformComponent>(
-				currentSelectedEntity.value()).scale,
+			capturedBodyData.entityId.value()).scale,
 			commandBuffer);
 
+		const auto& shapes =
+			physics::getBodyShapes(
+				ecs::getComponent<ecs::RigidBodyComponent>(
+					capturedBodyData.entityId.value()).rigidBodyId);
 
-		if (!anyChanges)
+		for (const auto& shapeData: capturedBodyData.shapeData)
 		{
-			const auto& boxShapes =
-				ecs::getComponent<ecs::ShapeComponent>(
-					currentSelectedEntity.value()).boxShapes;
-			for (const auto& boxShape : boxShapes)
+			const auto quat = math::quatFromEuler(shapeData.rotation);
+			const auto pos = shapeData.position;
+			math::vec3 scale;
+			renderer::Shape drawShape;
+			switch (shapeData.shapeType)
 			{
-				const auto quat = math::quatFromEuler(boxShape.rotation);
-				const auto pos = boxShape.position;
-				const auto scale = boxShape.halfDimensions * 2;
-				renderer::drawShape(
-					commandBuffer,
-					renderer::Shape::BOX,
-					p,
-					v,
-					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.0f, 0.5f, 0.0f, 1.0f));
-
+			case physics::ShapeType::BOX:
+				scale = shapeData.halfExtents * 2;
+				drawShape = renderer::Shape::BOX;
+				break;
+			case physics::ShapeType::SPHERE:
+				break;
+			case physics::ShapeType::CAPSULE:
+				break;
+			case physics::ShapeType::CYLINDER:
+				break;
 			}
-		}
-		else
-		{
-			for (const auto& shape : changedShapes)
-			{
-				const auto quat = math::quatFromEuler(shape.rotation);
-				const auto pos = shape.position;
-				const auto scale = shape.halfDimensions * 2;
-				renderer::drawShape(
-					commandBuffer,
-					renderer::Shape::BOX,
-					p,
-					v,
-					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.5f, 0.5f, 0.0f, 1.0f));
-			}
-			for (const auto& boxShape : newShapes)
-			{
-				const auto quat = math::quatFromEuler(boxShape.rotation);
-				const auto pos = boxShape.position;
-				const auto scale = boxShape.halfDimensions * 2;
-				renderer::drawShape(
-					commandBuffer,
-					renderer::Shape::BOX,
-					p,
-					v,
-					math::getModelMatrix(quat, pos, scale),
-					math::vec4(0.0f, 0.0f, 0.5f, 1.0f));
-			}
+			renderer::drawShape(
+				commandBuffer,
+				drawShape,
+				p,
+				v,
+				math::getModelMatrix(quat, pos, scale),
+				math::vec4(0.0f, 0.5f, 0.0f, 1.0f));
 		}
 
 		vkCmdEndRendering(commandBuffer);

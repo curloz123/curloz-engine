@@ -52,27 +52,38 @@ namespace clz::physics
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState != state::EngineState::Game)
 		{
-			for (auto& entities = ecs::getEntitiesWithComponent<ecs::BodyComponent>(); auto& entity : entities)
+			for (
+				auto& entities =
+					ecs::getEntitiesWithComponent<ecs::RigidBodyComponent>();
+				auto& entity : entities)
 			{
-				auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
-				const auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
-				static size_t c = 0;
-				setBodyPosition(body.bodyId, transformComponent.position);
-				setBodyRotation(body.bodyId, transformComponent.rotation);
+				auto& body =
+					ecs::getComponent<ecs::RigidBodyComponent>(entity);
+				const auto& transformComponent =
+					ecs::getComponent<ecs::TransformComponent>(entity);
+
+				setBodyPosition(
+					body.rigidBodyId,
+					transformComponent.position);
+				setBodyRotation(
+					body.rigidBodyId,
+					transformComponent.rotation);
+
 				body.newRotation = transformComponent.rotation;
 				body.prevRotation = body.newRotation;
 				body.newPosition = transformComponent.position;
 				body.prevPosition = body.newPosition;
 
-				b3Body_SetLinearVelocity(body.bodyId, (b3Vec3){0.0f, 0.0f, 0.0f});
-				b3Body_SetAngularVelocity(body.bodyId, (b3Vec3){0.0f, 0.0f, 0.0f});
+				setBodyVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
+				setBodyAngularVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
 			}
 			return;
 		}
 #endif
 
 		p_accumulator += time::getDeltaTime();
-		const auto& entities = ecs::getEntitiesWithComponent<ecs::BodyComponent>();
+		const auto& entities =
+			ecs::getEntitiesWithComponent<ecs::RigidBodyComponent>();
 		while (p_accumulator >= p_timeStep)
 		{
 			b3World_Step(p_world, p_timeStep, p_subStepCount);
@@ -80,22 +91,32 @@ namespace clz::physics
 
 			for (const auto& entity : entities)
 			{
-				auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
+				auto& body =
+					ecs::getComponent<ecs::RigidBodyComponent>(entity);
+
 				body.prevPosition = body.newPosition;
 				body.prevRotation = body.newRotation;
-				body.newPosition = getBodyPosition(body.bodyId);
-				body.newRotation = getBodyRotation(body.bodyId);
+				body.newPosition = getBodyPosition(body.rigidBodyId);
+				body.newRotation = getBodyRotation(body.rigidBodyId);
 			}
 		}
 		const float alpha = p_accumulator / p_timeStep;
 
 		for (const auto& entity : entities)
 		{
-			auto& transformComponent = ecs::getComponent<ecs::TransformComponent>(entity);
-			const auto& body = ecs::getComponent<ecs::BodyComponent>(entity);
+			auto& transformComponent =
+				ecs::getComponent<ecs::TransformComponent>(entity);
+			const auto& body =
+				ecs::getComponent<ecs::RigidBodyComponent>(entity);
 
-			transformComponent.position = math::lerp(body.prevPosition, body.newPosition, alpha);
-			transformComponent.rotation = math::slerp(body.prevRotation, body.newRotation, alpha);
+			transformComponent.position =
+				math::lerp(
+					body.prevPosition,
+					body.newPosition, alpha);
+			transformComponent.rotation =
+				math::slerp(
+					body.prevRotation,
+					body.newRotation, alpha);
 		}
 	}
 

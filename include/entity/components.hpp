@@ -103,35 +103,29 @@ namespace clz::ecs
 	 *
 	 * @note Dependencies -> TransformComponent
 	 */
-	struct BodyComponent
+	struct RigidBodyComponent
 	{
-		physics::BodyId bodyId;
+		physics::RigidBodyId rigidBodyId;
 		math::quat prevRotation;
 		math::quat newRotation;
 		math::vec3 prevPosition;
 		math::vec3 newPosition;
 
-		explicit BodyComponent()
-		{
-		}
 
-		explicit BodyComponent(const physics::BodyId bodyId, const math::quat& prevRotation, const math::quat& newRotation,
-				       const math::vec3& prevPosition, const math::vec3& newPosition)
-		    : bodyId(bodyId), prevRotation(prevRotation), newRotation(newRotation), prevPosition(prevPosition), newPosition(newPosition)
+		explicit RigidBodyComponent(
+			const physics::RigidBodyId rigidBodyId,
+			const math::quat& prevRotation,
+			const math::quat& newRotation,
+			const math::vec3& prevPosition,
+			const math::vec3& newPosition) :
+			rigidBodyId(rigidBodyId),
+			prevRotation(prevRotation),
+			newRotation(newRotation),
+			prevPosition(prevPosition),
+			newPosition(newPosition)
 		{
 		}
 	};
-	/**
-	 * @brief Stores the shapes attached to the body of current entity.
-	 * Mainly used for editor purposes as body internally stores all shape handles too.
-	 * Needed mainly to edit shapes etc etc.....
-	 */
-	struct ShapeComponent
-	{
-		std::vector<physics::BoxShape> boxShapes;
-		ShapeComponent(const std::vector<physics::BoxShape>& boxShapes) : boxShapes(boxShapes)
-		{
-		}
-	};
+
 
 } // namespace clz::ecs

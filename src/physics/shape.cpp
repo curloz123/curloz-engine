@@ -1,84 +1,102 @@
-/**
- * @file shape.cpp
- * @author curl0z
- * @brief Physics shape implementation file
- */
 #include "physics/shape.hpp"
-#include "core/assert.hpp"
-#include "math/quateulerconv.hpp"
 #include "physics/math.hpp"
-#include "entity/components.hpp"
+#include "physics/body.hpp"
 
 namespace clz::physics
 {
-	/**
-	 * @brief Attaches shape to a body
-	 * @param bodyId ID of body to which we're attaching the shape
-	 * @param boxShapeContainer Container which holds all shapes of the body
-	 * @param shape The actual shape data
-	 */
-	void attachShapeToBody(const b3BodyId& bodyId, std::vector<BoxShape>& boxShapeContainer, BoxShape& shape)
+	Shape::Shape(
+		const ShapeDef& shapeDef,
+		const RigidBodyId rigidBodyId)
 	{
-		const b3Vec3 pos = toVec3(shape.position);
-		const b3Quat quat = toQuat(math::quatFromEuler(shape.rotation));
-		const b3Transform localTransform = {pos, quat};
-		b3ShapeDef shapeDef = b3DefaultShapeDef();
-		shapeDef.density = shape.density;
-		shapeDef.baseMaterial.friction = shape.friction;
-		shapeDef.baseMaterial.restitution = shape.restitution;
-		const b3BoxHull cuboid =
-		    b3MakeTransformedBoxHull(shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z, localTransform);
-
-		shape.shapeId = b3CreateHullShape(bodyId, &shapeDef, &cuboid.base);
-		b3Body_ApplyMassFromShapes(bodyId);
-		boxShapeContainer.emplace_back(shape);
+		createShape(shapeDef, rigidBodyId);
 	}
 
-	/**
-	 * @brief Modify's an existing shape of a body
-	 * @param bodyId Id of body whose shape we are modifying
-	 * @param shape New Shape data
-	 * @param boxShapeContainer Container which holds the body's shapes, indexing is done on this container
-	 * @param index Index of the shape which needs to be changed
-	 */
-	void modifyShapeByIndex(const b3BodyId& bodyId, BoxShape& shape, std::vector<BoxShape>& boxShapeContainer, uint32_t index)
-	{
-		CLZ_ASSERT(index < boxShapeContainer.size(), "Invalid index passed while modifying shape data");
 
-		b3DestroyShape(boxShapeContainer[index].shapeId, true);
-		const b3Vec3 pos = toVec3(shape.position);
-		const b3Quat quat = toQuat(math::quatFromEuler(shape.rotation));
+	void Shape::createShape(
+		const ShapeDef& shapeDef,
+		const RigidBodyId rigidBodyId)
+	{
+		m_shapeType  = shapeDef.shapeType;
+		m_position = shapeDef.position;
+		m_rotation = shapeDef.rotation;
+
+		const b3Vec3 pos = toVec3(m_position);
+		const b3Quat quat = toQuat(math::quatFromEuler(m_rotation));
 		const b3Transform localTransform = {pos, quat};
-		b3ShapeDef shapeDef = b3DefaultShapeDef();
-		shapeDef.density = shape.density;
-		shapeDef.baseMaterial.friction = shape.friction;
-		shapeDef.baseMaterial.restitution = shape.restitution;
-		const b3BoxHull cuboid =
-		    b3MakeTransformedBoxHull(shape.halfDimensions.x, shape.halfDimensions.y, shape.halfDimensions.z, localTransform);
 
-		shape.shapeId = b3CreateHullShape(bodyId, &shapeDef, &cuboid.base);
-		boxShapeContainer[index] = shape;
-		b3Body_ApplyMassFromShapes(bodyId);
-	}
+		b3ShapeDef sDef = b3DefaultShapeDef();
+		sDef.density = shapeDef.density;
+		sDef.baseMaterial.friction = shapeDef.friction;
+		sDef.baseMaterial.restitution = shapeDef.restitution;
 
-	/**
-	 * @param bodyId ID of body
-	 * @param boxShapeContainer Container holding all the shapes for this body
-	 * @param shapeId ID of shape
-	 */
-	void destroyShape(const b3BodyId& bodyId, std::vector<BoxShape>& boxShapeContainer, b3ShapeId& shapeId)
-	{
-		b3DestroyShape(shapeId, true);
-
-		/* TO-DO
-		size_t i = 0;
-		for (; i < boxShapeContainer.size(); i++)
+		switch (m_shapeType)
 		{
-			if (boxShapeContainer[i].shapeId == shapeId)
-			{
+		case(ShapeType::BOX): {
+			m_halfExtents = shapeDef.halfExtents;
+			const b3BoxHull cuboid =
+				b3MakeTransformedBoxHull(
+					m_halfExtents.x,
+					m_halfExtents.y,
+					m_halfExtents.z,
+					localTransform);
 
-			}
+			m_shapeId = b3CreateHullShape(
+				getBox3dBodyId(rigidBodyId),
+				&sDef,
+				&cuboid.base);
+			CLZ_ASSERT(
+				B3_IS_NON_NULL(m_shapeId),
+				"Unable to create shape");
+
+			break;
 		}
-		*/
+		case (ShapeType::SPHERE): {
+			m_radius = shapeDef.radius;
+			break;
+		}
+		case (ShapeType::CAPSULE): {
+			m_radius = shapeDef.radius;
+			m_height = shapeDef.height;
+			break;
+		}
+		case (ShapeType::CYLINDER): {
+			m_radius = shapeDef.radius;
+			m_height = shapeDef.height;
+			break;
+		}
+		}
+
+		b3Body_ApplyMassFromShapes(getBox3dBodyId(rigidBodyId));
+		needsRecreation = false;
+		shouldBeDestroyed = false;
+
 	}
-} // namespace clz::physics
+
+
+	void Shape::destroyShape(const bool isRecreating)
+	{
+		b3DestroyShape(m_shapeId, true);
+		m_shapeId = b3_nullShapeId;
+		if (!isRecreating)
+			shouldBeDestroyed = true;
+	}
+
+
+	void Shape::recreateShape(const RigidBodyId rigidBodyId)
+	{
+		const ShapeDef shapeDef(
+			this->getShapeType(),
+			m_position,
+			m_rotation,
+			this->getDensity(),
+			this->getFriction(),
+			this->getRestitution(),
+			m_halfExtents,
+			m_radius,
+			m_height
+			);
+		this->destroyShape(true);
+		this->createShape(shapeDef, rigidBodyId);
+		needsRecreation = false;
+	}
+}

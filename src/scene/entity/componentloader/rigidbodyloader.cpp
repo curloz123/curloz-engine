@@ -8,7 +8,7 @@
  * linear/angular damping - "lineardamping" / "angulardamping"
  * Enable sleep?? - "enablesleep"
  * Linear/Angular locks - "linearlock" / "angularlock"
- * Box Shapes - "boxshapes{
+ * Box Shapes - "boxshapes {
  * Density - "density"
  * Restitution - "restitution"
  * Friction - "friction"
@@ -28,25 +28,32 @@ namespace clz::scene
 	/// @param entity Entity for which we are creating this entity
 	/// @return std::tuple<BodyComponent, ShapeComponent> Both components
 	/// @note if a value is not present in JSON, will assign default value
-	std::tuple<ecs::BodyComponent, ecs::ShapeComponent> retrieveBodyComponent(const nlohmann::json& physicsTable, const ecs::entity& entity)
+	ecs::RigidBodyComponent retrieveBodyComponent(
+		const nlohmann::json& physicsTable,
+		const ecs::entity& entity)
 	{
 		physics::BodyData data{};
 
-		const auto type = physicsTable["type"].get<std::string>();
-		if (type == "static")
-			data.type = physics::BodyType::StaticBody;
-		else if (type == "dynamic")
-			data.type = physics::BodyType::DynamicBody;
-		else if (type == "kinematic")
-			data.type = physics::BodyType::KinematicBody;
-		else
 		{
-			clz::log::warn("entity entry does not specify physics:bodytype,"
-				       "assigning it dynamic by default");
-			data.type = physics::BodyType::DynamicBody;
+			const auto type = physicsTable["type"].get<std::string>();
+			if (type == "static")
+				data.type = physics::BodyType::StaticBody;
+			else if (type == "dynamic")
+				data.type = physics::BodyType::DynamicBody;
+			else if (type == "kinematic")
+				data.type = physics::BodyType::KinematicBody;
+			else
+			{
+				clz::log::warn(
+					"entity entry does not specify physics:bodytype,"
+					"assigning it dynamic by default");
+				data.type = physics::BodyType::DynamicBody;
+			}
 		}
 
-		const auto& tc = ecs::getComponent<ecs::TransformComponent>(entity);
+		const auto& tc =
+			ecs::getComponent<ecs::TransformComponent>(entity);
+
 		data.position = tc.position;
 		data.rotation = tc.rotation;
 
@@ -56,8 +63,9 @@ namespace clz::scene
 		}
 		else
 		{
-			clz::log::warn("entity entry does not specify physics:lineardamping, "
-				       "assigning it 0 by default");
+			clz::log::warn(
+				"entity entry does not specify physics:lineardamping, "
+				"assigning it 0 by default");
 			data.linearDamping = 0.0f;
 		}
 
@@ -67,8 +75,9 @@ namespace clz::scene
 		}
 		else
 		{
-			clz::log::warn("entity entry does not specify physics:angulardamping, "
-				       "assigning it 0.1 by default");
+			clz::log::warn(
+				"entity entry does not specify physics:angulardamping, "
+				"assigning it 0.1 by default");
 			data.angularDamping = 0.1f;
 		}
 
@@ -78,8 +87,9 @@ namespace clz::scene
 		}
 		else
 		{
-			clz::log::warn("entity entry does not specify physics:enablesleep, "
-				       "assigning it true by default");
+			clz::log::warn(
+				"entity entry does not specify physics:enablesleep, "
+				"assigning it true by default");
 			data.enableSleep = true;
 		}
 
@@ -93,8 +103,9 @@ namespace clz::scene
 		}
 		else
 		{
-			clz::log::warn("entity entry does not specify physics:linearlock, "
-				       "assigning all axes unlocked by default");
+			clz::log::warn(
+				"entity entry does not specify physics:linearlock, "
+				"assigning all axes unlocked by default");
 			data.linearLocks = {false, false, false};
 		}
 
@@ -108,94 +119,166 @@ namespace clz::scene
 		}
 		else
 		{
-			clz::log::warn("entity entry does not specify physics:angularlock, "
-				       "assigning all axes unlocked by default");
+			clz::log::warn(
+				"entity entry does not specify physics:angularlock, "
+				"assigning all axes unlocked by default");
 			data.angularLocks = {false, false, false};
 		}
 
-		std::vector<physics::BoxShape> boxShapes = {};
-		auto loadBoxShape = [&](const nlohmann::json& shape) {
-			physics::BoxShape boxShape;
+		std::vector<physics::ShapeDef> ShapeDefs = {};
+		auto loadShape = [&](const nlohmann::json& shape) {
 
+			float density;
 			if (shape.contains("density"))
 			{
-				boxShape.density = shape["density"];
+				density = shape["density"];
 			}
 			else
 			{
-				clz::log::warn("Shape does not have density, "
-					       "assigning it default value: 10.0f");
-				boxShape.density = 10.0f;
+				clz::log::warn(
+					"Shape does not have density, "
+					"assigning it default value: 10.0f");
+				density = 10.0f;
 			}
+
+			float friction;
 			if (shape.contains("friction"))
 			{
-				boxShape.friction = shape["friction"];
+				friction = shape["friction"];
 			}
 			else
 			{
-				clz::log::warn("Shape does not have friction, "
-					       "assigning it default value: 0.7f");
-				boxShape.friction = 0.67f;
+				clz::log::warn(
+					"Shape does not have friction, "
+					"assigning it default value: 0.7f");
+				friction = 0.67f;
 			}
+
+			float restitution;
 			if (shape.contains("restitution"))
 			{
-				boxShape.restitution = shape["restitution"];
+				restitution = shape["restitution"];
 			}
 			else
 			{
-				clz::log::warn("Shape does not have restitution, "
-					       "assigning it default value: 0.5f");
-				boxShape.restitution = 0.5f;
+				clz::log::warn(
+					"Shape does not have restitution, "
+					"assigning it default value: 0.5f");
+				restitution = 0.5f;
 			}
 
-			boxShape.halfDimensions.x = shape["halfdimensions"][0];
-			boxShape.halfDimensions.y = shape["halfdimensions"][1];
-			boxShape.halfDimensions.z = shape["halfdimensions"][2];
+			const math::vec3 position = {
+				shape["position"][0],
+				shape["position"][1],
+				shape["position"][2]
+			};
 
-			boxShape.position.x = shape["position"][0];
-			boxShape.position.y = shape["position"][1];
-			boxShape.position.z = shape["position"][2];
+			const math::vec3 rotation = {
+				shape["rotation"][0],
+				shape["rotation"][1],
+				shape["rotation"][2]
+			};
 
-			boxShape.rotation.x = shape["rotation"][0];
-			boxShape.rotation.y = shape["rotation"][1];
-			boxShape.rotation.z = shape["rotation"][2];
 
-			boxShapes.emplace_back(boxShape);
+			math::vec3 halfExtents;
+			float radius;
+			float height;
+			physics::ShapeType shapeType;
+
+			const std::string type = shape["type"];
+			if (type == "box")
+			{
+				shapeType = physics::ShapeType::BOX;
+				CLZ_ASSERT(
+					shape.contains("halfdimensions"),
+					"corrupted scene file"
+					"lacks half dimensions entry in a box shape field");
+				halfExtents = {
+					shape["halfdimensions"][0],
+					shape["halfdimensions"][1],
+					shape["halfdimensions"][2] };
+			}
+			else if (type == "sphere")
+			{
+				shapeType = physics::ShapeType::SPHERE;
+				CLZ_ASSERT(
+					shape.contains("radius"),
+					"corrupted scene file"
+					"lacks radius entry in a sphere shape field");
+				radius = shape["radius"];
+			}
+			else if (type == "cylinder")
+			{
+				shapeType = physics::ShapeType::CYLINDER;
+				CLZ_ASSERT(
+					shape.contains("radius") &&
+						shape.contains("height"),
+					"corrupted scene file"
+					"lacks radius or height entry in a cylinder shape field");
+				radius = shape["radius"];
+				height = shape["height"];
+			}
+			else if (type == "capsule")
+			{
+				shapeType = physics::ShapeType::CAPSULE;
+				CLZ_ASSERT(
+					shape.contains("radius") &&
+						shape.contains("height"),
+					"corrupted scene file"
+					"lacks radius or height entry in a capsule shape field");
+				radius = shape["radius"];
+				height = shape["height"];
+			}
+			else
+			{
+				CLZ_ASSERT(false, "Unknown shape type present in scene");
+			}
+
+			return physics::ShapeDef(
+				shapeType,
+				position,
+				rotation,
+				density,
+				friction,
+				restitution,
+				halfExtents,
+				radius,
+				height);
 		};
 
-		if (physicsTable.contains("boxshapes"))
+		if (physicsTable.contains("shapes"))
 		{
-			const auto& shapesTable = physicsTable["boxshapes"];
+			const auto& shapesTable = physicsTable["shapes"];
+			std::vector<physics::ShapeDef> shapeDefs;
+			shapeDefs.reserve(shapesTable.size());
 			for (size_t i = 0; i < shapesTable.size(); ++i)
 			{
-				loadBoxShape(shapesTable[i]);
+				shapeDefs.emplace_back(loadShape(shapesTable[i]));
 			}
-			data.boxShapes = boxShapes;
-		}
-		else
-		{
-			data.boxShapes = {};
+			data.ShapeDefs.insert(
+				data.ShapeDefs.end(),
+				shapeDefs.begin(),
+				shapeDefs.end());
 		}
 
-		ecs::BodyComponent bodyComponent(physics::createBody(data), tc.rotation, tc.rotation, tc.position, tc.position);
-		std::vector<physics::BoxShape> boxShapesContainer = {};
-		for (auto& boxShape : boxShapes)
-		{
-			physics::attachShapeToBody(bodyComponent.bodyId, boxShapesContainer, boxShape);
-		}
-		ecs::ShapeComponent shapeComponent(boxShapesContainer);
+		ecs::RigidBodyComponent rigidBodyComponent(
+			physics::createBody(data),
+			tc.rotation,
+			tc.rotation,
+			tc.position,
+			tc.position);
 
-		return std::make_tuple(bodyComponent, shapeComponent);
+		return rigidBodyComponent;
 	}
 
 	/// @brief Saves back all physics data of entities to JSON
 	/// @param rigidBodyComponent Tuple containing both BodyComponent and ShapeComponent of entity
 	/// @param physicsTable JSON-array where we have to write back data
-	void saveRigidBodyComponent(const std::tuple<ecs::BodyComponent, ecs::ShapeComponent>& rigidBodyComponent, nlohmann::json& physicsTable)
+	void saveRigidBodyComponent(
+		const ecs::RigidBodyComponent rigidBodyComponent,
+		nlohmann::json& physicsTable)
 	{
-		const auto& [bodyComponent, shapeComponent] = rigidBodyComponent;
-		const auto& bodyId = bodyComponent.bodyId;
-		const auto& boxShapes = shapeComponent.boxShapes;
+		const auto bodyId = rigidBodyComponent.rigidBodyId;
 
 		const auto& type = physics::getBodyType(bodyId);
 		switch (type)
@@ -231,24 +314,60 @@ namespace clz::scene
 		    angularLocks[2],
 		};
 
-		auto& shapesTable = physicsTable["boxshapes"];
-		for (size_t i = 0; i < boxShapes.size(); ++i)
+		const auto& shapes = physics::getBodyShapes(bodyId);
+		auto& shapesTable = physicsTable["shapes"];
+		for (size_t i = 0; i < shapes.size(); ++i)
 		{
-			shapesTable[i]["density"] = boxShapes[i].density;
-			shapesTable[i]["friction"] = boxShapes[i].friction;
-			shapesTable[i]["restitution"] = boxShapes[i].restitution;
+			const auto position = shapes[i].getPosition();
+			shapesTable[i]["position"][0] = position.x;
+			shapesTable[i]["position"][1] = position.y;
+			shapesTable[i]["position"][2] = position.z;
 
-			shapesTable[i]["halfdimensions"][0] = boxShapes[i].halfDimensions.x;
-			shapesTable[i]["halfdimensions"][1] = boxShapes[i].halfDimensions.y;
-			shapesTable[i]["halfdimensions"][2] = boxShapes[i].halfDimensions.z;
+			const auto rotation = shapes[i].getRotation();
+			shapesTable[i]["rotation"][0] = rotation.x;
+			shapesTable[i]["rotation"][1] = rotation.y;
+			shapesTable[i]["rotation"][2] = rotation.z;
 
-			shapesTable[i]["position"][0] = boxShapes[i].position.x;
-			shapesTable[i]["position"][1] = boxShapes[i].position.y;
-			shapesTable[i]["position"][2] = boxShapes[i].position.z;
+			shapesTable[i]["density"] = shapes[i].getDensity();
+			shapesTable[i]["friction"] = shapes[i].getFriction();
+			shapesTable[i]["restitution"] = shapes[i].getRestitution();
 
-			shapesTable[i]["rotation"][0] = boxShapes[i].rotation.x;
-			shapesTable[i]["rotation"][1] = boxShapes[i].rotation.y;
-			shapesTable[i]["rotation"][2] = boxShapes[i].rotation.z;
+			switch (shapes[i].getShapeType())
+			{
+			case physics::ShapeType::BOX: {
+
+				shapesTable[i]["type"] = "box";
+				const auto halfDimensions = shapes[i].getBoxHalfExtents();
+				shapesTable[i]["halfdimensions"][0] = halfDimensions.x;
+				shapesTable[i]["halfdimensions"][1] = halfDimensions.y;
+				shapesTable[i]["halfdimensions"][2] = halfDimensions.z;
+				break;
+			}
+
+			case physics::ShapeType::SPHERE:{
+				shapesTable[i]["type"] = "sphere";
+				const auto radius = shapes[i].getSphereRadius();
+				shapesTable[i]["radius"] = radius;
+				break;
+			}
+
+			case physics::ShapeType::CAPSULE: {
+				shapesTable[i]["type"] = "capsule";
+				const auto radius = shapes[i].getCapsuleRadius();
+				const auto height = shapes[i].getCapsuleHeight();
+				shapesTable[i]["radius"] = radius;
+				shapesTable[i]["height"] = height;
+				break;
+			}
+			case physics::ShapeType::CYLINDER: {
+				shapesTable[i]["type"] = "cylinder";
+				const auto radius = shapes[i].getCylinderRadius();
+				const auto height = shapes[i].getCylinderHeight();
+				shapesTable[i]["radius"] = radius;
+				shapesTable[i]["height"] = height;
+				break;
+			}
+			}
 		}
 	}
 

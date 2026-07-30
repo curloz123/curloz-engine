@@ -30,7 +30,12 @@ namespace clz::editor
 	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
 	void showInspector(VkCommandBuffer commandBuffer)
 	{
-		ImGui::Begin("Inspector");
+		if (!ImGui::Begin("Inspector"))
+		{
+			ImGui::End();
+			return;
+		}
+
 		if (currentSelectedEntity.has_value())
 		{
 			ImGui::PushFont(fontMonoBold);
@@ -46,7 +51,7 @@ namespace clz::editor
 				showModelComponentHeader();
 			ImGui::Separator();
 
-			if (ecs::hasComponent<ecs::BodyComponent>(currentSelectedEntity.value()))
+			if (ecs::hasComponent<ecs::RigidBodyComponent>(currentSelectedEntity.value()))
 				showRigidBodyHeader();
 			ImGui::Separator();
 		}
@@ -54,6 +59,7 @@ namespace clz::editor
 		{
 			ImGui::TextDisabled("No entity selected");
 		}
+
 		ImGui::End();
 
 		showComponentSpecificWindows();

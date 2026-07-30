@@ -22,9 +22,9 @@ namespace clz::renderer
 		constexpr float DEFAULT_FOV = 60.0f;
 		constexpr float DEFAULT_NEAR = 0.1f;
 		constexpr float DEFAULT_FAR = 100.0f;
-		constexpr float DEFAULT_MAX_VELOCITY = 10.0f;
+		constexpr float DEFAULT_MAX_VELOCITY = 5.0f;
 		constexpr float DEFAULT_SENSITIVITY = 0.1f;
-		constexpr float DEFAULT_ACCELERATION = 5.0f;
+		constexpr float DEFAULT_ACCELERATION = 32768.0f;
 		constexpr float DEFAULT_PITCH = 0.0f;
 		constexpr float DEFAULT_YAW = -90.0f;
 		const math::vec3 DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
@@ -44,9 +44,12 @@ namespace clz::renderer
 
 		Fov.push_back(def.fov.value_or(DEFAULT_FOV));
 
-		Position.push_back(def.position.value_or(DEFAULT_POSITION));
-		LocalFront.push_back(def.localFront.value_or(DEFAULT_FRONT));
-		LocalRight.push_back(def.localRight.value_or(DEFAULT_RIGHT));
+		const auto pos = def.position.value_or(DEFAULT_POSITION);
+		const auto frnt = def.localFront.value_or(DEFAULT_FRONT);
+		Position.push_back(pos);
+		LocalFront.push_back(frnt);
+		LocalRight.push_back(math::normalize(
+			math::cross(frnt, WorldUp)));
 
 		ProjMatrix.push_back(math::mat4(1.0f));
 		ChangeProjMatrix.push_back(true);

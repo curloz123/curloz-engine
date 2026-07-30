@@ -75,9 +75,8 @@ namespace clz::scene
 			// Attach physics Component if present
 			if (entityData.contains("rigidbody"))
 			{
-				const auto& [body, shapes] = retrieveBodyComponent(entityData["rigidbody"], e);
-				addComponent<ecs::BodyComponent>(e, body);
-				addComponent<ecs::ShapeComponent>(e, shapes);
+				auto body = retrieveBodyComponent(entityData["rigidbody"], e);
+				addComponent<ecs::RigidBodyComponent>(e, body);
 			}
 		}
 
@@ -113,12 +112,10 @@ namespace clz::scene
 					entityJson["model"]);
 			}
 
-			if (ecs::hasComponent<ecs::BodyComponent>(entity))
+			if (ecs::hasComponent<ecs::RigidBodyComponent>(entity))
 			{
 				saveRigidBodyComponent(
-					std::make_tuple(
-						ecs::getComponent<ecs::BodyComponent>(entity),
-						ecs::getComponent<ecs::ShapeComponent>(entity)),
+					ecs::getComponent<ecs::RigidBodyComponent>(entity),
 					entityJson["rigidbody"]);
 			}
 			sceneJson["entities"].push_back(entityJson);

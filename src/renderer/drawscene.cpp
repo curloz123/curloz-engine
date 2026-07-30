@@ -23,7 +23,7 @@
 namespace clz::renderer
 {
 	/// @copydoc
-	void lastMainDraw(const VkCommandBuffer commandBuffer)
+	void lastMainDraw(VkCommandBuffer commandBuffer)
 	{
 		CameraId activeCameraId = NULL_CAMERA;
 		math::mat4 view;
@@ -33,11 +33,14 @@ namespace clz::renderer
 		{
 			// editor handles camera updating itself
 			activeCameraId = editor::mainViewportImage.cameraId;
-			view = getCameraViewMatrix(activeCameraId);
+			view = getCameraViewMatrix(
+				activeCameraId);
 			projection = getCameraProjMatrix(
 				activeCameraId,
-				editor::mainViewportImage.extent.width,
-				editor::mainViewportImage.extent.height);
+				static_cast<float>(
+					editor::mainViewportImage.extent.width),
+				static_cast<float>(
+					editor::mainViewportImage.extent.height));
 		}
 		else
 #endif
@@ -110,7 +113,7 @@ namespace clz::renderer
 namespace clz::renderer
 {
 	/// @copydoc
-	void drawScene(const VkCommandBuffer commandBuffer)
+	void drawScene(VkCommandBuffer commandBuffer)
 	{
 		lastMainDraw(commandBuffer);
 	}

@@ -41,20 +41,23 @@ namespace clz::state
 	 */
 	inline void setEngineState(const EngineState state, const std::string_view callerLocation)
 	{
+		if (g_engineState == state)
+			return;
+
 		g_engineState = state;
 		switch (g_engineState)
 		{
 		case EngineState::Game:
 			clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
-			break;
+			return;
 
 		case EngineState::Editor:
 			clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
-			break;
+			return;
 
 		case EngineState::Shutdown:
 			clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
-			break;
+			return;
 		}
 	}
 
