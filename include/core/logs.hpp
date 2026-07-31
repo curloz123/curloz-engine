@@ -34,7 +34,11 @@ namespace clz::log
 	 */
 	inline void info(std::string_view info)
 	{
-		std::println("{}[INFO]{} {}", color::green, color::reset, info);
+		std::println(
+			"{}[INFO]{} {}",
+			color::green,
+			color::reset,
+			info);
 	}
 
 	/**
@@ -42,10 +46,21 @@ namespace clz::log
 	 * @param warn Warning.
 	 * @param loc Retrieves location of caller, don't pass this yourself
 	 */
-	inline void warn(std::string_view warn, const std::source_location loc = std::source_location::current())
+	inline void warn(
+		std::string_view warn,
+		const std::source_location loc =
+			std::source_location::current())
 	{
-		std::println("{}[WARN]{} {}", color::yellow, color::reset, warn);
-		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
+		std::println(
+			"{}[WARN]{} {}",
+			color::yellow,
+			color::reset,
+			warn);
+
+		std::println(
+			"LOCATION: {} Line:{}",
+			loc.file_name(),
+			loc.line());
 	}
 
 	/**
@@ -54,7 +69,8 @@ namespace clz::log
 	 */
 	inline void debug(
 		std::string_view debug,
-		const std::source_location loc = std::source_location::current())
+		const std::source_location loc =
+			std::source_location::current())
 	{
 		std::println(
 			"{}[DEBUG]{} {}",
@@ -72,11 +88,21 @@ namespace clz::log
 	 */
 	inline void error(
 		std::string_view error,
-		const std::source_location loc = std::source_location::current())
+		const std::source_location loc =
+			std::source_location::current())
 	{
 		hadError = true;
-		std::println("{}[ERROR]{} {}", color::red, color::reset, error);
-		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
+
+		std::println(
+			"{}[ERROR]{} {}",
+			color::red,
+			color::reset,
+			error);
+
+		std::println(
+			"LOCATION: {} Line:{}",
+			loc.file_name(),
+			loc.line());
 	}
 
 	/**

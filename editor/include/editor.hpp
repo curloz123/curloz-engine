@@ -20,6 +20,11 @@ namespace clz::editor
 	 */
 	bool init();
 
+	/// @brief prepares editor before transitioning engine to editor mode
+	/// Internally, right now sets transform component of all entities
+	/// equal to the editor transform component
+	void prepareEditor();
+
 	/**
 	 * @brief Drives the full ImGui frame: NewFrame, render, Render, RenderDrawData.
 	 * @param commandBuffer Active command buffer, must be in recording state.

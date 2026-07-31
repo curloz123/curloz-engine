@@ -64,8 +64,6 @@ namespace clz::editor
 
 		showComponentSpecificWindows();
 
-		// Check if undo or redo has to be performed
-		timeTravel();
 	}
 
 	void showComponentSpecificWindows()

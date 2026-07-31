@@ -63,19 +63,54 @@ namespace clz::editor
 
 		ImGui::PopFont();
 
-		// Writing back data
-
-		auto& transform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
-		transform.position = editorTransform.position;
-		transform.rotation = math::quatFromEuler(math::radians(editorTransform.rotation));
-		transform.scale = editorTransform.scale;
+		ecs::TransformComponent newTransform(
+			math::quatFromEuler(math::radians(editorTransform.rotation)),
+			editorTransform.position,
+			editorTransform.scale);
 
 		// Commit exactly one snapshot per completed edit, regardless of input method
 		if (anyEditFinished)
 		{
-			createSnapshot<ecs::EditorTransformComponent>(currentSelectedEntity.value(),
-				previousTransform, editorTransform);
+			const auto entityId = currentSelectedEntity.value();
+
+			auto oldTransform = ecs::TransformComponent(
+				math::quatFromEuler(
+					math::radians(
+						previousTransform.rotation)),
+				previousTransform.position,
+				previousTransform.scale
+			);
+			timemachine::createSnapshot(
+				[entityId, oldTransform]{
+					ecs::setComponent<ecs::TransformComponent>(
+						entityId,
+						oldTransform
+					);
+					ecs::setComponent<ecs::EditorTransformComponent>(
+						entityId,
+						ecs::EditorTransformComponent(oldTransform)
+					);
+				},
+				[entityId, newTransform]{
+					ecs::setComponent<ecs::TransformComponent>(
+						entityId,
+						newTransform
+					);
+					ecs::setComponent<ecs::EditorTransformComponent>(
+						entityId,
+						ecs::EditorTransformComponent(newTransform)
+					);
+				}
+			);
+
+			clz::log::debug("created snapshot");
 		}
+
+		// Writing back data
+		ecs::setComponent<ecs::TransformComponent>(
+			currentSelectedEntity.value(),
+			newTransform
+		);
 	}
 
 }

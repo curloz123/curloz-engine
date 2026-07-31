@@ -18,9 +18,18 @@
 #include "renderer/camera/camera.hpp"
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include "../../include/timemachine.hpp"
 
 namespace clz::editor
 {
+	/// @brief Edge-detection state for ImGuizmo::IsUsingAny(), since it's level-triggered.
+	bool gizmoUsedLastFrame = false;
+	bool gizmoUsedThisFrame = false;
+
+	/// @brief Transform captured at the start of the current gizmo drag, used as the undo "before" value.
+	inline ecs::EditorTransformComponent previousTransform;
+
+
 	/**
 	 * @brief Draws and handles the transform gizmo for the currently selected entity.
 	 * @param viewport The screen rectangle (in pixels) where the gizmo is active.
@@ -55,19 +64,38 @@ namespace clz::editor
 
 		ImGuizmo::BeginFrame();
 
-		auto& entityTransform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
-		auto& editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value());
+		auto& entityTransform =
+			ecs::getComponent<ecs::TransformComponent>(
+				currentSelectedEntity.value());
+		auto& editorTransform =
+			ecs::getComponent<ecs::EditorTransformComponent>(
+				currentSelectedEntity.value());
 
-		math::mat4 model = math::getModelMatrix(entityTransform.rotation, entityTransform.position, entityTransform.scale);
+		math::mat4 model = math::getModelMatrix(
+			entityTransform.rotation,
+			entityTransform.position,
+			entityTransform.scale);
 
-		const math::mat4 view = renderer::getCameraViewMatrix(mainViewportImage.cameraId);
+		const math::mat4 view =
+			renderer::getCameraViewMatrix(mainViewportImage.cameraId);
+
 		math::mat4 proj =
-		    renderer::getCameraProjMatrix(mainViewportImage.cameraId, mainViewportImage.extent.width, mainViewportImage.extent.height);
+		    renderer::getCameraProjMatrix(
+		    	mainViewportImage.cameraId,
+		    	mainViewportImage.extent.width,
+		    	mainViewportImage.extent.height);
 		proj.data[5] *= -1; // Flip Y to match ImGuizmo's coordinate system.
 
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
 		ImGuizmo::SetRect(viewport.x, viewport.y, viewport.width, viewport.height);
+
+		gizmoUsedThisFrame = ImGuizmo::IsUsingAny();
+		if (gizmoUsedThisFrame && !gizmoUsedLastFrame)
+		{
+			// Drag just started — capture the pre-drag state
+			previousTransform = editorTransform;
+		}
 
 		ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 		switch (ActiveTransform)
@@ -82,7 +110,12 @@ namespace clz::editor
 			operation = ImGuizmo::ROTATE;
 			break;
 		}
-		if (ImGuizmo::Manipulate(view.data, proj.data, operation, ImGuizmo::WORLD, model.data))
+		if (ImGuizmo::Manipulate(
+			view.data,
+			proj.data,
+			operation,
+			ImGuizmo::LOCAL,
+			model.data))
 		{
 			float pos[3], rot[3], scale[3];
 			ImGuizmo::DecomposeMatrixToComponents(model.data, pos, rot, scale);
@@ -95,5 +128,43 @@ namespace clz::editor
 			entityTransform.rotation = math::quatFromEuler(math::radians(editorTransform.rotation));
 			entityTransform.scale = editorTransform.scale;
 		}
+
+		if (!gizmoUsedThisFrame && gizmoUsedLastFrame)
+		{
+			const auto entityId = currentSelectedEntity.value();
+
+			const auto oldTransform = ecs::TransformComponent(
+				math::quatFromEuler(math::radians(previousTransform.rotation)),
+				previousTransform.position,
+				previousTransform.scale
+			);
+			const auto newTransform = entityTransform;
+			timemachine::createSnapshot(
+				[entityId, oldTransform]{
+					ecs::setComponent<ecs::TransformComponent>(
+						entityId,
+						oldTransform
+					);
+					ecs::setComponent<ecs::EditorTransformComponent>(
+						entityId,
+						ecs::EditorTransformComponent(oldTransform)
+					);
+				},
+				[entityId, newTransform]{
+					ecs::setComponent<ecs::TransformComponent>(
+						entityId,
+						newTransform
+					);
+					ecs::setComponent<ecs::EditorTransformComponent>(
+						entityId,
+						ecs::EditorTransformComponent(newTransform)
+					);
+				}
+			);
+
+			clz::log::debug("created snapshot");
+
+		}
+		gizmoUsedLastFrame = gizmoUsedThisFrame;
 	}
 } // namespace clz::editor

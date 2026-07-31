@@ -318,6 +318,9 @@ namespace clz::scene
 		auto& shapesTable = physicsTable["shapes"];
 		for (size_t i = 0; i < shapes.size(); ++i)
 		{
+			if (shapes[i].isItTimeSon())
+				continue;
+
 			const auto position = shapes[i].getPosition();
 			shapesTable[i]["position"][0] = position.x;
 			shapesTable[i]["position"][1] = position.y;

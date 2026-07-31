@@ -14,6 +14,7 @@
 #include "physics/physics_types.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/components.hpp"
+#include "math/angle.hpp"
 
 namespace clz::physics
 {
@@ -52,30 +53,37 @@ namespace clz::physics
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState != state::EngineState::Game)
 		{
-			for (
-				auto& entities =
+			for (auto& entities =
 					ecs::getEntitiesWithComponent<ecs::RigidBodyComponent>();
 				auto& entity : entities)
 			{
 				auto& body =
 					ecs::getComponent<ecs::RigidBodyComponent>(entity);
 				const auto& transformComponent =
-					ecs::getComponent<ecs::TransformComponent>(entity);
+					ecs::getComponent<ecs::EditorTransformComponent>(entity);
 
 				setBodyPosition(
 					body.rigidBodyId,
 					transformComponent.position);
-				setBodyRotation(
-					body.rigidBodyId,
-					transformComponent.rotation);
-
-				body.newRotation = transformComponent.rotation;
-				body.prevRotation = body.newRotation;
 				body.newPosition = transformComponent.position;
 				body.prevPosition = body.newPosition;
 
-				setBodyVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
-				setBodyAngularVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
+				const auto bodyRotation =
+					math::quatFromEuler(
+						math::radians(transformComponent.rotation));
+				setBodyRotation(
+					body.rigidBodyId,
+					bodyRotation);
+
+				body.newRotation = bodyRotation;
+				body.prevRotation = bodyRotation;
+
+				setBodyVelocity(
+					body.rigidBodyId,
+					{0.0f, 0.0f, 0.0f});
+				setBodyAngularVelocity(
+					body.rigidBodyId,
+					{0.0f, 0.0f, 0.0f});
 			}
 			return;
 		}

@@ -9,6 +9,7 @@ Provides BoxShape Data-Structure which holds all the data of any shape attached 
 #include "math/quateulerconv.hpp"
 #include "math/vec3.hpp"
 #include "physics.hpp"
+#include "core/logs.hpp"
 
 namespace clz::physics
 {
@@ -24,24 +25,30 @@ namespace clz::physics
 	/// @brief Definition data for creating a physics shape.
 	struct ShapeDef
 	{
-		ShapeType shapeType;	///< @brief The type of the shape.
-		math::vec3 position;	///< @brief Local position relative to the body.
-		math::vec3 rotation;	///< @brief Local rotation (Euler angles) relative to the body.
-		float density;		///< @brief Density of the shape (used for mass calculation).
-		float friction;		///< @brief Friction coefficient.
-		float restitution;	///< @brief Restitution (bounciness) coefficient.
-		math::vec3 halfExtents; ///< @brief Half-extents for BOX shape.
-		float radius;		///< @brief Radius for SPHERE, CAPSULE, CYLINDER shapes.
-		float height;		///< @brief Height for CAPSULE, CYLINDER shapes.
-
+		ShapeType shapeType;		///< @brief The type of the shape.
+		math::vec3 position;		///< @brief Local position relative to the body.
+		math::vec3 rotation;		///< @brief Local rotation (Euler angles) relative to the body.
+		float density;			///< @brief Density of the shape (used for mass calculation).
+		float friction;			///< @brief Friction coefficient.
+		float restitution;		///< @brief Restitution (bounciness) coefficient.
+		math::vec3 halfExtents; 	///< @brief Half-extents for BOX shape.
+		float radius;			///< @brief Radius for SPHERE, CAPSULE, CYLINDER shapes.
+		float height;			///< @brief Height for CAPSULE, CYLINDER shapes.
+		bool shouldBeDestroyed = false; ///< @brief Hints whether shape should be destroyed
 		ShapeDef()
 		{
 		}
 
-		explicit ShapeDef(const ShapeType shapeType, const math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f),
-				  const math::vec3 rotation = math::vec3(0.0f, 0.0f, 0.0f), const float density = 0.0f, const float friction = 0.7f,
-				  const float restitution = 0.1f, const math::vec3 halfExtents = math::vec3(0.5f), const float radius = 0.5f,
-				  const float height = 1.0f)
+		explicit ShapeDef(
+			const ShapeType shapeType,
+			const math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f),
+			const math::vec3 rotation = math::vec3(0.0f, 0.0f, 0.0f),
+			const float density = 0.0f,
+			const float friction = 0.7f,
+			const float restitution = 0.1f,
+			const math::vec3 halfExtents = math::vec3(0.5f),
+			const float radius = 0.5f,
+			const float height = 1.0f)
 		{
 			this->shapeType = shapeType;
 			this->position = position;
@@ -53,12 +60,27 @@ namespace clz::physics
 			this->radius = radius;
 			this->height = height;
 		}
+
+		bool operator==(const ShapeDef& shapeDef) const
+		{
+			return  shapeType == shapeDef.shapeType &&
+				position == shapeDef.position && rotation == shapeDef.rotation &&
+				density == shapeDef.density && friction == shapeDef.friction &&
+				restitution == shapeDef.restitution &&
+				halfExtents == shapeDef.halfExtents &&
+				radius == shapeDef.radius && height == shapeDef.height &&
+				shouldBeDestroyed == shapeDef.shouldBeDestroyed;
+		}
+		bool operator!=(const ShapeDef& shapeDef) const
+		{
+			return !(*this == shapeDef);
+		}
 	};
 
 	/// @brief Wrapper class for a Box3D shape, managing its lifecycle and properties.
 	class Shape
 	{
-	      private:
+	private:
 		b3ShapeId m_shapeId;		///< @brief Internal Box3D shape handle.
 		ShapeType m_shapeType;		///< @brief The primitive type of the shape.
 		math::vec3 m_position;		///< @brief Local position offset.
@@ -69,7 +91,7 @@ namespace clz::physics
 		bool needsRecreation = false;	///< @brief Flag indicating if shape properties changed and require rebuilding.
 		bool shouldBeDestroyed = false; ///< @brief Flag indicating if the shape is marked for permanent deletion.
 
-	      public:
+	public:
 		/// @brief Default constructor.
 		Shape()
 		{
@@ -106,6 +128,16 @@ namespace clz::physics
 		bool isOutdated() const
 		{
 			return needsRecreation;
+		}
+
+		void logData() const
+		{
+			clz::log::info("density: " + std::to_string(this->getDensity()));
+			clz::log::info("mass: " + std::to_string(this->getDensity()));
+			clz::log::info("density: " + std::to_string(this->getRestitution()));
+			clz::log::info("density: " + std::to_string(this->getFriction()));
+			clz::log::info("density: " + std::to_string(this->getDensity()));
+			clz::log::info("density: " + std::to_string(this->getDensity()));
 		}
 
 		/// @brief Checks if the shape is marked for permanent destruction.

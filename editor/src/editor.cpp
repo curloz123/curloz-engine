@@ -10,7 +10,12 @@
 #include "../include/editorshortcuts.hpp"
 #include "../include/inspector/inspector.hpp"
 #include "../include/scenetable.hpp"
+#include "../include/sceneview.hpp"
+#include "../include/timemachine.hpp"
+#include "../include/topbar.hpp"
 #include "core/logs.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/components.hpp"
 #include "include/offscreen/offscreentarget.hpp"
 #include "renderer/vk_types.hpp"
 #include <cmath>
@@ -20,8 +25,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
-#include "../include/topbar.hpp"
-#include "../include/sceneview.hpp"
+#include "math/angle.hpp"
 
 namespace clz::editor
 {
@@ -44,6 +48,7 @@ namespace clz::editor
 		drawSceneView();
 		processShortcuts();
 		showInspector(commandBuffer);
+		timemachine::timeTravel();
 
 		ImGui::End();
 
@@ -148,6 +153,25 @@ namespace clz::editor
 		clz::log::info("Initialized editor");
 
 		return true;
+	}
+
+	void prepareEditor()
+	{
+		for (const auto& entityId :
+			ecs::getEntitiesWithComponent<ecs::TransformComponent>())
+		{
+			const auto editorTransform =
+				ecs::getComponent<ecs::EditorTransformComponent>(entityId);
+
+			ecs::setComponent<ecs::TransformComponent>(
+				entityId,
+				ecs::TransformComponent(
+					math::quatFromEuler(
+						math::radians(editorTransform.rotation)),
+					editorTransform.position,
+					editorTransform.scale)
+				);
+		}
 	}
 
 	void update(VkCommandBuffer commandBuffer)

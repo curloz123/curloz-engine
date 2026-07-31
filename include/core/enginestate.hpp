@@ -6,9 +6,14 @@
 
 #pragma once
 
+#include "assert.hpp"
 #include "logs.hpp"
-#include <string>
 #include "window/inputmanager.hpp"
+#include <string>
+
+#ifdef CLZ_ENABLE_EDITOR
+#include "include/editor.hpp"
+#endif
 
 namespace clz::state
 {
@@ -51,13 +56,20 @@ namespace clz::state
 			clz::log::info("Engine state set to Running by: " + std::string(callerLocation));
 			return;
 
+#ifdef CLZ_ENABLE_EDITOR
 		case EngineState::Editor:
 			clz::log::info("Engine state set to Editor by: " + std::string(callerLocation));
 			return;
+#endif
 
 		case EngineState::Shutdown:
 			clz::log::info("Engine state set to Shutdown by: " + std::string(callerLocation));
 			return;
+		default:
+			CLZ_ASSERT(
+				false,
+				"Unknown engine state called by: " +
+					std::string(callerLocation));
 		}
 	}
 
@@ -70,6 +82,7 @@ namespace clz::state
 				window::isKeyPressed(clz::input::Key::E))
 			{
 				g_engineState = EngineState::Editor;
+				editor::prepareEditor();
 			}
 		}
 		if (g_engineState == EngineState::Editor)
