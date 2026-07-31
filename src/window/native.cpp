@@ -8,51 +8,58 @@
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 
+// External flag defined in renderer to signal swapchain recreation
+extern bool r_recreateSwapchain;
+
 namespace clz::window
 {
-	bool initializeGLFW(GLFWwindow** pWindow)
-	{
-		const int width = clz::config::getInt("window", "width", 800);
-		const int height = clz::config::getInt("window", "height", 600);
-		if (width < 0 || height < 0)
-		{
-			log::error("Window system passed invalid window dimensions");
-			return false;
-		}
+    bool initializeGLFW(GLFWwindow** pWindow)
+    {
+        const int width = clz::config::getInt("window", "width", 800);
+        const int height = clz::config::getInt("window", "height", 600);
+        if (width < 0 || height < 0)
+        {
+            log::error("Window system passed invalid window dimensions");
+            return false;
+        }
 
-		if (!glfwInit())
-		{
-			log::error("Could not initialize GLFW");
-			return false;
-		}
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(), nullptr, nullptr);
-		if (!(*pWindow))
-		{
-			log::error("Could not create GLFW window");
-			return false;
-		}
+        if (!glfwInit())
+        {
+            log::error("Could not initialize GLFW");
+            return false;
+        }
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        *pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(), nullptr, nullptr);
+        if (!(*pWindow))
+        {
+            log::error("Could not create GLFW window");
+            return false;
+        }
 
-		return true;
-	}
+        glfwSetFramebufferSizeCallback(*pWindow, [](GLFWwindow* window, int width, int height) {
+            r_recreateSwapchain = true;
+        });
 
-	void shutdownGLFW(GLFWwindow** pWindow)
-	{
-		glfwDestroyWindow(*pWindow);
-		pWindow = nullptr;
-		glfwTerminate();
+        return true;
+    }
 
-		clz::log::info("Window shutdown successful");
-	}
+    void shutdownGLFW(GLFWwindow** pWindow)
+    {
+        glfwDestroyWindow(*pWindow);
+        pWindow = nullptr;
+        glfwTerminate();
 
-	void pollEventsGLFW(GLFWwindow** pWindow)
-	{
-		glfwPollEvents();
+        clz::log::info("Window shutdown successful");
+    }
 
-		if (glfwWindowShouldClose(*pWindow))
-		{
-			clz::state::setEngineState(clz::state::EngineState::Shutdown, "window poll events");
-		}
-	}
+    void pollEventsGLFW(GLFWwindow** pWindow)
+    {
+        glfwPollEvents();
+
+        if (glfwWindowShouldClose(*pWindow))
+        {
+            clz::state::setEngineState(clz::state::EngineState::Shutdown, "window poll events");
+        }
+    }
 } // namespace clz::window
