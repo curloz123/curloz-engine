@@ -19,30 +19,30 @@
 
 namespace clz::renderer
 {
-	/// @brief Single pool backing every descriptor set allocated below.
-	inline VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+/// @brief Single pool backing every descriptor set allocated below.
+inline VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
-	/// @brief One descriptor set per frame-in-flight, bound to cameraUBOLayout.
-	inline std::vector<VkDescriptorSet> cameraDescriptorSets = {};
+/// @brief One descriptor set per frame-in-flight, bound to cameraUBOLayout.
+inline std::vector<VkDescriptorSet> cameraDescriptorSets = {};
 
-	/// @brief One descriptor set per frame-in-flight, bound to combinedSamplerLayout.
-	inline std::vector<VkDescriptorSet> samplerDescriptorSets = {};
+/// @brief One descriptor set per frame-in-flight, bound to combinedSamplerLayout.
+inline std::vector<VkDescriptorSet> samplerDescriptorSets = {};
 
-	/// --- Seperate descriptor
+/// --- Seperate descriptor
 } // namespace clz::renderer
 
 namespace clz::renderer
 {
-	/// @brief Creates the descriptor pool, allocates cameraDescriptorSets and
-	/// samplerDescriptorSets from their respective layouts, and writes the
-	/// camera UBO's buffer bindings. Texture/sampler bindings are written
-	/// separately via updateSamplersDataForDescriptorSets, once scene
-	/// textures are loaded.
-	/// @note Requires createUniformBuffers() and createCombinedSamplersLayout()
-	/// to have already run, since their layouts are consumed here.
-	bool createDescriptors();
+/// @brief Creates the descriptor pool, allocates cameraDescriptorSets and
+/// samplerDescriptorSets from their respective layouts, and writes the
+/// camera UBO's buffer bindings. Texture/sampler bindings are written
+/// separately via updateSamplersDataForDescriptorSets, once scene
+/// textures are loaded.
+/// @note Requires createUniformBuffers() and createCombinedSamplersLayout()
+/// to have already run, since their layouts are consumed here.
+bool createDescriptors();
 
-	/// @brief Destroys the descriptor pool (which implicitly frees every
-	/// descriptor set allocated from it).
-	void destroyDescriptors();
+/// @brief Destroys the descriptor pool (which implicitly frees every
+/// descriptor set allocated from it).
+void destroyDescriptors();
 } // namespace clz::renderer

@@ -15,42 +15,42 @@
 
 namespace clz::renderer
 {
-	/// @brief Prepares all entity data (vertices, indices, UV, textures etc...)
-	inline bool prepareEntityData()
+/// @brief Prepares all entity data (vertices, indices, UV, textures etc...)
+inline bool prepareEntityData()
+{
+	if (!createVertexBuffer())
 	{
-		if (!createVertexBuffer())
-		{
-			clz::log::error("Failed to create vertex buffer");
-			return false;
-		}
-		if (!createIndexBuffer())
-		{
-			clz::log::error("Failed to create index buffer");
-			return false;
-		}
-		if (!createUVBuffer())
-		{
-			clz::log::error("Failed to create UV buffer");
-			return false;
-		}
-		if (!createTextures())
-		{
-			clz::log::error("Failed to create textures");
-			return false;
-		}
-
-		clz::log::info("Created entity data in renderer");
-		return true;
+		clz::log::error("Failed to create vertex buffer");
+		return false;
+	}
+	if (!createIndexBuffer())
+	{
+		clz::log::error("Failed to create index buffer");
+		return false;
+	}
+	if (!createUVBuffer())
+	{
+		clz::log::error("Failed to create UV buffer");
+		return false;
+	}
+	if (!createTextures())
+	{
+		clz::log::error("Failed to create textures");
+		return false;
 	}
 
-	/// @brief Destroys all stored entity data in memory
-	inline void destroyEntityData()
-	{
-		destroyTextures();
-		destroyUVBuffer();
-		destroyIndexBuffer();
-		destroyVertexBuffer();
+	clz::log::info("Created entity data in renderer");
+	return true;
+}
 
-		clz::log::info("Destroyed entity data");
-	}
+/// @brief Destroys all stored entity data in memory
+inline void destroyEntityData()
+{
+	destroyTextures();
+	destroyUVBuffer();
+	destroyIndexBuffer();
+	destroyVertexBuffer();
+
+	clz::log::info("Destroyed entity data");
+}
 } // namespace clz::renderer

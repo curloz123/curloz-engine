@@ -15,45 +15,45 @@
 
 namespace clz::window
 {
-	/**
-	 * @brief Initializes GLFW and creates the window using config values.
-	 * @note Logs an error and returns early on failure.
-	 */
-	bool init();
+/**
+ * @brief Initializes GLFW and creates the window using config values.
+ * @note Logs an error and returns early on failure.
+ */
+bool init();
 
-	/**
-	 * @brief Destroys the window and terminates GLFW.
-	 */
-	void shutdown();
+/**
+ * @brief Destroys the window and terminates GLFW.
+ */
+void shutdown();
 
-	/**
-	 * @brief Polls GLFW events and checks window close state.
-	 *
-	 * Sets g_engineState to EngineState::Shutdown if the window is closed
-	 */
-	void update();
+/**
+ * @brief Polls GLFW events and checks window close state.
+ *
+ * Sets g_engineState to EngineState::Shutdown if the window is closed
+ */
+void update();
 
-	/**
-	 * @brief Returns actual framebuffer extents
-	 * Basically coords in pixel space not screen space
-	 * @param width
-	 * @param height
-	 */
-	void getFramebufferExtents(int* width, int* height);
+/**
+ * @brief Returns actual framebuffer extents
+ * Basically coords in pixel space not screen space
+ * @param width
+ * @param height
+ */
+void getFramebufferExtents(int* width, int* height);
 
-	/**
-	 * @brief Retrieves current window handle
-	 * @return GLFWwindow handle
-	 */
-	GLFWwindow* getWindowHandle();
+/**
+ * @brief Retrieves current window handle
+ * @return GLFWwindow handle
+ */
+GLFWwindow* getWindowHandle();
 
-	/**
-	 * @brief Minimizes window
-	 */
-	void minimizeWindow();
+/**
+ * @brief Minimizes window
+ */
+void minimizeWindow();
 
-	/**
-	 * @brief Maximizes window
-	 */
-	void maximizeWindow();
+/**
+ * @brief Maximizes window
+ */
+void maximizeWindow();
 } // namespace clz::window

@@ -14,13 +14,13 @@ AlignAfterOpenBracket: true
 BreakAfterOpenBracketBracedList: true
 BreakBeforeCloseBracketBracedList: true
 BraceWrapping:
-  AfterClass: true
-  AfterFunction: true
-  AfterStruct: true
-  AfterEnum: true
-  AfterNamespace: true
-  AfterControlStatement: Always
-  BeforeElse: true
+        AfterClass: true
+        AfterFunction: true
+        AfterStruct: true
+        AfterEnum: true
+        AfterNamespace: true
+        AfterControlStatement: Always
+        BeforeElse: true
 Cpp11BracedListStyle: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false

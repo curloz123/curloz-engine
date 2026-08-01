@@ -39,13 +39,15 @@ struct alignas(16) mat4
 	};
 
 	mat4()
-	    : r0(_mm_setzero_ps()), r1(_mm_setzero_ps()), r2(_mm_setzero_ps()), r3(_mm_setzero_ps())
+	    : r0(_mm_setzero_ps()), r1(_mm_setzero_ps()), r2(_mm_setzero_ps()),
+	      r3(_mm_setzero_ps())
 	{
 	}
 
 	/// @brief Initializes Matrix in an identity format
 	explicit mat4(const float value)
-	    : r0(_mm_set_ps(0.0f, 0.0f, 0.0f, value)), r1(_mm_set_ps(0.0f, 0.0f, value, 0.0f)),
+	    : r0(_mm_set_ps(0.0f, 0.0f, 0.0f, value)),
+	      r1(_mm_set_ps(0.0f, 0.0f, value, 0.0f)),
 	      r2(_mm_set_ps(0.0f, value, 0.0f, 0.0f)), r3(_mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f))
 	{
 	}

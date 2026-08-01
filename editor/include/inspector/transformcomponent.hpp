@@ -9,6 +9,6 @@
 
 namespace clz::editor
 {
-	/// @brief Shows the Transform component section in the inspector.
-	void showTransformComponentHeader();
-}
+/// @brief Shows the Transform component section in the inspector.
+void showTransformComponentHeader();
+} // namespace clz::editor

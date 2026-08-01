@@ -16,9 +16,9 @@
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "core/time.hpp"
+#include "entity/entity.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
-#include "entity/entity.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
 

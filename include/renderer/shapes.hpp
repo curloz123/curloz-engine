@@ -8,33 +8,54 @@
 
 namespace clz::renderer
 {
-	enum class Shape : uint32_t
-	{
-		BOX = 0,
+enum class Shape : uint32_t
+{
+	BOX = 0,
+};
+/// @brief Push constants
+struct ShapePushConstants
+{
+	math::mat4 mvp;
+	math::vec4 color;
+	Shape shape;
+};
+
+inline void drawShape(
+	VkCommandBuffer commandBuffer,
+	const Shape shape,
+	const math::mat4& projection,
+	const math::mat4& view,
+	const math::mat4& model,
+	const math::vec4& color
+)
+{
+	ShapePushConstants pc = {
+		.mvp = model * view * projection,
+		.color = color,
+		.shape = shape
 	};
-	/// @brief Push constants
-	struct ShapePushConstants
+	vkCmdBindPipeline(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		r_shapePipelineContext.pipeline
+	);
+
+	vkCmdPushConstants(
+		commandBuffer,
+		r_shapePipelineContext.layout,
+		VK_SHADER_STAGE_VERTEX_BIT,
+		0,
+		sizeof(ShapePushConstants),
+		&pc
+	);
+
+	switch (shape)
 	{
-		math::mat4 mvp;
-		math::vec4 color;
-		Shape shape;
-	};
-
-	inline void drawShape(VkCommandBuffer commandBuffer, const Shape shape, const math::mat4& projection, const math::mat4& view,
-			      const math::mat4& model, const math::vec4& color)
-	{
-		ShapePushConstants pc = {.mvp = model * view * projection, .color = color, .shape = shape};
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, r_shapePipelineContext.pipeline);
-
-		vkCmdPushConstants(commandBuffer, r_shapePipelineContext.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShapePushConstants), &pc);
-
-		switch (shape)
-		{
-		case Shape::BOX:
-			vkCmdDraw(commandBuffer, 36, 1, 0, 0);
-			break;
-		default:
-			clz::log::warn("Invalid shape request");
-		}
+	case Shape::BOX:
+		vkCmdDraw(commandBuffer, 36, 1, 0, 0);
+		break;
+	default:
+		clz::log::warn("Invalid shape request");
 	}
+}
 } // namespace clz::renderer

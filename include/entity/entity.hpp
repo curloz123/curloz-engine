@@ -2,6 +2,8 @@
 
 namespace clz::ecs
 {
-	void init();
-	void shutdown();
-}
+
+void init();
+void shutdown();
+
+} // namespace clz::ecs

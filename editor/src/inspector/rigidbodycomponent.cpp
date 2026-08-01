@@ -16,21 +16,23 @@
 #include "../../include/timemachine.hpp"
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
-#include "entity/components.hpp"
+#include "entity/corecomponents.hpp"
 #include "include/offscreen/offscreentarget.hpp"
+#include "include/timemachine.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
+#include "physics/physicscomponent.hpp"
 #include "physics/shape.hpp"
 #include "renderer/model/model.hpp"
 #include "renderer/pipelinedata/descriptor.hpp"
+#include "renderer/rendercomponent.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 #include <imgui.h>
-#include "include/timemachine.hpp"
 
 namespace clz::editor
 {
@@ -56,7 +58,7 @@ void showRigidBodyHeader()
 		return;
 
 	const auto& rigidBodyId =
-		ecs::getComponent<ecs::RigidBodyComponent>(currentSelectedEntity.value())
+		ecs::getComponent<physics::RigidBodyComponent>(currentSelectedEntity.value())
 			.rigidBodyId;
 
 	ImGui::PushFont(fontMonoBold);
@@ -95,7 +97,10 @@ void showRigidBodyHeader()
 					physics::setBodyType(rigidBodyId, oldType);
 				},
 				[rigidBodyId] {
-					physics::setBodyType(rigidBodyId, physics::BodyType::StaticBody);
+					physics::setBodyType(
+						rigidBodyId,
+						physics::BodyType::StaticBody
+					);
 				}
 			);
 			physics::setBodyType(rigidBodyId, physics::BodyType::StaticBody);
@@ -108,7 +113,9 @@ void showRigidBodyHeader()
 				},
 				[rigidBodyId] {
 					physics::setBodyType(
-						rigidBodyId, physics::BodyType::KinematicBody);
+						rigidBodyId,
+						physics::BodyType::KinematicBody
+					);
 				}
 			);
 			physics::setBodyType(rigidBodyId, physics::BodyType::KinematicBody);
@@ -121,7 +128,9 @@ void showRigidBodyHeader()
 				},
 				[rigidBodyId] {
 					physics::setBodyType(
-						rigidBodyId, physics::BodyType::DynamicBody);
+						rigidBodyId,
+						physics::BodyType::DynamicBody
+					);
 				}
 			);
 			physics::setBodyType(rigidBodyId, physics::BodyType::DynamicBody);
@@ -313,7 +322,6 @@ void showRigidBodyHeader()
 				return shapeData;
 			}()
 		};
-
 	}
 
 	ImGui::PopFont();
@@ -340,9 +348,10 @@ void showBodyEditorWindow()
 	ImGui::PopFont();
 	ImGui::Separator();
 
-	const auto rigidBodyId =
-		ecs::getComponent<ecs::RigidBodyComponent>(capturedBodyData.entityId.value())
-			.rigidBodyId;
+	const auto rigidBodyId = ecs::getComponent<physics::RigidBodyComponent>(
+					 capturedBodyData.entityId.value()
+	)
+					 .rigidBodyId;
 
 	const char* shapeType = "Shape type";
 	if (ImGui::Button("Add Shape"))
@@ -355,7 +364,8 @@ void showBodyEditorWindow()
 		if (ImGui::MenuItem("Box"))
 		{
 			physics::ShapeDef shapeDef(physics::ShapeType::BOX);
-			const auto newShapeIndex= physics::getBodyShapes(rigidBodyId).size();
+			const auto newShapeIndex =
+				physics::getBodyShapes(rigidBodyId).size();
 			physics::attachShapeToBody(rigidBodyId, shapeDef);
 			capturedBodyData.shapeData.emplace_back(shapeDef);
 
@@ -363,14 +373,17 @@ void showBodyEditorWindow()
 				[rigidBodyId, newShapeIndex] {
 					auto& shapes = physics::getBodyShapes(rigidBodyId);
 					shapes[newShapeIndex].destroyShape();
-					capturedBodyData.shapeData[newShapeIndex].shouldBeDestroyed = true;
+					capturedBodyData.shapeData[newShapeIndex]
+						.shouldBeDestroyed = true;
 				},
 				[rigidBodyId, newShapeIndex] {
 					auto& shapes = physics::getBodyShapes(rigidBodyId);
 					shapes[newShapeIndex].createShape(
 						capturedBodyData.shapeData[newShapeIndex],
-						rigidBodyId);
-					capturedBodyData.shapeData[newShapeIndex].shouldBeDestroyed = false;
+						rigidBodyId
+					);
+					capturedBodyData.shapeData[newShapeIndex]
+						.shouldBeDestroyed = false;
 				}
 			);
 
@@ -462,9 +475,10 @@ void showBodyEditorWindow()
 
 			timemachine::createSnapshot(
 				[rigidBodyId, i, oldDensity] {
-					if (ecs::getComponent<ecs::RigidBodyComponent>(
-						capturedBodyData.entityId.value())
-							.rigidBodyId != rigidBodyId)
+					if (ecs::getComponent<physics::RigidBodyComponent>(
+						    capturedBodyData.entityId.value()
+					    )
+						    .rigidBodyId != rigidBodyId)
 					{
 						return;
 					}
@@ -474,9 +488,10 @@ void showBodyEditorWindow()
 					shapeData.density = oldDensity;
 				},
 				[rigidBodyId, i, newDensity] {
-				if (ecs::getComponent<ecs::RigidBodyComponent>(
-					capturedBodyData.entityId.value())
-						.rigidBodyId != rigidBodyId)
+					if (ecs::getComponent<physics::RigidBodyComponent>(
+						    capturedBodyData.entityId.value()
+					    )
+						    .rigidBodyId != rigidBodyId)
 					{
 						return;
 					}
@@ -496,9 +511,10 @@ void showBodyEditorWindow()
 
 			timemachine::createSnapshot(
 				[rigidBodyId, i, oldFriction] {
-					if (ecs::getComponent<ecs::RigidBodyComponent>(
-						capturedBodyData.entityId.value())
-						.rigidBodyId != rigidBodyId)
+					if (ecs::getComponent<physics::RigidBodyComponent>(
+						    capturedBodyData.entityId.value()
+					    )
+						    .rigidBodyId != rigidBodyId)
 					{
 						return;
 					}
@@ -508,9 +524,10 @@ void showBodyEditorWindow()
 					shapeData.friction = oldFriction;
 				},
 				[rigidBodyId, i, newFriction] {
-					if (ecs::getComponent<ecs::RigidBodyComponent>(
-						capturedBodyData.entityId.value())
-							.rigidBodyId != rigidBodyId)
+					if (ecs::getComponent<physics::RigidBodyComponent>(
+						    capturedBodyData.entityId.value()
+					    )
+						    .rigidBodyId != rigidBodyId)
 					{
 						return;
 					}
@@ -518,7 +535,8 @@ void showBodyEditorWindow()
 					auto& shapeData = capturedBodyData.shapeData[i];
 					shape.setFriction(newFriction);
 					shapeData.friction = newFriction;
-				});
+				}
+			);
 		}
 
 		if (ImGui::InputFloat("Restitution", &shapeData.restitution))
@@ -529,12 +547,14 @@ void showBodyEditorWindow()
 			timemachine::createSnapshot(
 				[rigidBodyId, i, oldRestitution] {
 					auto& shape = physics::getBodyShapes(rigidBodyId)[i];
-					capturedBodyData.shapeData[i].restitution = oldRestitution;
+					capturedBodyData.shapeData[i].restitution =
+						oldRestitution;
 					shape.setRestitution(oldRestitution);
 				},
 				[rigidBodyId, i, newRestitution] {
 					auto& shape = physics::getBodyShapes(rigidBodyId)[i];
-					capturedBodyData.shapeData[i].restitution = newRestitution;
+					capturedBodyData.shapeData[i].restitution =
+						newRestitution;
 					shape.setRestitution(newRestitution);
 				}
 			);
@@ -595,7 +615,8 @@ void showBodyEditorWindow()
 			);
 		}
 
-		auto showLBH = [](physics::RigidBodyId rigidBodyId, const int index,
+		auto showLBH = [](physics::RigidBodyId rigidBodyId,
+				  const int index,
 				  const physics::ShapeType type) -> void {
 			auto& shape = physics::getBodyShapes(rigidBodyId)[index];
 			auto& shapeData = capturedBodyData.shapeData[index];
@@ -631,13 +652,19 @@ void showBodyEditorWindow()
 
 					timemachine::createSnapshot(
 						[rigidBodyId, index, oldExtents] {
-							auto& shape = physics::getBodyShapes(rigidBodyId)[index];
-							capturedBodyData.shapeData[index].halfExtents = oldExtents;
+							auto& shape = physics::getBodyShapes(
+								rigidBodyId
+							)[index];
+							capturedBodyData.shapeData[index]
+								.halfExtents = oldExtents;
 							shape.setBoxHalfExtents(oldExtents);
 						},
 						[rigidBodyId, index, newExtents] {
-							auto& shape = physics::getBodyShapes(rigidBodyId)[index];
-							capturedBodyData.shapeData[index].halfExtents = newExtents;
+							auto& shape = physics::getBodyShapes(
+								rigidBodyId
+							)[index];
+							capturedBodyData.shapeData[index]
+								.halfExtents = newExtents;
 							shape.setBoxHalfExtents(newExtents);
 						}
 					);
@@ -770,13 +797,18 @@ void showBodyEditorWindow()
 			timemachine::createSnapshot(
 				[rigidBodyId, i] {
 					auto& shape = physics::getBodyShapes(rigidBodyId)[i];
-					shape.createShape(capturedBodyData.shapeData[i], rigidBodyId);
-					capturedBodyData.shapeData[i].shouldBeDestroyed = false;
+					shape.createShape(
+						capturedBodyData.shapeData[i],
+						rigidBodyId
+					);
+					capturedBodyData.shapeData[i].shouldBeDestroyed =
+						false;
 				},
 				[rigidBodyId, i] {
 					auto& shape = physics::getBodyShapes(rigidBodyId)[i];
 					shape.destroyShape();
-					capturedBodyData.shapeData[i].shouldBeDestroyed = true;
+					capturedBodyData.shapeData[i].shouldBeDestroyed =
+						true;
 				}
 			);
 		}
@@ -971,7 +1003,9 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 	);
 
 	renderer::drawModel(
-		ecs::getComponent<ecs::ModelComponent>(capturedBodyData.entityId.value())
+		ecs::getComponent<renderer::ModelComponent>(
+			capturedBodyData.entityId.value()
+		)
 			.modelId,
 		math::vec3(0.0f),
 		math::quat(1.0f, 0.0f, 0.0f, 0.0f),
@@ -981,7 +1015,9 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 	);
 
 	const auto& shapes = physics::getBodyShapes(
-		ecs::getComponent<ecs::RigidBodyComponent>(capturedBodyData.entityId.value())
+		ecs::getComponent<physics::RigidBodyComponent>(
+			capturedBodyData.entityId.value()
+		)
 			.rigidBodyId
 	);
 
@@ -1008,6 +1044,9 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 			break;
 		case physics::ShapeType::CYLINDER:
 			break;
+
+		default:
+			/// handle this case
 		}
 		renderer::drawShape(
 			commandBuffer,
