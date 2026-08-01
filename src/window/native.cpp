@@ -26,13 +26,15 @@ namespace clz::window
 			return false;
 		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(), nullptr, nullptr);
 		if (!(*pWindow))
 		{
 			log::error("Could not create GLFW window");
 			return false;
 		}
+		glfwSetFramebufferSizeCallback(*pWindow, hintRendererAboutResize);
+
 
 		return true;
 	}
