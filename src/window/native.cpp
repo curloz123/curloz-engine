@@ -33,6 +33,8 @@ namespace clz::window
 			log::error("Could not create GLFW window");
 			return false;
 		}
+		glfwSetFramebufferSizeCallback(*pWindow, hintRendererAboutResize);
+
 
 		return true;
 	}
