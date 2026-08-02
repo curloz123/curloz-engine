@@ -37,7 +37,8 @@ void showSceneTab()
 		const float iconSize = ImGui::GetFrameHeight();
 		const float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-		const float selectableWidth = ImGui::GetContentRegionAvail().x - iconSize - spacing;
+		const float selectableWidth =
+			ImGui::GetContentRegionAvail().x - iconSize - spacing;
 
 		if (ImGui::Selectable(name.c_str(), selected, 0, ImVec2(selectableWidth, 0)))
 		{
@@ -50,7 +51,8 @@ void showSceneTab()
 
 		ImGui::InvisibleButton(
 			("##icon" + ecs::getEntityName(entity)).c_str(),
-			ImVec2(iconSize, iconSize));
+			ImVec2(iconSize, iconSize)
+		);
 
 		std::string icon = "NULL ICON";
 		if (!ecs::isEntityDisabled(entity))
@@ -76,7 +78,6 @@ void showSceneTab()
 
 		ImGui::PushFont(fontMono);
 
-
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 		const ImVec2 textSize = ImGui::CalcTextSize(icon.c_str());
@@ -84,14 +85,13 @@ void showSceneTab()
 		drawList->AddText(
 			fontMono,
 			18,
-			ImVec2(
-				p.x + (iconSize - textSize.x) * 0.5f,
-				p.y + (iconSize - textSize.y) * 0.5f),
+			ImVec2(p.x + (iconSize - textSize.x) * 0.5f,
+			       p.y + (iconSize - textSize.y) * 0.5f),
 			ImGui::GetColorU32(ImGuiCol_Text),
-			icon.c_str());
+			icon.c_str()
+		);
 
 		ImGui::PopFont();
-
 	}
 	ImGui::EndTabItem();
 }

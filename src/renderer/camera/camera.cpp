@@ -230,9 +230,9 @@ void updateCameraProjMatrix(const CameraId Id)
 }
 
 /// @copydoc
-void setCameraFirstTime(CameraId Id)
+void setCameraFirstTime(const CameraId Id)
 {
 	CLZ_ASSERT(Id < NumCameras, "Invalid CameraId");
-	FirstTime[Id] = !FirstTime[Id];
+	FirstTime[Id] = true;
 }
 } // namespace clz::renderer

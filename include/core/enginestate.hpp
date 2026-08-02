@@ -8,11 +8,12 @@
 
 #include "assert.hpp"
 #include "logs.hpp"
-#include "window/inputmanager.hpp"
 #include <string>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/editor.hpp"
+#include "window/inputmanager.hpp"
+#include "window/mouse.hpp"
 #endif
 
 namespace clz::state
@@ -79,9 +80,14 @@ inline void setEngineState(const EngineState state, const std::string_view calle
 	}
 }
 
+/**
+ * @brief Checks per frame if engine state has to be updated or not
+ * Currently only used to check whether to shift bw editor and game mode
+ */
 inline void updateEngineState()
 {
 #ifdef CLZ_ENABLE_EDITOR
+	///< @brief Hit Ctrl+E in game mode, to exit to edit mode
 	if (g_engineState == EngineState::Game)
 	{
 		if (window::isKeyPressed(clz::input::Key::LeftControl) &&
@@ -89,14 +95,17 @@ inline void updateEngineState()
 		{
 			g_engineState = EngineState::Editor;
 			editor::prepareEditor();
+			window::enableCursor();
 		}
 	}
+	///< @brief Hit Ctrl+G in edit mode, to enter game mode
 	if (g_engineState == EngineState::Editor)
 	{
 		if (window::isKeyPressed(clz::input::Key::LeftControl) &&
 		    window::isKeyPressed(clz::input::Key::G))
 		{
 			g_engineState = EngineState::Game;
+			window::disableCursor();
 		}
 	}
 #endif

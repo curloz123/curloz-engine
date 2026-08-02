@@ -57,31 +57,10 @@ void drawSceneView()
 
 namespace clz::editor
 {
-/**
- * @brief Draws the actual viewport tab and handles interaction.
- *
- * This function:
- * - Retrieves the available area from ImGui.
- * - Resizes the offscreen target if the area changed and the mouse is released.
- * - Manages window focus and right‑click camera control.
- * - Displays the offscreen image as an ImGui texture.
- * - Calls the entity transform gizmo on top of the viewport.
- *
- * @par Decision: Resize only on mouse release
- *      To avoid constant resizing during dragging, the offscreen target
- *      is resized only when the left mouse button is released. This
- *      reduces performance overhead and flickering.
- *
- * @par Decision: Right‑click focus to control camera
- *      When the viewport is focused and the right mouse button is pressed,
- *      the cursor is disabled and the camera is updated. This allows
- *      the user to orbit/zoom the scene view. When right‑click is released,
- *      the cursor is re‑enabled and the camera’s first‑time flag is reset.
- *
- * @par Decision: Gizmo is drawn after the image
- *      The gizmo is overlaid on top of the viewport image, using the
- *      same rectangle. This ensures correct hit‑testing and visual layering.
- */
+
+/// @brief Draws the main viewport
+/// @note Updates camera only on focus, but mouse's right-click is checked
+/// every frame in order to avoid camera-snap
 void drawMainViewPort()
 {
 	const ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -108,31 +87,32 @@ void drawMainViewPort()
 		ImGui::SetWindowFocus(ImGui::GetCurrentWindow()->Name);
 	}
 	*/
+
+	static bool rightClickThisFrame = false;
+	static bool rightClickLastFrame = false;
+
+	if (window::isMousePressed(clz::input::Mouse::MouseRight))
+		rightClickThisFrame = true;
+	else
+		rightClickThisFrame = false;
+
+	if (rightClickThisFrame && !rightClickLastFrame)
+	{
+		renderer::setCameraFirstTime(mainViewportImage.cameraId);
+		window::disableCursor();
+	}
+	else if (!rightClickThisFrame && rightClickLastFrame)
+	{
+		renderer::setCameraFirstTime(mainViewportImage.cameraId);
+		window::enableCursor();
+	}
 	if (ImGui::IsWindowFocused())
 	{
-		static bool rightClickThisFrame = false;
-		static bool rightClickLastFrame = false;
-
-		if (window::isMousePressed(clz::input::Mouse::MouseRight))
-			rightClickThisFrame = true;
-		else
-			rightClickThisFrame = false;
-
 		if (rightClickThisFrame)
 		{
 			const auto Id = mainViewportImage.cameraId;
 			renderer::useCamera(Id);
 			renderer::updateCamera(Id);
-		}
-
-		if (rightClickThisFrame && !rightClickLastFrame)
-		{
-			window::disableCursor();
-		}
-		else if (!rightClickThisFrame && rightClickLastFrame)
-		{
-			window::enableCursor();
-			renderer::setCameraFirstTime(mainViewportImage.cameraId);
 		}
 
 		rightClickLastFrame = rightClickThisFrame;

@@ -42,8 +42,8 @@ void lastMainDraw(VkCommandBuffer commandBuffer)
 	}
 	else
 #endif
-	/// --- This part is an if-else block when editor is enabled
-	/// --- In main binary, its the only part
+	/// --- This part is an if-else block when editor is enabled ---
+	/// --- In main binary, its the only part ---
 	{
 		/// Rendering camera is handled by renderer itself
 		useCamera(r_cameraId);
@@ -52,8 +52,8 @@ void lastMainDraw(VkCommandBuffer commandBuffer)
 		view = getCameraViewMatrix(activeCameraId);
 		projection = getCameraProjMatrix(
 			activeCameraId,
-			r_swapchainContext.extent.width,
-			r_swapchainContext.extent.height
+			(float)r_swapchainContext.extent.width,
+			(float)r_swapchainContext.extent.height
 		);
 	}
 #ifdef CLZ_ENABLE_EDITOR

@@ -95,7 +95,7 @@ bool init()
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//io.ConfigFlags |= ImGuiBackendFlags_RendererHasTextures;
+	// io.ConfigFlags |= ImGuiBackendFlags_RendererHasTextures;
 
 	/// Colors
 	setTheme();
@@ -112,16 +112,28 @@ bool init()
 
 	// Load Nerd Fonts as independent fonts (MergeMode = false by default)
 	fontSans = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f, &config_default);
+		"assets/fonts/NotoSansNerdFont-Black.ttf",
+		18.0f,
+		&config_default
+	);
 
 	fontSansBold = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/NotoSansNerdFont-Bold.ttf", 20.0f, &config_default);
+		"assets/fonts/NotoSansNerdFont-Bold.ttf",
+		20.0f,
+		&config_default
+	);
 
 	fontMono = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f, &config_default);
+		"assets/fonts/JetBrainsMonoNerdFont-Regular.ttf",
+		17.0f,
+		&config_default
+	);
 
 	fontMonoBold = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 19.0f, &config_default);
+		"assets/fonts/JetBrainsMonoNerdFont-Bold.ttf",
+		19.0f,
+		&config_default
+	);
 
 	if (!fontSans || !fontSansBold || !fontMono || !fontMonoBold)
 	{
