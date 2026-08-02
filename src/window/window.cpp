@@ -1,5 +1,5 @@
 /**
- * @file window.cpp
+* @file window.cpp
  * @author curl0z
  * @brief Implementation of the window public header
  */
