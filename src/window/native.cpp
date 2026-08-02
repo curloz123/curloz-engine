@@ -17,8 +17,31 @@ bool initializeGLFW(GLFWwindow** pWindow)
 	const int height = clz::config::getInt("window", "height", 600);
 	if (width < 0 || height < 0)
 	{
-		log::error("Window system passed invalid window dimensions");
-		return false;
+		const int width = clz::config::getInt("window", "width", 800);
+		const int height = clz::config::getInt("window", "height", 600);
+		if (width < 0 || height < 0)
+		{
+			log::error("Window system passed invalid window dimensions");
+			return false;
+		}
+
+		if (!glfwInit())
+		{
+			log::error("Could not initialize GLFW");
+			return false;
+		}
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		*pWindow = glfwCreateWindow(width, height, clz::config::getAppName().c_str(), nullptr, nullptr);
+		if (!(*pWindow))
+		{
+			log::error("Could not create GLFW window");
+			return false;
+		}
+		glfwSetFramebufferSizeCallback(*pWindow, hintRendererAboutResize);
+
+
+		return true;
 	}
 
 	if (!glfwInit())
