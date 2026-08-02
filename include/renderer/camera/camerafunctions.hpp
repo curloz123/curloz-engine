@@ -6,43 +6,35 @@
 #pragma once
 
 #include "cameradata.hpp"
-#include <string>
 
-namespace clz::renderer::camera
+/// --- camera functions ---
+namespace clz::renderer
 {
-	/**
-	 * @brief Initialize/load a camera
-	 * @param name camera name
-	 * @param id camera ID
-	 * @return true on success, false otherwise and logs an error
-	 */
-	bool loadCamera(const std::string& name, const CameraID id);
+/**
+ * @brief Processes keyboard input for any camera actions
+ * @param id camera ID
+ */
+void processKeyBoardInput(CameraId id);
 
-	/**
-	 * @brief Processes keyboard input for any camera actions
-	 * @param id camera ID
-	 */
-	void processKeyBoardInput(const CameraID id);
+/**
+ * @brief Updates pitch/yaw for camera @p id from raw cursor position.
+ * @param id Camera ID
+ * @param xPos Pointer's x-coordinate in screen.
+ * @param yPos Pointer's y-coordinate in screen.
+ */
+void processMouseInput(CameraId id, float xPos, float yPos);
 
-	/**
-	 * @brief Computer forward and right vectors for camera @p id
-	 * @param id camera id
-	 */
-	void updateCameraVectors(const CameraID id);
+/**
+ * @brief Adjusts FOV for camera @p id from scroll input, clamped to [1, 89] degrees.
+ * @param id Camera ID
+ * @param yOffset cursor scroll offset
+ */
+void processMouseScroll(CameraId id, float yOffset);
 
-	/**
-	 * @brief Updates pitch/yaw for camera @p id from raw cursor position.
-	 * @param id Camera ID
-	 * @param xPos Pointer's x-coordinate in screen.
-	 * @param yPos Pointer's y-coordinate in screen.
-	 */
-	void processMouseInput(const CameraID id, const float xPos, const float yPos);
+/**
+ * @brief Computer forward and right vectors for camera @p id
+ * @param id camera id
+ */
+void updateCameraVectors(CameraId id);
 
-	/**
-	 * @brief Adjusts FOV for camera @p id from scroll input, clamped to [1, 89] degrees.
-	 * @param id Camera ID
-	 * @param yOffset cursor scroll offset
-	 */
-	void processMouseScroll(const CameraID id, const float yOffset);
-
-} // namespace clz::renderer::camera
+} // namespace clz::renderer

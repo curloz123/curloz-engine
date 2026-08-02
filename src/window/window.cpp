@@ -13,53 +13,69 @@
 
 namespace clz::window
 {
-	bool init()
+/// @copydoc
+bool init()
+{
+	// Initialize window
+	if (!initializeGLFW(&w_window))
 	{
-		// Initialize window
-		if (!initializeGLFW(&w_window))
-		{
-			log::error("Could not create window");
-			return false;
-		}
+		log::error("Could not create window");
+		return false;
+	}
 
-		// Initialize resizing
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	// Initialize resizing
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		// Initialize all callback functions
-		glfwSetFramebufferSizeCallback(w_window, hintRendererAboutResize);
-		glfwSetCursorPosCallback(w_window, cursorCallback);
-		glfwSetScrollCallback(w_window, scrollCallback);
+	// Initialize all callback functions
+	glfwSetFramebufferSizeCallback(w_window, hintRendererAboutResize);
+	glfwSetCursorPosCallback(w_window, cursorCallback);
+	glfwSetScrollCallback(w_window, scrollCallback);
 
-		// Cursor's initial state
+	// Cursor's initial state
 #ifdef CLZ_ENABLE_EDITOR
-		enableCursor();
+	enableCursor();
 #else
-		disableCursor();
+	disableCursor();
 #endif
 
-		clz::log::info("Initialized window system");
-		return true;
-	}
+	clz::log::info("Initialized window system");
+	return true;
+}
 
-	void shutdown()
-	{
-		shutdownGLFW(&w_window);
-	}
+/// @copydoc
+void shutdown()
+{
+	shutdownGLFW(&w_window);
+}
 
-	void update()
-	{
-		pollEventsGLFW(&w_window);
-	}
+/// @copydoc
+void update()
+{
+	pollEventsGLFW(&w_window);
+}
 
-	// Other subsystems helper functions
-	void getFramebufferExtents(int* width, int* height)
-	{
-		glfwGetFramebufferSize(w_window, width, height);
-	}
+/// @copydoc
+void getFramebufferExtents(int* width, int* height)
+{
+	glfwGetFramebufferSize(w_window, width, height);
+}
 
-	GLFWwindow* getWindowHandle()
-	{
-		return w_window;
-	}
+/// @copydoc
+GLFWwindow* getWindowHandle()
+{
+	return w_window;
+}
+
+/// @copydoc
+void minimizeWindow()
+{
+	glfwIconifyWindow(w_window);
+}
+
+/// @copydoc
+void maximizeWindow()
+{
+	glfwMaximizeWindow(w_window);
+}
 
 } // namespace clz::window

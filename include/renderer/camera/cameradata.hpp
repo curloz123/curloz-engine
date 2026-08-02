@@ -5,67 +5,68 @@
  */
 #pragma once
 
+#include "math/mat4x4.hpp"
 #include "math/vec3.hpp"
-#include <array>
 #include <cstdint>
+#include <vector>
 
-namespace clz::renderer::camera
+/// --- data ---
+namespace clz::renderer
 {
-	/// @brief Index type used to select a camera slot.
-	using CameraID = uint8_t;
-	/// @brief Total number of camera slots (game + editor).
-	constexpr uint8_t NumCameras = 2;
+/// @brief Index type used to select a camera slot.
+using CameraId = uint8_t;
 
-	/// @brief Index of the gameplay camera.
-	constexpr CameraID GameCam = 0;
-	/// @brief Index of the editor/free-fly camera.
-	constexpr CameraID EditorCam = 1;
+/// @brief Null camera Id
+inline constexpr CameraId NULL_CAMERA = std::numeric_limits<CameraId>::max();
 
-	/// @brief Shared world-space up reference used for basis derivation.
-	const auto WorldUp = math::vec3(0.0f, 1.0f, 0.0f);
+/// @brief Number of cameras
+inline uint8_t NumCameras = 0;
 
-	/// @brief Near and Far cap values of camera
-	inline std::array<float, NumCameras> Near = {0.1f, 0.1f};
-	inline std::array<float, NumCameras> Far = {100.0f, 100.0f};
+/// @brief last active camera
+inline CameraId LastActiveCamera;
 
-	/// @brief Per-camera max movement speed.
-	inline std::array<float, NumCameras> MaxVelocity = {5.0f, 8.0f};
-	/// @brief Per-camera mouse-look sensitivity.
-	inline std::array<float, NumCameras> Sensitivity = {0.4f, 0.4f};
-	/// @brief Per-camera movement acceleration/friction rate.
-	inline std::array<float, NumCameras> Acceleration = {15.0f, 20.0f};
+/// @brief Shared world-space up reference used for basis derivation.
+inline const math::vec3 WorldUp = math::vec3(0.0f, 1.0f, 0.0f);
 
-	/// @brief Per-camera pitch, in degrees.
-	inline std::array<float, NumCameras> Pitch = {0.0f, 0.0f};
-	/// @brief Per-camera yaw, in degrees.
-	inline std::array<float, NumCameras> Yaw = {-90.0f, -90.0f};
+/// @brief Near and Far cap values of camera
+inline std::vector<float> Near;
+inline std::vector<float> Far;
 
-	/// @brief Per-camera world-space position.
-	inline std::array<math::vec3, NumCameras> Position = {math::vec3(0.0f, 0.0f, 0.0f), math::vec3(0.0f, 0.0f, 0.0f)};
-	/// @brief Per-camera forward vector, derived from pitch/yaw.
-	inline std::array<math::vec3, NumCameras> localFront = {math::vec3(0.0f, 0.0f, -1.0f), math::vec3(0.0f, 0.0f, -1.0f)};
-	/// @brief Per-camera right vector, derived from forward x WorldUp.
-	inline std::array<math::vec3, NumCameras> localRight = {math::vec3(1.0f, 0.0f, 0.0f), math::vec3(1.0f, 0.0f, 0.0f)};
+/// @brief Per-camera max movement speed.
+inline std::vector<float> MaxVelocity;
+/// @brief Per-camera current velocity vector.
+inline std::vector<math::vec3> Velocity;
+/// @brief Per-camera sensitivity.
+inline std::vector<float> Sensitivity;
+/// @brief Per-camera acceleration/friction rate.
+inline std::vector<float> Acceleration;
 
-	/// @brief Per-camera field of view, in degrees.
-	inline std::array<float, NumCameras> Fov = {60.0f, 60.0f};
+/// @brief Per-camera pitch, in degrees.
+inline std::vector<float> Pitch;
+/// @brief Per-camera yaw, in degrees.
+inline std::vector<float> Yaw;
 
-	/// @brief Hints that projection matrix should be recalculated
-	inline std::array<bool, NumCameras> ProjMatrixChanged = {true, true};
+/// @brief Per-camera field of view, in degrees.
+inline std::vector<float> Fov;
 
-	/// @brief Per-camera current velocity vector.
-	inline std::array<math::vec3, NumCameras> Velocity = {math::vec3(0.0f), math::vec3(0.0f)};
+/// @brief Per-camera world-space position.
+inline std::vector<math::vec3> Position;
+/// @brief Per-camera forward vector, derived from pitch/yaw.
+inline std::vector<math::vec3> LocalFront;
+/// @brief Per-camera right vector, derived from forward x WorldUp.
+inline std::vector<math::vec3> LocalRight;
 
-	/// @brief Per-camera last recorded cursor X, for mouse delta calc.
-	inline std::array<float, NumCameras> LastX = {0.0f, 0.0f};
+/// @brief Cached projection matrix
+inline std::vector<math::mat4> ProjMatrix;
+/// @brief Hints that projection matrix should be recalculated
+inline std::vector<bool> ChangeProjMatrix;
 
-	/// @brief Per-camera last recorded cursor Y, for mouse delta calc.
-	inline std::array<float, NumCameras> LastY = {0.0f, 0.0f};
+/// @brief Per-camera last recorded cursor X, for mouse delta calc.
+inline std::vector<float> LastX;
+/// @brief Per-camera last recorded cursor Y, for mouse delta calc.
+inline std::vector<float> LastY;
 
-	/// @brief Per-camera flag to avoid a mouse-delta snap on first use.
-	inline std::array<bool, NumCameras> FirstTime = {true, true};
+/// @brief Per-camera flag to avoid a mouse-delta snap on first use.
+inline std::vector<bool> FirstTime;
 
-	/// @brief Currently active camera slot.
-	inline CameraID activeCamera = GameCam;
-
-} // namespace clz::renderer::camera
+} // namespace clz::renderer

@@ -14,46 +14,46 @@
 
 namespace clz::renderer
 {
-	bool preparePipelineData()
+bool preparePipelineData()
+{
+	// 1. Uniform buffers + their descriptor set layout(s).
+	if (!createUniformBuffers())
 	{
-		// 1. Uniform buffers + their descriptor set layout(s).
-		if (!createUniformBuffers())
-		{
-			clz::log::error("Could not create uniform buffers!");
-			return false;
-		}
-
-		// 2. Combined image sampler's descriptor set layout.
-		if (!createCombinedSamplersLayout())
-		{
-			clz::log::error("Could not create combined sampler layout!");
-			return false;
-		}
-
-		// 3. Pool + actual descriptor sets, built from the layouts above.
-		//    Camera UBO bindings are written here; sampler bindings are
-		//    deferred to updatePipelineData() since no textures exist yet.
-		if (!createDescriptors())
-		{
-			clz::log::error("Could not create descriptors!");
-			return false;
-		}
-
-		return true;
+		clz::log::error("Could not create uniform buffers!");
+		return false;
 	}
 
-	void updatePipelineData()
+	// 2. Combined image sampler's descriptor set layout.
+	if (!createCombinedSamplersLayout())
 	{
-		// Scene textures now exist; write the sampler descriptor bindings.
-		updateSamplersDataForDescriptorSets(samplerDescriptorSets);
+		clz::log::error("Could not create combined sampler layout!");
+		return false;
 	}
 
-	void destroyPipelineData()
+	// 3. Pool + actual descriptor sets, built from the layouts above.
+	//    Camera UBO bindings are written here; sampler bindings are
+	//    deferred to updatePipelineData() since no textures exist yet.
+	if (!createDescriptors())
 	{
-		// Reverse order: descriptor sets/pool first (they reference the
-		// layouts and the buffer), then layouts, then the buffer memory itself.
-		destroyDescriptors();
-		destroyCombinedImageSamplersLayout();
-		destroyUniformBuffers();
+		clz::log::error("Could not create descriptors!");
+		return false;
 	}
+
+	return true;
+}
+
+void updatePipelineData()
+{
+	// Scene textures now exist; write the sampler descriptor bindings.
+	updateSamplersDataForDescriptorSets(samplerDescriptorSets);
+}
+
+void destroyPipelineData()
+{
+	// Reverse order: descriptor sets/pool first (they reference the
+	// layouts and the buffer), then layouts, then the buffer memory itself.
+	destroyDescriptors();
+	destroyCombinedImageSamplersLayout();
+	destroyUniformBuffers();
+}
 } // namespace clz::renderer

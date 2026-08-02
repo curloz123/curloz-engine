@@ -12,11 +12,11 @@
 
 namespace clz::window
 {
-	/// GLFW window handle
-	inline GLFWwindow* w_window;
+/// GLFW window handle
+inline GLFWwindow* w_window;
 
-	/// Cursor screen position
-	inline math::vec2 w_cursorPosition;
-	/// Cursor Scroll offset
-	inline float w_scrollOffset;
+/// Cursor screen position
+inline math::vec2 w_cursorPosition;
+/// Cursor Scroll offset
+inline float w_scrollOffset;
 } // namespace clz::window

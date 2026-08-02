@@ -8,6 +8,6 @@
 
 namespace clz::editor
 {
-	/// @brief Renders the Model component section in the inspector, if present.
-	void showModelComponentHeader();
+/// @brief Renders the Model component section in the inspector, if present.
+void showModelComponentHeader();
 } // namespace clz::editor

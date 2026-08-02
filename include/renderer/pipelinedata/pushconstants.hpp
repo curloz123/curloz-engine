@@ -6,9 +6,9 @@
 namespace clz::renderer
 {
 
-	struct ModelDataPC
-	{
-		math::mat4 modelMatrix;
-		TextureID textureID;
-	};
+struct ModelDataPC
+{
+	math::mat4 modelMatrix;
+	TextureID textureID;
+};
 } // namespace clz::renderer

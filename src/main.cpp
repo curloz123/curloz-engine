@@ -16,6 +16,7 @@
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "core/time.hpp"
+#include "entity/entity.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
@@ -53,6 +54,9 @@ int main()
 	// Initialize audio
 	clz::audio::init();
 
+	// Initialize entity system
+	clz::ecs::init();
+
 	// Initialize Scene
 	clz::scene::loadScene();
 	if (clz::log::errorOccurred()) [[unlikely]]
@@ -62,6 +66,7 @@ int main()
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
 		clz::time::computeTime();
+		clz::state::updateEngineState();
 		clz::window::update();
 		clz::physics::update();
 		clz::renderer::update();
@@ -69,6 +74,7 @@ int main()
 
 	// Shut down
 	clz::scene::saveScene();
+	clz::ecs::shutdown();
 	clz::audio::shutdown();
 #ifdef CLZ_ENABLE_EDITOR
 	clz::editor::shutdown();

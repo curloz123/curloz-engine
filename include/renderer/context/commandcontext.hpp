@@ -11,13 +11,13 @@
 
 namespace clz::renderer
 {
-	/**
-	 * @brief Initializes command pool and buffers
-	 */
-	bool initCommandContext();
+/**
+ * @brief Initializes command pool and buffers
+ */
+bool initCommandContext();
 
-	/**
-	 * @brief Destroys command pool and buffer
-	 */
-	void destroyCommandContext();
+/**
+ * @brief Destroys command pool and buffer
+ */
+void destroyCommandContext();
 } // namespace clz::renderer

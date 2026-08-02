@@ -14,54 +14,83 @@
 #include "../../include/editor_types.hpp"
 #include "../../include/inspector/modelcomponent.hpp"
 #include "../../include/inspector/transformcomponent.hpp"
+#include "../../include/scenetable.hpp"
 #include "../../include/timemachine.hpp"
+#include "entity/componentmanager.hpp"
 #include "include/inspector/rigidbodycomponent.hpp"
-#include "scene/entity/components.hpp"
+#include "physics/physicscomponent.hpp"
+#include "renderer/rendercomponent.hpp"
 #include <imgui.h>
 
 namespace clz::editor
 {
-	void showComponentSpecificWindows();
+void showComponentSpecificWindows();
 }
 namespace clz::editor
 {
-	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-	void showInspector(VkCommandBuffer commandBuffer)
+/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
+void showInspector(VkCommandBuffer commandBuffer)
+{
+	if (!ImGui::Begin("Inspector"))
 	{
-		ImGui::Begin("Inspector");
-		if (currentSelectedEntity.has_value())
+		ImGui::End();
+		return;
+	}
+
+	if (currentSelectedEntity.has_value())
+	{
+		ImGui::PushFont(fontMonoBold, 20);
+		ImGui::Text(
+			"Selected Entity: %s",
+			ecs::getEntityName(currentSelectedEntity.value()).c_str()
+		);
+		ImGui::PopFont();
+
+		ImGui::Separator();
+
+		ImGui::PushFont(fontMono, 18);
+		ImGui::Text("Entity is currently: ");
+
+		ImGui::SameLine();
+		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
 		{
-			ImGui::PushFont(fontMonoBold);
-			ImGui::Text("Selected Entity: %s", ecs::getEntityName(currentSelectedEntity.value()).c_str());
-			ImGui::Separator();
-			ImGui::PopFont();
-
-			// Every entity has transform component
-			showTransformComponentHeader();
-			ImGui::Separator();
-
-			if (ecs::hasComponent<ecs::ModelComponent>(currentSelectedEntity.value()))
-				showModelComponentHeader();
-			ImGui::Separator();
-
-			if (ecs::hasComponent<ecs::BodyComponent>(currentSelectedEntity.value()))
-				showRigidBodyHeader();
-			ImGui::Separator();
+			ImGui::Text("Enabled");
 		}
 		else
 		{
-			ImGui::TextDisabled("No entity selected");
+			ImGui::Text("Disabled");
 		}
-		ImGui::End();
+		ImGui::PopFont();
 
-		showComponentSpecificWindows();
+		ImGui::Separator();
 
-		// Check if undo or redo has to be performed
-		timeTravel();
+		// Every entity has transform component
+		showTransformComponentHeader();
+		ImGui::Separator();
+
+		if (ecs::hasComponent<renderer::ModelComponent>(
+			    currentSelectedEntity.value()
+		    ))
+			showModelComponentHeader();
+		ImGui::Separator();
+
+		if (ecs::hasComponent<physics::RigidBodyComponent>(
+			    currentSelectedEntity.value()
+		    ))
+			showRigidBodyHeader();
+		ImGui::Separator();
 	}
-
-	void showComponentSpecificWindows()
+	else
 	{
-
+		ImGui::TextDisabled("No entity selected");
 	}
+
+	ImGui::End();
+
+	showComponentSpecificWindows();
+}
+
+void showComponentSpecificWindows()
+{
+}
 } // namespace clz::editor

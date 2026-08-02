@@ -12,22 +12,27 @@
 
 namespace clz::renderer
 {
-	inline std::optional<VkDeviceSize> UBOOffsetAlignment;
+inline std::optional<VkDeviceSize> UBOOffsetAlignment;
 
-	inline VkDeviceSize getNextUBOOffsetAlignment(const VkDeviceSize prvOffset)
+inline VkDeviceSize getNextUBOOffsetAlignment(const VkDeviceSize prvOffset)
+{
+	if (!UBOOffsetAlignment.has_value())
 	{
-		if (!UBOOffsetAlignment.has_value())
-		{
-			VkPhysicalDeviceProperties properties;
-			vkGetPhysicalDeviceProperties(clz::renderer::r_deviceContext.physicalDevice, &properties);
-			UBOOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
-		}
-
-		return (UBOOffsetAlignment.value() + prvOffset - 1) & ~(UBOOffsetAlignment.value() - 1);
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(
+			clz::renderer::r_deviceContext.physicalDevice,
+			&properties
+		);
+		UBOOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
 	}
 
-	inline VkDeviceSize nextImageOffset(const VkDeviceSize imageSize, const VkDeviceSize nextImageAlignment)
-	{
-		return (imageSize + nextImageAlignment - 1) & ~(nextImageAlignment - 1);
-	}
+	return (UBOOffsetAlignment.value() + prvOffset - 1) &
+	       ~(UBOOffsetAlignment.value() - 1);
+}
+
+inline VkDeviceSize
+nextImageOffset(const VkDeviceSize imageSize, const VkDeviceSize nextImageAlignment)
+{
+	return (imageSize + nextImageAlignment - 1) & ~(nextImageAlignment - 1);
+}
 } // namespace clz::renderer

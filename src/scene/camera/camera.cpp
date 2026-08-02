@@ -1,71 +1,106 @@
 /**
  * @brief camera.cpp
  * @author curl0z
- * @brief Contains implementation of scene camera
- * @warning not to be confused with renderer's camera
+ * @brief Contains scene camera loading function
+ * @warning not to be confused with renderer's camera.cpp
  */
 
 #include "scene/camera/camera.hpp"
 #include "core/logs.hpp"
 #include "renderer/camera/camera.hpp"
+#include "renderer/camera/cameradata.hpp"
+#include "renderer/vk_types.hpp"
 
-using namespace clz::renderer::camera;
+#ifdef CLZ_ENABLE_EDITOR
+#include "include/offscreen/offscreentarget.hpp"
+#include "include/sceneview.hpp"
+#endif
 
 namespace clz::scene
 {
-	bool loadCameras(const nlohmann::json& cameraJson)
+/// @copydoc
+bool loadCameras(const nlohmann::json& cameraJson)
+{
+	/// --- 1. load cameras that are saved in json ---
+	/// right now, only game camera is saved
+	renderer::CameraDef gameCameraDef{};
+	for (const auto& cam : cameraJson)
 	{
-		for (const auto& cam : cameraJson)
+		const std::string name = cam["name"].get<std::string>();
+		if (name == "game")
 		{
-			const auto id = static_cast<CameraID>(cam["id"]);
+			gameCameraDef = {
+				.fov = cam["fov"].get<float>(),
+				.nearPlane = cam["near"].get<float>(),
+				.farPlane = cam["far"].get<float>(),
+				.maxVelocity = cam["maxvelocity"].get<float>(),
+				.sensitivity = cam["sensitivity"].get<float>(),
+				.acceleration = cam["acceleration"].get<float>(),
+				.pitch = cam["pitch"].get<float>(),
+				.yaw = cam["yaw"].get<float>(),
+				.position = math::vec3(
+					cam["position"][0].get<float>(),
+					cam["position"][1].get<float>(),
+					cam["position"][2].get<float>()
+				),
+				.localFront = math::vec3(
+					cam["localfront"][0].get<float>(),
+					cam["localfront"][1].get<float>(),
+					cam["localfront"][2].get<float>()
+				),
+			};
 
-			MaxVelocity[id] = cam["maxvelocity"].get<float>();
-			Sensitivity[id] = cam["sensitivity"].get<float>();
-			Acceleration[id] = cam["acceleration"].get<float>();
-			Pitch[id] = cam["pitch"].get<float>();
-			Yaw[id] = cam["yaw"].get<float>();
-			Fov[id] = cam["fov"].get<float>();
-			Near[id] = cam["near"].get<float>();
-			Far[id] = cam["far"].get<float>();
-
-			const auto& pos = cam["position"];
-			Position[id] = math::vec3(pos[0].get<float>(), pos[1].get<float>(), pos[2].get<float>());
-
-			const auto& front = cam["localfront"];
-			auto jFront = math::vec3(front[0].get<float>(), front[1].get<float>(), front[2].get<float>());
-			localFront[id] = math::normalize(jFront);
-
-			localRight[id] = math::normalize(math::cross(localFront[id], WorldUp));
-		}
-
-		clz::log::info("Loaded cameras");
-		return true;
-	}
-
-	void saveCameras(nlohmann::json& sceneFile)
-	{
-		sceneFile["camera"] = nlohmann::json::array();
-
-		for (int id = 0; id < NumCameras; ++id)
-		{
-			nlohmann::json cam;
-			cam["position"][0] = Position[id].x;
-			cam["position"][1] = Position[id].y;
-			cam["position"][2] = Position[id].z;
-			cam["localfront"][0] = localFront[id].x;
-			cam["localfront"][1] = localFront[id].y;
-			cam["localfront"][2] = localFront[id].z;
-			cam["id"] = id;
-			cam["maxvelocity"] = MaxVelocity[id];
-			cam["sensitivity"] = Sensitivity[id];
-			cam["acceleration"] = Acceleration[id];
-			cam["pitch"] = Pitch[id];
-			cam["yaw"] = Yaw[id];
-			cam["fov"] = Fov[id];
-			cam["near"] = Near[id];
-			cam["far"] = Far[id];
-
-			sceneFile["camera"].push_back(cam);
+			renderer::r_cameraId = renderer::createCamera(gameCameraDef);
+			clz::log::info("loaded game camera");
 		}
 	}
+
+#ifdef CLZ_ENABLE_EDITOR
+	/// --- 2. Load editor camera ---
+
+	/// Editor starts same as game camera
+	renderer::CameraDef editorCameraDef = gameCameraDef;
+	editorCameraDef.acceleration = 32768.0f;
+	editor::mainViewportImage.cameraId = renderer::createCamera(editorCameraDef);
+
+	/// --- 3. Load rigidbody shape editor camera ---
+	renderer::CameraDef bodyCameraDef = {};
+	bodyCameraDef.position = math::vec3(0.0f, 0.0f, 1.0f);
+	bodyCameraDef.localFront = math::vec3(0.0f, 0.0f, -1.0f);
+	bodyCameraDef.yaw = -90.0f;
+	bodyCameraDef.pitch = 0.0f;
+	editor::physicsBodyShapeImage.cameraId = renderer::createCamera(bodyCameraDef);
+
+#endif
+
+	clz::log::info("Loaded cameras");
+	return true;
+}
+
+void saveCameras(nlohmann::json& sceneFile)
+{
+	nlohmann::json cam;
+
+	/// only save game camera
+	const auto id = renderer::r_cameraId;
+	cam["maxvelocity"] = renderer::MaxVelocity[id];
+	cam["sensitivity"] = renderer::Sensitivity[id];
+	cam["acceleration"] = renderer::Acceleration[id];
+	cam["pitch"] = renderer::Pitch[id];
+	cam["yaw"] = renderer::Yaw[id];
+	cam["fov"] = renderer::Fov[id];
+	cam["near"] = renderer::Near[id];
+	cam["far"] = renderer::Far[id];
+	cam["position"][0] = renderer::Position[id].x;
+	cam["position"][1] = renderer::Position[id].y;
+	cam["position"][2] = renderer::Position[id].z;
+	cam["localfront"][0] = renderer::LocalFront[id].x;
+	cam["localfront"][1] = renderer::LocalFront[id].y;
+	cam["localfront"][2] = renderer::LocalFront[id].z;
+	cam["name"] = "game";
+
+	/// create the camera array and push the camera data
+	sceneFile["camera"] = nlohmann::json::array();
+	sceneFile["camera"].push_back(cam);
+}
 } // namespace clz::scene
