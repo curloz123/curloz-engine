@@ -29,43 +29,69 @@ void showSceneTab()
 		if (ecs::isMarkedForDeletion(entity))
 			continue;
 
-		ImGui::PushID(ecs::getEntityName(entity).c_str());
 		ImGui::PushFont(fontSans);
 
-		const auto name = ecs::getEntityName(entity);
-		bool selected = (currentSelectedEntity == entity);
-		if (ImGui::Selectable(name.c_str(), selected))
+		const auto& name = ecs::getEntityName(entity);
+		const bool selected = (currentSelectedEntity == entity);
+
+		const float iconSize = ImGui::GetFrameHeight();
+		const float spacing = ImGui::GetStyle().ItemSpacing.x;
+
+		const float selectableWidth = ImGui::GetContentRegionAvail().x - iconSize - spacing;
+
+		if (ImGui::Selectable(name.c_str(), selected, 0, ImVec2(selectableWidth, 0)))
+		{
 			currentSelectedEntity = entity;
-
+		}
 		ImGui::PopFont();
-
 		ImGui::SameLine();
 
+		const ImVec2 p = ImGui::GetCursorScreenPos();
+
+		ImGui::InvisibleButton(
+			("##icon" + ecs::getEntityName(entity)).c_str(),
+			ImVec2(iconSize, iconSize));
+
+		std::string icon = "NULL ICON";
 		if (!ecs::isEntityDisabled(entity))
 		{
-			ImGui::PushFont(fontMono);
-			if (ImGui::Button("󰈈"))
-			{
-				ecs::disableEntity(entity);
-			}
-			ImGui::PopFont();
+			icon = "";
 
+			if (ImGui::IsItemClicked())
+				ecs::disableEntity(entity);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Disable entity");
 		}
 		else
 		{
-			ImGui::PushFont(fontMono);
-			if (ImGui::Button("󰈉"))
-			{
-				ecs::enableEntity(entity);
-			}
-			ImGui::PopFont();
+			icon = "";
 
+			if (ImGui::IsItemClicked())
+				ecs::enableEntity(entity);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Enable entity");
 		}
-		ImGui::PopID();
+
+		// Draw the icon centered.
+
+		ImGui::PushFont(fontMono);
+
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		const ImVec2 textSize = ImGui::CalcTextSize(icon.c_str());
+
+		drawList->AddText(
+			fontMono,
+			18,
+			ImVec2(
+				p.x + (iconSize - textSize.x) * 0.5f,
+				p.y + (iconSize - textSize.y) * 0.5f),
+			ImGui::GetColorU32(ImGuiCol_Text),
+			icon.c_str());
+
+		ImGui::PopFont();
+
 	}
 	ImGui::EndTabItem();
 }

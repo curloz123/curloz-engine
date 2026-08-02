@@ -39,13 +39,30 @@ void showInspector(VkCommandBuffer commandBuffer)
 
 	if (currentSelectedEntity.has_value())
 	{
-		ImGui::PushFont(fontMonoBold);
+		ImGui::PushFont(fontMonoBold, 20);
 		ImGui::Text(
 			"Selected Entity: %s",
 			ecs::getEntityName(currentSelectedEntity.value()).c_str()
 		);
-		ImGui::Separator();
 		ImGui::PopFont();
+
+		ImGui::Separator();
+
+		ImGui::PushFont(fontMono, 18);
+		ImGui::Text("Entity is currently: ");
+
+		ImGui::SameLine();
+		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
+		{
+			ImGui::Text("Enabled");
+		}
+		else
+		{
+			ImGui::Text("Disabled");
+		}
+		ImGui::PopFont();
+
+		ImGui::Separator();
 
 		// Every entity has transform component
 		showTransformComponentHeader();

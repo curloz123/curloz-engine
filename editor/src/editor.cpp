@@ -95,6 +95,7 @@ bool init()
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//io.ConfigFlags |= ImGuiBackendFlags_RendererHasTextures;
 
 	/// Colors
 	setTheme();
@@ -107,37 +108,20 @@ bool init()
 		col.z = std::pow(col.z, 2.2f);
 	}
 
-	static const ImWchar nerd_font_ranges[] = {
-		0xF000, 0xF2FF, // Main icons
-		0xF300, 0xF3FF, // Additional icons
-		0xE000, 0xE00A, // Powerline symbols
-		0               // Terminator (required)
-	    };
+	ImFontConfig config_default;
 
-	// 2. Build a combined range: Default letters + Nerd Font icons
-	ImFontGlyphRangesBuilder builder;
-	builder.AddRanges(io.Fonts->GetGlyphRangesDefault()); // Add standard text
-	builder.AddRanges(nerd_font_ranges);                  // Add icons
-
-	ImVector<ImWchar> combined_ranges;
-	builder.BuildRanges(&combined_ranges);
-
-	// 3. Load each font ONCE with the combined ranges. No MergeMode needed!
+	// Load Nerd Fonts as independent fonts (MergeMode = false by default)
 	fontSans = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f, nullptr, combined_ranges.Data
-	);
+	    "assets/fonts/NotoSansNerdFont-Black.ttf", 18.0f, &config_default);
 
 	fontSansBold = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/NotoSansNerdFont-Bold.ttf", 20.0f, nullptr, combined_ranges.Data
-	);
+	    "assets/fonts/NotoSansNerdFont-Bold.ttf", 20.0f, &config_default);
 
 	fontMono = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f, nullptr, combined_ranges.Data
-	);
+	    "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 17.0f, &config_default);
 
 	fontMonoBold = io.Fonts->AddFontFromFileTTF(
-	    "assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 19.0f, nullptr, combined_ranges.Data
-	);
+	    "assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 19.0f, &config_default);
 
 	if (!fontSans || !fontSansBold || !fontMono || !fontMonoBold)
 	{
