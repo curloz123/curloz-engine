@@ -19,18 +19,6 @@
 namespace clz::renderer
 {
 
-/**
- * @brief Stores a renderable ModelID, that can be used to draw models
- * @note Dependencies -> TransformComponent
- */
-struct ModelComponent
-{
-	ModelId modelId = NULL_MODEL;
-	ModelComponent() = default;
-	explicit ModelComponent(const ModelId modelId) : modelId(modelId)
-	{
-	}
-};
 
 /**
  * @brief This function kind of acts like a flag,
@@ -50,6 +38,19 @@ inline void flagRenderComponentsLoaded()
 	updatePipelineData();
 	log::info("Updated pipeline input, after entities have loaded");
 }
+
+/**
+ * @brief Stores a renderable ModelID, that can be used to draw models
+ * @note Dependencies -> TransformComponent
+ */
+struct ModelComponent
+{
+	ModelId modelId = NULL_MODEL;
+	ModelComponent() = default;
+	explicit ModelComponent(const ModelId modelId) : modelId(modelId)
+	{
+	}
+};
 
 /**
  *
