@@ -93,6 +93,7 @@ target_include_directories(imgui PUBLIC
         external/imgui
         external/imgui/backends
 )
+target_compile_definitions(imgui PRIVATE GLFW_INCLUDE_NONE)
 target_link_libraries(imgui PUBLIC
         Vulkan::Vulkan
         glfw

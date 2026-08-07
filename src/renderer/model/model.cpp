@@ -37,6 +37,13 @@ std::expected<ModelId, std::string> loadModel(const std::filesystem::path& fileP
 	fastgltf::Parser parser{};
 	auto data = fastgltf::GltfDataBuffer::FromPath(filePath);
 
+	if (data.error() != fastgltf::Error::None)
+	{
+		const auto error = getErrorMessage(data.error());
+		clz::log::error(error);
+		return std::unexpected(std::string(error));
+	}
+
 	// Load glTF asset with external buffers
 	fastgltf::Expected<fastgltf::Asset> assetResult = parser.loadGltf(
 		data.get(),
@@ -221,7 +228,7 @@ Node Model::loadNode(
 	if (const auto* mat = std::get_if<fastgltf::math::fmat4x4>(&node.transform))
 	{
 		// fastgltf's fmat4x4 is column-major
-		memcpy(&ourNode.localTransform, mat, sizeof(float) * 16);
+		memcpy(ourNode.localTransform.data, mat, sizeof(float) * 16);
 	}
 	else if (const auto* trs = std::get_if<fastgltf::TRS>(&node.transform))
 	{
@@ -350,30 +357,33 @@ Mesh Model::loadMesh(
 		);
 		primitiveData.indices = std::vector(indices.begin(), indices.end());
 
-		// --- Extract Material / Texture ---
-		if (!primitive.materialIndex)
-			continue;
-
-		const auto& material = asset.materials[primitive.materialIndex.value()];
-		if (!material.pbrData.baseColorTexture.has_value())
-			continue;
-
-		const auto BaseColorTextureIndex =
-			material.pbrData.baseColorTexture.value().textureIndex;
-		primitiveData.baseColorTextureIndex = BaseColorTextureIndex;
-
-		const auto& texture = asset.textures[BaseColorTextureIndex];
-		const auto& image = asset.images[texture.imageIndex.value()];
-
-		if (std::holds_alternative<fastgltf::sources::URI>(image.data))
+		// --- Extract Material / Texture (optional — a primitive is still
+		// valid geometry without one, e.g. an untextured/flat-color mesh) ---
+		if (primitive.materialIndex)
 		{
-			primitiveData.baseTexture =
-				std::get<fastgltf::sources::URI>(image.data);
-		}
-		else if (std::holds_alternative<fastgltf::sources::BufferView>(image.data))
-		{
-			primitiveData.baseTexture =
-				std::get<fastgltf::sources::BufferView>(image.data);
+			const auto& material = asset.materials[primitive.materialIndex.value()];
+			if (material.pbrData.baseColorTexture.has_value())
+			{
+				const auto BaseColorTextureIndex =
+					material.pbrData.baseColorTexture.value().textureIndex;
+				primitiveData.baseColorTextureIndex = BaseColorTextureIndex;
+
+				const auto& texture = asset.textures[BaseColorTextureIndex];
+				const auto& image = asset.images[texture.imageIndex.value()];
+
+				if (std::holds_alternative<fastgltf::sources::URI>(image.data))
+				{
+					primitiveData.baseTexture =
+						std::get<fastgltf::sources::URI>(image.data);
+				}
+				else if (std::holds_alternative<fastgltf::sources::BufferView>(
+						 image.data
+					 ))
+				{
+					primitiveData.baseTexture =
+						std::get<fastgltf::sources::BufferView>(image.data);
+				}
+			}
 		}
 
 		// Submit extracted data to GPU buffers and register textures
@@ -417,7 +427,12 @@ Primitive Model::registerPrimitive(
 			return std::make_tuple(false, r_NULL_TEXTURE);
 		};
 
-	// Handle Texture Loading (URI or BufferView)
+	// Handle Texture Loading (URI or BufferView), if this primitive has one
+	if (!primitiveData.baseTexture.has_value())
+	{
+		return ourPrimitive;
+	}
+
 	if (std::holds_alternative<fastgltf::sources::URI>(
 		    primitiveData.baseTexture.value()
 	    ))

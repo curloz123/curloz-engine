@@ -14,6 +14,7 @@
 #include <expected>
 #include <fastgltf/core.hpp>
 #include <filesystem>
+#include <limits>
 #include <vector>
 #include <vulkan/vulkan.h>
 

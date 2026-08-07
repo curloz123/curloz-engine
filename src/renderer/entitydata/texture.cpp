@@ -9,6 +9,7 @@
 #include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
 #include <filesystem>
+#include <limits>
 #include <memory.h>
 #include <stb_image.h>
 
@@ -136,6 +137,12 @@ registerTexture(const std::byte* data, const size_t size, const std::string& tex
 
 bool createTextures()
 {
+	if (r_numRegisteredTextures == 0)
+	{
+		clz::log::warn("No textures were registered");
+		return true;
+	}
+
 	// Create staging buffer
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;

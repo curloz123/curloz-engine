@@ -5,6 +5,11 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
+// GLFW's Vulkan define only skips the platform Vulkan headers, not the
+// legacy OpenGL header block further down in glfw3.h on Linux/X11. This
+// engine never uses OpenGL, so also opt out of that block explicitly
+// rather than depending on system OpenGL headers being installed.
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <vulkan/vulkan.h>

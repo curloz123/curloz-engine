@@ -8,6 +8,7 @@
 #include "math/mat4x4.hpp"
 #include "math/vec3.hpp"
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 /// --- data ---

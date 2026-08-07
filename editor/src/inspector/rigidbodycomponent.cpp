@@ -1047,6 +1047,7 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 
 		default:
 			/// handle this case
+			break;
 		}
 		renderer::drawShape(
 			commandBuffer,
