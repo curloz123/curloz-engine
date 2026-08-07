@@ -28,7 +28,7 @@ bool gizmoUsedThisFrame = false;
 
 /// @brief Transform captured at the start of the current gizmo drag, used as the undo
 /// "before" value.
-inline ecs::EditorTransformComponent previousTransform;
+static ecs::EditorTransformComponent previousTransform;
 
 /**
  * @brief Draws and handles the transform gizmo for the currently selected entity.

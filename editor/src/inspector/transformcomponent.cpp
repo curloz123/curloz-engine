@@ -21,7 +21,7 @@ namespace clz::editor
 {
 /// @brief Component state captured at the start of the current edit, used as the undo
 /// "before" value.
-ecs::EditorTransformComponent previousTransform;
+static ecs::EditorTransformComponent previousTransform;
 
 /// @brief Draws Position/Rotation/Scale sliders and records a snapshot when an edit
 /// completes.
