@@ -341,7 +341,7 @@ Every `.cpp` and `.hpp` file starts with:
 ```cpp
 /**
  * @file PhysicsSystem.hpp
- * @author Your Name
+ * @author Ravada Omkar
  * @brief Brief one line description of what this file contains
  */
 ```
