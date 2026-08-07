@@ -1,5 +1,13 @@
 #pragma once
 
+// This header only needs GLFW's key/button/action constants, not any
+// graphics API declarations. Defining GLFW_INCLUDE_NONE (only if some
+// other header hasn't already opted into a specific API, e.g. Vulkan)
+// avoids a hard dependency on OpenGL headers being installed on the
+// system, which is otherwise pulled in by glfw3.h on X11/Linux.
+#ifndef GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_NONE
+#endif
 #include <GLFW/glfw3.h>
 
 namespace clz::input

@@ -8,6 +8,9 @@
 #pragma once
 
 #include "math/vec2.hpp"
+#ifndef GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_NONE
+#endif
 #include <GLFW/glfw3.h>
 
 namespace clz::window

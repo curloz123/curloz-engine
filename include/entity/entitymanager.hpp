@@ -13,6 +13,7 @@
 #include "scene/entity/entity.hpp"
 #include <array>
 #include <cstdint>
+#include <limits>
 
 namespace clz::ecs
 {
