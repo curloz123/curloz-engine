@@ -14,6 +14,7 @@
 #include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/window.hpp"
+#include <limits>
 #include <string>
 
 namespace clz::renderer

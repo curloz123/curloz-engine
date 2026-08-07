@@ -29,6 +29,7 @@ bool createUVBuffer()
 	if (r_globalUVArray.empty())
 	{
 		clz::log::warn("No UVs were registered");
+		return true;
 	}
 	const auto& device = clz::renderer::r_deviceContext.device;
 
