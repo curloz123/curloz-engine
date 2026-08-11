@@ -1,16 +1,226 @@
+/**
+ * @file mainpipeline.frag
+ * @author curl0z
+ * @brief main pipeline's fragment shader
+ */
 #version 460
 
-// In's
+/// In's
 layout(location = 0) in vec2 inUV;
-layout(location = 1) flat in uint inTextureIndex;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inFragWPos;
+layout(location = 3) in vec3 inCameraPos;
 
-// Uniform's
+/// Uniform's
+layout(push_constant) uniform PushConstants
+{
+	mat4 model;
+
+	vec4 baseColorFactor;
+	uint baseTextureIndex;
+	float metallicFactor;
+	float roughnessFactor;
+	uint metallic_roughnessTextureIndex;
+	uint normalTextureIndex;
+} PC;
+
+// Textures
+#define NULL_TEXTURE uint(-1)
 layout(set = 1, binding = 0) uniform sampler2D textures[256];
 
-// Out's
+// light data
+layout (set = 2, binding = 0) uniform LightsDataUBO
+{
+	uint numPointLights;
+	uint numSpotLights;
+} u_LightsData;
+
+// directional light
+struct DirectionalLight
+{
+	// xyz dir, w pad
+	vec4 direction;
+
+	/// xyz is rgb, w is intensity
+	vec4 color;
+};
+layout(std140, set = 2, binding = 1) uniform  DirectionalLightUBO
+{
+	DirectionalLight dirLight;
+} u_DirLight;
+
+// point light
+struct PointLight
+{
+	vec3 position;
+	float range;
+
+	vec3 color;
+	float intensity;
+
+	/// xyz is kc, kl, kd. w is padding
+	vec4 attenuation;
+};
+layout(std430, set = 2, binding = 2) readonly buffer PointLightSSBO
+{
+	PointLight pointLights[];
+} s_PointLights;
+
+/// Out's
 layout(location = 0) out vec4 outColor;
+
+/// functions
+#define PI 3.14159265359
+vec3 calcDirLight(vec4 base, DirectionalLight light, vec3 normal);
+vec3 calcPointLight(vec4 base, PointLight light, vec3 normal);
+
+float distributionGGX(const vec3 normal, const vec3 halfway, const float roughness);
+float geometrySchlickGGX(const float NdotV, const float roughness);
+float geometrySmith(const vec3 normal, const vec3 view, const vec3 lightPos, const float roughness);
+
+vec3 fresnelSchlick(const float cosTheta, const vec3 surfaceReflection0Incidence);
 
 void main()
 {
-	outColor = texture(textures[inTextureIndex], inUV);
+	const vec3 normal = normalize(inNormal);
+	const vec3 viewDir = normalize(inCameraPos.xyz - inFragWPos);
+
+	vec4 base;
+	if (PC.baseTextureIndex == NULL_TEXTURE)
+	{
+		base = vec4(0.0);
+	}
+	else
+	{
+		base =
+			texture(textures[PC.baseTextureIndex], inUV) *
+			PC.baseColorFactor;
+	}
+
+	float metallic = 0.5;
+	float roughness = 0.6;
+
+	if (PC.metallic_roughnessTextureIndex == NULL_TEXTURE)
+	{
+		metallic = 0.0;
+		roughness = 1.0;
+	}
+	else
+	{
+		metallic =
+			texture(textures[PC.metallic_roughnessTextureIndex], inUV).b *
+			PC.metallicFactor;
+		roughness =
+			texture(textures[PC.metallic_roughnessTextureIndex], inUV).g *
+			PC.roughnessFactor;
+	}
+
+
+	vec3 L0 = vec3(0.0);
+	for (int i = 0; i < u_LightsData.numPointLights; ++i)
+	{
+		PointLight light = s_PointLights.pointLights[i];
+		float distance = max(length(light.position - inFragWPos), 0.05);
+		if (distance > light.range)
+			continue;
+
+		float attenuation = 1.0 / (
+			light.attenuation.x +
+			light.attenuation.y * distance +
+			light.attenuation.z * (distance * distance)
+		);
+		vec3 lightDir = normalize(light.position - inFragWPos);
+		vec3 halfway = normalize(viewDir + lightDir);
+		vec3 radiance = light.color * light.intensity * attenuation;
+
+		vec3 F0 = vec3(0.04);
+		F0 = mix(F0, base.rgb, metallic);
+		vec3 F = fresnelSchlick(max(dot(halfway, viewDir), 0.0), F0);
+		float NDF = distributionGGX(normal, halfway, roughness);
+		float G = geometrySmith(normal, viewDir, lightDir, roughness);
+
+		vec3 numerator = NDF * G * F;
+		float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001;
+		vec3 specular = numerator / denominator;
+
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;
+
+		float NdotL = max(dot(normal, lightDir), 0.0);
+		L0 += ((kD * base.rgb / PI) + specular) * radiance * NdotL;
+	}
+
+	vec3 ambient = vec3(0.03) * base.rgb;
+
+	vec3 color = ambient + L0;
+
+
+	outColor = vec4(color, 1.0);
+}
+
+vec3 calcDirLight(vec4 base, DirectionalLight light, vec3 normal)
+{
+	vec3 lightDir = normalize(-light.direction.xyz);
+	float diff = max(dot(normal, lightDir), 0.0);
+
+	vec3 ambient = 0.02 * vec3(base);
+	vec3 diffuse = diff * vec3(base) * light.color.xyz * light.color.w;
+
+	return ambient + diffuse;
+}
+
+vec3 calcPointLight(PointLight light, vec3 base, float metallic, float roughness, vec3 normal)
+{
+	float distance = length(light.position - inFragWPos);
+	if (distance > light.range)
+			return vec3(0.0);
+
+	float attenuation = 1.0 / (
+		light.attenuation.x +
+		light.attenuation.y * distance +
+		light.attenuation.z * (distance * distance)
+	);
+
+	vec3 lightDir = normalize(light.position - inFragWPos);
+	vec3 halfway = normalize(light.position + inCameraPos.xyz);
+	vec3 radiance = light.color * attenuation * light.intensity;
+
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, base, metallic);
+	float diff = max(dot(normal, lightDir), 0.0);
+
+
+	vec3 ambient = 0.02 * vec3(base) * attenuation;
+	vec3 diffuse = diff * vec3(base) * light.color * light.intensity * attenuation;
+
+	return ambient + diffuse;
+}
+
+float distributionGGX(const vec3 normal, const vec3 halfway, const float roughness)
+{
+	const float alphaSquare = pow(max(roughness, 0.001), 4);
+	const float NdotH_Square = pow(max(dot(normal, halfway), 0.0), 2.0);
+	const float denom = PI * pow((NdotH_Square * (alphaSquare - 1) + 1), 2);
+
+	return alphaSquare / denom;
+}
+float geometrySchlickGGX(const float NdotFoo, const float roughness)
+{
+	const float k = pow((roughness + 1), 2) / 8.0;
+	return NdotFoo / ((NdotFoo * (1 - k)) + k);
+}
+float geometrySmith(const vec3 normal, const vec3 view, const vec3 lightPos, const float roughness)
+{
+	const float NdotV = max(dot(normal, view), 0.0);
+	const float NdotL = max(dot(normal, lightPos), 0.0);
+	const float GGX1 = geometrySchlickGGX(NdotV, roughness);
+	const float GGX2 = geometrySchlickGGX(NdotL, roughness);
+
+	return GGX1 * GGX2;
+}
+vec3 fresnelSchlick(const float cosTheta, const vec3 surfaceReflection0Incidence)
+{
+	return surfaceReflection0Incidence +
+		((vec3(1.0) - surfaceReflection0Incidence) * (pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0)));
 }

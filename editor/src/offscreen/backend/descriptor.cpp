@@ -50,7 +50,7 @@ bool createEditorDescriptors()
 
 		const std::vector editorDescriptorLayouts(
 			renderer::r_FRAMES_IN_FLIGHT,
-			renderer::cameraUBOLayout
+			renderer::cameraDescriptorLayout
 		);
 		allocInfo.pSetLayouts = editorDescriptorLayouts.data();
 

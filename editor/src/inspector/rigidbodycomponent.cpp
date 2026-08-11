@@ -989,7 +989,7 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 
 	const std::array descriptorSets = {
 		backend::cameraDescriptorSets[renderer::r_currentFrame],
-		renderer::samplerDescriptorSets[renderer::r_currentFrame]
+		renderer::textureDescriptorSets[renderer::r_currentFrame]
 	};
 	vkCmdBindDescriptorSets(
 		commandBuffer,

@@ -21,6 +21,7 @@
 #include "physics/physicscomponent.hpp"
 #include "renderer/rendercomponent.hpp"
 #include <imgui.h>
+#include "include/inspector/lightcomponent.hpp"
 
 namespace clz::editor
 {
@@ -71,14 +72,33 @@ void showInspector(VkCommandBuffer commandBuffer)
 		if (ecs::hasComponent<renderer::ModelComponent>(
 			    currentSelectedEntity.value()
 		    ))
+		{
 			showModelComponentHeader();
-		ImGui::Separator();
+			ImGui::Separator();
+		}
+		if (ecs::hasComponent<renderer::DirectionalLightComponent>(
+			currentSelectedEntity.value()
+			))
+		{
+			showDirectionalLightHeader();
+			ImGui::Separator();
+		}
+		if (ecs::hasComponent<renderer::PointLightComponent>(
+			currentSelectedEntity.value()
+			))
+		{
+			showPointLightHeader();
+			ImGui::Separator();
+		}
 
 		if (ecs::hasComponent<physics::RigidBodyComponent>(
 			    currentSelectedEntity.value()
 		    ))
+		{
 			showRigidBodyHeader();
-		ImGui::Separator();
+			ImGui::Separator();
+		}
+
 	}
 	else
 	{

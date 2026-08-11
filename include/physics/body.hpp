@@ -13,207 +13,212 @@
 
 namespace clz::physics
 {
-/// @brief Counter for the total number of created rigid bodies.
-inline uint32_t numRigidBodies = 0;
+	/// @brief Counter for the total number of created rigid bodies.
+	inline uint32_t numRigidBodies = 0;
 
-/// @brief Sentinel value representing an invalid or null rigid body ID.
-inline constexpr uint32_t NULL_RIGID_BODY = UINT32_MAX;
+	/// @brief Sentinel value representing an invalid or null rigid body ID.
+	inline constexpr uint32_t NULL_RIGID_BODY = UINT32_MAX;
 
-/// @brief Enumeration of supported rigid body types.
-enum class BodyType
-{
-	StaticBody = b3_staticBody, ///< @brief Immovable body.
-	KinematicBody =
-		b3_kinematicBody, ///< @brief Body moved manually via code (ignores forces).
-	DynamicBody = b3_dynamicBody ///< @brief Body affected by forces and collisions.
-};
+	/// @brief Enumeration of supported rigid body types.
+	enum class BodyType
+	{
+		StaticBody = b3_staticBody,	  ///< @brief Immovable body.
+		KinematicBody = b3_kinematicBody, ///< @brief Body moved manually via code
+						  ///< (ignores forces).
+		DynamicBody = b3_dynamicBody ///< @brief Body affected by forces and collisions.
+	};
 
-/// @brief Global storage for Box3D body handles, indexed by RigidBodyId.
-inline std::vector<b3BodyId> Bodies;
+	/// @brief Global storage for Box3D body handles, indexed by RigidBodyId.
+	inline std::vector<b3BodyId> Bodies;
 
-/// @brief Global storage for shapes attached to each body, indexed by RigidBodyId.
-inline std::vector<std::vector<Shape>> Shapes;
+	/// @brief Global storage for shapes attached to each body, indexed by RigidBodyId.
+	inline std::vector<std::vector<Shape>> Shapes;
 
-/// @brief Data structure holding the definition and properties of a rigid body.
-struct BodyData
-{
-	/// @brief The type of the body.
-	BodyType type = BodyType::DynamicBody;
+	/// @brief Data structure holding the definition and properties of a rigid body.
+	struct BodyData
+	{
+		/// @brief The type of the body.
+		BodyType type = BodyType::DynamicBody;
 
-	/// @brief Whether the body is allowed to sleep when at rest.
-	bool enableSleep = true;
+		/// @brief Whether the body is allowed to sleep when at rest.
+		bool enableSleep = true;
 
-	/// @brief Initial world-space position.
-	math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f);
-	math::quat rotation =
-		math::quat(1.0f, 0.0f, 0.0f, 0.0f); ///< @brief Initial world-space rotation.
-	float linearDamping = 0.0f;		    ///< @brief Linear damping coefficient.
-	float angularDamping = 0.1f;		    ///< @brief Angular damping coefficient.
-	std::array<bool, 3> linearLocks = {
-		false,
-		false,
-		false
-	}; ///< @brief Locks for linear motion on X, Y, Z axes.
-	std::array<bool, 3> angularLocks = {
-		false,
-		false,
-		false
-	}; ///< @brief Locks for angular motion on X, Y, Z axes.
-	std::vector<ShapeDef> ShapeDefs =
-		{}; ///< @brief List of shape definitions to attach upon creation.
-};
+		/// @brief Initial world-space position.
+		math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f);
+		math::quat rotation = math::quat(
+			1.0f,
+			0.0f,
+			0.0f,
+			0.0f
+		);			     ///< @brief Initial world-space rotation.
+		float linearDamping = 0.0f;  ///< @brief Linear damping coefficient.
+		float angularDamping = 0.1f; ///< @brief Angular damping coefficient.
+		std::array<bool, 3> linearLocks = {
+			false,
+			false,
+			false
+		}; ///< @brief Locks for linear motion on X, Y, Z axes.
+		std::array<bool, 3> angularLocks = {
+			false,
+			false,
+			false
+		}; ///< @brief Locks for angular motion on X, Y, Z axes.
+		std::vector<ShapeDef> ShapeDefs =
+			{}; ///< @brief List of shape definitions to attach upon creation.
+	};
 } // namespace clz::physics
 
 namespace clz::physics
 {
-/// @brief Creates a new rigid body in the physics world from the given definition.
-/// @param def Body definition data (type, mass, transform, damping, sleep, locks).
-/// @return Handle to the newly created body.
-RigidBodyId createBody(BodyData& def);
+	/// @brief Creates a new rigid body in the physics world from the given definition.
+	/// @param def Body definition data (type, mass, transform, damping, sleep, locks).
+	/// @return Handle to the newly created body.
+	RigidBodyId createBody(BodyData& def);
 
-/// @brief Disables a rigid body and invalidates its handle.
-/// @details Done because mid-editing, deleting is too costly, also helps in undo-redo.
-/// @param rigidBodyId Handle to the body to disable.
-void disableBody(RigidBodyId rigidBodyId);
+	/// @brief Disables a rigid body and invalidates its handle.
+	/// @details Done because mid-editing, deleting is too costly, also helps in
+	/// undo-redo.
+	/// @param rigidBodyId Handle to the body to disable.
+	void disableBody(RigidBodyId rigidBodyId);
 
-/// @brief Re-enables a previously disabled body.
-/// @param rigidBodyId Handle to the body to enable.
-void enableBody(RigidBodyId rigidBodyId);
+	/// @brief Re-enables a previously disabled body.
+	/// @param rigidBodyId Handle to the body to enable.
+	void enableBody(RigidBodyId rigidBodyId);
 
-/// @brief Retrieves the current definition data of a body.
-/// @note Does not return attached shape data.
-/// @param rigidBodyId Handle to the body.
-/// @return BodyData struct populated with current properties.
-BodyData getBodyData(RigidBodyId rigidBodyId);
+	/// @brief Retrieves the current definition data of a body.
+	/// @note Does not return attached shape data.
+	/// @param rigidBodyId Handle to the body.
+	/// @return BodyData struct populated with current properties.
+	BodyData getBodyData(RigidBodyId rigidBodyId);
 
-/// @brief Retrieves the internal Box3D body handle.
-/// @param rigidBodyId The custom rigid body ID.
-/// @return The underlying b3BodyId.
-b3BodyId getBox3dBodyId(RigidBodyId rigidBodyId);
+	/// @brief Retrieves the internal Box3D body handle.
+	/// @param rigidBodyId The custom rigid body ID.
+	/// @return The underlying b3BodyId.
+	b3BodyId getBox3dBodyId(RigidBodyId rigidBodyId);
 
-/// @brief Attaches a new shape to an existing body.
-/// @param rigidBodyId Handle to the target body.
-/// @param shapeDef Definition of the shape to attach.
-void attachShapeToBody(RigidBodyId rigidBodyId, const ShapeDef& shapeDef);
+	/// @brief Attaches a new shape to an existing body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param shapeDef Definition of the shape to attach.
+	void attachShapeToBody(RigidBodyId rigidBodyId, const ShapeDef& shapeDef);
 
-/// @brief Retrieves the list of shapes attached to a specific body.
-/// @param rigidBodyId Handle to the target body.
-/// @return Reference to the vector of shapes.
-std::vector<Shape>& getBodyShapes(RigidBodyId rigidBodyId);
+	/// @brief Retrieves the list of shapes attached to a specific body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @return Reference to the vector of shapes.
+	std::vector<Shape>& getBodyShapes(RigidBodyId rigidBodyId);
 
-/// @brief Refreshes attached shapes, destroying outdated ones and recreating them.
-/// @param rigidBodyId Handle to the target body.
-void refreshAttachedShapes(RigidBodyId rigidBodyId);
+	/// @brief Refreshes attached shapes, destroying outdated ones and recreating them.
+	/// @param rigidBodyId Handle to the target body.
+	void refreshAttachedShapes(RigidBodyId rigidBodyId);
 
-/// @brief Returns body type (kinematic, static, dynamic).
-/// @param rigidBodyId ID of body to retrieve data.
-/// @return Body's type.
-BodyType getBodyType(RigidBodyId rigidBodyId);
+	/// @brief Returns body type (kinematic, static, dynamic).
+	/// @param rigidBodyId ID of body to retrieve data.
+	/// @return Body's type.
+	BodyType getBodyType(RigidBodyId rigidBodyId);
 
-/// @brief Sets body type (kinematic, static, dynamic).
-/// @param rigidBodyId ID of body to modify.
-/// @param type Which type to set the body to.
-void setBodyType(RigidBodyId rigidBodyId, BodyType type);
+	/// @brief Sets body type (kinematic, static, dynamic).
+	/// @param rigidBodyId ID of body to modify.
+	/// @param type Which type to set the body to.
+	void setBodyType(RigidBodyId rigidBodyId, BodyType type);
 
-/**
- * @brief Retrieve mass of body.
- * @note Mass can only be retrieved via physics engine. Mass properties are
- *       automatically computed via the engine. As of now, there's no way to
- *       set them manually.
- * @param rigidBodyId ID of body to retrieve data.
- * @return Mass of the body.
- */
-float getBodyMass(RigidBodyId rigidBodyId);
+	/**
+	 * @brief Retrieve mass of body.
+	 * @note Mass can only be retrieved via physics engine. Mass properties are
+	 *       automatically computed via the engine. As of now, there's no way to
+	 *       set them manually.
+	 * @param rigidBodyId ID of body to retrieve data.
+	 * @return Mass of the body.
+	 */
+	float getBodyMass(RigidBodyId rigidBodyId);
 
-/// @brief Sets the world-space position of a body, preserving its current rotation.
-/// @param rigidBodyId Handle to the target body.
-/// @param position New world-space position.
-void setBodyPosition(RigidBodyId rigidBodyId, const math::vec3& position);
+	/// @brief Sets the world-space position of a body, preserving its current rotation.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param position New world-space position.
+	void setBodyPosition(RigidBodyId rigidBodyId, const math::vec3& position);
 
-/// @brief Returns calculated position of rigid body.
-/// @details Usually called after updating physics world.
-/// @param rigidBodyId Id of body.
-/// @return math::vec3 Position of body.
-math::vec3 getBodyPosition(RigidBodyId rigidBodyId);
+	/// @brief Returns calculated position of rigid body.
+	/// @details Usually called after updating physics world.
+	/// @param rigidBodyId Id of body.
+	/// @return math::vec3 Position of body.
+	math::vec3 getBodyPosition(RigidBodyId rigidBodyId);
 
-/// @brief Sets the world-space rotation of a body, preserving its current position.
-/// @param rigidBodyId Handle to the target body.
-/// @param rotation New world-space rotation.
-void setBodyRotation(RigidBodyId rigidBodyId, const math::quat& rotation);
+	/// @brief Sets the world-space rotation of a body, preserving its current position.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param rotation New world-space rotation.
+	void setBodyRotation(RigidBodyId rigidBodyId, const math::quat& rotation);
 
-/// @brief Returns calculated rotation of body.
-/// @details Usually called after updating the physics world.
-/// @param rigidBodyId Handle to the target body.
-/// @return Rotation of body.
-math::quat getBodyRotation(RigidBodyId rigidBodyId);
+	/// @brief Returns calculated rotation of body.
+	/// @details Usually called after updating the physics world.
+	/// @param rigidBodyId Handle to the target body.
+	/// @return Rotation of body.
+	math::quat getBodyRotation(RigidBodyId rigidBodyId);
 
-/// @brief Sets the linear damping coefficient of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param linearDamping New linear damping value.
-void setBodyLinearDamping(RigidBodyId rigidBodyId, float linearDamping);
+	/// @brief Sets the linear damping coefficient of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param linearDamping New linear damping value.
+	void setBodyLinearDamping(RigidBodyId rigidBodyId, float linearDamping);
 
-/// @brief Retrieves linear damping of a body.
-/// @param rigidBodyId Id of body to retrieve data.
-/// @return linear damping of body.
-float getBodyLinearDamping(RigidBodyId rigidBodyId);
+	/// @brief Retrieves linear damping of a body.
+	/// @param rigidBodyId Id of body to retrieve data.
+	/// @return linear damping of body.
+	float getBodyLinearDamping(RigidBodyId rigidBodyId);
 
-/// @brief Sets the angular damping coefficient of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param angularDamping New angular damping value.
-void setBodyAngularDamping(RigidBodyId rigidBodyId, float angularDamping);
+	/// @brief Sets the angular damping coefficient of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param angularDamping New angular damping value.
+	void setBodyAngularDamping(RigidBodyId rigidBodyId, float angularDamping);
 
-/// @brief Retrieves angular damping of body.
-/// @param rigidBodyId ID of body to retrieve data.
-/// @return angular damping of body.
-float getBodyAngularDamping(const RigidBodyId rigidBodyId);
+	/// @brief Retrieves angular damping of body.
+	/// @param rigidBodyId ID of body to retrieve data.
+	/// @return angular damping of body.
+	float getBodyAngularDamping(const RigidBodyId rigidBodyId);
 
-/// @brief Enables or disables sleeping for a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param enable True to allow the body to sleep, false to keep it always awake.
-void enableSleep(RigidBodyId rigidBodyId, bool enable);
+	/// @brief Enables or disables sleeping for a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param enable True to allow the body to sleep, false to keep it always awake.
+	void enableSleep(RigidBodyId rigidBodyId, bool enable);
 
-/// @brief Retrieves whether body is sleeping.
-/// @param rigidBodyId ID of body to retrieve data.
-/// @return Is sleeping enabled?
-bool isSleepEnabled(RigidBodyId rigidBodyId);
+	/// @brief Retrieves whether body is sleeping.
+	/// @param rigidBodyId ID of body to retrieve data.
+	/// @return Is sleeping enabled?
+	bool isSleepEnabled(RigidBodyId rigidBodyId);
 
-/// @brief Sets which linear axes (X, Y, Z) are locked for a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param linearLocks Array of 3 bools indicating locked linear axes (X, Y, Z).
-void setBodyLinearLocks(RigidBodyId rigidBodyId, const std::array<bool, 3>& linearLocks);
+	/// @brief Sets which linear axes (X, Y, Z) are locked for a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param linearLocks Array of 3 bools indicating locked linear axes (X, Y, Z).
+	void setBodyLinearLocks(RigidBodyId rigidBodyId, const std::array<bool, 3>& linearLocks);
 
-/// @brief Retrieve linear locks of a body.
-/// @param rigidBodyId Id of body to retrieve data.
-/// @return Size - 3 array containing lock info of xyz axis.
-std::array<bool, 3> getBodyLinearLocks(RigidBodyId rigidBodyId);
+	/// @brief Retrieve linear locks of a body.
+	/// @param rigidBodyId Id of body to retrieve data.
+	/// @return Size - 3 array containing lock info of xyz axis.
+	std::array<bool, 3> getBodyLinearLocks(RigidBodyId rigidBodyId);
 
-/// @brief Sets which angular axes (X, Y, Z) are locked for a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param angularLocks Array of 3 bools indicating locked angular axes (X, Y, Z).
-void setBodyAngularLocks(RigidBodyId rigidBodyId, const std::array<bool, 3>& angularLocks);
+	/// @brief Sets which angular axes (X, Y, Z) are locked for a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param angularLocks Array of 3 bools indicating locked angular axes (X, Y, Z).
+	void setBodyAngularLocks(RigidBodyId rigidBodyId, const std::array<bool, 3>& angularLocks);
 
-/// @brief Retrieves angular locks info of a body.
-/// @param rigidBodyId Id of body to retrieve data.
-/// @return Array of 3 bools indicating locked angular axes.
-std::array<bool, 3> getBodyAngularLocks(const RigidBodyId rigidBodyId);
+	/// @brief Retrieves angular locks info of a body.
+	/// @param rigidBodyId Id of body to retrieve data.
+	/// @return Array of 3 bools indicating locked angular axes.
+	std::array<bool, 3> getBodyAngularLocks(const RigidBodyId rigidBodyId);
 
-/// @brief Sets the linear velocity of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param velocity New linear velocity vector.
-void setBodyVelocity(RigidBodyId rigidBodyId, const math::vec3& velocity);
+	/// @brief Sets the linear velocity of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param velocity New linear velocity vector.
+	void setBodyVelocity(RigidBodyId rigidBodyId, const math::vec3& velocity);
 
-/// @brief Retrieves the linear velocity of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @return Current linear velocity vector.
-math::vec3 getBodyVelocity(RigidBodyId rigidBodyId);
+	/// @brief Retrieves the linear velocity of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @return Current linear velocity vector.
+	math::vec3 getBodyVelocity(RigidBodyId rigidBodyId);
 
-/// @brief Sets the angular velocity of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @param velocity New angular velocity vector.
-void setBodyAngularVelocity(RigidBodyId rigidBodyId, const math::vec3& velocity);
+	/// @brief Sets the angular velocity of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @param velocity New angular velocity vector.
+	void setBodyAngularVelocity(RigidBodyId rigidBodyId, const math::vec3& velocity);
 
-/// @brief Retrieves the angular velocity of a body.
-/// @param rigidBodyId Handle to the target body.
-/// @return Current angular velocity vector.
-math::vec3 getBodyAngularVelocity(RigidBodyId rigidBodyId);
+	/// @brief Retrieves the angular velocity of a body.
+	/// @param rigidBodyId Handle to the target body.
+	/// @return Current angular velocity vector.
+	math::vec3 getBodyAngularVelocity(RigidBodyId rigidBodyId);
 } // namespace clz::physics

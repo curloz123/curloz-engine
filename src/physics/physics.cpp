@@ -19,104 +19,103 @@
 
 namespace clz::physics
 {
-/// @brief Initializes the physics engine
-bool init()
-{
-	b3WorldDef worldDef = b3DefaultWorldDef();
-
-	// No multithreading for now
-	p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
-	worldDef.gravity = p_gravity;
-	worldDef.enableSleep = config::getBool("physics", "enablesleep", false);
-	p_world = b3CreateWorld(&worldDef);
-	if (B3_IS_NULL(p_world))
+	/// @brief Initializes the physics engine
+	bool init()
 	{
-		clz::log::error("Failed to create physics world");
-		return false;
-	}
+		b3WorldDef worldDef = b3DefaultWorldDef();
 
-	p_timeStep = config::getFloat("physics", "timestep", 0.0167f);
-	p_subStepCount = config::getInt("physics", "substepcount", 4);
-	p_accumulator = 0.0f;
-
-	clz::log::info("Created physics world");
-	return true;
-}
-
-/// @brief Update's the physics engine
-/// @note in editor mode, the physics engine reads EditorTransformComponent of the entity,
-/// and writes back data to internal data structure. Cuz we don't want physics mingling while
-/// we're editing do we??
-/// Also we use fixed time step with that remainder accumulator method
-/// Uses slerp and lerp for smooth transition of transform
-void update()
-{
-#ifdef CLZ_ENABLE_EDITOR
-	if (state::g_engineState != state::EngineState::Game)
-	{
-		for (auto& entities =
-			     ecs::getEntitiesWithComponent<RigidBodyComponent>();
-		     auto& entity : entities)
+		// No multithreading for now
+		p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
+		worldDef.gravity = p_gravity;
+		worldDef.enableSleep = config::getBool("physics", "enablesleep", false);
+		p_world = b3CreateWorld(&worldDef);
+		if (B3_IS_NULL(p_world))
 		{
-			auto& body = ecs::getComponent<RigidBodyComponent>(entity);
-			const auto& transformComponent =
-				ecs::getComponent<ecs::EditorTransformComponent>(entity);
-
-			setBodyPosition(body.rigidBodyId, transformComponent.position);
-			body.newPosition = transformComponent.position;
-			body.prevPosition = body.newPosition;
-
-			const auto bodyRotation = math::quatFromEuler(
-				math::radians(transformComponent.rotation)
-			);
-			setBodyRotation(body.rigidBodyId, bodyRotation);
-
-			body.newRotation = bodyRotation;
-			body.prevRotation = bodyRotation;
-
-			setBodyVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
-			setBodyAngularVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
+			clz::log::error("Failed to create physics world");
+			return false;
 		}
-		return;
+
+		p_timeStep = config::getFloat("physics", "timestep", 0.0167f);
+		p_subStepCount = config::getInt("physics", "substepcount", 4);
+		p_accumulator = 0.0f;
+
+		clz::log::info("Created physics world");
+		return true;
 	}
+
+	/// @brief Update's the physics engine
+	/// @note in editor mode, the physics engine reads EditorTransformComponent of the
+	/// entity, and writes back data to internal data structure. Cuz we don't want
+	/// physics mingling while we're editing do we?? Also we use fixed time step with
+	/// that remainder accumulator method Uses slerp and lerp for smooth transition of
+	/// transform
+	void update()
+	{
+#ifdef CLZ_ENABLE_EDITOR
+		if (state::g_engineState != state::EngineState::Game)
+		{
+			for (auto& entities = ecs::getEntitiesWithComponent<RigidBodyComponent>();
+			     auto& entity : entities)
+			{
+				auto& body = ecs::getComponent<RigidBodyComponent>(entity);
+				const auto& transformComponent =
+					ecs::getComponent<ecs::EditorTransformComponent>(entity);
+
+				setBodyPosition(body.rigidBodyId, transformComponent.position);
+				body.newPosition = transformComponent.position;
+				body.prevPosition = body.newPosition;
+
+				const auto bodyRotation = math::quatFromEuler(
+					math::radians(transformComponent.rotation)
+				);
+				setBodyRotation(body.rigidBodyId, bodyRotation);
+
+				body.newRotation = bodyRotation;
+				body.prevRotation = bodyRotation;
+
+				setBodyVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
+				setBodyAngularVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
+			}
+			return;
+		}
 #endif
 
-	p_accumulator += time::getDeltaTime();
-	const auto& entities = ecs::getEntitiesWithComponent<RigidBodyComponent>();
-	while (p_accumulator >= p_timeStep)
-	{
-		b3World_Step(p_world, p_timeStep, p_subStepCount);
-		p_accumulator -= p_timeStep;
+		p_accumulator += time::getDeltaTime();
+		const auto& entities = ecs::getEntitiesWithComponent<RigidBodyComponent>();
+		while (p_accumulator >= p_timeStep)
+		{
+			b3World_Step(p_world, p_timeStep, p_subStepCount);
+			p_accumulator -= p_timeStep;
+
+			for (const auto& entity : entities)
+			{
+				auto& body = ecs::getComponent<RigidBodyComponent>(entity);
+
+				body.prevPosition = body.newPosition;
+				body.prevRotation = body.newRotation;
+				body.newPosition = getBodyPosition(body.rigidBodyId);
+				body.newRotation = getBodyRotation(body.rigidBodyId);
+			}
+		}
+		const float alpha = p_accumulator / p_timeStep;
 
 		for (const auto& entity : entities)
 		{
-			auto& body = ecs::getComponent<RigidBodyComponent>(entity);
+			auto& transformComponent =
+				ecs::getComponent<ecs::TransformComponent>(entity);
+			const auto& body = ecs::getComponent<RigidBodyComponent>(entity);
 
-			body.prevPosition = body.newPosition;
-			body.prevRotation = body.newRotation;
-			body.newPosition = getBodyPosition(body.rigidBodyId);
-			body.newRotation = getBodyRotation(body.rigidBodyId);
+			transformComponent.position =
+				math::lerp(body.prevPosition, body.newPosition, alpha);
+			transformComponent.rotation =
+				math::slerp(body.prevRotation, body.newRotation, alpha);
 		}
 	}
-	const float alpha = p_accumulator / p_timeStep;
 
-	for (const auto& entity : entities)
+	/// @brief Shuts down the physics engine
+	void shutdown()
 	{
-		auto& transformComponent =
-			ecs::getComponent<ecs::TransformComponent>(entity);
-		const auto& body = ecs::getComponent<RigidBodyComponent>(entity);
-
-		transformComponent.position =
-			math::lerp(body.prevPosition, body.newPosition, alpha);
-		transformComponent.rotation =
-			math::slerp(body.prevRotation, body.newRotation, alpha);
+		b3DestroyWorld(p_world);
+		clz::log::info("Destroyed physics world");
 	}
-}
-
-/// @brief Shuts down the physics engine
-void shutdown()
-{
-	b3DestroyWorld(p_world);
-	clz::log::info("Destroyed physics world");
-}
 } // namespace clz::physics

@@ -5,7 +5,7 @@ TabWidth: 8
 PointerAlignment: Left
 AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Custom
-NamespaceIndentation: None
+NamespaceIndentation: All
 ContinuationIndentWidth: 8
 BreakAfterOpenBracketFunction: true
 BreakBeforeCloseBracketFunction: true
@@ -26,5 +26,5 @@ AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 BinPackArguments: false
 BinPackParameters: false
-ColumnLimit: 93
+ColumnLimit: 100
 PenaltyBreakBeforeFirstCallParameter: 1

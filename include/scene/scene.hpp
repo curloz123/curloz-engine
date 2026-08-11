@@ -13,14 +13,14 @@
 
 namespace clz::scene
 {
-/// @brief nlohmann's JSON Handle
-inline nlohmann::json sceneFile;
+	/// @brief nlohmann's JSON Handle
+	inline nlohmann::json sceneFile;
 
-/// @brief Loads Scene from the JSON scene file.
-/// @return true on success, false on failure and prints the error
-bool loadScene();
+	/// @brief Loads Scene from the JSON scene file.
+	/// @return true on success, false on failure and prints the error
+	bool loadScene();
 
-/// @brief Saves scene back to JSON
-void saveScene();
+	/// @brief Saves scene back to JSON
+	void saveScene();
 
 } // namespace clz::scene

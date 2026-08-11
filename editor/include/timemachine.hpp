@@ -4,6 +4,7 @@
 #include "window/inputmanager.hpp"
 #include <deque>
 #include <source_location>
+#include <functional>
 
 namespace clz::timemachine
 {

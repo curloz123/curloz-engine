@@ -1,10 +1,9 @@
 #include "../../../include/offscreen/backend/pipeline.hpp"
 #include "core/logs.hpp"
 #include "renderer/context/pipelinecontext.hpp"
-#include "renderer/entitydata/uvbuffer.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
-#include "renderer/pipelinedata/sampler.hpp"
+#include "renderer/pipelinedata/texture.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 
@@ -34,7 +33,7 @@ bool initializeEditorPipeline()
 	);
 
 	// Use the camera and sampler layout from renderer
-	std::array layouts = {renderer::cameraUBOLayout, renderer::combinedSamplerLayout};
+	std::array layouts = {renderer::cameraDescriptorLayout, renderer::textureDescriptorLayout};
 	if (!renderer::createPipelineLayout(
 		    editorPipelineContext,
 		    sizeof(renderer::ModelDataPC),
@@ -74,13 +73,12 @@ bool initializeEditorPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {
+	std::array<VkVertexInputBindingDescription, 1> bindingDescriptions = {
 		clz::renderer::getVertexBindingDescription(),
-		clz::renderer::getUVBindingDescription()
 	};
 	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
-		clz::renderer::getVertexAttributeDescription(),
-		clz::renderer::getUVAttributeDescription()
+		clz::renderer::getVertexAttributeDescription(renderer::VertexAttributeType::POSITION),
+		clz::renderer::getVertexAttributeDescription(renderer::VertexAttributeType::UV),
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {

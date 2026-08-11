@@ -11,6 +11,6 @@
 
 namespace clz::scene
 {
-bool loadCameras(const nlohmann::json& cameraJson);
-void saveCameras(nlohmann::json& sceneFile);
+	bool loadCameras(const nlohmann::json& cameraJson);
+	void saveCameras(nlohmann::json& sceneFile);
 } // namespace clz::scene

@@ -14,18 +14,18 @@
 
 namespace clz::renderer
 {
-/// @brief Creates uniform buffers + their layout, the combined sampler
-/// layout, and allocates/writes the descriptor sets for both. Call
-/// once, before pipeline creation.
-/// @return true on success.
-bool preparePipelineData();
+	/// @brief Creates uniform buffers + their layout, the combined sampler
+	/// layout, and allocates/writes the descriptor sets for both. Call
+	/// once, before pipeline creation.
+	/// @return true on success.
+	bool preparePipelineData();
 
-/// @brief Writes the combined sampler's descriptor set bindings from
-/// currently-loaded scene textures. Call once texture data actually
-/// exists (i.e. after a scene has finished loading).
-void updatePipelineData();
+	/// @brief Writes the combined sampler's descriptor set bindings from
+	/// currently-loaded scene textures. Call once texture data actually
+	/// exists (i.e. after a scene has finished loading).
+	void updatePipelineData();
 
-/// @brief Destroys descriptor sets/pool, both descriptor set layouts,
-/// and the uniform buffer memory. Call once, on scene unload / shutdown.
-void destroyPipelineData();
+	/// @brief Destroys descriptor sets/pool, both descriptor set layouts,
+	/// and the uniform buffer memory. Call once, on scene unload / shutdown.
+	void destroyPipelineData();
 } // namespace clz::renderer

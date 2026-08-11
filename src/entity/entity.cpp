@@ -5,17 +5,17 @@
 
 namespace clz::ecs
 {
-void init()
-{
-	entityCounter = 0;
-	entities.clear();
-	entityName.clear();
-}
+	void init()
+	{
+		entityCounter = 0;
+		entities.clear();
+		entityName.clear();
+	}
 
-void shutdown()
-{
-	deleteAllComponents();
-	clearEntities();
-	entityCounter = 0;
-}
+	void shutdown()
+	{
+		deleteAllComponents();
+		clearEntities();
+		entityCounter = 0;
+	}
 } // namespace clz::ecs
