@@ -10,6 +10,8 @@ layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inFragWPos;
 layout(location = 3) in vec3 inCameraPos;
+layout(location = 4) in vec3 inTangent;
+layout(location = 5) in vec3 inBitangent;
 
 /// Uniform's
 layout(push_constant) uniform PushConstants
@@ -82,7 +84,10 @@ vec3 fresnelSchlick(const float cosTheta, const vec3 surfaceReflection0Incidence
 
 void main()
 {
-	const vec3 normal = normalize(inNormal);
+	mat3 TBN = mat3(inTangent, inBitangent, inNormal);
+	vec3 normal = texture(textures[PC.normalTextureIndex], inUV).rgb;
+	normal = (normal * 2.0) - vec3(1.0);
+	normal = normalize(TBN * normal);
 	const vec3 viewDir = normalize(inCameraPos.xyz - inFragWPos);
 
 	vec4 base;
