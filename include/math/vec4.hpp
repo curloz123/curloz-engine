@@ -35,6 +35,12 @@ namespace clz::math
 		{
 		}
 
+		vec4 (const float value)
+			: xmm(_mm_set1_ps(value))
+		{
+
+		}
+
 		/**
 		 * @brief Constructs a vec4 from four float values.
 		 * @param x X component.

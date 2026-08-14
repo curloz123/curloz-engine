@@ -11,6 +11,7 @@
 
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
+#include "math/vec4.hpp"
 #include <vector>
 #include <vulkan/vulkan.h>
 
@@ -21,13 +22,15 @@ namespace clz::renderer
 	{
 		POSITION,
 		UV,
-		NORMAL
+		NORMAL,
+		TANGENT,
 	};
 	struct VertexAttribute
 	{
 		math::vec3 position;
 		math::vec2 uv;
 		math::vec3 normal;
+		math::vec4 tangent;
 	};
 	/**
 	 * @brief CPU-side storage for all registered mesh vertices.

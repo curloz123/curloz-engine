@@ -32,7 +32,7 @@ namespace clz::renderer
 namespace clz::renderer
 {
 
-	constexpr uint32_t r_MAX_TEXTURE_COUNT = 256;
+	constexpr uint32_t r_MAX_TEXTURE_COUNT = 1024;
 	constexpr uint32_t r_NULL_TEXTURE = std::numeric_limits<uint32_t>::max();
 	struct TextureID
 	{

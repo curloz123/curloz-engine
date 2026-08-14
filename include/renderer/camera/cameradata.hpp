@@ -22,9 +22,6 @@ namespace clz::renderer
 	/// @brief Number of cameras
 	inline uint8_t NumCameras = 0;
 
-	/// @brief last active camera
-	inline CameraId LastActiveCamera;
-
 	/// @brief Shared world-space up reference used for basis derivation.
 	inline const math::vec3 WorldUp = math::vec3(0.0f, 1.0f, 0.0f);
 
@@ -60,13 +57,5 @@ namespace clz::renderer
 	inline std::vector<math::mat4> ProjMatrix;
 	/// @brief Hints that projection matrix should be recalculated
 	inline std::vector<bool> ChangeProjMatrix;
-
-	/// @brief Per-camera last recorded cursor X, for mouse delta calc.
-	inline std::vector<float> LastX;
-	/// @brief Per-camera last recorded cursor Y, for mouse delta calc.
-	inline std::vector<float> LastY;
-
-	/// @brief Per-camera flag to avoid a mouse-delta snap on first use.
-	inline std::vector<bool> FirstTime;
 
 } // namespace clz::renderer

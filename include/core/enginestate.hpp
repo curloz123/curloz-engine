@@ -7,8 +7,8 @@
 #pragma once
 
 #include "assert.hpp"
-#include "logs.hpp"
-#include <string>
+#include "string_view"
+
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/editor.hpp"
@@ -45,70 +45,14 @@ namespace clz::state
 	 * @param state Change state to?
 	 * @param callerLocation Location where this function is being called
 	 */
-	inline void setEngineState(const EngineState state, const std::string_view callerLocation)
-	{
-		if (g_engineState == state)
-			return;
-
-		g_engineState = state;
-		switch (g_engineState)
-		{
-		case EngineState::Game:
-			clz::log::info(
-				"Engine state set to Running by: " + std::string(callerLocation)
-			);
-			return;
-
-#ifdef CLZ_ENABLE_EDITOR
-		case EngineState::Editor:
-			clz::log::info(
-				"Engine state set to Editor by: " + std::string(callerLocation)
-			);
-			return;
-#endif
-
-		case EngineState::Shutdown:
-			clz::log::info(
-				"Engine state set to Shutdown by: " + std::string(callerLocation)
-			);
-			return;
-		default:
-			CLZ_ASSERT(
-				false,
-				"Unknown engine state called by: " + std::string(callerLocation)
-			);
-		}
-	}
+	void setEngineState(
+		EngineState state,
+		std::string_view callerLocation);
 
 	/**
 	 * @brief Checks per frame if engine state has to be updated or not
 	 * Currently only used to check whether to shift bw editor and game mode
 	 */
-	inline void updateEngineState()
-	{
-#ifdef CLZ_ENABLE_EDITOR
-		///< @brief Hit Ctrl+E in game mode, to exit to edit mode
-		if (g_engineState == EngineState::Game)
-		{
-			if (window::isKeyPressed(clz::input::Key::LeftControl) &&
-			    window::isKeyPressed(clz::input::Key::E))
-			{
-				g_engineState = EngineState::Editor;
-				editor::prepareEditor();
-				window::enableCursor();
-			}
-		}
-		///< @brief Hit Ctrl+G in edit mode, to enter game mode
-		if (g_engineState == EngineState::Editor)
-		{
-			if (window::isKeyPressed(clz::input::Key::LeftControl) &&
-			    window::isKeyPressed(clz::input::Key::G))
-			{
-				g_engineState = EngineState::Game;
-				window::disableCursor();
-			}
-		}
-#endif
-	}
+	void updateEngineState();
 
 } // namespace clz::state

@@ -29,19 +29,12 @@ namespace clz::renderer
 	void lastMainDraw(VkCommandBuffer commandBuffer)
 	{
 		CameraId activeCameraId = NULL_CAMERA;
-		math::mat4 view;
-		math::mat4 projection;
+
 #ifdef CLZ_ENABLE_EDITOR
-		if (state::g_engineState == state::EngineState::Editor)
+		if (clz::state::g_engineState == clz::state::EngineState::Editor)
 		{
 			// editor handles camera updating itself
 			activeCameraId = editor::mainViewportImage.cameraId;
-			view = getCameraViewMatrix(activeCameraId);
-			projection = getCameraProjMatrix(
-				activeCameraId,
-				static_cast<float>(editor::mainViewportImage.extent.width),
-				static_cast<float>(editor::mainViewportImage.extent.height)
-			);
 		}
 		else
 #endif
@@ -49,28 +42,10 @@ namespace clz::renderer
 		/// --- In main binary, its the only part ---
 		{
 			/// Rendering camera is handled by renderer itself
-			useCamera(r_cameraId);
 			updateCamera(r_cameraId);
 			activeCameraId = r_cameraId;
-			view = getCameraViewMatrix(activeCameraId);
-			projection = getCameraProjMatrix(
-				activeCameraId,
-				(float)r_swapchainContext.extent.width,
-				(float)r_swapchainContext.extent.height
-			);
 		}
-#ifdef CLZ_ENABLE_EDITOR
-		if (state::g_engineState == state::EngineState::Game)
-		{
-			const auto editorCameraId = editor::mainViewportImage.cameraId;
 
-			setCameraPosition(editorCameraId, getCameraPosition(r_cameraId));
-			setCameraPitch(editorCameraId, getCameraPitch(r_cameraId));
-			setCameraYaw(editorCameraId, getCameraYaw(r_cameraId));
-
-			updateCameraVectors(editorCameraId);
-		}
-#endif
 
 		vkCmdBindPipeline(
 			commandBuffer,
@@ -82,8 +57,12 @@ namespace clz::renderer
 
 		const math::vec3 camPos = getCameraPosition(activeCameraId);
 		const CameraShaderUBO cameraShaderUBO = {
-			.projection = projection,
-			.view = view,
+			.projection = getCameraProjMatrix(
+				activeCameraId,
+				static_cast<float>(editor::mainViewportImage.extent.width),
+				static_cast<float>(editor::mainViewportImage.extent.height)
+			),
+			.view = getCameraViewMatrix(activeCameraId),
 			.cameraPos = math::vec4(camPos.x, camPos.y, camPos.z, 1.0f),
 		};
 		updateCameraDescriptor(cameraShaderUBO);

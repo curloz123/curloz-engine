@@ -76,12 +76,14 @@ namespace clz::scene
 					"parameters, "
 					"unless resolved, directional light will be disabled"
 				);
+				break;
 
 			case renderer::LightRegisterError::LIMIT_EXCEEDED:
 				clz::log::warn(
 					"MAX LIMIT reached for directional lights, "
 					"cannot add further lights"
 				);
+				break;
 			}
 			return std::unexpected("Could not register directional light");
 		}

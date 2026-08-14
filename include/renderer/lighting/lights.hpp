@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/vec4.hpp"
 
@@ -62,6 +63,10 @@ namespace clz::renderer
 	{
 		/// @brief positon of point light
 		/// x,y,z decides position
+		/// @note Never Set during by itself.
+		/// It is always set during ssbo pass,
+		/// and is equal to the TransformComponent.position of the
+		/// entity this component is attached to
 		math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f);
 		/// @brief decides range of point light
 		float range = 10.0f;
@@ -90,10 +95,9 @@ namespace clz::renderer
 			600 		1.0 		0.007 	0.0002
 			3250 		1.0 		0.0014 	0.000007
 
-		 * x component decides constant (always 1.0f)
-		 * y component decides linear value
-		 * z component decides quadratic value
-		 * w is just padding
+		 * constant is always 1.0f
+		 * x component decides linear value
+		 * y component decides quadratic value
 		 *
 		 * Formula for attenuation is:
 		 * 1.0f / (Kc + Kl*d + Kq*(d^2))
@@ -127,13 +131,15 @@ namespace clz::renderer
 
 		/// @brief position of spotlight
 		/// x,y,z decides position
-		/// w decides range
-		math::vec4 position = math::vec4(0.0f, 0.0f, 0.0f, 10.0f);
+		math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f);
+		/// @brief range of spotlight
+		float range = 50.0f;
 
 		/// @brief color of point light
 		/// x,y,z decides color
-		/// w decides intensity
-		math::vec4 color = math::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		math::vec3 color = math::vec3(1.0f, 1.0f, 1.0f);
+		/// @brief intensity of spotlight
+		float intensity = 1.0f;
 
 		/**
 		 * @brief Attenuation values
@@ -153,21 +159,20 @@ namespace clz::renderer
 			600 		1.0 		0.007 	0.0002
 			3250 		1.0 		0.0014 	0.000007
 
-		 * x component decides constant (always 1.0f)
-		 * y component decides linear value
-		 * z component decides quadratic value
-		 * w is just padding
+		 * constant is always 1.0f
+		 * x component decides linear value
+		 * y component decides quadratic value
 		 *
 		 * Formula for attenuation is:
 		 * 1.0f / (Kc + Kl*d + Kq*(d^2))
 		 * @note Constant is always kept 1.0
 		 */
-		math::vec4 attenuation = math::vec4(1.0f, 0.09f, 0.032f, 1.0f);
+		math::vec2 attenuation = math::vec2(0.09f, 0.032f);
 
 		/// @brief spotlight cutoff values
 		/// x decides inner cutoff angle
 		/// y decides outer cutoff angle
-		math::vec4 cutoff = math::vec4(25.0f, 35.0f, 0.0f, 1.0f);
+		math::vec2 cutoff = math::vec2(25.0f, 35.0f);
 
 		SpotLight() = default;
 	};

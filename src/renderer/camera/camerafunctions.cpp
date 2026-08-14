@@ -60,31 +60,21 @@ namespace clz::renderer
 	}
 
 	/// @copydoc
-	void processMouseInput(const CameraId id, const float xPos, const float yPos)
+	void processMouseInput(const CameraId id)
 	{
-		if (FirstTime[id])
-		{
-			LastX[id] = xPos;
-			LastY[id] = yPos;
-			FirstTime[id] = false;
-		}
-
-		const float xOff = xPos - LastX[id];
-		const float yOff = -(yPos - LastY[id]);
-
-		LastX[id] = xPos;
-		LastY[id] = yPos;
-
-		Yaw[id] += xOff * Sensitivity[id];
-		Pitch[id] += yOff * Sensitivity[id];
+		const math::vec2 offset = window::getCursorOffset();
+		Yaw[id] += offset.x * Sensitivity[id];
+		Pitch[id] += -1.0f * offset.y * Sensitivity[id];
 		Pitch[id] = std::clamp(Pitch[id], -89.0f, 89.0f);
 
 		updateCameraVectors(id);
 	}
 
 	/// @copydoc
-	void processMouseScroll(const CameraId id, const float yOffset)
+	void processMouseScroll(const CameraId id)
 	{
+		const float yOffset = window::getScrollOffset();
+
 		if (yOffset == 0.0f)
 		{
 			return;

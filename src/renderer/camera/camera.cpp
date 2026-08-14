@@ -13,6 +13,7 @@
 #include "renderer/camera/camerafunctions.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/mouse.hpp"
+#include "core/assert.hpp"
 
 namespace clz::renderer
 {
@@ -35,7 +36,7 @@ namespace clz::renderer
 		Far.push_back(def.farPlane.value_or(DEFAULT_FAR));
 
 		MaxVelocity.push_back(def.maxVelocity.value_or(DEFAULT_MAX_VELOCITY));
-		Velocity.emplace_back(math::vec3(0.0f));
+		Velocity.emplace_back(0.0f);
 		Sensitivity.push_back(def.sensitivity.value_or(DEFAULT_SENSITIVITY));
 		Acceleration.push_back(def.acceleration.value_or(DEFAULT_ACCELERATION));
 
@@ -50,31 +51,10 @@ namespace clz::renderer
 		LocalFront.push_back(frnt);
 		LocalRight.push_back(math::normalize(math::cross(frnt, WorldUp)));
 
-		ProjMatrix.push_back(math::mat4(1.0f));
+		ProjMatrix.emplace_back(1.0f);
 		ChangeProjMatrix.push_back(true);
 
-		LastX.push_back(0.0f);
-		LastY.push_back(0.0f);
-
-		FirstTime.push_back(true);
-
 		return NumCameras++;
-	}
-
-	/// @copydoc
-	void useCamera(const CameraId id)
-	{
-		CLZ_ASSERT(id < NumCameras, "Invalid CameraId");
-
-		if (LastActiveCamera == id)
-			return;
-
-		for (auto i = 0; i < NumCameras; i++)
-		{
-			FirstTime[i] = true;
-		}
-
-		LastActiveCamera = id;
 	}
 
 	/// @copydoc
@@ -86,7 +66,6 @@ namespace clz::renderer
 		Pitch[id] = 0.0f;
 		Yaw[id] = -90.0f;
 		Velocity[id] = math::vec3(0.0f, 0.0f, 0.0f);
-		FirstTime[id] = true;
 		ChangeProjMatrix[id] = true;
 	}
 
@@ -94,13 +73,11 @@ namespace clz::renderer
 	void updateCamera(const CameraId id)
 	{
 		CLZ_ASSERT(id < NumCameras, "Invalid CameraId");
-		CLZ_ASSERT(id == LastActiveCamera, "You forgot to use useCamera function");
 
 		const math::vec2 cursorPos = window::getCursorPosition();
-		const float scroll = window::getScrollOffset();
 		processKeyBoardInput(id);
-		processMouseInput(id, cursorPos.x, cursorPos.y);
-		processMouseScroll(id, scroll);
+		processMouseInput(id);
+		processMouseScroll(id);
 	}
 
 	/// @copydoc
@@ -229,10 +206,4 @@ namespace clz::renderer
 		ChangeProjMatrix[Id] = true;
 	}
 
-	/// @copydoc
-	void setCameraFirstTime(const CameraId Id)
-	{
-		CLZ_ASSERT(Id < NumCameras, "Invalid CameraId");
-		FirstTime[Id] = true;
-	}
 } // namespace clz::renderer

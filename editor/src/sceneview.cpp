@@ -91,28 +91,32 @@ void drawMainViewPort()
 	static bool rightClickThisFrame = false;
 	static bool rightClickLastFrame = false;
 
-	if (window::isMousePressed(clz::input::Mouse::MouseRight))
+	if (ImGui::IsWindowHovered() &&
+		window::isMousePressed(clz::input::Mouse::MouseRight))
+	{
 		rightClickThisFrame = true;
+		ImGuiWindow* window = ImGui::GetCurrentContext()->HoveredWindow;
+		ImGui::FocusWindow(window);
+	}
 	else
+	{
 		rightClickThisFrame = false;
+	}
 
-	if (rightClickThisFrame && !rightClickLastFrame)
-	{
-		renderer::setCameraFirstTime(mainViewportImage.cameraId);
-		window::disableCursor();
-	}
-	else if (!rightClickThisFrame && rightClickLastFrame)
-	{
-		renderer::setCameraFirstTime(mainViewportImage.cameraId);
-		window::enableCursor();
-	}
 	if (ImGui::IsWindowFocused())
 	{
+		if (rightClickThisFrame && !rightClickLastFrame)
+		{
+			window::disableCursor();
+		}
+		else if (!rightClickThisFrame && rightClickLastFrame)
+		{
+			window::enableCursor();
+		}
+
 		if (rightClickThisFrame)
 		{
-			const auto Id = mainViewportImage.cameraId;
-			renderer::useCamera(Id);
-			renderer::updateCamera(Id);
+			renderer::updateCamera(mainViewportImage.cameraId);
 		}
 
 		rightClickLastFrame = rightClickThisFrame;

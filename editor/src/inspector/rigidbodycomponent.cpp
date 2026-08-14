@@ -874,7 +874,6 @@ void showBodySceneWindow()
 		if (rightClickThisFrame)
 		{
 			const auto Id = physicsBodyShapeImage.cameraId;
-			renderer::useCamera(Id);
 			renderer::updateCamera(Id);
 		}
 
@@ -885,7 +884,6 @@ void showBodySceneWindow()
 		else if (!rightClickThisFrame && rightClickLastFrame)
 		{
 			window::enableCursor();
-			renderer::setCameraFirstTime(physicsBodyShapeImage.cameraId);
 		}
 
 		rightClickLastFrame = rightClickThisFrame;

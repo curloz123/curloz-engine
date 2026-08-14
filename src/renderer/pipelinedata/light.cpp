@@ -74,25 +74,37 @@ namespace clz::renderer
 	void updateLightDescriptor()
 	{
 		const ShaderLightData lightData{
-			.numPointLights = static_cast<uint32_t>(Lights.pointLights.size()),
-			.numSpotLights = static_cast<uint32_t>(Lights.spotLights.size())
+			.numPointLights = static_cast<uint32_t>(numPointLights),
+			.numSpotLights = static_cast<uint32_t>(numSpotLights)
 		};
 		memcpy(lightDataUBO.mapped[r_currentFrame], &lightData, sizeof(ShaderLightData));
 
 		memcpy(dirUBO.mapped[r_currentFrame],
 		       Lights.directionalLight.data(),
-		       sizeof(DirectionalLight) * Lights.directionalLight.size());
+		       sizeof(DirectionalLight) * numDirectionalLights);
 
 		auto& pointLightEntities = ecs::getEntitiesWithComponent<PointLightComponent>();
 		for (auto& entity : pointLightEntities)
 		{
 			Lights.pointLights[ecs::getComponent<PointLightComponent>(entity).Id.value]
 				.position =
-				ecs::getComponent<ecs::TransformComponent>(entity).position;
+					ecs::getComponent<ecs::TransformComponent>(entity).position;
 		}
 		memcpy(pointSSBO.mapped[r_currentFrame],
 		       Lights.pointLights.data(),
-		       sizeof(PointLight) * Lights.pointLights.size());
+		       sizeof(PointLight) * numPointLights);
+
+		/*
+		auto& spotLightEntities = ecs::getEntitiesWithComponent<SpotLightComponent>();
+		for (auto& entity : spotLightEntities)
+		{
+			Lights.spotLights[ecs::getComponent<SpotLightComponent>(entity).Id.value]
+			.position =
+				ecs::getComponent<ecs::TransformComponent>(entity).position;
+			.direction =
+				ecs::getComponent<ecs::TransformComponent>(entity).rotation;
+		}
+		*/
 	}
 
 	/// @copydoc destroyLightDescriptor

@@ -38,6 +38,17 @@ namespace clz::window
 		disableCursor();
 #endif
 
+		/// --- Initialize cursor ---
+		double cursorX = 0;
+		double cursorY = 0;
+		glfwGetCursorPos(w_window, &cursorX, &cursorY);
+		cursorPosThisFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+		cursorPosLastFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+
 		clz::log::info("Initialized window system");
 		return true;
 	}
@@ -52,6 +63,17 @@ namespace clz::window
 	void update()
 	{
 		pollEventsGLFW(&w_window);
+
+		/// update cursor offset
+		cursorOffset = cursorPosThisFrame - cursorPosLastFrame;
+		if (std::abs(cursorOffset.x) > 50.0f || std::abs(cursorOffset.y) > 50.0f)
+		{
+			clz::log::debug("HUGE cursor offset: " + std::to_string(cursorOffset.x) + ", "
+				+ std::to_string(cursorOffset.y) + " | this: " +std::to_string(cursorPosThisFrame.x) +  "," +
+				std::to_string(cursorPosThisFrame.y) +
+				" | last: " + std::to_string(cursorPosLastFrame.x) + "," + std::to_string(cursorPosLastFrame.y));
+		}
+		cursorPosLastFrame = cursorPosThisFrame;
 	}
 
 	/// @copydoc

@@ -6,8 +6,8 @@
 #pragma once
 
 #include "cameradata.hpp"
-#include "core/assert.hpp"
 #include "math/mat4x4.hpp"
+#include <optional>
 
 /// --- data ---
 namespace clz::renderer
@@ -41,10 +41,6 @@ namespace clz::renderer
 	/// @brief The Create Function
 	/// @param def Camera defintion object
 	CameraId createCamera(const CameraDef& def);
-
-	/// @brief Hints that we are going to use this camera,
-	/// so engine can ready some things in advance
-	void useCamera(CameraId id);
 
 	/// @brief Drives input handling
 	/// For the currently active camera and manage mode switching
@@ -126,8 +122,4 @@ namespace clz::renderer
 	/// @brief Hints engine to update this camera's projection matrix
 	/// @param Id Camera Id
 	void updateCameraProjMatrix(CameraId Id);
-
-	/// @brief Enable camera'a first time flag
-	/// @param Id Camera Id
-	void setCameraFirstTime(CameraId Id);
 } // namespace clz::renderer

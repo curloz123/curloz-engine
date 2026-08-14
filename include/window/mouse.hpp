@@ -7,9 +7,28 @@
 #pragma once
 
 #include "window_types.hpp"
+#include "core/logs.hpp"
+
+#include <source_location>
 
 namespace clz::window
 {
+	/// @brief Cursor's position this frame
+	/// Is updated by the cursor callback
+	inline math::vec2 cursorPosThisFrame = math::vec2(0.0f, 0.0f);
+	/// @brief Cursor's position last frame
+	/// Is updated by window's main update loop
+	inline math::vec2 cursorPosLastFrame = math::vec2(0.0f, 0.0f);
+	/// @brief Cursor offset this frame
+	/// Calculated by subtracting cursorPosThisFrame with last frame
+	inline math::vec2 cursorOffset = math::vec2(0.0f, 0.0f);
+
+	/// @brief Returns cursor offset this frame
+	/// @return offset this frame
+	inline math::vec2 getCursorOffset()
+	{
+		return cursorOffset;
+	}
 	/**
 	 * @brief GLFW callback function for tracking cursor movement.
 	 * @param window The GLFW window instance that received the event.
@@ -30,17 +49,44 @@ namespace clz::window
 	 * @brief Hides the cursor and locks it to the window for unlimited relative movement
 	 * (e.g., FPS camera look).
 	 */
-	inline void disableCursor()
+	inline void disableCursor(
+	     const std::source_location loc = std::source_location::current())
 	{
 		glfwSetInputMode(w_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		clz::log::debug("cursor disabled by: ", loc);
+
+		double cursorX = 0;
+		double cursorY = 0;
+		glfwGetCursorPos(w_window, &cursorX, &cursorY);
+		cursorPosThisFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+		cursorPosLastFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+		cursorOffset = math::vec2(0.0f, 0.0f);
+
 	}
 
 	/**
 	 * @brief Restores the cursor to normal behavior and visibility.
 	 */
-	inline void enableCursor()
+	inline void enableCursor(
+	     const std::source_location loc = std::source_location::current())
 	{
 		glfwSetInputMode(w_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		clz::log::debug("cursor enabled by: ", loc);
+
+		double cursorX = 0;
+		double cursorY = 0;
+		glfwGetCursorPos(w_window, &cursorX, &cursorY);
+		cursorPosThisFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+		cursorPosLastFrame = math::vec2(
+			static_cast<float>(cursorX),
+			static_cast<float>(cursorY));
+		cursorOffset = math::vec2(0.0f, 0.0f);
 	}
 
 	/**

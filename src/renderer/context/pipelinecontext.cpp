@@ -84,12 +84,13 @@ namespace clz::renderer
 		VkPipelineDynamicStateCreateInfo dynamicState = createDynamicStates(dynamicStates);
 
 		std::array bindingDescriptions = {
-			getVertexBindingDescription(),
+			getVertexBindingDescription()
 		};
 		std::array attributeDescriptions = {
 			getVertexAttributeDescription(VertexAttributeType::POSITION),
 			getVertexAttributeDescription(VertexAttributeType::UV),
 			getVertexAttributeDescription(VertexAttributeType::NORMAL),
+			getVertexAttributeDescription(VertexAttributeType::TANGENT),
 		};
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo =
 			createVertexInputInfo(bindingDescriptions, attributeDescriptions);

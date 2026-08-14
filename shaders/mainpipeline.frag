@@ -28,10 +28,12 @@ layout(push_constant) uniform PushConstants
 
 // Textures
 #define NULL_TEXTURE uint(-1)
-layout(set = 1, binding = 0) uniform sampler2D textures[256];
+layout(set = 1, binding = 0)
+uniform sampler2D textures[256];
 
 // light data
-layout (set = 2, binding = 0) uniform LightsDataUBO
+layout (set = 2, binding = 0)
+uniform LightsDataUBO
 {
 	uint numPointLights;
 	uint numSpotLights;
@@ -46,7 +48,8 @@ struct DirectionalLight
 	/// xyz is rgb, w is intensity
 	vec4 color;
 };
-layout(std140, set = 2, binding = 1) uniform  DirectionalLightUBO
+layout(std140, set = 2, binding = 1)
+uniform  DirectionalLightUBO
 {
 	DirectionalLight dirLight;
 } u_DirLight;
@@ -73,14 +76,36 @@ layout(location = 0) out vec4 outColor;
 
 /// functions
 #define PI 3.14159265359
-vec3 calcDirLight(vec4 base, DirectionalLight light, vec3 normal);
-vec3 calcPointLight(vec4 base, PointLight light, vec3 normal);
+vec3 calcDirLight(
+		const vec4 base,
+		const vec3 viewDir,
+		const vec3 normal,
+		const float metallic,
+		const float roughness);
+vec3 calcPointLight(
+		const PointLight light,
+		const vec3 base,
+		const vec3 viewDir,
+		const vec3 normal,
+		const float metallic,
+		const float roughness);
 
-float distributionGGX(const vec3 normal, const vec3 halfway, const float roughness);
-float geometrySchlickGGX(const float NdotV, const float roughness);
-float geometrySmith(const vec3 normal, const vec3 view, const vec3 lightPos, const float roughness);
+float distributionGGX(
+		const vec3 normal,
+		const vec3 halfway,
+		const float roughness);
+float geometrySchlickGGX(
+		const float NdotV,
+		const float roughness);
+float geometrySmith(
+		const vec3 normal,
+		const vec3 view,
+		const vec3 lightPos,
+		const float roughness);
 
-vec3 fresnelSchlick(const float cosTheta, const vec3 surfaceReflection0Incidence);
+vec3 fresnelSchlick(
+		const float cosTheta,
+		const vec3 surfaceReflection0Incidence);
 
 void main()
 {
@@ -93,7 +118,7 @@ void main()
 	vec4 base;
 	if (PC.baseTextureIndex == NULL_TEXTURE)
 	{
-		base = vec4(0.0);
+		base = PC.baseColorFactor;
 	}
 	else
 	{
@@ -102,13 +127,13 @@ void main()
 			PC.baseColorFactor;
 	}
 
-	float metallic = 0.5;
-	float roughness = 0.6;
+	float metallic;
+	float roughness;
 
 	if (PC.metallic_roughnessTextureIndex == NULL_TEXTURE)
 	{
-		metallic = 0.0;
-		roughness = 1.0;
+		metallic = clamp(PC.metallicFactor, 0.0, 1.0);
+		roughness = clamp(PC.roughnessFactor, 0.0, 1.0);
 	}
 	else
 	{
@@ -122,10 +147,27 @@ void main()
 
 
 	vec3 L0 = vec3(0.0);
+
+	L0 += calcDirLight(
+				base,
+				viewDir,
+				normal,
+				metallic,
+				roughness);
+
 	for (int i = 0; i < u_LightsData.numPointLights; ++i)
 	{
+		L0 += calcPointLight(
+					s_PointLights.pointLights[i],
+					base.xyz,
+					viewDir,
+					normal,
+					metallic,
+					roughness);
+		/*
 		PointLight light = s_PointLights.pointLights[i];
 		float distance = max(length(light.position - inFragWPos), 0.05);
+		/*
 		if (distance > light.range)
 			continue;
 
@@ -154,52 +196,82 @@ void main()
 
 		float NdotL = max(dot(normal, lightDir), 0.0);
 		L0 += ((kD * base.rgb / PI) + specular) * radiance * NdotL;
+		*/
 	}
 
 	vec3 ambient = vec3(0.03) * base.rgb;
 
 	vec3 color = ambient + L0;
 
-
 	outColor = vec4(color, 1.0);
 }
 
-vec3 calcDirLight(vec4 base, DirectionalLight light, vec3 normal)
+vec3 calcDirLight(
+		const vec4 base,
+		const vec3 viewDir,
+		const vec3 normal,
+		const float metallic,
+		const float roughness)
 {
-	vec3 lightDir = normalize(-light.direction.xyz);
-	float diff = max(dot(normal, lightDir), 0.0);
+	DirectionalLight light = u_DirLight.dirLight;
+	vec3 halfway = normalize(viewDir + light.direction.xyz);
+	vec3 radiance = light.color.xyz * light.color.xyz * light.color.w;
 
-	vec3 ambient = 0.02 * vec3(base);
-	vec3 diffuse = diff * vec3(base) * light.color.xyz * light.color.w;
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, base.rgb, metallic);
+	vec3 F = fresnelSchlick(max(dot(halfway, viewDir), 0.0), F0);
+	float NDF = distributionGGX(normal, halfway, roughness);
+	float G = geometrySmith(normal, viewDir, light.direction.xyz, roughness);
 
-	return ambient + diffuse;
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, light.direction.xyz), 0.0) + 0.0001;
+	vec3 specular = numerator / denominator;
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;
+
+	float NdotL = max(dot(normal, light.direction.xyz), 0.0);
+	return ((kD * base.rgb / PI) + specular) * radiance * NdotL;
 }
 
-vec3 calcPointLight(PointLight light, vec3 base, float metallic, float roughness, vec3 normal)
+vec3 calcPointLight(
+		const PointLight light,
+		const vec3 base,
+		const vec3 viewDir,
+		const vec3 normal,
+		const float metallic,
+		const float roughness)
 {
-	float distance = length(light.position - inFragWPos);
-	if (distance > light.range)
-			return vec3(0.0);
+	float distance = max(length(light.position - inFragWPos), 0.05);
+    if (distance > light.range)
+        return vec3(0.0);
 
 	float attenuation = 1.0 / (
 		light.attenuation.x +
 		light.attenuation.y * distance +
 		light.attenuation.z * (distance * distance)
 	);
-
 	vec3 lightDir = normalize(light.position - inFragWPos);
-	vec3 halfway = normalize(light.position + inCameraPos.xyz);
-	vec3 radiance = light.color * attenuation * light.intensity;
+	vec3 halfway = normalize(viewDir + lightDir);
+	vec3 radiance = light.color * light.intensity * attenuation;
 
 	vec3 F0 = vec3(0.04);
-	F0 = mix(F0, base, metallic);
-	float diff = max(dot(normal, lightDir), 0.0);
+	F0 = mix(F0, base.rgb, metallic);
+	vec3 F = fresnelSchlick(max(dot(halfway, viewDir), 0.0), F0);
+	float NDF = distributionGGX(normal, halfway, roughness);
+	float G = geometrySmith(normal, viewDir, lightDir, roughness);
 
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001;
+	vec3 specular = numerator / denominator;
 
-	vec3 ambient = 0.02 * vec3(base) * attenuation;
-	vec3 diffuse = diff * vec3(base) * light.color * light.intensity * attenuation;
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;
 
-	return ambient + diffuse;
+	float NdotL = max(dot(normal, lightDir), 0.0);
+	return ((kD * base.rgb / PI) + specular) * radiance * NdotL;
 }
 
 float distributionGGX(const vec3 normal, const vec3 halfway, const float roughness)

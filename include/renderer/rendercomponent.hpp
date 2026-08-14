@@ -53,6 +53,10 @@ namespace clz::renderer
 	{
 		PointLightId Id;
 	};
+	struct SpotLightComponent
+	{
+		SpotLightId Id;
+	};
 
 	/**
 	 *

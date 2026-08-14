@@ -9,6 +9,7 @@
 #pragma once
 
 #include <immintrin.h>
+#include "types.hpp"
 
 namespace clz::math
 {
@@ -46,6 +47,101 @@ namespace clz::math
 			__m128 res = _mm_shuffle_ps(xmm, xmm, _MM_SHUFFLE(1, 1, 1, 1));
 			y = _mm_cvtss_f32(res);
 		}
+
+		/// @brief converts vec3 to vec2
+		/// only extracts x and y of vec3
+		/// @note defined in type_converter.hpp
+		vec2(const vec3& v3);
+
+		/// @brief converts vec4 to vec2
+		/// only extracts x and y of vec4
+		vec2(const vec4& v4);
+
+		/**
+		 * @brief Equal to opearator overload
+		 * @param rhs other vec2
+		 */
+		void operator=(const vec2& rhs)
+		{
+			x = rhs.x;
+			y = rhs.y;
+		}
+		/**
+		 * @brief Operator overloaded addition of current to rhs vector
+		 * @param rhs other vec2
+		 */
+		void operator+=(const vec2& rhs)
+		{
+			x += rhs.x;
+			y += rhs.y;
+		}
+
+		/**
+		 * @brief Operator overloaded addition with another vector
+		 * @param rhs other vec2
+		 */
+		vec2 operator+(const vec2& rhs) const
+		{
+			return {x + rhs.x, y + rhs.y};
+		}
+
+		/**
+		 * @brief Operator overloaded subtraction of current to rhs vector
+		 * @param rhs other vec2
+		 */
+		void operator-=(const vec2& rhs)
+		{
+			x -= rhs.x;
+			y -= rhs.y;
+		}
+		/**
+		 * @brief Operator overloaded subtraction with another vector
+		 * @param rhs other vec2
+		 */
+		vec2 operator-(const vec2& rhs) const
+		{
+			return {x - rhs.x, y - rhs.y};
+		}
+
+		/**
+		 * @brief Operator overloaded multiplication of a
+		 * vec2 with current one
+		 * @param rhs Other vec2 to multiply with
+		 * @return multiplication of two vectors
+		 */
+		vec2 operator*=(const vec2& rhs) const
+		{
+			return {x * rhs.x, y * rhs.y};
+		}
+		/**
+		 * @brief Operator overloaded subtraction with a scalar
+		 * @param scalar Scalar value.
+		 * @return multiplication of two vectors
+		 */
+		vec2 operator*(const float scalar) const
+		{
+			return {x * scalar, y * scalar};
+		}
+
+		/**
+		 * @brief equality operator
+		 * @param vec vec2 vector
+		 * @return true if equal, false otherwise
+		 */
+		bool operator==(const vec2& vec) const
+		{
+			return vec.x == x && vec.y == y;
+		}
+		/**
+		 * @brief inequality operator
+		 * @param vec vec2 vector
+		 * @return true if not equal, trueotherwise
+		 */
+		bool operator!=(const vec2& vec) const
+		{
+			return vec.x != x || vec.y != y;
+		}
+
 	};
 
 	/**
@@ -121,9 +217,21 @@ namespace clz::math
 	 * @brief Returns a normalized (unit length) copy of a vec2.
 	 * @param v Source vector.
 	 * @return v scaled to unit length.
-	 * @note Uses _mm_rsqrt_ps — fast approximation with ~0.037% max error.
 	 */
 	inline vec2 normalize(const vec2& v)
+	{
+		__m128 xmm = _mm_set_ps(0.0f, 0.0f, v.y, v.x);
+		// 0x33 = 0011 0011 — broadcast squared length into xy lanes for division
+		const __m128 sLength = _mm_dp_ps(xmm, xmm, 0x33);
+		return vec2(_mm_div_ps(xmm, _mm_sqrt_ps(sLength)));
+	}
+	/**
+	 * @brief faster version that returns a normalized (unit length) copy of a vec2.
+	 * @param v Source vector.
+	 * @return v scaled to unit length.
+	 * @note Uses _mm_rsqrt_ps — fast approximation with ~0.037% max error.
+	 */
+	inline vec2 fastNormalize(const vec2& v)
 	{
 		__m128 xmm = _mm_set_ps(0.0f, 0.0f, v.y, v.x);
 		// 0x33 = 0011 0011 — broadcast squared length into xy lanes for division

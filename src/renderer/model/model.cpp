@@ -38,6 +38,12 @@ namespace clz::renderer
 
 		fastgltf::Parser parser{};
 		auto data = fastgltf::GltfDataBuffer::FromPath(filePath);
+		if (!data)
+		{
+			const auto error = getErrorMessage(data.error());
+			clz::log::error(error);
+			return std::unexpected(std::string(error));
+		}
 
 		// Load glTF asset with external buffers
 		fastgltf::Expected<fastgltf::Asset> assetResult = parser.loadGltf(
@@ -304,15 +310,14 @@ namespace clz::renderer
 			if (positionIt == primitive.attributes.end())
 				continue;
 
-			std::vector<VertexAttribute> vertexAttributes;
 			const auto& positionAccessor = asset.accessors[positionIt->accessorIndex];
-			vertexAttributes.resize(positionAccessor.count);
+			primitiveData.attributes.resize(positionAccessor.count);
 
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
 				asset,
 				positionAccessor,
 				[&](const fastgltf::math::fvec3& pos, const std::size_t posIndex) {
-					vertexAttributes[posIndex]
+					primitiveData.attributes[posIndex]
 						.position = {pos.x(), pos.y(), pos.z()};
 				}
 			);
@@ -322,43 +327,48 @@ namespace clz::renderer
 			if (uvIt != primitive.attributes.end())
 			{
 				const auto& uvAccessor = asset.accessors[uvIt->accessorIndex];
-				std::vector<math::vec2> uvs(uvAccessor.count);
-				CLZ_ASSERT(
-					uvs.size() == vertexAttributes.size(),
-					"positions and uv's size are not equal"
-				);
+				if (uvAccessor.count != primitiveData.attributes.size())
+				{
+					clz::log::error(
+						"positions and uv's size are not equal"
+					);
+				}
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>(
 					asset,
 					uvAccessor,
 					[&](const fastgltf::math::fvec2& uv,
 					    const std::size_t uvIndex) {
-						vertexAttributes[uvIndex].uv = {uv.x(), uv.y()};
+						primitiveData.attributes[uvIndex].uv = {uv.x(), uv.y()};
 					}
 				);
 			}
 			else
 			{
-				for (size_t i = 0; i < vertexAttributes.size(); ++i)
+				for (size_t i = 0; i < primitiveData.attributes.size(); ++i)
 				{
-					vertexAttributes[i].uv = {0.0f, 0.0f};
+					primitiveData.attributes[i].uv = {0.0f, 0.0f};
 				}
 				clz::log::warn("mesh has no textures");
 			}
 			// --- Extract Normals ---
-			const auto normalIt = primitive.findAttribute("NORMAL");
+			const auto& normalIt = primitive.findAttribute("NORMAL");
 			if (normalIt != primitive.attributes.end())
 			{
 				const auto& normalAccessor =
 					asset.accessors[normalIt->accessorIndex];
-				std::vector<math::vec3> uvs(normalAccessor.count);
+				if (normalAccessor.count != primitiveData.attributes.size())
+				{
+					clz::log::error(
+						"positions and normal size are not equal");
+				}
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
 					asset,
 					normalAccessor,
 					[&](const fastgltf::math::fvec3 normal,
 					    const std::size_t index) {
-						vertexAttributes[index].normal = {
+						primitiveData.attributes[index].normal = {
 							normal.x(),
 							normal.y(),
 							normal.z()
@@ -366,21 +376,52 @@ namespace clz::renderer
 					}
 				);
 			}
-			primitiveData.attributes = std::move(vertexAttributes);
+			// --- Calculate tangent and bitangent
+			const auto &tangentIt = primitive.findAttribute("TANGENT");
+			if (tangentIt != primitive.attributes.end())
+			{
+				const auto& tangentAccessor =
+					asset.accessors[tangentIt->accessorIndex];
+				if (tangentAccessor.count != primitiveData.attributes.size())
+				{
+					clz::log::error(
+						"positions and tangent size are not equal");
+				}
+				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(
+					asset,
+					tangentAccessor,
+					[&](const fastgltf::math::fvec4& tangent,
+						const std::size_t index) {
+						primitiveData.attributes[index].tangent = {
+							tangent.x(),
+							tangent.y(),
+							tangent.z(),
+							tangent.w()
+						};
+					}
+				);
+			}
+			else
+			{
+				for (size_t i = 0; i < primitiveData.attributes.size(); ++i)
+				{
+					primitiveData.attributes[i].tangent = {
+						1.0f, 1.0f, 1.0f, 1.0f
+					};
+				}
+			}
 
 			// --- Extract Indices ---
 			const auto& indexAccessor =
 				asset.accessors[primitive.indicesAccessor.value()];
-			std::vector<uint32_t> indices(indexAccessor.count);
-
+			primitiveData.indices.resize(indexAccessor.count);
 			fastgltf::iterateAccessorWithIndex<uint32_t>(
 				asset,
 				indexAccessor,
 				[&](const uint32_t drawIndex, const std::size_t it) {
-					indices[it] = drawIndex;
+					primitiveData.indices[it] = drawIndex;
 				}
 			);
-			primitiveData.indices = std::vector(indices.begin(), indices.end());
 
 			// --- Extract Material / Texture ---
 			if (primitive.materialIndex)
@@ -561,12 +602,31 @@ namespace clz::renderer
 		};
 
 		// Handle Texture Loading (URI or BufferView)
+
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> lookupKey;
+		if (primitiveData.baseTexture.has_value())
+		{
+			lookupKey = primitiveData.baseTexture.value();
+		}
+		else if (primitiveData.metallic_roughnessTexture.has_value())
+		{
+			lookupKey = primitiveData.metallic_roughnessTexture.value();
+		}
+		else if (primitiveData.normalTexture.has_value())
+		{
+			lookupKey = primitiveData.normalTexture.value();
+		}
+		else
+		{
+			return ourPrimitive;
+		}
+
 		if (std::holds_alternative<fastgltf::sources::URI>(
-			    primitiveData.baseTexture.value()
+			lookupKey.value()
 		    ))
 		{
 			ourPrimitive.baseTextureId = r_NULL_TEXTURE;
-			ourPrimitive.baseColorFactor = math::vec4();
+			ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			if (primitiveData.baseTexture.has_value())
 			{
 				const std::filesystem::path baseTexturePath =
@@ -583,12 +643,11 @@ namespace clz::renderer
 					VK_FORMAT_R8G8B8A8_SRGB
 				);
 
-				ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			}
 
 			ourPrimitive.metallic_roughnessTextureId = r_NULL_TEXTURE;
-			ourPrimitive.roughnessFactor = 0.0f;
-			ourPrimitive.metallicFactor = 0.0f;
+			ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
+			ourPrimitive.metallicFactor = primitiveData.metallicFactor;
 			if (primitiveData.metallic_roughnessTexture.has_value())
 			{
 				const std::filesystem::path mrTexturePath =
@@ -605,8 +664,7 @@ namespace clz::renderer
 					VK_FORMAT_R8G8B8A8_UNORM
 				);
 
-				ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
-				ourPrimitive.metallicFactor = primitiveData.metallicFactor;
+
 			}
 
 			ourPrimitive.normalTextureId = r_NULL_TEXTURE;
@@ -628,10 +686,11 @@ namespace clz::renderer
 			}
 		}
 		else if (std::holds_alternative<fastgltf::sources::BufferView>(
-				 primitiveData.baseTexture.value()
-			 ))
+			lookupKey.value()
+			))
 		{
 			ourPrimitive.baseTextureId = r_NULL_TEXTURE;
+			ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			if (primitiveData.baseTexture.has_value())
 			{
 				const auto& bufferViewSource =
@@ -665,12 +724,11 @@ namespace clz::renderer
 					"base texture for " + getModelPath(registeredId).string(),
 					VK_FORMAT_R8G8B8A8_SRGB
 				);
-				ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			}
 
 			ourPrimitive.metallic_roughnessTextureId = r_NULL_TEXTURE;
-			ourPrimitive.roughnessFactor = 0.0f;
-			ourPrimitive.metallicFactor = 0.0f;
+			ourPrimitive.metallicFactor = primitiveData.metallicFactor;
+			ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
 			if (primitiveData.metallic_roughnessTexture.has_value())
 			{
 				const auto& bufferViewSource =
@@ -705,8 +763,7 @@ namespace clz::renderer
 						getModelPath(registeredId).string(),
 					VK_FORMAT_R8G8B8A8_UNORM
 				);
-				ourPrimitive.metallicFactor = primitiveData.metallicFactor;
-				ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
+
 			}
 
 			ourPrimitive.normalTextureId = r_NULL_TEXTURE;

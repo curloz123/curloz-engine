@@ -140,6 +140,11 @@ namespace clz::renderer
 			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescription.offset = offsetof(VertexAttribute, normal);
 			break;
+		case VertexAttributeType::TANGENT:
+			attributeDescription.location = 3;
+			attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			attributeDescription.offset = offsetof(VertexAttribute, tangent);
+			break;
 		}
 
 		return attributeDescription;

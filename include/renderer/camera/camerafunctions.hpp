@@ -19,17 +19,14 @@ namespace clz::renderer
 	/**
 	 * @brief Updates pitch/yaw for camera @p id from raw cursor position.
 	 * @param id Camera ID
-	 * @param xPos Pointer's x-coordinate in screen.
-	 * @param yPos Pointer's y-coordinate in screen.
 	 */
-	void processMouseInput(CameraId id, float xPos, float yPos);
+	void processMouseInput(CameraId id);
 
 	/**
 	 * @brief Adjusts FOV for camera @p id from scroll input, clamped to [1, 89] degrees.
 	 * @param id Camera ID
-	 * @param yOffset cursor scroll offset
 	 */
-	void processMouseScroll(CameraId id, float yOffset);
+	void processMouseScroll(CameraId id);
 
 	/**
 	 * @brief Computer forward and right vectors for camera @p id
