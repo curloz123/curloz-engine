@@ -21,15 +21,12 @@
 #include "renderer/vk_types.hpp"
 #include "core/time.hpp"
 
-/// debug
-#include <GLFW/glfw3.h>
 
 namespace clz::renderer
 {
 	/// @copydoc loadModel
 	std::expected<ModelId, std::string> loadModel(const std::filesystem::path& filePath)
 	{
-		const auto start = glfwGetTime();
 		const ModelId Id = ModelLUT.size();
 		ModelLUT.resize(ModelLUT.size() + 1);
 		TextureCaches.resize(TextureCaches.size() + 1);
@@ -75,9 +72,6 @@ namespace clz::renderer
 
 		ModelLUT[Id] = std::move(ourModel);
 		TextureCaches[Id].clear();
-		const auto end = glfwGetTime();
-		clz::log::debug("time to load model: " + filePath.string() + ": " +
-				std::to_string(end - start) + "s");
 		return Id;
 	}
 

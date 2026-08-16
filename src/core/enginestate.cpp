@@ -1,6 +1,6 @@
 #include "core/enginestate.hpp"
-#include "include/state_change.hpp"
-#include "renderer/state_change.hpp"
+#include "include/cross_system_flags.hpp"
+#include "renderer/cross_system_flags.hpp"
 #include "core/logs.hpp"
 
 

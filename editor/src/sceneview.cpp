@@ -66,7 +66,6 @@ void drawMainViewPort()
 	const ImVec2 avail = ImGui::GetContentRegionAvail();
 	if (avail.x < 1.0f || avail.y < 1.0f)
 	{
-		clz::log::debug("wtf");
 		return;
 	}
 	const auto width = static_cast<uint32_t>(avail.x);

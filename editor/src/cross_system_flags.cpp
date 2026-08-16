@@ -1,14 +1,12 @@
-#pragma once
-
-#include "sceneview.hpp"
+#include "../include/cross_system_flags.hpp"
+#include "renderer/camera/camerafunctions.hpp"
+#include "../include/sceneview.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/camera/camera.hpp"
-#include "core/enginestate.hpp"
-#include "renderer/camera/camerafunctions.hpp"
 
 namespace clz::editor
 {
-	inline void flagEditorStateChange(
+	void flagEditorStateChange(
 		const clz::state::EngineState oldState,
 		const clz::state::EngineState newState)
 	{
@@ -18,7 +16,7 @@ namespace clz::editor
 			prepareEditor();
 			window::enableCursor();
 
-			const auto editorCameraId = editor::mainViewportImage.cameraId;
+			const auto editorCameraId =mainViewportImage.cameraId;
 
 			renderer::setCameraPosition(editorCameraId, renderer::getCameraPosition(renderer::r_cameraId));
 			renderer::setCameraPitch(editorCameraId, renderer::getCameraPitch(renderer::r_cameraId));
@@ -26,5 +24,11 @@ namespace clz::editor
 
 			renderer::updateCameraVectors(editorCameraId);
 		}
+	}
+
+	void flagEditorFramebufferResize()
+	{
+		mainViewportImage.outDated = true;
+		physicsBodyShapeImage.outDated = true;
 	}
 }

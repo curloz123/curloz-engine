@@ -19,15 +19,25 @@
 #include "renderer/pipelinedata/camera.hpp"
 #include "renderer/pipelinedata/lights.hpp"
 #include "renderer/pipelinedata/pipelinedata.hpp"
+#include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/pipelinedata/texture.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/pipeline.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/postprocess/post_tonemap.hpp"
+#include "renderer/postprocess/pre_tonemap.hpp"
+#include "renderer/postprocess/tonemap.hpp"
 
 #include <vector>
 
+namespace clz::renderer
+{
+	static bool createPre_TonemapPipeline();
+	static bool createTonemapPipeline();
+	static bool createPost_TonemapPipeline();
+}
 namespace clz::renderer
 {
 	bool initPipelineContexts()
@@ -53,10 +63,34 @@ namespace clz::renderer
 			return false;
 		}
 
+		if (!createPre_TonemapPipeline())
+		{
+			clz::log::error("Could not create pre-post tonemap pipeline");
+			clz::log::error("Could initialize pipeline context");
+			return false;
+		}
+
+		if (!createTonemapPipeline())
+		{
+			clz::log::error("Could not create tonemap pipeline");
+			clz::log::error("Could not initialize pipeline context");
+			return false;
+		}
+
+		if (!createPost_TonemapPipeline())
+		{
+			clz::log::error("Could not create post tonemap pipeline");
+			clz::log::error("Could not initialize pipeline context");
+			return false;
+		}
+
 		clz::log::info("created pipeline context");
 		return true;
 	}
+}
 
+namespace clz::renderer
+{
 	bool createMainPipeline()
 	{
 		// Create shaders modules
@@ -98,8 +132,8 @@ namespace clz::renderer
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly =
 			createInputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
-		VkViewport viewport = createViewport(r_swapchainContext.extent);
-		VkRect2D scissor = createScissor(r_swapchainContext.extent);
+		VkViewport viewport = createViewport(r_renderTargetContext.imageExtent);
+		VkRect2D scissor = createScissor(r_renderTargetContext.imageExtent);
 		VkPipelineViewportStateCreateInfo viewportState =
 			createViewportState(viewport, scissor);
 
@@ -138,11 +172,11 @@ namespace clz::renderer
 			layouts.data()
 		);
 
-		std::vector<VkFormat> attachmentFormats = {r_swapchainContext.format.format};
+		std::vector<VkFormat> attachmentFormats = {r_renderTargetContext.imageFormat};
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = createPipelineRenderingInfo(
 			1,
 			attachmentFormats,
-			r_swapchainContext.depthFormat
+			r_renderTargetContext.depthFormat
 		);
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -246,14 +280,14 @@ namespace clz::renderer
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(r_swapchainContext.extent.width);
-		viewport.height = static_cast<float>(r_swapchainContext.extent.height);
+		viewport.width = static_cast<float>(r_renderTargetContext.imageExtent.width);
+		viewport.height = static_cast<float>(r_renderTargetContext.imageExtent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
 		VkRect2D scissor{};
 		scissor.offset = {0, 0};
-		scissor.extent = r_swapchainContext.extent;
+		scissor.extent = r_renderTargetContext.imageExtent;
 
 		VkPipelineViewportStateCreateInfo viewportState{};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -305,8 +339,8 @@ namespace clz::renderer
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 		pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		pipelineRenderingCI.colorAttachmentCount = 1;
-		pipelineRenderingCI.pColorAttachmentFormats = &r_swapchainContext.format.format;
-		pipelineRenderingCI.depthAttachmentFormat = r_swapchainContext.depthFormat;
+		pipelineRenderingCI.pColorAttachmentFormats = &r_renderTargetContext.imageFormat;
+		pipelineRenderingCI.depthAttachmentFormat = r_renderTargetContext.depthFormat;
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -348,6 +382,194 @@ namespace clz::renderer
 
 		return true;
 	}
+
+	/// @brief Shared setup for the full-screen post-process pipelines
+	/// (pre/post-tonemap and tonemap). Both are full-screen-triangle passes:
+	/// no vertex buffer (position/UV come from gl_VertexIndex in the vertex
+	/// shader), no depth testing, single color attachment, and bind against
+	/// the shared post-process descriptor set layout.
+	static bool createFullScreenPostProcessPipeline(
+		PipelineContext& pipelineContext,
+		const char* vertPath,
+		const char* fragPath,
+		const char* debugName,
+		const size_t pushConstantSize,
+		VkFormat colorAttachmentFormat,
+		VkExtent2D extent)
+	{
+		if (!createShaderModules(pipelineContext, vertPath, fragPath))
+		{
+			clz::log::error(std::string("Could not create shader modules for ") + debugName);
+			return false;
+		}
+
+		auto vertShaderStageInfo = createShaderStageInfo(
+			pipelineContext.vertexShader,
+			ShaderStage::VERTEX);
+		auto fragShaderStageInfo = createShaderStageInfo(
+			pipelineContext.fragmentShader,
+			ShaderStage::FRAGMENT
+		);
+		std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
+
+		// Dynamic State
+		std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+		VkPipelineDynamicStateCreateInfo dynamicState = createDynamicStates(dynamicStates);
+
+		// Full-screen triangle: no vertex buffer bound, ever. Both counts
+		// MUST be zero -- position/UV are derived from gl_VertexIndex inside
+		// post_process.vert, matching the vkCmdDraw(cmd, 3, 1, 0, 0) call
+		// used to invoke this pipeline.
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+
+		VkPipelineInputAssemblyStateCreateInfo inputAssembly =
+			createInputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+		VkViewport viewport = createViewport(extent);
+		VkRect2D scissor = createScissor(extent);
+		VkPipelineViewportStateCreateInfo viewportState =
+			createViewportState(viewport, scissor);
+
+		VkPipelineRasterizationStateCreateInfo rasterizer =
+			createRasterizer(VK_POLYGON_MODE_FILL, 1.0f);
+
+		VkPipelineMultisampleStateCreateInfo multisampling{};
+		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+		// No depth: flat full-screen pass, nothing to test/write against.
+		VkPipelineDepthStencilStateCreateInfo depthStencil{};
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable = VK_FALSE;
+		depthStencil.depthWriteEnable = VK_FALSE;
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.stencilTestEnable = VK_FALSE;
+
+		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+		colorBlendAttachment.colorWriteMask =
+			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+			VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachment.blendEnable = VK_FALSE;
+		VkPipelineColorBlendStateCreateInfo colorBlending{};
+		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlending.logicOpEnable = VK_FALSE;
+		colorBlending.logicOp = VK_LOGIC_OP_COPY;
+		colorBlending.attachmentCount = 1;
+		colorBlending.pAttachments = &colorBlendAttachment;
+
+		// Post-process passes sample the previous stage's image through the
+		// shared post-process descriptor set layout (pre/tonemap/post bind points).
+		std::vector<VkDescriptorSetLayout> layouts = {
+			post_processDescriptorLayout
+		};
+		createPipelineLayout(
+			pipelineContext,
+			pushConstantSize,
+			layouts.size(),
+			layouts.data()
+		);
+
+		std::vector<VkFormat> attachmentFormats = {colorAttachmentFormat};
+		// No depth attachment for a post-process pass.
+		VkPipelineRenderingCreateInfo pipelineRenderingCI = createPipelineRenderingInfo(
+			1,
+			attachmentFormats,
+			VK_FORMAT_UNDEFINED
+		);
+
+		VkGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.pNext = &pipelineRenderingCI;
+		pipelineInfo.stageCount = 2;
+		pipelineInfo.pStages = shaderStages.data();
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &inputAssembly;
+		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pRasterizationState = &rasterizer;
+		pipelineInfo.pMultisampleState = &multisampling;
+		pipelineInfo.pDepthStencilState = &depthStencil;
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDynamicState = &dynamicState;
+		pipelineInfo.layout = pipelineContext.layout;
+		pipelineInfo.renderPass = VK_NULL_HANDLE;
+		pipelineInfo.subpass = 0;
+
+		if (vkCreateGraphicsPipelines(
+			    r_deviceContext.device,
+			    VK_NULL_HANDLE,
+			    1,
+			    &pipelineInfo,
+			    nullptr,
+			    &pipelineContext.pipeline
+		    ) != VK_SUCCESS)
+		{
+			clz::log::error(std::string("vulkan could not create ") + debugName);
+			return false;
+		}
+
+		clz::log::info(std::string("created ") + debugName);
+
+		setHandleName(
+			reinterpret_cast<uint64_t>(pipelineContext.pipeline),
+			VK_OBJECT_TYPE_PIPELINE,
+			debugName
+		);
+
+		return true;
+	}
+
+	static bool createPre_TonemapPipeline()
+	{
+		// One pipeline handles both pre- and post-tonemap passes; which
+		// mode runs is selected via Pre_PostTonemapPC.mode at draw time.
+		// Color attachment format matches pre_tonemapImage / post_tonemapImage,
+		// both currently created with r_renderTargetContext.imageFormat.
+		// NOTE: if post_tonemapImage's format is changed to a dedicated LDR
+		// format later (flagged in post_tonemap.cpp), this single pipeline
+		// will need to be split into two, since VkPipelineRenderingCreateInfo's
+		// color format must match the attachment bound at draw time.
+		return createFullScreenPostProcessPipeline(
+			r_preTonemapPipelineContext,
+			"shaders/post_process.vert.spirv",
+			"shaders/pre_tonemap.frag.spirv",
+			"pre tonemap pipeline",
+			sizeof(Pre_TonemapPC),
+			post_process::PRE_TONEMAP_IMAGE_FORMAT,
+			r_renderTargetContext.imageExtent
+		);
+	}
+
+	static bool createTonemapPipeline()
+	{
+		return createFullScreenPostProcessPipeline(
+			r_tonemapPipelineContext,
+			"shaders/post_process.vert.spirv",
+			"shaders/tonemap.frag.spirv",
+			"tonemap pipeline",
+			0,
+			post_process::TONEMAP_IMAGE_FORMAT,
+			r_renderTargetContext.imageExtent
+		);
+	}
+
+	static bool createPost_TonemapPipeline()
+	{
+		return createFullScreenPostProcessPipeline(
+			r_postTonemapPipelineContext,
+			"shaders/post_process.vert.spirv",
+			"shaders/post_tonemap.frag.spirv",
+			"post tonemap pipeline",
+			sizeof(Post_TonemapPC),
+			post_process::POST_TONEMAP_IMAGE_FORMAT,
+			r_swapchainContext.extent
+		);
+	}
+
 } // namespace clz::renderer
 
 namespace clz::renderer
@@ -358,6 +580,9 @@ namespace clz::renderer
 		destroyPipelineData();
 
 		// --- Then Destroy pipeline context's
+		destroyPipelineContext(r_postTonemapPipelineContext);
+		destroyPipelineContext(r_tonemapPipelineContext);
+		destroyPipelineContext(r_preTonemapPipelineContext);
 		destroyPipelineContext(r_shapePipelineContext);
 		clz::log::info("destroyed main pipeline context");
 		destroyPipelineContext(r_pipelineContext);

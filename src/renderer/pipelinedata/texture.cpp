@@ -20,7 +20,6 @@
 
 namespace clz::renderer
 {
-
 	bool createTextureDescriptor()
 	{
 

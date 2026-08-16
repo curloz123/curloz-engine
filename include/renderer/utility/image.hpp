@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vulkan/vulkan.h>
+#include <expected>
+#include <span>
 
 namespace clz::renderer
 {
@@ -77,4 +79,63 @@ namespace clz::renderer
 		VkImageAspectFlags aspect
 	);
 
+	enum class SamplerFilter
+	{
+		LINEAR,
+		NEAREST
+	};
+	enum class SamplerAddressMode
+	{
+		CLAMP_TO_EDGE,
+		CLAMP_TO_BORDER,
+		MIRRORED_REPEAT,
+		REPEAT
+	};
+	/**
+	 *
+	 * @param rSampler Sampler to create
+	 * @param name Name of sampler
+	 * @param magFilter Magnification filter
+	 * @param minFilter Minimization filter
+	 * @param mipmapMode Mim-map mode of sampler
+	 * @param addressModeU Address Mode U
+	 * @param addressModeV Address Mode V
+	 * @param addressModeW Address Mode W
+	 * @return True on creation, false if anything fails
+	 */
+	bool createSampler(
+		VkSampler& rSampler,
+		std::string_view name,
+		VkFilter magFilter,
+		VkFilter minFilter,
+		VkSamplerMipmapMode mipmapMode,
+		VkSamplerAddressMode addressModeU,
+		VkSamplerAddressMode addressModeV,
+		VkSamplerAddressMode addressModeW
+	);
+
+
+	/**
+	 * @brief Copies one image to another
+	 *
+	 * @param srcImage Source image (the one to copy)
+	 * @param srcExtent Source image extents
+	 * @param dstImage Destination image (the one to be copied one)
+	 * @param dstExtent Destination image extents
+	 * @param commandBuffer Active command buffer
+	 */
+	void copyImage2D(
+		VkImage srcImage,
+		VkExtent2D srcExtent,
+		VkImage dstImage,
+		VkExtent2D dstExtent,
+		VkCommandBuffer commandBuffer
+	);
+
+
+	std::expected<VkFormat, std::string> findSupportedFormat(
+		std::span<VkFormat> candidates,
+		VkImageTiling tiling,
+		VkFormatFeatureFlags features
+	);
 } // namespace clz::renderer

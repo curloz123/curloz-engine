@@ -8,6 +8,7 @@
 
 #include "math/mat4x4.hpp"
 #include "math/vec4.hpp"
+#include <cstdint>
 
 namespace clz::renderer
 {
@@ -34,4 +35,14 @@ namespace clz::renderer
 		uint32_t normalTextureIndex;
 	};
 
+	struct Pre_TonemapPC
+	{
+		uint32_t postProcessBits;
+	};
+
+	struct Post_TonemapPC
+	{
+		uint32_t postProcessBits;
+
+	};
 } // namespace clz::renderer

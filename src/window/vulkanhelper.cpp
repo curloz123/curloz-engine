@@ -8,6 +8,7 @@
 #include "core/logs.hpp"
 #include "renderer/renderer.hpp"
 #include "window/window_types.hpp"
+#include "renderer/cross_system_flags.hpp"
 
 namespace clz::window
 {
@@ -44,7 +45,7 @@ namespace clz::window
 	/// @copydoc
 	void hintRendererAboutResize(GLFWwindow* window, int, int)
 	{
-		clz::renderer::r_recreateSwapchain = true;
+		renderer::flagRendererFramebufferResize();
 	}
 
 } // namespace clz::window

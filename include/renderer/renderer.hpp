@@ -39,5 +39,7 @@ namespace clz::renderer
 	 * callback function defined inside window/vulkanhelper.hpp
 	 * or when swapchain goes out of date or suboptimal
 	 */
-	inline bool r_recreateSwapchain = false;
+	inline bool r_swapchainOutdated = false;
+
+	bool recreateImagesOnFramebufferResize();
 } // namespace clz::renderer

@@ -11,6 +11,7 @@
 #include "renderer/pipelinedata/camera.hpp"
 #include "renderer/pipelinedata/descriptor.hpp"
 #include "renderer/pipelinedata/lights.hpp"
+#include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/texture.hpp"
 
 namespace clz::renderer
@@ -34,6 +35,12 @@ namespace clz::renderer
 		if (!initLightDescriptor())
 		{
 			clz::log::error("Could not create light descriptor!");
+			return false;
+		}
+
+		if (!createPostProcessDescriptor())
+		{
+			clz::log::error("Could not create post process descriptor!");
 			return false;
 		}
 		// 3. Pool + actual descriptor sets, built from the layouts above.

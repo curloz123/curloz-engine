@@ -23,12 +23,6 @@ namespace clz::renderer
 	bool createSwapchain();
 
 	/**
-	 * @brief Creates Depth resources - Depth Image and Image View
-	 * @return True if depth resources creation was succesful, false otherwise
-	 */
-	bool createDepthResources();
-
-	/**
 	 * @brief Recreates the swapchain.
 	 *
 	 * Called when the swapchain becomes invalid
@@ -53,5 +47,4 @@ namespace clz::renderer
 	 */
 	void destroySwapchain();
 
-	void destroyDepthResources();
 } // namespace clz::renderer

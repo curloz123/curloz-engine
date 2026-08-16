@@ -4,13 +4,14 @@
 
 namespace clz::renderer::post_process
 {
-	constexpr inline VkFormat postProcessImageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-
-	inline VkImage postProcessImage = VK_NULL_HANDLE;
-	inline VkDeviceMemory postProcessImageMemory = VK_NULL_HANDLE;
-	inline VkImageView postProcessImageView = VK_NULL_HANDLE;
-
 	bool initializePostProcesses();
-	void applyPostProcessing();
 	void destroyPostProcesses();
+	bool recreatePostProcesses();
+
+	/// @brief Runs the full pre-tonemap -> tonemap -> post-tonemap chain.
+	/// @note Leaves postTonemapImage in VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+	/// The caller is responsible for copying/blitting postTonemapImage into
+	/// its actual final destination (swapchain image, editor viewport image, etc.)
+	void applyPostProcessing(VkCommandBuffer commandBuffer);
+
 }

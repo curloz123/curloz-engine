@@ -26,6 +26,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
+#include "renderer/cross_system_flags.hpp"
 
 namespace clz::editor
 {
@@ -103,9 +104,9 @@ bool init()
 	// Apply gamma correction
 	for (auto& col : ImGui::GetStyle().Colors)
 	{
-		col.x = std::pow(col.x, 2.2f);
-		col.y = std::pow(col.y, 2.2f);
-		col.z = std::pow(col.z, 2.2f);
+		col.x = std::pow(col.x, 4.0f);
+		col.y = std::pow(col.y, 4.0f);
+		col.z = std::pow(col.z, 4.0f);
 	}
 
 	ImFontConfig config_default;
@@ -147,10 +148,9 @@ bool init()
 	VkPipelineRenderingCreateInfo pipelineRenderingInfo{};
 	pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	pipelineRenderingInfo.colorAttachmentCount = 1;
-	pipelineRenderingInfo.pColorAttachmentFormats =
-		&renderer::r_swapchainContext.format.format;
+	pipelineRenderingInfo.pColorAttachmentFormats = &renderer::r_swapchainContext.format.format;
 	pipelineRenderingInfo.depthAttachmentFormat =
-		renderer::r_swapchainContext.depthFormat;
+		renderer::r_renderTargetContext.depthFormat;
 
 	/// initInfo
 	ImGui_ImplVulkan_InitInfo initInfo{};
@@ -171,6 +171,8 @@ bool init()
 	ImGui_ImplVulkan_Init(&initInfo);
 	createOffscreenTargets();
 
+
+	renderer::flagRendererEditorInitialized();
 	clz::log::info("Initialized editor");
 
 	return true;

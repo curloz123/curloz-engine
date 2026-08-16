@@ -14,6 +14,7 @@
 #include "renderer/pipelinedata/texture.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/pipelinedata/post_process.hpp"
 
 namespace clz::renderer
 {
@@ -51,12 +52,19 @@ namespace clz::renderer
 		pointPoolSize.descriptorCount = r_FRAMES_IN_FLIGHT;
 		poolSize.push_back(pointPoolSize);
 
+		// post process pool size
+		const auto post_processPoolSizes = getPostProcessDescriptorPoolSizes();
+		poolSize.insert(poolSize.end(),
+			std::make_move_iterator(post_processPoolSizes.begin()),
+			std::make_move_iterator(post_processPoolSizes.end())
+		);
+
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
 		poolInfo.pPoolSizes = poolSize.data();
-		poolInfo.maxSets = static_cast<uint32_t>(r_FRAMES_IN_FLIGHT) * 3;
+		poolInfo.maxSets = static_cast<uint32_t>(r_FRAMES_IN_FLIGHT) * 4;
 
 		if (vkCreateDescriptorPool(
 			    r_deviceContext.device,
@@ -113,7 +121,7 @@ namespace clz::renderer
 			}
 		}
 
-		// --- Allocate sampler descriptor sets, one per frame ---
+		// --- Allocate texture descriptor sets, one per frame ---
 		{
 			VkDescriptorSetAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -184,6 +192,10 @@ namespace clz::renderer
 			}
 		}
 
+		// allocate post process descriptor sets
+		allocatePostProcessDescriptorSets(descriptorPool);
+
+
 		// --- Write camera descriptor sets ---
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
@@ -203,6 +215,8 @@ namespace clz::renderer
 
 			vkUpdateDescriptorSets(r_deviceContext.device, 1, &cameraWrite, 0, nullptr);
 		}
+
+		// texture set update is done after entities have been created
 
 		// --- Write light descriptor sets ---
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
@@ -275,7 +289,9 @@ namespace clz::renderer
 			);
 		}
 
-		clz::log::info("Created and wrote all descriptor sets");
+		// post process descriptor sets are updated by post process system
+
+		clz::log::info("Created and wrote most descriptor sets");
 		return true;
 	}
 

@@ -62,10 +62,11 @@ namespace clz::renderer
 		// descriptor set is bound (UPDATE_AFTER_BIND) and lets unused slots
 		// stay unwritten (PARTIALLY_BOUND) — needed since textures are
 		// registered incrementally as models load, not all at once.
-		constexpr std::array<VkDescriptorBindingFlags, 1> bindingFlags = {
+		const std::vector<VkDescriptorBindingFlags> bindingFlags(
+			rBindPoints.size(),
 			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
-			VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT
-		};
+				VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT
+		);
 		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
 		bindingFlagsInfo.sType =
 			VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;

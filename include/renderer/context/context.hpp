@@ -75,11 +75,25 @@ namespace clz::renderer
 		VkExtent2D extent;			   ///< Swapchain resolution
 		std::vector<VkImage> images;		   ///< Swapchain images
 		std::vector<VkImageView> imageViews;	   ///< Image views for rendering
+	};
+
+	/**
+	 * @struct RenderTargetContext
+	 * @brief Stores the render target resources
+	 */
+	struct RenderTargetContext
+	{
+		VkImage image = VK_NULL_HANDLE;
+		VkImageView imageView = VK_NULL_HANDLE;
+		VkSampler imageSampler = VK_NULL_HANDLE;
+		VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+		VkFormat imageFormat = VK_FORMAT_UNDEFINED;
+		VkExtent2D imageExtent;
 
 		VkImage depthImage = VK_NULL_HANDLE;
 		VkImageView depthImageView = VK_NULL_HANDLE;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
-		VkDeviceMemory depthDeviceMemory = VK_NULL_HANDLE;
+		VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
 	};
 
 	/**

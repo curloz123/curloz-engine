@@ -99,14 +99,14 @@ bool initializeEditorPipeline()
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(renderer::r_swapchainContext.extent.width);
-	viewport.height = static_cast<float>(renderer::r_swapchainContext.extent.height);
+	viewport.width = static_cast<float>(renderer::r_renderTargetContext.imageExtent.width);
+	viewport.height = static_cast<float>(renderer::r_renderTargetContext.imageExtent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	VkRect2D scissor{};
 	scissor.offset = {0, 0};
-	scissor.extent = renderer::r_swapchainContext.extent;
+	scissor.extent = renderer::r_renderTargetContext.imageExtent;
 
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -151,9 +151,8 @@ bool initializeEditorPipeline()
 	VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 	pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	pipelineRenderingCI.colorAttachmentCount = 1;
-	pipelineRenderingCI.pColorAttachmentFormats =
-		&renderer::r_swapchainContext.format.format;
-	pipelineRenderingCI.depthAttachmentFormat = renderer::r_swapchainContext.depthFormat;
+	pipelineRenderingCI.pColorAttachmentFormats = &renderer::r_renderTargetContext.imageFormat;
+	pipelineRenderingCI.depthAttachmentFormat = renderer::r_renderTargetContext.depthFormat;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

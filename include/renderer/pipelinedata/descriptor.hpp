@@ -25,6 +25,7 @@ namespace clz::renderer
 	inline std::vector<VkDescriptorSet> cameraDescriptorSets = {};
 	inline std::vector<VkDescriptorSet> textureDescriptorSets = {};
 	inline std::vector<VkDescriptorSet> lightDescriptorSets = {};
+
 } // namespace clz::renderer
 
 namespace clz::renderer

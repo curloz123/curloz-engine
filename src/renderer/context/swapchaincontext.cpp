@@ -13,6 +13,7 @@
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/entitydata/texture.hpp"
 #include "window/window.hpp"
 #include <string>
 
@@ -26,14 +27,6 @@ namespace clz::renderer
 			clz::log::error("Could not initialize swapchain context");
 			return false;
 		}
-
-		if (!createDepthResources())
-		{
-			clz::log::error("Failed to create depth resources");
-			clz::log::error("Could not initialize swapchain context");
-			return false;
-		}
-
 		clz::log::info("Initialized swapchain context");
 		return true;
 	}
@@ -149,6 +142,9 @@ namespace clz::renderer
 			);
 		}
 
+		clz::log::debug("Swapchain new extents: " + std::to_string(r_swapchainContext.extent.width)
+			+ ", " + std::to_string(r_swapchainContext.extent.height));
+
 		// Finally creating the swapchain
 		uint32_t imageCount = capabilities.minImageCount + 1;
 		if (imageCount > capabilities.maxImageCount && capabilities.maxImageCount > 0)
@@ -163,7 +159,8 @@ namespace clz::renderer
 		swapchainInfo.imageColorSpace = r_swapchainContext.format.colorSpace;
 		swapchainInfo.imageExtent = r_swapchainContext.extent;
 		swapchainInfo.imageArrayLayers = 1;
-		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+						VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		uint32_t QueueFamilyIndices[] = {
 			r_deviceContext.graphicsFamily.value(),
 			r_deviceContext.presentFamily.value()
@@ -269,166 +266,9 @@ namespace clz::renderer
 		return true;
 	}
 
-	VkFormat findSupportedFormat(
-		const std::vector<VkFormat>& candidates,
-		const VkImageTiling tiling,
-		const VkFormatFeatureFlags features
-	)
-	{
-		for (auto& format : candidates)
-		{
-			VkFormatProperties formatProperties;
-			vkGetPhysicalDeviceFormatProperties(
-				r_deviceContext.physicalDevice,
-				format,
-				&formatProperties
-			);
-
-			switch (tiling)
-			{
-			case VK_IMAGE_TILING_OPTIMAL:
-				if ((formatProperties.optimalTilingFeatures & features) == features)
-				{
-					clz::log::info("Optimal depth format found");
-					return format;
-				}
-				break;
-
-			case VK_IMAGE_TILING_LINEAR:
-				if ((formatProperties.linearTilingFeatures & features) == features)
-				{
-					clz::log::info("linear depth format found");
-					return format;
-				}
-				break;
-
-			default:
-				clz::log::error("A requested depth format is not available");
-			}
-		}
-		clz::log::error("Could not find any supported depth format");
-		return VK_FORMAT_UNDEFINED;
-	}
-	bool createDepthResources()
-	{
-		r_swapchainContext.depthFormat = findSupportedFormat(
-			{VK_FORMAT_D32_SFLOAT},
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-		);
-
-		if (r_swapchainContext.depthFormat == VK_FORMAT_UNDEFINED)
-		{
-			clz::log::error("Could not find depth format");
-			return false;
-		}
-
-		if (!clz::renderer::createImage(
-			    r_swapchainContext.depthImage,
-			    "Depth Image",
-			    r_swapchainContext.extent.width,
-			    r_swapchainContext.extent.height,
-			    r_swapchainContext.depthFormat,
-			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			    0
-		    ))
-		{
-			clz::log::error("Could not create depth image");
-			return false;
-		}
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_swapchainContext.depthImage),
-			VK_OBJECT_TYPE_IMAGE,
-			"swapchain depth image"
-		);
-
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(
-			clz::renderer::r_deviceContext.device,
-			r_swapchainContext.depthImage,
-			&memRequirements
-		);
-
-		VkMemoryAllocateInfo memAllocInfo = {};
-		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		memAllocInfo.allocationSize = memRequirements.size;
-		memAllocInfo.memoryTypeIndex = findMemoryType(
-			memRequirements.memoryTypeBits,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		if (vkAllocateMemory(
-			    clz::renderer::r_deviceContext.device,
-			    &memAllocInfo,
-			    nullptr,
-			    &r_swapchainContext.depthDeviceMemory
-		    ) != VK_SUCCESS)
-		{
-			clz::log::error("vulkan could not create depth memory");
-			return false;
-		}
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_swapchainContext.depthDeviceMemory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			"swapchain depth memory"
-		);
-
-		vkBindImageMemory(
-			clz::renderer::r_deviceContext.device,
-			r_swapchainContext.depthImage,
-			r_swapchainContext.depthDeviceMemory,
-			0
-		);
-
-		if (!createImageView(
-			    r_swapchainContext.depthImageView,
-			    "Depth image view",
-			    r_swapchainContext.depthImage,
-			    r_swapchainContext.depthFormat,
-			    VK_IMAGE_ASPECT_DEPTH_BIT
-		    ))
-		{
-			clz::log::error("Could not create depth image view");
-			return false;
-		}
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_swapchainContext.depthImageView),
-			VK_OBJECT_TYPE_IMAGE_VIEW,
-			"swapchain depth image view"
-		);
-
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = clz::renderer::r_commandContext.commandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer = startSingleTimeCommand();
-
-		transition_image_layout(
-			r_swapchainContext.depthImage,
-			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-			VK_PIPELINE_STAGE_2_NONE,
-			VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-				VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-			VK_ACCESS_2_NONE,
-			VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-				VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			VK_IMAGE_ASPECT_DEPTH_BIT,
-			commandBuffer
-		);
-
-		submitSingleTimeCommand(commandBuffer);
-
-		clz::log::info("Created depth resources");
-		return true;
-	}
 
 	void recreateSwapchainContext()
 	{
-		vkDeviceWaitIdle(r_deviceContext.device);
 		destroySwapchainContext();
 
 		if (!initSwapchainContext()) [[unlikely]]
@@ -442,7 +282,6 @@ namespace clz::renderer
 {
 	void destroySwapchainContext()
 	{
-		destroyDepthResources();
 		destroySwapchain();
 		clz::log::info("destroyed swapchain context");
 	}
@@ -462,16 +301,4 @@ namespace clz::renderer
 		clz::log::info("destroyed swapchain");
 	}
 
-	void destroyDepthResources()
-	{
-		vkDestroyImageView(
-			r_deviceContext.device,
-			r_swapchainContext.depthImageView,
-			nullptr
-		);
-		vkDestroyImage(r_deviceContext.device, r_swapchainContext.depthImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, r_swapchainContext.depthDeviceMemory, nullptr);
-
-		clz::log::info("destroyed depth resources");
-	}
 } // namespace clz::renderer

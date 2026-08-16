@@ -6,7 +6,10 @@
 
 #include "renderer/utility/image.hpp"
 #include "core/logs.hpp"
+#include "nlohmann/adl_serializer.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/utility/namer.hpp"
+
 #include <string>
 
 namespace clz::renderer
@@ -136,5 +139,150 @@ namespace clz::renderer
 
 		return true;
 	}
+
+	/// @copydoc createSampler
+	bool createSampler(
+		VkSampler& rSampler,
+		const std::string_view name,
+		const VkFilter magFilter,
+		const VkFilter minFilter,
+		const VkSamplerMipmapMode mipmapMode,
+		const VkSamplerAddressMode addressModeU,
+		const VkSamplerAddressMode addressModeV,
+		const VkSamplerAddressMode addressModeW
+	)
+	{
+		VkSamplerCreateInfo samplerInfo = {};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = magFilter;
+		samplerInfo.minFilter = minFilter;
+		samplerInfo.mipmapMode = mipmapMode;
+		samplerInfo.addressModeU = addressModeU;
+		samplerInfo.addressModeV = addressModeV;
+		samplerInfo.addressModeW = addressModeW;
+		samplerInfo.anisotropyEnable = VK_FALSE;
+		samplerInfo.maxAnisotropy = 1.0f;
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 0.0f;
+
+		if (vkCreateSampler(
+			    r_deviceContext.device,
+			    &samplerInfo,
+			    nullptr,
+			    &rSampler
+		    ) != VK_SUCCESS)
+		{
+			clz::log::error("failed to create" + std::string(name) + " sampler");
+			return false;
+		}
+		setHandleName(
+			reinterpret_cast<uint64_t>(rSampler),
+			VK_OBJECT_TYPE_SAMPLER,
+			std::string(name).c_str()
+		);
+
+		return true;
+	}
+
+
+	/// @copydoc copyImage2D
+	void copyImage2D(
+		VkImage srcImage,
+		const VkExtent2D srcExtent,
+		VkImage dstImage,
+		const VkExtent2D dstExtent,
+		VkCommandBuffer commandBuffer
+	)
+	{
+		const VkImageSubresourceLayers subresource = {
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.mipLevel = 0,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		};
+
+		const VkImageBlit blitRegion = {
+			.srcSubresource = subresource,
+			.srcOffsets = {
+				{
+					0, 0, 0
+				},
+				{
+					static_cast<int32_t>(srcExtent.width),
+					static_cast<int32_t>(srcExtent.height),
+					1
+				}
+			},
+			.dstSubresource = subresource,
+			.dstOffsets = {
+				{
+					0, 0, 0
+				},
+				{
+					static_cast<int32_t>(dstExtent.width),
+					static_cast<int32_t>(dstExtent.height),
+					1
+				}
+			}
+		};
+
+		vkCmdBlitImage(
+			commandBuffer,
+			srcImage,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			dstImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&blitRegion,
+			VK_FILTER_LINEAR);
+	}
+
+	/// @copydoc findSupportedFormat
+	std::expected<VkFormat, std::string> findSupportedFormat(
+		const std::span<VkFormat> candidates,
+		const VkImageTiling tiling,
+		const VkFormatFeatureFlags features
+	)
+	{
+		for (auto& format : candidates)
+		{
+			VkFormatProperties formatProperties;
+			vkGetPhysicalDeviceFormatProperties(
+				r_deviceContext.physicalDevice,
+				format,
+				&formatProperties
+			);
+
+			switch (tiling)
+			{
+			case VK_IMAGE_TILING_OPTIMAL:
+				if ((formatProperties.optimalTilingFeatures & features) == features)
+				{
+					clz::log::info("Optimal depth format found");
+					return format;
+				}
+				break;
+
+			case VK_IMAGE_TILING_LINEAR:
+				if ((formatProperties.linearTilingFeatures & features) == features)
+				{
+					clz::log::info("linear depth format found");
+					return format;
+				}
+				break;
+
+			default:
+				clz::log::error("A requested depth format is not available");
+			}
+		}
+		clz::log::error("Could not find any supported depth format");
+		return VK_FORMAT_UNDEFINED;
+	}
+
 
 } // namespace clz::renderer

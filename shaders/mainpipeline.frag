@@ -28,8 +28,7 @@ layout(push_constant) uniform PushConstants
 
 // Textures
 #define NULL_TEXTURE uint(-1)
-layout(set = 1, binding = 0)
-uniform sampler2D textures[256];
+layout(set = 1, binding = 0) uniform sampler2D textures[256];
 
 // light data
 layout (set = 2, binding = 0)
@@ -109,10 +108,19 @@ vec3 fresnelSchlick(
 
 void main()
 {
-	mat3 TBN = mat3(inTangent, inBitangent, inNormal);
-	vec3 normal = texture(textures[PC.normalTextureIndex], inUV).rgb;
-	normal = (normal * 2.0) - vec3(1.0);
-	normal = normalize(TBN * normal);
+	vec3 normal;
+	if (PC.normalTextureIndex == NULL_TEXTURE)
+	{
+		normal = inNormal;
+	}
+	else
+	{
+		mat3 TBN = mat3(inTangent, inBitangent, inNormal);
+		vec3 normal = texture(textures[PC.normalTextureIndex], inUV).rgb;
+		normal = (normal * 2.0) - vec3(1.0);
+		normal = normalize(TBN * normal);
+	}
+
 	const vec3 viewDir = normalize(inCameraPos.xyz - inFragWPos);
 
 	vec4 base;

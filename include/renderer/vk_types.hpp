@@ -38,6 +38,9 @@ namespace clz::renderer
 	 */
 	inline SwapchainContext r_swapchainContext{};
 
+	/// @brief Render target context
+	inline RenderTargetContext r_renderTargetContext{};
+
 	/**
 	 * @brief Global pipeline context.
 	 *
@@ -45,6 +48,10 @@ namespace clz::renderer
 	 * and shader modules.
 	 */
 	inline PipelineContext r_pipelineContext{};
+
+	inline PipelineContext r_preTonemapPipelineContext{};
+	inline PipelineContext r_tonemapPipelineContext{};
+	inline PipelineContext r_postTonemapPipelineContext{};
 
 	/**
 	 * @brief Shapes pipeline context.
