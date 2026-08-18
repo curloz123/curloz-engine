@@ -939,11 +939,11 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 	depthAttachment.clearValue.depthStencil.depth = 1.0f;
 
 	VkRenderingInfoKHR renderingInfo = {};
-	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
-	renderingInfo.pNext = nullptr, renderingInfo.flags = 0,
-	renderingInfo.renderArea = {{0, 0}, physicsBodyShapeImage.extent},
-	renderingInfo.layerCount = 1, renderingInfo.colorAttachmentCount = 1,
-	renderingInfo.pColorAttachments = &colorAttachment,
+	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+	renderingInfo.pNext = nullptr, renderingInfo.flags = 0;
+	renderingInfo.renderArea = {{0, 0}, physicsBodyShapeImage.extent};
+	renderingInfo.layerCount = 1, renderingInfo.colorAttachmentCount = 1;
+	renderingInfo.pColorAttachments = &colorAttachment;
 	renderingInfo.pDepthAttachment = &depthAttachment;
 
 	vkCmdBeginRendering(commandBuffer, &renderingInfo);
@@ -1037,14 +1037,14 @@ void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
 		}
 
 		case physics::ShapeType::SPHERE:
+			drawShape = renderer::Shape::BOX;
 			break;
 		case physics::ShapeType::CAPSULE:
+			drawShape = renderer::Shape::BOX;
 			break;
 		case physics::ShapeType::CYLINDER:
+			drawShape = renderer::Shape::BOX;
 			break;
-
-		default:
-			/// handle this case
 		}
 		renderer::drawShape(
 			commandBuffer,

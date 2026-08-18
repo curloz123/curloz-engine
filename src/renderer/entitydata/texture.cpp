@@ -47,7 +47,7 @@ namespace clz::renderer
 
 		r_textures.raw_data[index] = nullptr;
 		r_textures.raw_data[index] = stbi_load(
-			filePath.c_str(),
+			filePath.string().c_str(),
 			&r_textures.width[index],
 			&r_textures.height[index],
 			&r_textures.numChannels[index],
@@ -67,7 +67,7 @@ namespace clz::renderer
 
 		if (!createImage(
 			    r_textures.image[index],
-			    filePath,
+			    filePath.string(),
 			    r_textures.width[index],
 			    r_textures.height[index],
 			    r_textures.imageFormat[index],
@@ -85,7 +85,7 @@ namespace clz::renderer
 		setHandleName(
 			reinterpret_cast<uint64_t>(r_textures.image[index]),
 			VK_OBJECT_TYPE_IMAGE,
-			filePath.c_str()
+			filePath.string().c_str()
 		);
 
 		uint32_t IdValue = r_numRegisteredTextures++;

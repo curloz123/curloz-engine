@@ -5,6 +5,7 @@
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/pipelinedata/texture.hpp"
 #include "renderer/utility/namer.hpp"
+#include <array>
 #include "renderer/vk_types.hpp"
 
 namespace clz::editor::backend
@@ -33,7 +34,7 @@ bool initializeEditorPipeline()
 	);
 
 	// Use the camera and sampler layout from renderer
-	std::array layouts = {renderer::cameraDescriptorLayout, renderer::textureDescriptorLayout};
+	std::array<VkDescriptorSetLayout, 2> layouts = {renderer::cameraDescriptorLayout, renderer::textureDescriptorLayout};
 	if (!renderer::createPipelineLayout(
 		    editorPipelineContext,
 		    sizeof(renderer::ModelDataPC),

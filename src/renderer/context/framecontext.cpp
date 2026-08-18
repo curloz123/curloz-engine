@@ -9,6 +9,7 @@
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include <vulkan/vulkan.h>
+#include <string>
 
 namespace clz::renderer
 {

@@ -9,6 +9,7 @@
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
 #include <box3d/box3d.h>
+#include <string>
 
 namespace clz::physics
 {
@@ -20,7 +21,7 @@ namespace clz::physics
 	 */
 	inline b3Vec3 toVec3(const math::vec3& vec)
 	{
-		return (b3Vec3){vec.x, vec.y, vec.z};
+		return (b3Vec3)(vec.x, vec.y, vec.z);
 	}
 
 	/**
@@ -43,7 +44,7 @@ namespace clz::physics
 	inline b3Quat toQuat(const math::quat& quat)
 	{
 		return b3Quat{
-			.v = (b3Vec3){quat.x, quat.y, quat.z},
+			.v = (b3Vec3)(quat.x, quat.y, quat.z),
 			.s = quat.w,
 		};
 	}

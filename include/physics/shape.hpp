@@ -5,11 +5,13 @@
 Provides BoxShape Data-Structure which holds all the data of any shape attached to a body.
 */
 #pragma once
+
 #include "core/assert.hpp"
 #include "core/logs.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/vec3.hpp"
 #include "physics.hpp"
+#include <string>
 
 namespace clz::physics
 {

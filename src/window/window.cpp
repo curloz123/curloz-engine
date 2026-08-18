@@ -10,6 +10,7 @@
 #include "window/vulkanhelper.hpp"
 #include "window/window_types.hpp"
 #include <GLFW/glfw3.h>
+#include <string>
 
 namespace clz::window
 {

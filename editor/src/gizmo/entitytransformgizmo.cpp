@@ -28,7 +28,7 @@ bool gizmoUsedThisFrame = false;
 
 /// @brief Transform captured at the start of the current gizmo drag, used as the undo
 /// "before" value.
-inline ecs::EditorTransformComponent previousTransform;
+inline ecs::EditorTransformComponent previousGizmoTransform;
 
 /**
  * @brief Draws and handles the transform gizmo for the currently selected entity.
@@ -98,7 +98,7 @@ void drawEntityTransformGizmo(const Rect2D& viewport)
 	if (gizmoUsedThisFrame && !gizmoUsedLastFrame)
 	{
 		// Drag just started — capture the pre-drag state
-		previousTransform = editorTransform;
+		previousGizmoTransform = editorTransform;
 	}
 
 	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
@@ -140,9 +140,9 @@ void drawEntityTransformGizmo(const Rect2D& viewport)
 		const auto entityId = currentSelectedEntity.value();
 
 		const auto oldTransform = ecs::TransformComponent(
-			math::quatFromEuler(math::radians(previousTransform.rotation)),
-			previousTransform.position,
-			previousTransform.scale
+			math::quatFromEuler(math::radians(previousGizmoTransform.rotation)),
+			previousGizmoTransform.position,
+			previousGizmoTransform.scale
 		);
 		const auto newTransform = entityTransform;
 		timemachine::createSnapshot(

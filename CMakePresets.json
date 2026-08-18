@@ -1,0 +1,103 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "Windows x64",
+      "displayName": "Windows x64",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/win/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "Linux EngineDebug",
+      "displayName": "Linux EngineDebug",
+      "inherits": "linux base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "EngineDebug"
+      }
+    },
+    {
+      "name": "Linux EngineRelease",
+      "displayName": "Linux EngineRelease",
+      "inherits": "linux base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "EngineRelease"
+      }
+    },
+    {
+      "name": "Linux GameDebug",
+      "displayName": "Linux GameDebug",
+      "inherits": "linux base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "GameDebug"
+      }
+    },
+    {
+      "name": "Linux GameRelease",
+      "displayName": "Linux GameRelease",
+      "inherits": "linux base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "GameRelease"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Windows EngineDebug",
+      "configurePreset": "Windows x64",
+      "configuration": "EngineDebug"
+    },
+    {
+      "name": "Windows EngineRelease",
+      "configurePreset": "Windows x64",
+      "configuration": "EngineRelease"
+    },
+    {
+      "name": "Windows GameDebug",
+      "configurePreset": "Windows x64",
+      "configuration": "GameDebug"
+    },
+    {
+      "name": "Windows GameRelease",
+      "configurePreset": "Windows x64",
+      "configuration": "GameRelease"
+    },
+    {
+      "name": "Linux EngineDebug",
+      "configurePreset": "Linux EngineDebug"
+    },
+    {
+      "name": "Linux EngineRelease",
+      "configurePreset": "Linux EngineRelease"
+    },
+    {
+      "name": "Linux GameDebug",
+      "configurePreset": "Linux GameDebug"
+    },
+    {
+      "name": "Linux GameRelease",
+      "configurePreset": "Linux GameRelease"
+    }
+  ]
+}

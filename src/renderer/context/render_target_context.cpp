@@ -9,6 +9,7 @@
 #include <string>
 #include <span>
 #include <expected>
+#include <array>
 
 namespace clz::renderer
 {
@@ -155,7 +156,7 @@ namespace clz::renderer
 
 	bool createDepthResources()
 	{
-		std::array formatCandidates = {VK_FORMAT_D32_SFLOAT};
+		std::array<VkFormat, 1> formatCandidates = {VK_FORMAT_D32_SFLOAT};
 		const auto depthResult = findSupportedFormat(
 			formatCandidates,
 			VK_IMAGE_TILING_OPTIMAL,

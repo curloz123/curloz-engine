@@ -5,6 +5,7 @@
 #include "renderer/vk_types.hpp"
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <string>
 
 namespace clz::editor::backend
 {

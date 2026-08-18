@@ -4,6 +4,7 @@
 #include "vec3.hpp"
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 namespace clz::math
 {

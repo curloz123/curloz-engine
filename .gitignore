@@ -1,6 +1,8 @@
 .idea
+.vs
 .cache
 build
+out
 compile_commands.json
 docs
 imgui.ini
@@ -8,8 +10,8 @@ zipmaker.sh
 CurlozEngine.zip
 
 # shader binaries
-shader/triangle.vert.spirv
-shader/triangle.frag.spirv
+shader/*.spirv
+shader/*.spirv
 
 # Test models
 assets/models/*

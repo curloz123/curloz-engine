@@ -25,23 +25,35 @@ find_package(Vulkan REQUIRED)
 
 ## Compile options
 
-# Compile Profile
-
-
-set(CMAKE_CONFIGURATION_TYPES "Debug;Editor;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "EngineDebug;EngineRelease;GameDebug;GameRelease" CACHE STRING "" FORCE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:CLZ_DEBUG CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
-        $<$<CONFIG:Sandbox>:CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
-        $<$<CONFIG:RelWithDebInfo>:CLZ_RELEASE CLZ_ENABLE_LOGS>
-        $<$<CONFIG:Release>:CLZ_RELEASE>
+        $<$<CONFIG:EngineDebug>:CLZ_DEBUG CLZ_ENABLE_EDITOR CLZ_ENABLE_LOGS>
+        $<$<CONFIG:EngineRelease>:CLZ_ENABLE_EDITOR CLZ_RELEASE>
+        $<$<CONFIG:GameDebug>:CLZ_DEBUG CLZ_ENABLE_LOGS>
+        $<$<CONFIG:GameRelease>:CLZ_RELEASE>
 )
+
+#Set compiler flags
+set(CMAKE_CXX_FLAGS_ENGINEDEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_GAMEDEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_ENGINERELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_GAMERELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+
+# Compiler specifics
+set(CLZ_SIMD_FLAGS "")
+set(CLZ_DEBUG_WARNINGS "")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+	set(CLZ_DEBUG_WARNINGS -Wall -Wextra -Wsign-compare)
+	set(CLZ_SIMD_FLAGS -msse4.1 -mfma)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CLZ_DEBUG_WARNINGS /W4)
+    set(CLZ_SIMD_FLAGS /arch:AVX2)
+endif()
+
 target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:-Wall -Wextra -Wsign-compare>
+	${CLZ_SIMD_FLAGS}
+	$<$<CONFIG:EngineDebug,GameDebug>:${CLZ_DEBUG_WARNINGS}>
 )
-
-##instruction sets
-target_compile_options(${PROJECT_NAME} PRIVATE -msse4.1 -mfma)
-
 
 ## External Libs, This should be the last section, everything below this is just linking third party libraries
 
@@ -63,9 +75,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE tomlplusplus::tomlplusplus)
 set(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ALSOFT_UTILS OFF CACHE BOOL "" FORCE)
 set(ALSOFT_TESTS OFF CACHE BOOL "" FORCE)
+set(LIBTYPE "STATIC" CACHE STRING "" FORCE)
 add_subdirectory(external/openal-soft)
-target_compile_options(OpenAL PRIVATE -Wno-function-effects)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenAL)
+target_compile_definitions(${PROJECT_NAME} PRIVATE AL_LIBTYPE_STATIC)
 
 #JSON
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
@@ -107,7 +120,7 @@ target_include_directories(imguizmo PUBLIC
         external/ImGuizmo/src
 )
 target_link_libraries(imguizmo PUBLIC imgui)
-target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
+#target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
 
 #BOX3D

@@ -284,9 +284,7 @@ namespace clz::renderer
 		return ourNode;
 	}
 
-	/**
-	 * @copydoc Model::loadMesh
-	 */
+	/// @copydoc Model::loadMesh
 	Mesh Model::loadMesh(
 		const fastgltf::Mesh& mesh,
 		const fastgltf::Asset& asset,
@@ -564,7 +562,7 @@ namespace clz::renderer
 		// Helper lambda to GLTF's path'ed texture
 		auto loadGLTFTexture = [](std::unordered_map<size_t, TextureID>& textureCache,
 					  const size_t fastTextureIndex,
-					  const std::string& texturePath,
+					  const std::filesystem::path& texturePath,
 					  VkFormat textureFormat) {
 			if (const auto& it = textureCache.find(fastTextureIndex);
 			    it != textureCache.end())

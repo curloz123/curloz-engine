@@ -25,7 +25,7 @@ namespace clz::physics
 		b3WorldDef worldDef = b3DefaultWorldDef();
 
 		// No multithreading for now
-		p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
+		p_gravity = (b3Vec3)(0.0f, -9.8f, 0.0f);
 		worldDef.gravity = p_gravity;
 		worldDef.enableSleep = config::getBool("physics", "enablesleep", false);
 		p_world = b3CreateWorld(&worldDef);
