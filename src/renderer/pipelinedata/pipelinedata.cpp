@@ -69,6 +69,7 @@ namespace clz::renderer
 	void destroyPipelineData()
 	{
 		destroyDescriptorPool();
+		destroyPostProcessDescriptor();
 		destroyLightDescriptor();
 		destroyTextureDescriptor();
 		destroyCameraDescriptor();

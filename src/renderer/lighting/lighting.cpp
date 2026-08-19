@@ -6,8 +6,6 @@
 
 #include "renderer/lighting/lighting.hpp"
 
-#include "core/logs.hpp"
-
 namespace clz::renderer
 {
 	/// @copydoc registerDirectionalLight
@@ -62,8 +60,7 @@ namespace clz::renderer
 		// bounds-checked from below — point lights are allowed arbitrarily
 		// bright intensities since PBR radiance math expects large values.
 		if (color.x < 0.0f || color.x > 1.0f || color.y < 0.0f || color.y > 1.0f ||
-		    color.z < 0.0f || color.z > 1.0f ||
-		    intensity < 0.0f || range < 0.0f)
+		    color.z < 0.0f || color.z > 1.0f || intensity < 0.0f || range < 0.0f)
 		{
 			return std::unexpected(LightRegisterError::INVALID_PARAMETER);
 		}
@@ -103,10 +100,8 @@ namespace clz::renderer
 		{
 			return std::unexpected(LightRegisterError::LIMIT_EXCEEDED);
 		}
-		if(color.x < 0.0f || color.x > 1.0f ||
-			color.y < 0.0f || color.y > 1.0f ||
-			color.z < 0.0f || color.z > 1.0f ||
-			intensity < 0.0f || range < 0.0f)
+		if (color.x < 0.0f || color.x > 1.0f || color.y < 0.0f || color.y > 1.0f ||
+		    color.z < 0.0f || color.z > 1.0f || intensity < 0.0f || range < 0.0f)
 		{
 			return std::unexpected(LightRegisterError::INVALID_PARAMETER);
 		}

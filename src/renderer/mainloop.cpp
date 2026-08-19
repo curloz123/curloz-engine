@@ -311,7 +311,6 @@ namespace clz::renderer
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
-			clz::log::debug("Editor mode run");
 			/// Don't copy render target into editor's main viewport image
 			/// As most probably extents are wrong this frame
 			/// Wait a frame, then draw on it
@@ -408,7 +407,6 @@ namespace clz::renderer
 		else if (state::g_engineState == state::EngineState::Game)
 #endif
 		{
-			clz::log::debug("game mode run");
 			// Post-processed result -> swapchain image directly, then present.
 			copyPostprocessResultInto(
 				r_swapchainContext.images[imageIndex],

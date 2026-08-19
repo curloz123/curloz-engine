@@ -2,7 +2,6 @@
 
 #include "quat.hpp"
 #include "vec3.hpp"
-#include <algorithm>
 #include <cmath>
 #include <numbers>
 

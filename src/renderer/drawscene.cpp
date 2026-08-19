@@ -17,11 +17,11 @@
 
 #include <array>
 
-#ifdef CLZ_ENABLE_EDITOR
+// #ifdef CLZ_ENABLE_EDITOR
 #include "include/offscreen/offscreentarget.hpp"
 #include "include/sceneview.hpp"
 #include "renderer/camera/camerafunctions.hpp"
-#endif
+// #endif
 
 namespace clz::renderer
 {
@@ -29,21 +29,42 @@ namespace clz::renderer
 	void lastMainDraw(VkCommandBuffer commandBuffer)
 	{
 		CameraId activeCameraId = NULL_CAMERA;
+		CameraShaderUBO cameraShaderUBO;
 
-#ifdef CLZ_ENABLE_EDITOR
+// #ifdef CLZ_ENABLE_EDITOR
 		if (clz::state::g_engineState == clz::state::EngineState::Editor)
 		{
 			// editor handles camera updating itself
 			activeCameraId = editor::mainViewportImage.cameraId;
+			const math::vec3 camPos = getCameraPosition(activeCameraId);
+			cameraShaderUBO = {
+				.projection = getCameraProjMatrix(
+					activeCameraId,
+					static_cast<float>(editor::mainViewportImage.extent.width),
+					static_cast<float>(editor::mainViewportImage.extent.height)
+				),
+				.view = getCameraViewMatrix(activeCameraId),
+				.cameraPos = math::vec4(camPos.x, camPos.y, camPos.z, 1.0f),
+			};
 		}
 		else
-#endif
+// #endif
 		/// --- This part is an if-else block when editor is enabled ---
 		/// --- In main binary, its the only part ---
 		{
 			/// Rendering camera is handled by renderer itself
 			updateCamera(r_cameraId);
 			activeCameraId = r_cameraId;
+			const math::vec3 camPos = getCameraPosition(activeCameraId);
+			cameraShaderUBO = {
+				.projection = getCameraProjMatrix(
+					activeCameraId,
+					static_cast<float>(r_renderTargetContext.imageExtent.width),
+					static_cast<float>(r_renderTargetContext.imageExtent.height)
+				),
+				.view = getCameraViewMatrix(activeCameraId),
+				.cameraPos = math::vec4(camPos.x, camPos.y, camPos.z, 1.0f),
+			};
 		}
 
 
@@ -55,16 +76,6 @@ namespace clz::renderer
 
 		// Descriptor sets
 
-		const math::vec3 camPos = getCameraPosition(activeCameraId);
-		const CameraShaderUBO cameraShaderUBO = {
-			.projection = getCameraProjMatrix(
-				activeCameraId,
-				static_cast<float>(editor::mainViewportImage.extent.width),
-				static_cast<float>(editor::mainViewportImage.extent.height)
-			),
-			.view = getCameraViewMatrix(activeCameraId),
-			.cameraPos = math::vec4(camPos.x, camPos.y, camPos.z, 1.0f),
-		};
 		updateCameraDescriptor(cameraShaderUBO);
 		updateLightDescriptor();
 		std::array<VkDescriptorSet, 3> descriptorSets = {};

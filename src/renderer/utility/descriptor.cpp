@@ -96,12 +96,10 @@ namespace clz::renderer
 			return false;
 		}
 
-		// @note hardcoded debug name here doesn't use layoutName — likely
-		// a copy-paste leftover, worth fixing to setHandleName(..., layoutName.c_str()).
 		setHandleName(
 			reinterpret_cast<uint64_t>(rLayout),
 			VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-			"main combined sampler layout"
+			layoutName.c_str()
 		);
 		return true;
 	}

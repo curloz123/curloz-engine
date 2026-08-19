@@ -225,60 +225,55 @@ namespace clz::renderer
 			lightWrites.reserve(3);
 
 			// light data
-			{
-				VkDescriptorBufferInfo dataInfo = {};
-				dataInfo.buffer = lightDataUBOMemory.buffer;
-				dataInfo.offset = lightDataUBO.offsets[i];
-				dataInfo.range = lightDataUBO.uboSize;
+			VkDescriptorBufferInfo dataInfo = {};
+			dataInfo.buffer = lightDataUBOMemory.buffer;
+			dataInfo.offset = lightDataUBO.offsets[i];
+			dataInfo.range = lightDataUBO.uboSize;
 
-				VkWriteDescriptorSet lightDataWrite{};
-				lightDataWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				lightDataWrite.dstSet = lightDescriptorSets[i];
-				lightDataWrite.dstBinding = lightDataUBO.uboBindingPoint;
-				lightDataWrite.dstArrayElement = 0;
-				lightDataWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				lightDataWrite.descriptorCount = 1;
-				lightDataWrite.pBufferInfo = &dataInfo;
+			VkWriteDescriptorSet lightDataWrite{};
+			lightDataWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			lightDataWrite.dstSet = lightDescriptorSets[i];
+			lightDataWrite.dstBinding = lightDataUBO.uboBindingPoint;
+			lightDataWrite.dstArrayElement = 0;
+			lightDataWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			lightDataWrite.descriptorCount = 1;
+			lightDataWrite.pBufferInfo = &dataInfo;
 
-				lightWrites.push_back(lightDataWrite);
-			}
+			lightWrites.push_back(lightDataWrite);
 			/// directional light
-			{
-				VkDescriptorBufferInfo lightInfo = {};
-				lightInfo.buffer = dirUBOMemory.buffer;
-				lightInfo.offset = dirUBO.offsets[i];
-				lightInfo.range = dirUBO.uboSize;
+			VkDescriptorBufferInfo lightInfo = {};
+			lightInfo.buffer = dirUBOMemory.buffer;
+			lightInfo.offset = dirUBO.offsets[i];
+			lightInfo.range = dirUBO.uboSize;
 
-				VkWriteDescriptorSet lightWrite = {};
-				lightWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				lightWrite.dstSet = lightDescriptorSets[i];
-				lightWrite.dstBinding = dirUBO.uboBindingPoint;
-				lightWrite.dstArrayElement = 0;
-				lightWrite.descriptorCount = 1;
-				lightWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				lightWrite.pBufferInfo = &lightInfo;
+			VkWriteDescriptorSet lightWrite = {};
+			lightWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			lightWrite.dstSet = lightDescriptorSets[i];
+			lightWrite.dstBinding = dirUBO.uboBindingPoint;
+			lightWrite.dstArrayElement = 0;
+			lightWrite.descriptorCount = 1;
+			lightWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			lightWrite.pBufferInfo = &lightInfo;
 
-				lightWrites.push_back(lightWrite);
-			}
+			lightWrites.push_back(lightWrite);
 
 			/// point light
-			{
-				VkDescriptorBufferInfo pointLightInfo = {};
-				pointLightInfo.buffer = pointSSBOMemory.buffer;
-				pointLightInfo.offset = pointSSBO.offsets[i];
-				pointLightInfo.range = pointSSBO.ssboSize;
+			VkDescriptorBufferInfo pointLightInfo = {};
+			pointLightInfo.buffer = pointSSBOMemory.buffer;
+			pointLightInfo.offset = pointSSBO.offsets[i];
+			pointLightInfo.range = pointSSBO.ssboSize;
 
-				VkWriteDescriptorSet pointLightWrite = {};
-				pointLightWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				pointLightWrite.dstSet = lightDescriptorSets[i];
-				pointLightWrite.dstBinding = pointSSBO.ssboBindingPoint;
-				pointLightWrite.dstArrayElement = 0;
-				pointLightWrite.descriptorCount = 1;
-				pointLightWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				pointLightWrite.pBufferInfo = &pointLightInfo;
+			VkWriteDescriptorSet pointLightWrite = {};
+			pointLightWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			pointLightWrite.dstSet = lightDescriptorSets[i];
+			pointLightWrite.dstBinding = pointSSBO.ssboBindingPoint;
+			pointLightWrite.dstArrayElement = 0;
+			pointLightWrite.descriptorCount = 1;
+			pointLightWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			pointLightWrite.pBufferInfo = &pointLightInfo;
 
-				lightWrites.push_back(pointLightWrite);
-			}
+			lightWrites.push_back(pointLightWrite);
+
 
 			vkUpdateDescriptorSets(
 				r_deviceContext.device,
@@ -287,8 +282,8 @@ namespace clz::renderer
 				0,
 				nullptr
 			);
-		}
 
+		}
 		// post process descriptor sets are updated by post process system
 
 		clz::log::info("Created and wrote most descriptor sets");

@@ -11,11 +11,11 @@
 #include "core/time.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
-#include "math/angle.hpp"
 #include "math/interpolate.hpp"
 #include "physics/body.hpp"
 #include "physics/physics_types.hpp"
 #include "physics/physicscomponent.hpp"
+#include "physics/math.hpp"
 
 namespace clz::physics
 {
@@ -25,7 +25,7 @@ namespace clz::physics
 		b3WorldDef worldDef = b3DefaultWorldDef();
 
 		// No multithreading for now
-		p_gravity = (b3Vec3)(0.0f, -9.8f, 0.0f);
+		p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
 		worldDef.gravity = p_gravity;
 		worldDef.enableSleep = config::getBool("physics", "enablesleep", false);
 		p_world = b3CreateWorld(&worldDef);
@@ -59,15 +59,13 @@ namespace clz::physics
 			{
 				auto& body = ecs::getComponent<RigidBodyComponent>(entity);
 				const auto& transformComponent =
-					ecs::getComponent<ecs::EditorTransformComponent>(entity);
+					ecs::getComponent<ecs::TransformComponent>(entity);
 
 				setBodyPosition(body.rigidBodyId, transformComponent.position);
 				body.newPosition = transformComponent.position;
 				body.prevPosition = body.newPosition;
 
-				const auto bodyRotation = math::quatFromEuler(
-					math::radians(transformComponent.rotation)
-				);
+				const auto bodyRotation = transformComponent.rotation;
 				setBodyRotation(body.rigidBodyId, bodyRotation);
 
 				body.newRotation = bodyRotation;
