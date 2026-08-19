@@ -284,7 +284,8 @@ namespace clz::renderer
 			);
 
 		}
-		// post process descriptor sets are updated by post process system
+
+		// post process descriptor are handled by post_process system
 
 		clz::log::info("Created and wrote most descriptor sets");
 		return true;

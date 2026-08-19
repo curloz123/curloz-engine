@@ -7,7 +7,6 @@
 
 #include "renderer/renderer.hpp"
 #include "core/logs.hpp"
-#include "include/editor.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/context/commandcontext.hpp"
 #include "renderer/context/devicecontext.hpp"
@@ -22,6 +21,7 @@
 #include <vector>
 
 #ifdef CLZ_ENABLE_EDITOR
+#include "include/editor.hpp"
 #include "include/cross_system_flags.hpp"
 #endif
 
@@ -45,6 +45,7 @@ namespace clz::renderer
 			clz::log::error("Could not initialize swapchain context");
 			goto failure;
 		}
+
 		if (!initRenderTargetContext(
 			r_swapchainContext.extent.width,
 			r_swapchainContext.extent.height))
@@ -167,7 +168,9 @@ namespace clz::renderer
 			return false;
 		}
 
+#ifdef CLZ_ENABLE_EDITOR
 		editor::flagEditorFramebufferResize();
+#endif
 		return true;
 	}
 } // namespace clz::renderer

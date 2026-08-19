@@ -46,6 +46,12 @@ namespace clz::renderer
 	struct Post_TonemapPC
 	{
 		uint32_t postProcessBits;
+		
+		float aspectRatio;
 
+		float vignetteStart;
+		float vignetteEnd;
+
+		float chromaticAberrationStrength;
 	};
 } // namespace clz::renderer

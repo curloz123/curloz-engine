@@ -8,7 +8,8 @@
 #include "core/enginestate.hpp"
 #include "pipelinedata/post_process.hpp"
 #include "postprocess/post_process.hpp"
-#include "core/logs.hpp""
+#include "core/logs.hpp"
+#include "include/sceneview.hpp""
 #include "window/mouse.hpp"
 
 namespace clz::renderer
@@ -27,7 +28,6 @@ namespace clz::renderer
 #ifdef CLZ_ENABLE_EDITOR
 	inline void flagRendererEditorInitialized()
 	{
-		updatePostProcessDescriptorSets();
 	}
 #endif
 

@@ -1,5 +1,6 @@
 #include "renderer/postprocess/post_tonemap.hpp"
 
+#include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
@@ -7,6 +8,10 @@
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/utility/namer.hpp"
+
+#ifdef CLZ_ENABLE_EDITOR
+#include "include/sceneview.hpp"
+#endif
 
 namespace clz::renderer::post_process
 {
@@ -151,12 +156,36 @@ namespace clz::renderer::post_process
 		const VkRect2D scissor{{0, 0}, extent};
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
+
 		vkCmdBindPipeline(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			r_postTonemapPipelineContext.pipeline);
-		const Post_TonemapPC pushConstant{
-			.postProcessBits = 1,
+		
+		uint32_t postProcessBits = 0;
+		// if (enableVignette)
+			postProcessBits |= PostTonemapEffects::Vignette;
+		// if (enableChromaticAberration)
+			postProcessBits |= PostTonemapEffects::ChromaticAbberation;
+
+		const auto vignette = getVignette();
+
+		float aspectRatio;
+
+		const float width = static_cast<float>(
+				r_renderTargetContext.imageExtent.width);
+		const float height = static_cast<float>(
+				r_renderTargetContext.imageExtent.height);
+
+		aspectRatio = (width / height);
+
+
+		Post_TonemapPC pushConstant{
+			.postProcessBits = postProcessBits,
+			.aspectRatio	 = aspectRatio,
+			.vignetteStart 	 = vignette.x,
+			.vignetteEnd 	 = vignette.y,
+			.chromaticAberrationStrength = getChromaticAberrationStrength()
 		};
 		vkCmdPushConstants(
 			commandBuffer,

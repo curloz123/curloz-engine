@@ -52,10 +52,6 @@ namespace clz::renderer
 			return false;
 		}
 
-#ifndef CLZ_ENABLE_EDITOR
-		updatePostProcessDescriptorSets();
-#endif
-
 		return true;
 	}
 

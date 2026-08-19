@@ -58,15 +58,6 @@ namespace clz::math
 		vec2(const vec4& v4);
 
 		/**
-		 * @brief Equal to opearator overload
-		 * @param rhs other vec2
-		 */
-		void operator=(const vec2& rhs)
-		{
-			x = rhs.x;
-			y = rhs.y;
-		}
-		/**
 		 * @brief Operator overloaded addition of current to rhs vector
 		 * @param rhs other vec2
 		 */

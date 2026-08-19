@@ -10,6 +10,7 @@
 #include <span>
 #include <expected>
 #include <array>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer
 {
@@ -53,6 +54,10 @@ namespace clz::renderer
 
 	bool recreateRenderTargetContext(const uint32_t width, const uint32_t height)
 	{
+		clz::log::debug("recreating render target with: "
+				"width: " + std::to_string(width) + " "
+				"height: " + std::to_string(height));
+		vkDeviceWaitIdle(r_deviceContext.device);
 		destroyRenderTargetContext();
 		if (!initRenderTargetContext(width, height))
 		{
@@ -68,7 +73,8 @@ namespace clz::renderer
 	bool createRenderTarget(const uint32_t width, const uint32_t height)
 	{
 		r_renderTargetContext.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-		r_renderTargetContext.imageExtent = r_swapchainContext.extent;
+		r_renderTargetContext.imageExtent.width = width;
+		r_renderTargetContext.imageExtent.height = height;
 		if (!createImage(
 			r_renderTargetContext.image,
 			"main post processing image",

@@ -28,6 +28,7 @@ namespace clz::renderer::post_process
 			return false;
 		}
 
+		updatePostProcessDescriptorSets();		
 		clz::log::info("Initialized post process resources");
 		return true;
 	}
