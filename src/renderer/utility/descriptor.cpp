@@ -23,7 +23,6 @@ namespace clz::renderer
 		const std::string& layoutName,
 		const bool isTextureLayout
 	)
-
 	{
 		// All parallel arrays must describe the same set of bindings.
 		CLZ_ASSERT(

@@ -127,11 +127,6 @@ namespace clz::renderer::post_process
 		vkFreeMemory(r_deviceContext.device, preTonemapMemory, nullptr);
 	}
 
-	void updatePreTonemapProcessDescriptor()
-	{
-		// TODO: implement once descriptor layout for post-process pass is set up
-	}
-
 	void applyPreTonemapProcess(VkCommandBuffer commandBuffer)
 	{
 		transition_image_layout(

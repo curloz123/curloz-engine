@@ -53,8 +53,8 @@ namespace clz::time
 	{
 		t_timeTakenLastFrame = std::chrono::high_resolution_clock::now();
 		t_timeTakenThisFrame = std::chrono::high_resolution_clock::now();
-		t_VSync = clz::config::getBool("window", "vsync", true);
-		t_refreshRate = config::getInt("window", "refreshrate", 60);
+		t_VSync = clz::config::getBool("renderer", "vsync", true);
+		t_refreshRate = config::getInt("renderer", "refreshrate", 60);
 		t_targetDeltaTime = 1.0f / static_cast<float>(t_refreshRate);
 		clz::log::info("target dt: " + std::to_string(t_targetDeltaTime));
 	}

@@ -32,7 +32,7 @@ namespace clz::editor
 		if (!ImGui::CollapsingHeader("Transform"))
 			return;
 
-		auto editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(
+		auto& editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(
 			currentSelectedEntity.value()
 		);
 
@@ -50,8 +50,7 @@ namespace clz::editor
 			);
 		};
 
-		ImGui::SliderFloat3("Position", &editorTransform.position.x, -100.0f, 100.0f);
-		if (ImGui::IsItemActivated())
+		if (ImGui::SliderFloat3("Position", &editorTransform.position.x, -100.0f, 100.0f))
 		{
 			ActiveTransform = TransformType::TRANSLATE;
 			saveOldData();
@@ -62,8 +61,7 @@ namespace clz::editor
 			anyEditFinished = true;
 		}
 
-		ImGui::SliderFloat3("Rotation", &editorTransform.rotation.x, -179.9f, 179.9f);
-		if (ImGui::IsItemActivated())
+		if (ImGui::SliderFloat3("Rotation", &editorTransform.rotation.x, -179.9f, 179.9f))
 		{
 			ActiveTransform = TransformType::ROTATE;
 			saveOldData();
@@ -74,8 +72,7 @@ namespace clz::editor
 			anyEditFinished = true;
 		}
 
-		ImGui::SliderFloat3("Scale", &editorTransform.scale.x, 0.01f, 10.0f);
-		if (ImGui::IsItemActivated())
+		if (ImGui::SliderFloat3("Scale", &editorTransform.scale.x, 0.01f, 10.0f))
 		{
 			ActiveTransform = TransformType::SCALE;
 			saveOldData();
@@ -90,7 +87,11 @@ namespace clz::editor
 
 		if (anyChangeStarted)
 		{
-			ecs::setComponent(currentSelectedEntity.value(), editorTransform);
+			ecs::setComponent<ecs::TransformComponent>(currentSelectedEntity.value(), ecs::TransformComponent(
+			math::quatFromEuler(math::radians(editorTransform.rotation)),
+				editorTransform.position,
+				editorTransform.scale)
+			);
 		}
 
 		// Commit exactly one snapshot per completed edit, regardless of input method
@@ -101,11 +102,6 @@ namespace clz::editor
 				editorTransform.position,
 				editorTransform.scale
 			);
-			/// ^^^^^^^^^^^^^^^^^^
-			/// ||||||||||||||||||
-			/// Set this component
-			ecs::setComponent(currentSelectedEntity.value(), newTransform);
-
 			auto oldTransform = previousTransform;
 			ecs::EditorTransformComponent newEditorTransform = editorTransform;
 			ecs::EditorTransformComponent oldEditorTransform = previousEditorTransform;

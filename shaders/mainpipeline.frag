@@ -130,8 +130,7 @@ void main()
 	}
 	else
 	{
-		base =
-			texture(textures[PC.baseTextureIndex], inUV) *
+		base = texture(textures[PC.baseTextureIndex], inUV) * 
 			PC.baseColorFactor;
 	}
 
@@ -157,46 +156,21 @@ void main()
 	vec3 L0 = vec3(0.0);
 
 	L0 += calcDirLight(
-				base,
-				viewDir,
-				normal,
-				metallic,
-				roughness);
+			base,
+			viewDir,
+			normal,
+			metallic,
+			roughness);
 
 	for (int i = 0; i < u_LightsData.numPointLights; ++i)
 	{
 		L0 += calcPointLight(
-					s_PointLights.pointLights[i],
-					base.xyz,
-					viewDir,
-					normal,
-					metallic,
-					roughness);
-		/*
-		PointLight light = s_PointLights.pointLights[i];
-		float distance = max(length(light.position - inFragWPos), 0.05);
-		/*
-		if (distance > light.range)
-			continue;
-
-		float attenuation = 1.0 / (
-			light.attenuation.x +
-			light.attenuation.y * distance +
-			light.attenuation.z * (distance * distance)
-		);
-		vec3 lightDir = normalize(light.position - inFragWPos);
-		vec3 halfway = normalize(viewDir + lightDir);
-		vec3 radiance = light.color * light.intensity * attenuation;
-
-		vec3 F0 = vec3(0.04);
-		F0 = mix(F0, base.rgb, metallic);
-		vec3 F = fresnelSchlick(max(dot(halfway, viewDir), 0.0), F0);
-		float NDF = distributionGGX(normal, halfway, roughness);
-		float G = geometrySmith(normal, viewDir, lightDir, roughness);
-
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001;
-		vec3 specular = numerator / denominator;
+				s_PointLights.pointLights[i],
+				base.xyz,
+				viewDir,
+				normal,
+				metallic,
+				roughness);
 
 		vec3 kS = F;
 		vec3 kD = vec3(1.0) - kS;

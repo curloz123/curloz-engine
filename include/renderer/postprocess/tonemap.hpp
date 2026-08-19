@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <optional>
+#include "core/logs.hpp"
 
 namespace clz::renderer::post_process
 {
@@ -13,4 +15,21 @@ namespace clz::renderer::post_process
 	bool createTonemapProcess();
 	void destroyTonemapProcess();
 	void applyTonemapProcess(VkCommandBuffer commandBuffer);
+
+	// Exposure
+	inline std::optional<float> exposure;	
+	inline void setExposure(const float newExposure)
+	{
+		exposure = newExposure;
+	}
+	inline float getExposure()
+	{
+		if (exposure.has_value()) [[likely]]
+		{
+			return exposure.value();	
+		}
+
+		clz::log::warn("Post process's 'exposure' queried, before it was even set");
+		return 1.0;
+	}
 }

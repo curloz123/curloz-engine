@@ -1,4 +1,12 @@
 {
+	"systemsettings": [
+		{
+			"system": "renderer",
+			"post_process": {
+				"exposure": 1.0
+			}
+		}
+	],
     "camera": [
         {
             "acceleration": 15.0,
@@ -482,12 +490,4 @@
             }
         }
     ],
-    "systemsettings": [
-        {
-            "post_process": {
-                "exposure": 1.9730000495910645
-            },
-            "system": "renderer"
-        }
-    ]
 }

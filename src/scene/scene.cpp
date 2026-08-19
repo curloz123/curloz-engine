@@ -7,6 +7,7 @@
  * with entities and their components.
  */
 
+#include "scene/system_settings.hpp"
 #define JSON_HAS_STATIC_RTTI 0
 #define JSON_NOEXCEPTION
 #include <nlohmann/json.hpp>
@@ -16,6 +17,7 @@
 #include "scene/entity/entity.hpp"
 #include "scene/scene.hpp"
 #include <fstream>
+#include "scene/system_settings.hpp"
 
 namespace clz::scene
 {
@@ -34,9 +36,21 @@ namespace clz::scene
 			return false;
 		}
 		sceneFile = nlohmann::json::parse(file, nullptr, false);
+
 		if (sceneFile.is_discarded())
 		{
 			clz::log::error("Could not parse JSON file: " + std::string(entityFile));
+			return false;
+		}
+		
+		// Load system settings
+		if (sceneFile.contains("systemsettings"))
+		{
+			loadSystemSettings(sceneFile["systemsettings"]);
+		}
+		else
+		{
+			clz::log::error("Scene file does not have system settings entry");
 			return false;
 		}
 
@@ -73,6 +87,9 @@ namespace clz::scene
 	{
 		// Clear file, we're gonna write back to it.
 		sceneFile.clear();
+
+		// Save system settings
+		saveSystemSettings(sceneFile);
 
 		// Save camera and entities
 		saveCameras(sceneFile);

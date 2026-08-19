@@ -551,7 +551,7 @@ namespace clz::renderer
 			"shaders/post_process.vert.spirv",
 			"shaders/tonemap.frag.spirv",
 			"tonemap pipeline",
-			0,
+			sizeof(TonemapPC),
 			post_process::TONEMAP_IMAGE_FORMAT,
 			r_renderTargetContext.imageExtent
 		);

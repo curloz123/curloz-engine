@@ -37,7 +37,10 @@ namespace clz::config
 	 * @param defaultVal Value returned if section or key is missing.
 	 * @return The integer value or defaultVal.
 	 */
-	int getInt(std::string_view section, std::string_view key, int defaultVal);
+	int getInt(
+			std::string_view section, 
+			std::string_view key, 
+			int defaultVal);
 
 	/**
 	 * @brief Reads a float value from the config.
@@ -46,7 +49,10 @@ namespace clz::config
 	 * @param defaultVal Value returned if section or key is missing.
 	 * @return The float value or defaultVal.
 	 */
-	float getFloat(std::string_view section, std::string_view key, float defaultVal);
+	float getFloat(
+			std::string_view section, 
+			std::string_view key, 
+			float defaultVal);
 
 	/**
 	 * @brief Reads a boolean value from the config.
@@ -55,7 +61,10 @@ namespace clz::config
 	 * @param defaultVal Value returned if section or key is missing.
 	 * @return The bool value or defaultVal.
 	 */
-	bool getBool(std::string_view section, std::string_view key, bool defaultVal);
+	bool getBool(
+			std::string_view section, 
+			std::string_view key, 
+			bool defaultVal);
 
 	/**
 	 * @brief Reads a string value from the config.
@@ -64,8 +73,10 @@ namespace clz::config
 	 * @param defaultVal Value returned if section or key is missing.
 	 * @return The string value or defaultVal.
 	 */
-	std::string
-	getString(std::string_view section, std::string_view key, std::string_view defaultVal);
+	std::string getString(
+			std::string_view section, 
+			std::string_view key, 
+			std::string_view defaultVal);
 
 	/**
 	 * @brief Returns application name

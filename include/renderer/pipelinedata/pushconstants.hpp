@@ -39,7 +39,10 @@ namespace clz::renderer
 	{
 		uint32_t postProcessBits;
 	};
-
+	struct TonemapPC
+	{
+		float exposure;
+	};
 	struct Post_TonemapPC
 	{
 		uint32_t postProcessBits;

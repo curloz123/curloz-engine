@@ -60,7 +60,6 @@ namespace clz::editor
 	{
 		if (!currentSelectedEntity.has_value())
 		{
-			clz::log::warn("Entity transform gizmo called when no entity has been selected");
 			return;
 		}
 

@@ -1,5 +1,6 @@
 #include "renderer/postprocess/tonemap.hpp"
 #include "core/logs.hpp"
+#include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/utility/image.hpp"
@@ -176,6 +177,19 @@ namespace clz::renderer::post_process
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			r_tonemapPipelineContext.pipeline);
 
+		TonemapPC pushConstant{
+			.exposure = getExposure()
+		};
+
+		vkCmdPushConstants(
+			commandBuffer,
+			r_tonemapPipelineContext.layout,
+			VK_SHADER_STAGE_VERTEX_BIT |
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			0,
+			sizeof(TonemapPC),
+			&pushConstant
+		);
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -185,7 +199,7 @@ namespace clz::renderer::post_process
 			&post_processDescriptorSets[r_currentFrame],
 			0,
 			nullptr
-			);
+		);
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 		vkCmdEndRendering(commandBuffer);
 
