@@ -33,7 +33,10 @@ namespace clz::renderer
 		ModelPaths.resize(ModelPaths.size() + 1);
 		ModelPaths[Id] = ModelPath(filePath);
 
-		fastgltf::Parser parser{};
+		fastgltf::Parser parser{
+		   	fastgltf::Extensions::KHR_materials_emissive_strength
+		};
+
 		auto data = fastgltf::GltfDataBuffer::FromPath(filePath);
 		if (!data)
 		{
@@ -184,6 +187,9 @@ namespace clz::renderer
 				.roughnessFactor = primitive.roughnessFactor,
 				.metallic_roughnessTextureIndex =
 					primitive.metallic_roughnessTextureId.value,
+				.emissiveFactor = primitive.emissiveFactor,
+				.emissiveTextureIndex = primitive.emissiveTextureId.value,
+				.emissiveStrength = primitive.emissiveStrength,
 				.normalTextureIndex = primitive.normalTextureId.value,
 			};
 
@@ -422,6 +428,12 @@ namespace clz::renderer
 					asset.materials[primitive.materialIndex.value()];
 
 				/// --- Load base texture ---
+				primitiveData.baseColorFactor = math::vec4(
+					material.pbrData.baseColorFactor.x(),
+					material.pbrData.baseColorFactor.y(),
+					material.pbrData.baseColorFactor.z(),
+					1.0f
+				);
 				if (material.pbrData.baseColorTexture.has_value())
 				{
 					const auto BaseColorTextureIndex =
@@ -450,15 +462,12 @@ namespace clz::renderer
 								image.data
 							);
 					}
-
-					primitiveData.baseColorFactor = math::vec4(
-						material.pbrData.baseColorFactor.x(),
-						material.pbrData.baseColorFactor.y(),
-						material.pbrData.baseColorFactor.z(),
-						1.0f
-					);
 				}
+
+
 				/// --- load metallic-roughness texture
+				primitiveData.metallicFactor = material.pbrData.metallicFactor;
+				primitiveData.roughnessFactor = material.pbrData.roughnessFactor;
 				if (material.pbrData.metallicRoughnessTexture.has_value())
 				{
 					const auto MetallicRoughnessTextureIndex =
@@ -492,10 +501,44 @@ namespace clz::renderer
 							);
 					}
 
-					primitiveData.metallicFactor =
-						material.pbrData.metallicFactor;
-					primitiveData.roughnessFactor =
-						material.pbrData.roughnessFactor;
+				}
+
+				primitiveData.emissiveFactor = {
+					material.emissiveFactor.x(),
+					material.emissiveFactor.y(),
+					material.emissiveFactor.z(),
+				};
+				primitiveData.emissiveStrength = material.emissiveStrength;
+				if (material.emissiveTexture.has_value())
+				{
+					const auto emissiveTextureIndex = 
+						material.emissiveTexture.value().textureIndex;
+					primitiveData.emissiveTextureIndex = emissiveTextureIndex;
+
+					const auto& fastTexture =
+						asset.textures[emissiveTextureIndex];
+					const auto& fastImage =
+						asset.images[fastTexture.imageIndex.value()];
+
+					if (std::holds_alternative<fastgltf::sources::URI>(
+						    fastImage.data
+					    ))
+					{
+						primitiveData.emissiveTexture =
+							std::get<fastgltf::sources::URI>(
+								fastImage.data
+							);
+					}
+					else if (std::holds_alternative<fastgltf::sources::BufferView>(
+								fastImage.data
+								)
+					)
+					{
+						primitiveData.emissiveTexture = std::get<fastgltf::sources::BufferView>(
+											fastImage.data
+											);
+					}
+
 				}
 				/// --- load normal texture
 				if (material.normalTexture.has_value())
@@ -659,6 +702,27 @@ namespace clz::renderer
 
 			}
 
+			ourPrimitive.emissiveFactor = primitiveData.emissiveFactor;
+			ourPrimitive.emissiveTextureId = r_NULL_TEXTURE;
+			ourPrimitive.emissiveStrength = primitiveData.emissiveStrength;
+			if (primitiveData.emissiveTexture.has_value())
+			{
+				const std::filesystem::path emissiveTexturePath =
+					getModelPath(registeredId).parent_path() /
+					std::get<fastgltf::sources::URI>(
+						primitiveData.emissiveTexture.value()
+					)
+						.uri.c_str();
+
+				ourPrimitive.emissiveTextureId = loadGLTFTexture(
+					TextureCaches[registeredId].texturesLoaded,
+					primitiveData.emissiveTextureIndex,
+					emissiveTexturePath,
+					VK_FORMAT_R8G8B8A8_SRGB
+				);
+
+			}
+
 			ourPrimitive.normalTextureId = r_NULL_TEXTURE;
 			if (primitiveData.normalTexture.has_value())
 			{
@@ -754,6 +818,45 @@ namespace clz::renderer
 					"metallic-roughness texture for " +
 						getModelPath(registeredId).string(),
 					VK_FORMAT_R8G8B8A8_UNORM
+				);
+
+			}
+
+			ourPrimitive.emissiveFactor = primitiveData.emissiveFactor;
+			ourPrimitive.emissiveTextureId = r_NULL_TEXTURE;
+			ourPrimitive.emissiveStrength = primitiveData.emissiveStrength;
+			if (primitiveData.emissiveTexture.has_value())
+			{
+				const auto& bufferViewSource =
+					std::get<fastgltf::sources::BufferView>(
+						primitiveData.emissiveTexture.value()
+					);
+				const auto& bufferView =
+					asset.bufferViews[bufferViewSource.bufferViewIndex];
+				const auto& buffer = asset.buffers[bufferView.bufferIndex];
+
+				const std::byte* imageBytes = nullptr;
+				const size_t imageDataOffset = bufferView.byteOffset;
+				const size_t imageDataLength = bufferView.byteLength;
+
+				if (const auto* arraySource =
+					    std::get_if<fastgltf::sources::Array>(&buffer.data))
+				{
+					imageBytes = arraySource->bytes.data() + imageDataOffset;
+				}
+				if (const auto* arraySource =
+					    std::get_if<fastgltf::sources::Vector>(&buffer.data))
+				{
+					imageBytes = arraySource->bytes.data() + imageDataOffset;
+				}
+
+				ourPrimitive.emissiveTextureId = loadGLBTexture(
+					TextureCaches[registeredId].texturesLoaded,
+					primitiveData.emissiveTextureIndex,
+					imageBytes,
+					imageDataLength,
+					"emissive texture for " + getModelPath(registeredId).string(),
+					VK_FORMAT_R8G8B8A8_SRGB
 				);
 
 			}

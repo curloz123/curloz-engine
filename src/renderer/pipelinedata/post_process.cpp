@@ -2,14 +2,16 @@
 
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
+#include "renderer/postprocess/bloom.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/postprocess/pre_tonemap.hpp"
+#include "renderer/postprocess/bloom_sample.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/utility/namer.hpp"
-
+#include "renderer/utility/descriptor.hpp"
 #include <cstdint>
 #include <array>
+#include <vulkan/vulkan_core.h>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/sceneview.hpp"
@@ -21,20 +23,29 @@ namespace clz::renderer
 {
 	bool createPostProcessDescriptor()
 	{
-		constexpr uint8_t count = 3;
+		constexpr uint8_t count = 6;
 
 		constexpr std::array<uint32_t, count> bindPoints = {
-			PRE_TONEMAP_IMAGE_BIND_POINT,
+			RENDER_TARGET_IMAGE_BIND_POINT,
+			BLOOM_SAMPLE_IMAGE_BIND_POINT,
+			HORIZONTAL_BLOOM_IMAGE_BIND_POINT,
+			VERTICAL_BLOOM_IMAGE_BIND_POINT,
 			TONEMAP_IMAGE_BIND_POINT,
 			POST_TONEMAP_IMAGE_BIND_POINT
 		};
-		constexpr std::array<VkDescriptorType, count> descriptorTypes = {
+		constexpr std::array<VkDescriptorType, 6> descriptorTypes = {
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 		};
-		constexpr std::array<uint32_t, count> descriptorCounts = {1, 1, 1};
+		constexpr std::array<uint32_t, count> descriptorCounts = {1, 1, 1, 1, 1, 1};
 		constexpr std::array<VkShaderStageFlags, count> shaderStages = {
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT
@@ -61,7 +72,7 @@ namespace clz::renderer
 
 		VkDescriptorPoolSize poolSize = {};
 		poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSize.descriptorCount = r_FRAMES_IN_FLIGHT * 3;
+		poolSize.descriptorCount = r_FRAMES_IN_FLIGHT * 6;
 		poolSizes.push_back(poolSize);
 
 		return poolSizes;
@@ -104,31 +115,73 @@ namespace clz::renderer
 
 	void updatePostProcessDescriptorSets()
 	{
-		VkDescriptorImageInfo preTonemapInfo = {};
-		preTonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		preTonemapInfo.imageView = r_renderTargetContext.imageView;
-		preTonemapInfo.sampler = r_renderTargetContext.imageSampler;
+		VkDescriptorImageInfo renderTargetInfo = {};
+		renderTargetInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		renderTargetInfo.imageView = r_renderTargetContext.imageView;
+		renderTargetInfo.sampler = r_renderTargetContext.imageSampler;
+
+		VkDescriptorImageInfo bloomSampleInfo = {};
+		bloomSampleInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		bloomSampleInfo.imageView = post_process::bloomSampleImageView;
+		bloomSampleInfo.sampler = post_process::bloomSampleSampler;
+
+		VkDescriptorImageInfo horizontalBloomInfo = {};
+		horizontalBloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		horizontalBloomInfo.imageView = post_process::horizontalBloomImage.imageView;
+		horizontalBloomInfo.sampler= post_process::bloomSampler;
+
+		VkDescriptorImageInfo verticalBloomInfo = {};
+		verticalBloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		verticalBloomInfo.imageView = post_process::verticalBloomImage.imageView;
+		verticalBloomInfo.sampler= post_process::bloomSampler;
 
 		VkDescriptorImageInfo tonemapInfo = {};
 		tonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		tonemapInfo.imageView = post_process::preTonemapImageView;
-		tonemapInfo.sampler = post_process::preTonemapSampler;
+		tonemapInfo.imageView = post_process::tonemapImageView;
+		tonemapInfo.sampler = post_process::tonemapSampler;
 
 		VkDescriptorImageInfo postTonemapInfo = {};
 		postTonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		postTonemapInfo.imageView = post_process::tonemapImageView;
-		postTonemapInfo.sampler = post_process::tonemapSampler;
+		postTonemapInfo.imageView = post_process::postTonemapImageView;
+		postTonemapInfo.sampler = post_process::postTonemapSampler;
 
 		for (uint32_t j = 0; j < r_FRAMES_IN_FLIGHT; ++j)
 		{
-			VkWriteDescriptorSet preTonemapWrite{};
-			preTonemapWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			preTonemapWrite.dstSet = post_processDescriptorSets[j];
-			preTonemapWrite.dstBinding = PRE_TONEMAP_IMAGE_BIND_POINT;
-			preTonemapWrite.dstArrayElement = 0;
-			preTonemapWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			preTonemapWrite.descriptorCount = 1;
-			preTonemapWrite.pImageInfo = &preTonemapInfo;
+			VkWriteDescriptorSet renderTargetWrite{};
+			renderTargetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			renderTargetWrite.dstSet = post_processDescriptorSets[j];
+			renderTargetWrite.dstBinding = RENDER_TARGET_IMAGE_BIND_POINT;
+			renderTargetWrite.dstArrayElement = 0;
+			renderTargetWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			renderTargetWrite.descriptorCount = 1;
+			renderTargetWrite.pImageInfo = &renderTargetInfo;
+
+			VkWriteDescriptorSet bloomSampleWrite{};
+			bloomSampleWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			bloomSampleWrite.dstSet = post_processDescriptorSets[j];
+			bloomSampleWrite.dstBinding = BLOOM_SAMPLE_IMAGE_BIND_POINT;
+			bloomSampleWrite.dstArrayElement = 0;
+			bloomSampleWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			bloomSampleWrite.descriptorCount = 1;
+			bloomSampleWrite.pImageInfo = &bloomSampleInfo;
+
+			VkWriteDescriptorSet horizontalBloomWrite{};
+			horizontalBloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			horizontalBloomWrite.dstSet = post_processDescriptorSets[j];
+			horizontalBloomWrite.dstBinding = HORIZONTAL_BLOOM_IMAGE_BIND_POINT;
+			horizontalBloomWrite.dstArrayElement = 0;
+			horizontalBloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			horizontalBloomWrite.descriptorCount = 1;
+			horizontalBloomWrite.pImageInfo = &horizontalBloomInfo;
+
+			VkWriteDescriptorSet verticalBloomWrite{};
+			verticalBloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			verticalBloomWrite.dstSet = post_processDescriptorSets[j];
+			verticalBloomWrite.dstArrayElement = 0;
+			verticalBloomWrite.dstBinding = VERTICAL_BLOOM_IMAGE_BIND_POINT;
+			verticalBloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			verticalBloomWrite.descriptorCount = 1;
+			verticalBloomWrite.pImageInfo = &verticalBloomInfo;
 
 			VkWriteDescriptorSet tonemapWrite{};
 			tonemapWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -148,8 +201,13 @@ namespace clz::renderer
 			postTonemapWrite.descriptorCount = 1;
 			postTonemapWrite.pImageInfo = &postTonemapInfo;
 
-			const std::array<VkWriteDescriptorSet, 3> writes = {
-				preTonemapWrite, tonemapWrite, postTonemapWrite
+			const std::array<VkWriteDescriptorSet, 6> writes = {
+				renderTargetWrite,
+				bloomSampleWrite,
+				horizontalBloomWrite,
+				verticalBloomWrite,
+				tonemapWrite, 
+				postTonemapWrite
 			};
 
 			vkUpdateDescriptorSets(

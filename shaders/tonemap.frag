@@ -1,7 +1,7 @@
 #version 460
 
 layout(location = 0) in vec2 inUV;
-layout(set = 0, binding = 2) uniform sampler2D preTonemapImage;
+layout(binding = 2) uniform sampler2D preTonemapImage; // horizontal bloom image
 layout(push_constant) uniform PushConstants
 {
 	float exposure;
@@ -9,13 +9,13 @@ layout(push_constant) uniform PushConstants
 
 layout(location = 0) out vec4 toneMappedColor;
 
-float A = 0.15;
-float B = 0.50;
-float C = 0.10;
-float D = 0.20;
-float E = 0.02;
-float F = 0.30;
-float W = 11.2;
+const float A = 0.15;
+const float B = 0.50;
+const float C = 0.10;
+const float D = 0.20;
+const float E = 0.02;
+const float F = 0.30;
+const float W = 11.2;
 
 vec3 Uncharted2Tonemap(vec3 hdrColor)
 {

@@ -23,6 +23,9 @@ layout(push_constant) uniform PushConstants
 	float metallicFactor;
 	float roughnessFactor;
 	uint metallic_roughnessTextureIndex;
+	vec3 emissiveFactor;
+	uint emissiveTextureIndex;
+	float emissiveStrength;
 	uint normalTextureIndex;
 } pushConstant;
 

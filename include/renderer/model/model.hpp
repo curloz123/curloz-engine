@@ -33,12 +33,14 @@ namespace clz::renderer
 		/// @brief source for the base color texture in fastgltf
 		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
 			baseTexture;
-		/// @brief The index of the base color texture in the fastgltf
-		size_t baseColorTextureIndex;
 		/// @brief Base color factor in fastgltf
 		/// @note transparency (w field) is disabled(=1.0f),
 		/// because we don't support transparency right now
 		math::vec4 baseColorFactor;
+
+		/// @brief The index of the base color texture in the fastgltf
+		size_t baseColorTextureIndex;
+
 
 		/// @brief source for the metallic color texture in fastgltf
 		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
@@ -50,11 +52,21 @@ namespace clz::renderer
 		/// @brief Roughness factor in fastgltf
 		float roughnessFactor;
 
+		/// @brief emissive factor
+		math::vec3 emissiveFactor;
+		/// @brief The index of emissive color texture in fastgltf
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
+			emissiveTexture;
+		size_t emissiveTextureIndex;
+		/// @brief emissive strength
+		float emissiveStrength;
+
 		/// @brief source for the normal color texture in fastgltf
 		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
 			normalTexture;
 		/// @brief The index of the normal color texture in the fastgltf
 		size_t normalColorTextureIndex;
+		
 	};
 
 	/**
@@ -75,16 +87,25 @@ namespace clz::renderer
 
 		/// --- 2. Texture data
 
-		/// @brief ID of the bound base color texture
-		TextureID baseTextureId;
 		/// @brief Base color factor
 		math::vec4 baseColorFactor;
+		/// @brief ID of the bound base color texture
+		TextureID baseTextureId;
+
 		/// @brief ID of metallic texture
 		TextureID metallic_roughnessTextureId;
 		/// @brief metallic color factor
 		float metallicFactor;
 		/// @brief roughness color factor
 		float roughnessFactor;
+
+		/// @brief emissive factor
+		math::vec3 emissiveFactor;
+		/// @brief ID of emissive texture
+		TextureID emissiveTextureId;
+		/// @brief emissive color strength
+		float emissiveStrength;
+
 		/// @brief ID of normal texture
 		TextureID normalTextureId;
 	};

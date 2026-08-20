@@ -21,6 +21,7 @@ namespace clz::renderer
 
 		/// @brief Base color factor
 		math::vec4 baseColorFactor;
+
 		/// @brief base texture id value
 		uint32_t baseTextureIndex;
 
@@ -31,10 +32,24 @@ namespace clz::renderer
 		/// @brief metallic-roughness texture id value
 		uint32_t metallic_roughnessTextureIndex;
 
+		/// @brief Emissive factor
+		math::vec3 emissiveFactor;
+		/// @brief emissive texture ID
+		uint32_t emissiveTextureIndex;
+		/// @brief emissive strength values
+		float emissiveStrength;
+
+
 		/// @brief normal texture id
 		uint32_t normalTextureIndex;
 	};
 
+	struct BloomPC
+	{
+		/// @brief u1->first time, u2->horizontal, u3->vertical
+		uint32_t bloomBits;
+		int bloomStrength;
+	};
 	struct Pre_TonemapPC
 	{
 		uint32_t postProcessBits;

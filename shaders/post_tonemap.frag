@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec2 inUV;
 
-layout(set = 0, binding = 3) uniform sampler2D tonemappedImage;
+layout(binding = 4) uniform sampler2D tonemappedImage;
 layout(push_constant) uniform PushConstants
 {
    	uint postProcessBits;

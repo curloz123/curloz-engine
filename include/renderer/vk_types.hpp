@@ -49,10 +49,11 @@ namespace clz::renderer
 	 */
 	inline PipelineContext r_pipelineContext{};
 
-	inline PipelineContext r_preTonemapPipelineContext{};
+	inline PipelineContext r_bloomSamplePipelineContext{};
+	inline PipelineContext r_bloomPipelineContext{};
 	inline PipelineContext r_tonemapPipelineContext{};
 	inline PipelineContext r_postTonemapPipelineContext{};
-
+	
 	/**
 	 * @brief Shapes pipeline context.
 	 *

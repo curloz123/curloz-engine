@@ -1,7 +1,7 @@
 #include "renderer/pipelinedata/post_process.hpp"
-#include "core/assert.hpp"
 #include "core/logs.hpp"
-#include "renderer/postprocess/pre_tonemap.hpp"
+#include "renderer/postprocess/bloom.hpp"
+#include "renderer/postprocess/bloom_sample.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 
@@ -10,9 +10,15 @@ namespace clz::renderer::post_process
 {
 	bool initializePostProcesses()
 	{
-		if (!createPreTonemapProcess())
+		if (!createBloomSampleProcess())
 		{
-			clz::log::error("failed to create pre-tonemap resources");
+			clz::log::error("failed to create bloom sample process");
+			return false;
+		}
+		
+		if (!createBloomProcess())
+		{
+			clz::log::error("failed to create bloom process");
 			return false;
 		}
 
@@ -36,8 +42,9 @@ namespace clz::renderer::post_process
 	{
 		destroyPostTonemapProcess();
 		destroyTonemapProcess();
-		destroyPreTonemapProcess();
+		destroyBloomSampleProcess();
 	}
+
 	bool recreatePostProcesses()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
@@ -57,7 +64,8 @@ namespace clz::renderer::post_process
 
 	void applyPostProcessing(VkCommandBuffer commandBuffer)
 	{
-		applyPreTonemapProcess(commandBuffer);
+		applyBloomSampleProcess(commandBuffer);
+		applyBloomProcess(commandBuffer);
 		applyTonemapProcess(commandBuffer);
 		applyPostTonemapProcess(commandBuffer);
 	}

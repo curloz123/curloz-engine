@@ -26,15 +26,16 @@
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/pipeline.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/postprocess/bloom_sample.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
-#include "renderer/postprocess/pre_tonemap.hpp"
 #include "renderer/postprocess/tonemap.hpp"
-
+#include "renderer/postprocess/bloom.hpp"
 #include <vector>
 
 namespace clz::renderer
 {
-	static bool createPre_TonemapPipeline();
+	static bool createBloomSamplePipeline();
+	static bool createBloomPipeline();
 	static bool createTonemapPipeline();
 	static bool createPost_TonemapPipeline();
 }
@@ -63,9 +64,17 @@ namespace clz::renderer
 			return false;
 		}
 
-		if (!createPre_TonemapPipeline())
+		if (!createBloomPipeline())
 		{
-			clz::log::error("Could not create pre-post tonemap pipeline");
+			clz::log::error("Could not create bloom pipeline");
+			clz::log::error("Could initialize pipeline context");
+			return false;
+
+		}
+
+		if (!createBloomSamplePipeline())
+		{
+			clz::log::error("Could not create bloom sampling pipeline");
 			clz::log::error("Could initialize pipeline context");
 			return false;
 		}
@@ -523,7 +532,7 @@ namespace clz::renderer
 		return true;
 	}
 
-	static bool createPre_TonemapPipeline()
+	static bool createBloomSamplePipeline()
 	{
 		// One pipeline handles both pre- and post-tonemap passes; which
 		// mode runs is selected via Pre_PostTonemapPC.mode at draw time.
@@ -534,12 +543,25 @@ namespace clz::renderer
 		// will need to be split into two, since VkPipelineRenderingCreateInfo's
 		// color format must match the attachment bound at draw time.
 		return createFullScreenPostProcessPipeline(
-			r_preTonemapPipelineContext,
+			r_bloomSamplePipelineContext,
 			"shaders/post_process.vert.spirv",
-			"shaders/pre_tonemap.frag.spirv",
+			"shaders/bloom_sample.frag.spirv",
 			"pre tonemap pipeline",
-			sizeof(Pre_TonemapPC),
-			post_process::PRE_TONEMAP_IMAGE_FORMAT,
+			0,
+			post_process::BLOOM_SAMPLE_IMAGE_FORMAT,
+			r_renderTargetContext.imageExtent
+		);
+	}
+
+	static bool createBloomPipeline()
+	{
+		return createFullScreenPostProcessPipeline(
+			r_bloomPipelineContext,
+			"shaders/post_process.vert.spirv",
+			"shaders/bloom.frag.spirv",
+			"bloom pipeline",
+			sizeof(BloomPC),
+			post_process::BLOOM_IMAGE_FORMAT,
 			r_renderTargetContext.imageExtent
 		);
 	}
@@ -581,8 +603,13 @@ namespace clz::renderer
 
 		// --- Then Destroy pipeline context's
 		destroyPipelineContext(r_postTonemapPipelineContext);
+		clz::log::info("destroyed post tonemap pipeline context");
 		destroyPipelineContext(r_tonemapPipelineContext);
-		destroyPipelineContext(r_preTonemapPipelineContext);
+		clz::log::info("destroyed tonemap pipeline context");
+		destroyPipelineContext(r_bloomPipelineContext);
+		clz::log::info("destroyed bloom pipeline context");
+		destroyPipelineContext(r_bloomSamplePipelineContext);
+		clz::log::info("destroyed bloom sampling pipeline context");
 		destroyPipelineContext(r_shapePipelineContext);
 		clz::log::info("destroyed main pipeline context");
 		destroyPipelineContext(r_pipelineContext);

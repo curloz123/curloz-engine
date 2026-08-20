@@ -11,12 +11,14 @@
 #include "renderer/context/render_target_context.hpp"
 #include "renderer/drawscene.hpp"
 #include "renderer/model/model.hpp"
+#include "renderer/postprocess/bloom.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "window/mouse.hpp"
 #include "renderer/postprocess/post_process.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
+#include "renderer/postprocess/bloom_sample.hpp"
 
 
 #ifdef CLZ_ENABLE_EDITOR
@@ -205,6 +207,13 @@ namespace clz::renderer
 				dstExtent,
 				commandBuffer
 			);
+			// copyImage2D(
+			// 	post_process::verticalBloomImage.image,
+			// 	r_renderTargetContext.imageExtent,
+			// 	dstImage,
+			// 	dstExtent,
+			// 	commandBuffer
+			// );
 
 			transition_image_layout(
 				dstImage,

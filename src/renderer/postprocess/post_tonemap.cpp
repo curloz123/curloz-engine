@@ -19,15 +19,15 @@ namespace clz::renderer::post_process
 	{
 		if (!createImage(
 			postTonemapImage,
-			    "post tone-map image",
-			    r_renderTargetContext.imageExtent.width,
-			    r_renderTargetContext.imageExtent.height,
-			    POST_TONEMAP_IMAGE_FORMAT,
-			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-				VK_IMAGE_USAGE_SAMPLED_BIT |
-				VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-			    0
+			"post tone-map image",
+			r_renderTargetContext.imageExtent.width,
+			r_renderTargetContext.imageExtent.height,
+			POST_TONEMAP_IMAGE_FORMAT,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+			    VK_IMAGE_USAGE_SAMPLED_BIT |
+			    VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+			0
 		    ))
 		{
 			clz::log::error("failed to create post tonemap image");

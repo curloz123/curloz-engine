@@ -23,6 +23,9 @@ layout(push_constant) uniform PushConstants
 	float metallicFactor;
 	float roughnessFactor;
 	uint metallic_roughnessTextureIndex;
+	vec3 emissiveFactor;
+	uint emissiveTextureIndex;
+	float emissiveStrength;
 	uint normalTextureIndex;
 } PC;
 
@@ -116,7 +119,7 @@ void main()
 	else
 	{
 		mat3 TBN = mat3(inTangent, inBitangent, inNormal);
-		vec3 normal = texture(textures[PC.normalTextureIndex], inUV).rgb;
+		normal = texture(textures[PC.normalTextureIndex], inUV).rgb;
 		normal = (normal * 2.0) - vec3(1.0);
 		normal = normalize(TBN * normal);
 	}
@@ -171,19 +174,19 @@ void main()
 				normal,
 				metallic,
 				roughness);
-
-		vec3 kS = F;
-		vec3 kD = vec3(1.0) - kS;
-		kD *= 1.0 - metallic;
-
-		float NdotL = max(dot(normal, lightDir), 0.0);
-		L0 += ((kD * base.rgb / PI) + specular) * radiance * NdotL;
-		*/
 	}
 
-	vec3 ambient = vec3(0.03) * base.rgb;
+	vec3 emissiveColor = vec3(0.0);
+	if (PC.emissiveTextureIndex != NULL_TEXTURE)
+	{
+		emissiveColor = texture(textures[PC.emissiveTextureIndex], inUV).rgb * 
+				PC.emissiveFactor * PC.emissiveStrength;	
+		/* emissiveColor = vec3(27.0); */
+	}
 
-	vec3 color = ambient + L0;
+	vec3 ambient = vec3(0.001) * base.rgb;
+
+	vec3 color = ambient + L0 + emissiveColor;
 
 	outColor = vec4(color, 1.0);
 }
@@ -196,24 +199,25 @@ vec3 calcDirLight(
 		const float roughness)
 {
 	DirectionalLight light = u_DirLight.dirLight;
-	vec3 halfway = normalize(viewDir + light.direction.xyz);
-	vec3 radiance = light.color.xyz * light.color.xyz * light.color.w;
+	vec3 lightDir = -light.direction.xyz;
+	vec3 halfway = normalize(viewDir + lightDir);
+	vec3 radiance = light.color.xyz * light.color.w;
 
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, base.rgb, metallic);
 	vec3 F = fresnelSchlick(max(dot(halfway, viewDir), 0.0), F0);
 	float NDF = distributionGGX(normal, halfway, roughness);
-	float G = geometrySmith(normal, viewDir, light.direction.xyz, roughness);
+	float G = geometrySmith(normal, viewDir, lightDir, roughness);
 
 	vec3 numerator = NDF * G * F;
-	float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, light.direction.xyz), 0.0) + 0.0001;
+	float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001;
 	vec3 specular = numerator / denominator;
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
 	kD *= 1.0 - metallic;
 
-	float NdotL = max(dot(normal, light.direction.xyz), 0.0);
+	float NdotL = max(dot(normal, lightDir), 0.0);
 	return ((kD * base.rgb / PI) + specular) * radiance * NdotL;
 }
 
@@ -226,8 +230,8 @@ vec3 calcPointLight(
 		const float roughness)
 {
 	float distance = max(length(light.position - inFragWPos), 0.05);
-    if (distance > light.range)
-        return vec3(0.0);
+    	if (distance > light.range)
+        	return vec3(0.0);
 
 	float attenuation = 1.0 / (
 		light.attenuation.x +

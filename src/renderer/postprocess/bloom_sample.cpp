@@ -1,36 +1,38 @@
-#include "renderer/postprocess/pre_tonemap.hpp"
-
 #include "core/logs.hpp"
+#include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
+#include "renderer/postprocess/bloom_sample.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
-#include "renderer/utility/namer.hpp"
+#include <vulkan/vulkan_core.h>
+#include "renderer/pipelinedata/post_process.hpp"
 
 namespace clz::renderer::post_process
 {
-	bool createPreTonemapProcess()
+	bool createBloomSampleProcess()
 	{
 		if (!createImage(
-			preTonemapImage,
-			    "pre tone-map image",
+			bloomSampleImage,
+			    "bloom sample image",
 			    r_renderTargetContext.imageExtent.width,
 			    r_renderTargetContext.imageExtent.height,
-			    PRE_TONEMAP_IMAGE_FORMAT,
+			    BLOOM_SAMPLE_IMAGE_FORMAT,
 			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
+			    	VK_IMAGE_USAGE_SAMPLED_BIT | 
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT, // delete this
 			    0
 		    ))
 		{
-			clz::log::error("failed to create pre tonemap image");
+			clz::log::error("failed to create bloom sample image");
 			return false;
 		}
 
 		VkMemoryRequirements memReq;
 		vkGetImageMemoryRequirements(
 			renderer::r_deviceContext.device,
-			preTonemapImage,
+			bloomSampleImage,
 			&memReq
 		);
 		VkMemoryAllocateInfo allocInfo = {};
@@ -44,7 +46,7 @@ namespace clz::renderer::post_process
 			    renderer::r_deviceContext.device,
 			    &allocInfo,
 			    nullptr,
-			    &preTonemapMemory
+			    &bloomSampleImageMemory
 		    ) != VK_SUCCESS)
 		{
 			clz::log::error("failed to allocate pre tonemap image");
@@ -52,85 +54,58 @@ namespace clz::renderer::post_process
 		}
 		vkBindImageMemory(
 			r_deviceContext.device,
-			preTonemapImage,
-			preTonemapMemory,
+			bloomSampleImage,
+			bloomSampleImageMemory,
 			0
+		);
+		setHandleName(
+			reinterpret_cast<uint64_t>(bloomSampleImageMemory),
+			VK_OBJECT_TYPE_DEVICE_MEMORY,
+			"bloom sampler memory"
 		);
 
 		if (!createImageView(
-			preTonemapImageView,
-			"post tonemap image view",
-			preTonemapImage,
-			PRE_TONEMAP_IMAGE_FORMAT,
+			bloomSampleImageView,
+			"bloom sample image view",
+			bloomSampleImage,
+			BLOOM_SAMPLE_IMAGE_FORMAT,
 			VK_IMAGE_ASPECT_COLOR_BIT))
 		{
 			clz::log::error("failed to create post tonemap image view");
 			return false;
 		}
 
-
-		// --- Linear sampler ---
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 1.0f;
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
-
-		if (vkCreateSampler(
-			    r_deviceContext.device,
-			    &samplerInfo,
-			    nullptr,
-			    &preTonemapSampler
-		    ) != VK_SUCCESS)
+		if (!createSampler(
+				bloomSampleSampler,
+				"bloom image sampler",
+				VK_FILTER_LINEAR,
+				VK_FILTER_LINEAR,
+				VK_SAMPLER_MIPMAP_MODE_LINEAR,
+				VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+				VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+				VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+			     ))
 		{
-			clz::log::error("failed to create pre tonemap sampler");
+			clz::log::error("Could not create bloom sample image");
 			return false;
 		}
-
-		setHandleName(
-			reinterpret_cast<uint64_t>(preTonemapImage),
-			VK_OBJECT_TYPE_IMAGE,
-			"pre tonemap image"
-		);
-		setHandleName(
-			reinterpret_cast<uint64_t>(preTonemapImageView),
-			VK_OBJECT_TYPE_IMAGE_VIEW,
-			"pre tonemap image view"
-		);
-		setHandleName(
-			reinterpret_cast<uint64_t>(preTonemapSampler),
-			VK_OBJECT_TYPE_SAMPLER,
-			"pre tonemap sampler"
-		);
 
 		clz::log::info("Created pre-tonemap post process resources");
 		return true;
 	}
 
-	void destroyPreTonemapProcess()
+	void destroyBloomSampleProcess()
 	{
-		vkDestroySampler(r_deviceContext.device, preTonemapSampler, nullptr);
-		vkDestroyImageView(r_deviceContext.device, preTonemapImageView, nullptr);
-		vkDestroyImage(r_deviceContext.device, preTonemapImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, preTonemapMemory, nullptr);
+		vkDestroySampler(r_deviceContext.device, bloomSampleSampler, nullptr);
+		vkDestroyImageView(r_deviceContext.device, bloomSampleImageView, nullptr);
+		vkDestroyImage(r_deviceContext.device, bloomSampleImage, nullptr);
+		vkFreeMemory(r_deviceContext.device, bloomSampleImageMemory, nullptr);
 	}
 
-	void applyPreTonemapProcess(VkCommandBuffer commandBuffer)
+	void applyBloomSampleProcess(VkCommandBuffer commandBuffer)
 	{
 		transition_image_layout(
-			preTonemapImage,
+			bloomSampleImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			0,
@@ -143,7 +118,7 @@ namespace clz::renderer::post_process
 		VkRenderingAttachmentInfoKHR colorAttachment = {};
 		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 		colorAttachment.pNext = nullptr;
-		colorAttachment.imageView = preTonemapImageView;
+		colorAttachment.imageView = bloomSampleImageView;
 		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -178,23 +153,23 @@ namespace clz::renderer::post_process
 		vkCmdBindPipeline(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			r_preTonemapPipelineContext.pipeline);
-		const Pre_TonemapPC pushConstant{
-			.postProcessBits = 1,
-		};
-		vkCmdPushConstants(
-			commandBuffer,
-			r_preTonemapPipelineContext.layout,
-			VK_SHADER_STAGE_VERTEX_BIT |
-			VK_SHADER_STAGE_FRAGMENT_BIT,
-			0,
-			sizeof(Pre_TonemapPC),
-			&pushConstant
-		);
+			r_bloomSamplePipelineContext.pipeline);
+		// const Pre_TonemapPC pushConstant{
+		// 	.postProcessBits = 1,
+		// };
+		// vkCmdPushConstants(
+		// 	commandBuffer,
+		// 	r_bloomSamplePipelineContext.layout,
+		// 	VK_SHADER_STAGE_VERTEX_BIT |
+		// 	VK_SHADER_STAGE_FRAGMENT_BIT,
+		// 	0,
+		// 	sizeof(Pre_TonemapPC),
+		// 	&pushConstant
+		// );
 		vkCmdBindDescriptorSets(
 			    commandBuffer,
 			    VK_PIPELINE_BIND_POINT_GRAPHICS,
-			    r_preTonemapPipelineContext.layout,
+			    r_bloomSamplePipelineContext.layout,
 			    0, 1,
 			    &post_processDescriptorSets[r_currentFrame],
 			    0,
@@ -205,15 +180,27 @@ namespace clz::renderer::post_process
 		vkCmdEndRendering(commandBuffer);
 
 		transition_image_layout(
-			preTonemapImage,
+			bloomSampleImage,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
-			VK_ACCESS_2_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_2_TRANSFER_READ_BIT,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			commandBuffer
 		);
+
+		// transition_image_layout(
+		// 	bloomSampleImage,
+		// 	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+		// 	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		// 	VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+		// 	VK_ACCESS_2_SHADER_READ_BIT,
+		// 	VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+		// 	VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+		// 	VK_IMAGE_ASPECT_COLOR_BIT,
+		// 	commandBuffer
+		// );
 	}
 }
