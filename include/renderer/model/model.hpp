@@ -12,6 +12,7 @@
 #include "math/vec4.hpp"
 #include "renderer/entitydata/texture.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/utility/image.hpp"
 #include <expected>
 #include <fastgltf/core.hpp>
 #include <filesystem>
@@ -20,6 +21,15 @@
 
 namespace clz::renderer
 {
+	struct SamplerData
+	{
+		SamplerFilter minFilter = SamplerFilter::Linear;
+		SamplerFilter magFilter = SamplerFilter::Linear;
+		MipmapMode mipmapMode = MipmapMode::None;
+		SamplerAddressMode addressModeU = SamplerAddressMode::REPEAT;
+		SamplerAddressMode addressModeV = SamplerAddressMode::REPEAT;
+		SamplerAddressMode addressModeW = SamplerAddressMode::REPEAT;
+	};
 	/**
 	 * @struct PrimitiveData
 	 * @brief Holds the raw, CPU-side geometric and texture data for a single mesh
@@ -31,41 +41,44 @@ namespace clz::renderer
 		std::vector<uint32_t> indices;
 
 		/// @brief source for the base color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
-			baseTexture;
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> baseTexture;
 		/// @brief Base color factor in fastgltf
 		/// @note transparency (w field) is disabled(=1.0f),
 		/// because we don't support transparency right now
 		math::vec4 baseColorFactor;
-
 		/// @brief The index of the base color texture in the fastgltf
 		size_t baseColorTextureIndex;
+		/// @brief Sampler of base color
+		SamplerData baseSamplerData;
 
 
 		/// @brief source for the metallic color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
-			metallic_roughnessTexture;
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> metallic_roughnessTexture;
 		/// @brief The index of the metallic-roughness color texture in the fastgltf
 		size_t metallic_roughnessColorTextureIndex;
 		/// @brief Metallic factor in fastgltf
 		float metallicFactor;
 		/// @brief Roughness factor in fastgltf
 		float roughnessFactor;
+		/// @brief metallic-roughness texture's sampler
+		SamplerData metallic_roughnessSamplerData;
 
 		/// @brief emissive factor
 		math::vec3 emissiveFactor;
 		/// @brief The index of emissive color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
-			emissiveTexture;
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> emissiveTexture;
 		size_t emissiveTextureIndex;
 		/// @brief emissive strength
 		float emissiveStrength;
+		/// @brief emissive texture sampler
+		SamplerData emissiveSamplerData;
 
 		/// @brief source for the normal color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>>
-			normalTexture;
+		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> normalTexture;
 		/// @brief The index of the normal color texture in the fastgltf
 		size_t normalColorTextureIndex;
+		/// @brief normal color sampler
+		SamplerData normalSampelerData;
 		
 	};
 

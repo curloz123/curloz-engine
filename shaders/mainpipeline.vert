@@ -52,6 +52,6 @@ void main()
 	outNormal = normalize(mat3(transpose(inverse(pushConstant.model))) * inNormal);
 	outFragWPos = vec3(pushConstant.model * vec4(inPosition, 1.0));
 	outCameraPos = u_Camera.cameraPos.xyz;
-	outTangent = inTangent.xyz;
-	outBitangent = cross(inNormal, inTangent.xyz) * inTangent.w;
+	outTangent = normalize(mat3(pushConstant.model) * inTangent.xyz);
+	outBitangent = cross(outNormal, outTangent.xyz) * inTangent.w;
 }

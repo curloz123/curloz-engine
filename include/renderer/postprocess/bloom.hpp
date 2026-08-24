@@ -14,13 +14,14 @@ namespace clz::renderer::post_process
 	inline bloomImage horizontalBloomImage;
 	inline bloomImage verticalBloomImage;
 	inline VkSampler bloomSampler;
-
+	inline bool enableBloom = true;
 	enum BloomProcessBits : uint32_t
 	{
 		FIRST_TIME = 1 << 0,
 		HORIZONTAL = 1 << 1,
 		VERTICAL   = 1 << 2,
-		BLEND      = 1 << 3
+		BLEND      = 1 << 3,
+		DISABLED   = 1 << 4
 	};
 
 	bool createBloomProcess();

@@ -161,6 +161,11 @@ namespace clz::renderer::post_process
 				horizontal = true;
 			}
 
+			if (!enableBloom)
+			{
+				pushConstant.bloomBits |= BloomProcessBits::DISABLED; 
+			}
+
 			transition_image_layout(
 				attachment,
 				VK_IMAGE_LAYOUT_UNDEFINED,

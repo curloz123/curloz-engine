@@ -3,6 +3,7 @@
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 #include "../../include/editor_types.hpp"
+#include "renderer/postprocess/bloom.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 #include "../../include/timemachine.hpp"
 
@@ -156,6 +157,9 @@ namespace
 				chromaticAberration
 			);
 		}
+
+		ImGui::Text("Bloom");
+		ImGui::Checkbox("Enable", &clz::renderer::post_process::enableBloom);
 
 	}
 }

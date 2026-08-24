@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <memory.h>
 #include <stb_image.h>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer
 {
@@ -25,7 +26,16 @@ namespace clz::renderer
 
 		return true;
 	}
-	TextureID registerTexture(const std::filesystem::path& filePath, const VkFormat imageFormat)
+	TextureID registerTexture(
+		const std::filesystem::path& filePath, 
+		const VkFormat imageFormat,
+		const SamplerFilter minFilter,
+		const SamplerFilter magFilter,
+		const MipmapMode mipmapMode,
+		const SamplerAddressMode addressModeU,
+		const SamplerAddressMode addressModeV,
+		const SamplerAddressMode addressModeW
+	)
 	{
 		if (!std::filesystem::exists(filePath))
 		{
@@ -34,11 +44,23 @@ namespace clz::renderer
 			textureId.value = r_NULL_TEXTURE;
 			return textureId;
 		}
-		r_textures.image.resize(r_textures.image.size() + 1);
-		r_textures.imageView.resize(r_textures.image.size() + 1);
+
+		const auto newSize = r_numRegisteredTextures + 1;
+		r_textures.image.resize(newSize);
+		r_textures.imageView.resize(newSize);
+		r_textures.imageSize.resize(newSize);
 		r_textures.imageFormat.push_back(imageFormat);
-		r_textures.imageSize.resize(r_textures.imageSize.size() + 1);
 		r_textures.offset.resize(r_textures.offset.size() + 1);
+
+		r_textures.imageMipCount.resize(r_textures.imageSize.size() + 1);
+		r_textures.minFilter.push_back(minFilter);
+		r_textures.magFilter.push_back(magFilter);
+		r_textures.imageAddressModeU.push_back(addressModeU);
+		r_textures.imageAddressModeV.push_back(addressModeV);
+		r_textures.imageAddressModeW.push_back(addressModeW);
+		r_textures.imageMipmapMode.push_back(mipmapMode);
+		r_textures.imageSampler.resize(newSize);
+		
 		r_textures.width.resize(r_textures.image.size() + 1);
 		r_textures.height.resize(r_textures.image.size() + 1);
 		r_textures.numChannels.resize(r_textures.image.size() + 1);
@@ -65,6 +87,8 @@ namespace clz::renderer
 		r_textures.imageSize[index] =
 			r_textures.width[index] * r_textures.height[index] * STBI_rgb_alpha;
 
+		const uint32_t numMips = calculateMipLevels(r_textures.width[index], r_textures.height[index]);
+		r_textures.imageMipCount[index] = numMips;
 		if (!createImage(
 			    r_textures.image[index],
 			    filePath.string(),
@@ -72,20 +96,32 @@ namespace clz::renderer
 			    r_textures.height[index],
 			    r_textures.imageFormat[index],
 			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			    0
+			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			    0,
+			    numMips
 		    ))
 		{
-			clz::log::error("stb could not load texture: " + filePath.string());
+			clz::log::error("vulkan could not create texture image: " + filePath.string());
 			TextureID textureId;
 			textureId.value = r_NULL_TEXTURE;
 			return textureId;
 		}
-
 		setHandleName(
 			reinterpret_cast<uint64_t>(r_textures.image[index]),
 			VK_OBJECT_TYPE_IMAGE,
 			filePath.string().c_str()
+		);
+
+		createSampler(
+			r_textures.imageSampler[index], 
+			filePath.string() + " sampler", 
+			magFilter, 
+			minFilter,
+			mipmapMode, 
+			addressModeU, 
+			addressModeV, 
+			addressModeW, 
+			static_cast<float>(numMips)
 		);
 
 		uint32_t IdValue = r_numRegisteredTextures++;
@@ -97,14 +133,31 @@ namespace clz::renderer
 		const std::byte* data,
 		const size_t size,
 		const std::string_view textureName,
-		const VkFormat imageFormat)
+		const VkFormat imageFormat,
+		const SamplerFilter minFilter,
+		const SamplerFilter magFilter,
+		const MipmapMode mipmapMode,
+		const SamplerAddressMode addressModeU,
+		const SamplerAddressMode addressModeV,
+		const SamplerAddressMode addressModeW
+		)
 	{
-		CLZ_ASSERT(data, "texture data of: " + std::string(textureName) + " is invalid");
+		CLZ_ASSERT(data, "texture data of: " + std::string(textureName) + " is corrupted/invalid");
 
 		r_textures.image.resize(r_textures.image.size() + 1);
 		r_textures.imageView.resize(r_textures.image.size() + 1);
 		r_textures.imageSize.resize(r_textures.imageSize.size() + 1);
 		r_textures.imageFormat.push_back(imageFormat);
+
+		r_textures.imageMipCount.resize(r_textures.imageMipCount.size() + 1);
+		r_textures.minFilter.push_back(minFilter);
+		r_textures.magFilter.push_back(magFilter);
+		r_textures.imageAddressModeU.push_back(addressModeU);
+		r_textures.imageAddressModeV.push_back(addressModeV);
+		r_textures.imageAddressModeW.push_back(addressModeW);
+		r_textures.imageMipmapMode.push_back(mipmapMode);
+		r_textures.imageSampler.resize(r_textures.imageSampler.size() + 1);
+
 		r_textures.offset.resize(r_textures.offset.size() + 1);
 		r_textures.width.resize(r_textures.image.size() + 1);
 		r_textures.height.resize(r_textures.image.size() + 1);
@@ -134,6 +187,8 @@ namespace clz::renderer
 		r_textures.imageSize[index] = static_cast<VkDeviceSize>(
 			r_textures.width[index] * r_textures.height[index] * STBI_rgb_alpha);
 
+		const uint32_t numMips = calculateMipLevels(r_textures.width[index], r_textures.height[index]);
+		r_textures.imageMipCount[index] = numMips;
 		if (!createImage(
 			    r_textures.image[index],
 			    std::string(textureName),
@@ -141,8 +196,9 @@ namespace clz::renderer
 			    r_textures.height[index],
 			    r_textures.imageFormat[index],
 			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			    0
+			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			    0,
+			    numMips
 		    ))
 		{
 			clz::log::error("stb could not load texture: " + std::string(textureName));
@@ -156,6 +212,19 @@ namespace clz::renderer
 			VK_OBJECT_TYPE_IMAGE,
 			std::string(textureName).c_str()
 		);
+
+		createSampler(
+			r_textures.imageSampler[index], 
+			std::string(textureName) + "sampler", 
+			magFilter, 
+			minFilter,
+			mipmapMode, 
+			addressModeU, 
+			addressModeV, 
+			addressModeW, 
+			numMips
+		);
+
 
 		const uint32_t IdValue = r_numRegisteredTextures++;
 		TextureID textureId;
@@ -266,7 +335,8 @@ namespace clz::renderer
 				    "entity texture Image view",
 				    r_textures.image[i],
 				    r_textures.imageFormat[i],
-				    VK_IMAGE_ASPECT_COLOR_BIT
+				    VK_IMAGE_ASPECT_COLOR_BIT,
+				    r_textures.imageMipCount[i]
 			    ))
 			{
 				log::error("Could not create image view for textures");
@@ -279,16 +349,18 @@ namespace clz::renderer
 		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
 		{
 			// transition - 1
-				transition_image_layout(
+			transition_image_layout(
 				r_textures.image[i],
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				0,
-				VK_ACCESS_TRANSFER_WRITE_BIT,
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_ACCESS_2_NONE,
+				VK_ACCESS_2_TRANSFER_WRITE_BIT,
+				VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
 				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer
+				commandBuffer,
+				0,
+				r_textures.imageMipCount[i]
 			);
 
 			// Copying buffer to image
@@ -327,16 +399,27 @@ namespace clz::renderer
 			);
 
 			// Transition - 2
+			generateMipmaps(
+				commandBuffer,
+				r_textures.image[i],
+				r_textures.width[i],
+				r_textures.height[i],
+				r_textures.imageMipCount[i]
+			);
+
+			// Transition - 3
 			transition_image_layout(
 				r_textures.image[i],
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT,
-				VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				VK_ACCESS_2_TRANSFER_READ_BIT,
+				VK_ACCESS_2_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
 				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer
+				commandBuffer,
+				0,
+				r_textures.imageMipCount[i]
 			);
 		}
 
@@ -344,9 +427,6 @@ namespace clz::renderer
 
 		vkDestroyBuffer(r_deviceContext.device, stagingBuffer, nullptr);
 		vkFreeMemory(r_deviceContext.device, stagingBufferMemory, nullptr);
-
-		// Create Sampler
-		createSampler();
 
 		return true;
 	}
@@ -392,8 +472,6 @@ namespace clz::renderer
 
 	void destroyTextures()
 	{
-		destroySampler();
-
 		for (uint32_t i = 0; i < r_numRegisteredTextures; i++)
 		{
 			vkDestroyImageView(

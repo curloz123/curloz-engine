@@ -62,6 +62,13 @@ void main()
 	const bool firstIteration 	= (PC.bloomBits & (1 << 0)) != 0u;
 	const bool horizontal		= (PC.bloomBits & (1 << 1)) != 0u;
 	const bool vertical 		= (PC.bloomBits & (1 << 2)) != 0u;
+	const bool disabled		= (PC.bloomBits & (1 << 4)) != 0u;
+
+	if (disabled)
+	{
+		outColor = texture(renderTargetImage, inUV);
+		return;
+	}
 
 	if (firstIteration)
 	{

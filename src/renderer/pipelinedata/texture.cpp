@@ -67,7 +67,7 @@ namespace clz::renderer
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = r_textures.imageView[i];
-			imageInfo.sampler = r_sampler;
+			imageInfo.sampler = r_textures.imageSampler[i];
 
 			for (auto j = 0; j < r_FRAMES_IN_FLIGHT; ++j)
 			{

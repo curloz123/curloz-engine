@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "renderer/utility/image.hpp"
 #include <filesystem>
 #include <limits>
 #include <stb_image.h>
@@ -21,6 +22,16 @@ namespace clz::renderer
 		std::vector<VkDeviceSize> imageSize;
 		std::vector<VkFormat> imageFormat;
 		std::vector<VkDeviceSize> offset;
+		
+		std::vector<uint32_t> imageMipCount;
+		std::vector<SamplerFilter> minFilter;
+		std::vector<SamplerFilter> magFilter;
+		std::vector<MipmapMode> imageMipmapMode;
+		std::vector<SamplerAddressMode> imageAddressModeU;
+		std::vector<SamplerAddressMode> imageAddressModeV;
+		std::vector<SamplerAddressMode> imageAddressModeW;
+		std::vector<VkSampler> imageSampler;
+
 		std::vector<int32_t> width;
 		std::vector<int32_t> height;
 		std::vector<int32_t> numChannels;
@@ -39,10 +50,6 @@ namespace clz::renderer
 		uint32_t value = r_NULL_TEXTURE;
 
 		TextureID() = default;
-		void operator=(const TextureID& textureId)
-		{
-			value = textureId.value;
-		}
 		void operator=(const uint32_t Id)
 		{
 			value = Id;
@@ -92,7 +99,14 @@ namespace clz::renderer
 	 */
 	TextureID registerTexture(
 		const std::filesystem::path& filePath,
-		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB);
+		VkFormat imageFormat,
+		SamplerFilter minFilter,
+		SamplerFilter magFilter,
+		MipmapMode mipmapMode,
+		SamplerAddressMode addressModeU,
+		SamplerAddressMode addressModeV,
+		SamplerAddressMode addressModeW
+	);
 
 	/**
 	 * @brief Same as normal register texture function,
@@ -109,7 +123,15 @@ namespace clz::renderer
 		const std::byte* data,
 		size_t size,
 		std::string_view textureName,
-		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB);
+		VkFormat imageFormat,
+		SamplerFilter minFilter,
+		SamplerFilter magFilter,
+		MipmapMode mipmapMode,
+		SamplerAddressMode addressModeU,
+		SamplerAddressMode addressModeV,
+		SamplerAddressMode addressModeW
+	);
+
 
 	/**
 	 * @brief Uploads all registered textures to GPU memory.

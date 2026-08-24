@@ -427,6 +427,102 @@ namespace clz::renderer
 				const auto& material =
 					asset.materials[primitive.materialIndex.value()];
 
+				auto loadSamplerData = [](const fastgltf::Sampler& sampler) -> SamplerData
+				{
+					SamplerData data{};
+
+					// Magnification filter
+					if (sampler.magFilter.has_value())
+					{
+						switch (sampler.magFilter.value())
+						{
+							case fastgltf::Filter::Nearest:
+								data.magFilter = SamplerFilter::Nearest;
+								break;
+
+							case fastgltf::Filter::Linear:
+								data.magFilter = SamplerFilter::Linear;
+								break;
+
+							default:
+								break;
+						}
+					}
+
+					// Minification filter + mipmap mode
+					if (sampler.minFilter.has_value())
+					{
+						switch (sampler.minFilter.value())
+						{
+							case fastgltf::Filter::Nearest:
+								data.minFilter = SamplerFilter::Nearest;
+								data.mipmapMode = MipmapMode::None;
+								break;
+
+							case fastgltf::Filter::Linear:
+								data.minFilter = SamplerFilter::Linear;
+								data.mipmapMode = MipmapMode::None;
+								break;
+
+							case fastgltf::Filter::NearestMipMapNearest:
+								data.minFilter = SamplerFilter::Nearest;
+								data.mipmapMode = MipmapMode::Nearest;
+								break;
+
+							case fastgltf::Filter::LinearMipMapNearest:
+								data.minFilter = SamplerFilter::Linear;
+								data.mipmapMode = MipmapMode::Nearest;
+								break;
+
+							case fastgltf::Filter::NearestMipMapLinear:
+								data.minFilter = SamplerFilter::Nearest;
+								data.mipmapMode = MipmapMode::Linear;
+								break;
+
+							case fastgltf::Filter::LinearMipMapLinear:
+								data.minFilter = SamplerFilter::Linear;
+								data.mipmapMode = MipmapMode::Linear;
+								break;
+						}
+					}
+
+					// Address modes
+					switch (sampler.wrapS)
+					{
+						case fastgltf::Wrap::ClampToEdge:
+							data.addressModeU = SamplerAddressMode::CLAMP_TO_EDGE;
+							break;
+
+						case fastgltf::Wrap::MirroredRepeat:
+							data.addressModeU = SamplerAddressMode::MIRRORED_REPEAT;
+							break;
+
+						case fastgltf::Wrap::Repeat:
+							data.addressModeU = SamplerAddressMode::REPEAT;
+							break;
+					}
+
+					switch (sampler.wrapT)
+					{
+						case fastgltf::Wrap::ClampToEdge:
+							data.addressModeV = SamplerAddressMode::CLAMP_TO_EDGE;
+							break;
+
+						case fastgltf::Wrap::MirroredRepeat:
+							data.addressModeV = SamplerAddressMode::MIRRORED_REPEAT;
+							break;
+
+						case fastgltf::Wrap::Repeat:
+							data.addressModeV = SamplerAddressMode::REPEAT;
+							break;
+					}
+
+					// glTF has no W wrapping for a normal 2D texture.
+					data.addressModeW = SamplerAddressMode::CLAMP_TO_EDGE;
+
+					return data;
+				};
+
 				/// --- Load base texture ---
 				primitiveData.baseColorFactor = math::vec4(
 					material.pbrData.baseColorFactor.x(),
@@ -434,6 +530,7 @@ namespace clz::renderer
 					material.pbrData.baseColorFactor.z(),
 					1.0f
 				);
+				primitiveData.baseSamplerData = {};
 				if (material.pbrData.baseColorTexture.has_value())
 				{
 					const auto BaseColorTextureIndex =
@@ -445,22 +542,25 @@ namespace clz::renderer
 					const auto& image =
 						asset.images[texture.imageIndex.value()];
 
-					if (std::holds_alternative<fastgltf::sources::URI>(
-						    image.data
-					    ))
+					if (std::holds_alternative<fastgltf::sources::URI>(image.data))
 					{
 						primitiveData.baseTexture =
 							std::get<fastgltf::sources::URI>(
 								image.data
 							);
 					}
-					else if (std::holds_alternative<
-							 fastgltf::sources::BufferView>(image.data))
+					else if (std::holds_alternative<fastgltf::sources::BufferView>(image.data))
 					{
 						primitiveData.baseTexture =
 							std::get<fastgltf::sources::BufferView>(
 								image.data
 							);
+					}
+
+					if (texture.samplerIndex.has_value())
+					{
+						const auto& sampler = asset.samplers[texture.samplerIndex.value()];	
+						primitiveData.baseSamplerData = loadSamplerData(sampler);
 					}
 				}
 
@@ -499,6 +599,11 @@ namespace clz::renderer
 							std::get<fastgltf::sources::BufferView>(
 								fastImage.data
 							);
+					}
+					if (fastTexture.samplerIndex.has_value())
+					{
+						const auto& sampler = asset.samplers[fastTexture.samplerIndex.value()];
+						primitiveData.metallic_roughnessSamplerData = loadSamplerData(sampler);
 					}
 
 				}
@@ -539,6 +644,11 @@ namespace clz::renderer
 											);
 					}
 
+					if (fastTexture.samplerIndex.has_value())
+					{
+						const auto& sampler = asset.samplers[fastTexture.samplerIndex.value()];
+						primitiveData.emissiveSamplerData = loadSamplerData(sampler);
+					}
 				}
 				/// --- load normal texture
 				if (material.normalTexture.has_value())
@@ -566,11 +676,16 @@ namespace clz::renderer
 							 fastImage.data
 						 ))
 					{
-						primitiveData.normalTexture =
-							std::get<fastgltf::sources::BufferView>(
-								fastImage.data
-							);
+						primitiveData.normalTexture = std::get<fastgltf::sources::BufferView>(fastImage.data);
+						
 					}
+					if (fastTexture.samplerIndex.has_value())
+					{
+
+						const auto& sampler = asset.samplers[fastTexture.samplerIndex.value()];
+						primitiveData.normalSampelerData = loadSamplerData(sampler);
+					}
+
 				}
 			}
 
@@ -606,14 +721,24 @@ namespace clz::renderer
 		auto loadGLTFTexture = [](std::unordered_map<size_t, TextureID>& textureCache,
 					  const size_t fastTextureIndex,
 					  const std::filesystem::path& texturePath,
-					  VkFormat textureFormat) {
+					  VkFormat textureFormat,
+					  const SamplerData samplerData) {
 			if (const auto& it = textureCache.find(fastTextureIndex);
 			    it != textureCache.end())
 			{
 				return it->second;
 			}
 
-			auto textureId = registerTexture(texturePath, textureFormat);
+			auto textureId = registerTexture(
+					texturePath, 
+					textureFormat,
+					samplerData.minFilter,
+					samplerData.magFilter,
+					samplerData.mipmapMode,
+					samplerData.addressModeU,
+					samplerData.addressModeV,
+					samplerData.addressModeW
+			);
 			textureCache[fastTextureIndex] = textureId;
 
 			return textureId;
@@ -624,13 +749,26 @@ namespace clz::renderer
 					 const std::byte* imageByte,
 					 const size_t imageByteSize,
 					 const std::string_view textureName,
-					 const VkFormat textureFormat) {
+					 const VkFormat textureFormat,
+					 const SamplerData samplerData) {
 			if (const auto& it = textureCache.find(fastTextureIndex);
 			    it != textureCache.end())
 			{
 				return it->second;
 			}
-			auto textureId = registerTexture(imageByte, imageByteSize, textureName, textureFormat);
+
+			auto textureId = registerTexture(
+					imageByte, 
+					imageByteSize, 
+					textureName, 
+					textureFormat,
+					samplerData.minFilter,
+					samplerData.magFilter,
+					samplerData.mipmapMode,
+					samplerData.addressModeU,
+					samplerData.addressModeV,
+					samplerData.addressModeW
+			);
 			textureCache[fastTextureIndex] = textureId;
 
 			return textureId;
@@ -675,7 +813,8 @@ namespace clz::renderer
 					TextureCaches[registeredId].texturesLoaded,
 					primitiveData.baseColorTextureIndex,
 					baseTexturePath,
-					VK_FORMAT_R8G8B8A8_SRGB
+					VK_FORMAT_R8G8B8A8_SRGB,
+					primitiveData.baseSamplerData
 				);
 
 			}
@@ -696,7 +835,8 @@ namespace clz::renderer
 					TextureCaches[registeredId].texturesLoaded,
 					primitiveData.metallic_roughnessColorTextureIndex,
 					mrTexturePath,
-					VK_FORMAT_R8G8B8A8_UNORM
+					VK_FORMAT_R8G8B8A8_UNORM,
+					primitiveData.metallic_roughnessSamplerData
 				);
 
 
@@ -718,7 +858,8 @@ namespace clz::renderer
 					TextureCaches[registeredId].texturesLoaded,
 					primitiveData.emissiveTextureIndex,
 					emissiveTexturePath,
-					VK_FORMAT_R8G8B8A8_SRGB
+					VK_FORMAT_R8G8B8A8_SRGB,
+					primitiveData.emissiveSamplerData
 				);
 
 			}
@@ -737,7 +878,8 @@ namespace clz::renderer
 					TextureCaches[registeredId].texturesLoaded,
 					primitiveData.normalColorTextureIndex,
 					normalTexturePath,
-					VK_FORMAT_R8G8B8A8_UNORM
+					VK_FORMAT_R8G8B8A8_UNORM,
+					primitiveData.normalSampelerData
 				);
 			}
 		}
@@ -778,7 +920,8 @@ namespace clz::renderer
 					imageBytes,
 					imageDataLength,
 					"base texture for " + getModelPath(registeredId).string(),
-					VK_FORMAT_R8G8B8A8_SRGB
+					VK_FORMAT_R8G8B8A8_SRGB,
+					primitiveData.baseSamplerData
 				);
 			}
 
@@ -817,7 +960,8 @@ namespace clz::renderer
 					imageDataLength,
 					"metallic-roughness texture for " +
 						getModelPath(registeredId).string(),
-					VK_FORMAT_R8G8B8A8_UNORM
+					VK_FORMAT_R8G8B8A8_UNORM,
+					primitiveData.metallic_roughnessSamplerData
 				);
 
 			}
@@ -856,7 +1000,8 @@ namespace clz::renderer
 					imageBytes,
 					imageDataLength,
 					"emissive texture for " + getModelPath(registeredId).string(),
-					VK_FORMAT_R8G8B8A8_SRGB
+					VK_FORMAT_R8G8B8A8_SRGB,
+					primitiveData.emissiveSamplerData
 				);
 
 			}
@@ -893,7 +1038,8 @@ namespace clz::renderer
 					imageBytes,
 					imageDataLength,
 					"normal texture for " + getModelPath(registeredId).string(),
-					VK_FORMAT_R8G8B8A8_UNORM
+					VK_FORMAT_R8G8B8A8_UNORM,
+					primitiveData.normalSampelerData
 				);
 			}
 		}

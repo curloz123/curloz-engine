@@ -42,6 +42,7 @@ namespace clz::renderer::post_process
 	{
 		destroyPostTonemapProcess();
 		destroyTonemapProcess();
+		destroyBloomProcess();
 		destroyBloomSampleProcess();
 	}
 
