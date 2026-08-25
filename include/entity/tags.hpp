@@ -1,3 +1,8 @@
+/**
+ * @file tags.hpp
+ * @author curl0z
+ * @brief Defines all tags that can be attached to entities
+ */
 #pragma once
 
 namespace clz::ecs

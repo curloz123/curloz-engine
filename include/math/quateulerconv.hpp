@@ -1,3 +1,8 @@
+/**
+ * @file quateulerconv.hpp
+ * @author curl0z
+ * @brief Provides quaternion <-> euler conversion functions
+ */
 #pragma once
 
 #include "quat.hpp"
@@ -7,6 +12,12 @@
 
 namespace clz::math
 {
+	/**
+	 * @brief Converts euler to quaternion
+	 * @param euler euler vector 3
+	 * @warning has a possible loss of accuracy, do not use for prolonged period of time
+	 * @return Equivalent quaternion
+	 */
 	inline quat quatFromEuler(const vec3& euler)
 	{
 		const float cx = cosf(euler.x * 0.5f);
@@ -27,6 +38,11 @@ namespace clz::math
 		return result;
 	}
 
+	/**
+	 * @brief Converts quaterion to euler vec3
+	 * @param q quaternion to convert
+	 * @return Equivalent euler vec3
+	 */
 	inline vec3 quatToEulerXYZ(const quat& q)
 	{
 		vec3 euler;

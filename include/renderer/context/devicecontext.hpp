@@ -54,8 +54,6 @@ namespace clz::renderer
 	 */
 	bool selectPhysicalDevice();
 
-	void extractGPUInfo();
-
 	/**
 	 * @brief Created logical device handle
 	 * @return void if succeeded or logs the error

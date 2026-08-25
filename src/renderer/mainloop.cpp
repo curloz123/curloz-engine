@@ -30,7 +30,7 @@
 
 namespace clz::renderer
 {
-	/// @copydoc
+	/// @copydoc waitForGPU
 	void waitForGPU(VkFence fence)
 	{
 		if (vkWaitForFences(
@@ -45,7 +45,7 @@ namespace clz::renderer
 		}
 	}
 
-	/// @copydoc
+	/// @copydoc acquireNextImage
 	void acquireNextImage(VkSemaphore semaphore, uint32_t& rImageIndex)
 	{
 		const VkResult acquireResult = vkAcquireNextImageKHR(
@@ -68,7 +68,7 @@ namespace clz::renderer
 		}
 	}
 
-	/// @copydoc
+	/// @copydoc resetFence
 	void resetFence(VkFence fence)
 	{
 		if (vkResetFences(r_deviceContext.device, 1, &fence) != VK_SUCCESS) [[unlikely]]
@@ -77,7 +77,7 @@ namespace clz::renderer
 		}
 	}
 
-	/// @copydoc
+	/// @copydoc startCommandBuffer
 	void startCommandBuffer(VkCommandBuffer commandBuffer)
 	{
 		if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS) [[unlikely]]
@@ -93,7 +93,13 @@ namespace clz::renderer
 	}
 
 
-	/// @copydoc recordCommandBuffer
+	/**
+	 * @brief MOST IMPORTANT PART OF VULKAN
+	 * So, first off scene is rendered into the render target context through msaa or wtv
+	 * Then we proceed to apply post process into that image,
+	 * then we copy that back to final wherever we want.
+	 * Now main thing to care about it semaphores, make sure to study them carefully
+	 */
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
 		/// @brief Renders the 3D scene into r_renderTargetContext.image.

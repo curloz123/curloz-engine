@@ -22,18 +22,27 @@
 /// --- Data ----
 namespace clz::renderer
 {
-
+	/// @brief texture's set point
 	inline constexpr uint8_t TEXTURE_SET_POINT = 1;
+	/// @brief texture bind point
 	inline constexpr uint8_t TEXTURE_BIND_POINT = 0;
+	/// @brief Texture descriptor set layout
 	inline VkDescriptorSetLayout textureDescriptorLayout;
 
 } // namespace clz::renderer
 
 namespace clz::renderer
 {
-
+	/// @brief Create's texture descriptor resources
+	/// Rn only creates the layout
+	/// @return True on success
 	bool createTextureDescriptor();
+
+	/// @brief Writes back all entity's texture data to texture descriptor sets.
+	/// @note Only called after entities have been initializes
 	void updateTextureForDescriptors(const std::vector<VkDescriptorSet>& descriptorSets);
+
+	/// @brief Destroys texture descriptor
 	void destroyTextureDescriptor();
 
 } // namespace clz::renderer

@@ -1,6 +1,9 @@
+/**
+ * @file post_process.cpp
+ * @author curl0z
+ * @brief post processes pipeline data implementation file
+ */
 #include "renderer/pipelinedata/post_process.hpp"
-
-#include "core/enginestate.hpp"
 #include "core/logs.hpp"
 #include "renderer/postprocess/bloom.hpp"
 #include "renderer/vk_types.hpp"
@@ -17,10 +20,9 @@
 #include "include/sceneview.hpp"
 #endif
 
-// bloom is not implemented yet
-
 namespace clz::renderer
 {
+	/// @copydoc createPostProcessDescriptor
 	bool createPostProcessDescriptor()
 	{
 		constexpr uint8_t count = 6;
@@ -66,6 +68,7 @@ namespace clz::renderer
 		return true;
 	}
 
+	/// @copydoc getPostProcessDescriptorPoolSizes
 	std::vector<VkDescriptorPoolSize> getPostProcessDescriptorPoolSizes()
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes;
@@ -86,6 +89,7 @@ namespace clz::renderer
 		return poolSizes;
 	}
 
+	/// @copydoc allocatePostProcessDescriptorSets
 	bool allocatePostProcessDescriptorSets(
 		const VkDescriptorPool& descriptorPool)
 	{
@@ -121,6 +125,7 @@ namespace clz::renderer
 		return true;
 	}
 
+	/// @copydoc updatePostProcessDescriptorSets
 	void updatePostProcessDescriptorSets()
 	{
 		VkDescriptorImageInfo renderTargetInfo = {};
@@ -231,6 +236,7 @@ namespace clz::renderer
 		}
 	}
 
+	/// @copydoc destroyPostProcessDescriptor
 	void destroyPostProcessDescriptor()
 	{
 		vkDestroyDescriptorSetLayout(

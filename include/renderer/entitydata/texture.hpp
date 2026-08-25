@@ -15,6 +15,10 @@
 
 namespace clz::renderer
 {
+	/**
+	 * @struct Texture
+	 * @brief Holds the cpu-side texture data of all entities (models)
+	 */
 	struct Texture
 	{
 		std::vector<VkImage> image;
@@ -42,9 +46,16 @@ namespace clz::renderer
 
 namespace clz::renderer
 {
-
+	/// @brief Maximum texture count overall
 	constexpr uint32_t r_MAX_TEXTURE_COUNT = 1024;
+	/// @brief null texture ID
+	/// @note should be same in shaders too
 	constexpr uint32_t r_NULL_TEXTURE = std::numeric_limits<uint32_t>::max();
+
+	/**
+	 * @struct TextureID
+	 * @brief Id of any texture
+	 */
 	struct TextureID
 	{
 		uint32_t value = r_NULL_TEXTURE;

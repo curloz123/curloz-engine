@@ -69,23 +69,29 @@ namespace clz::renderer
 		/// @brief Bloom strength
 		float bloomStrength;
 	};
-	struct Pre_TonemapPC
-	{
-		uint32_t postProcessBits;
-	};
+
+	/// @brief Push constant that'll be passed to tonemap pipelien and it's shaders
 	struct TonemapPC
 	{
+		/// @brief Exposure value
 		float exposure;
 	};
+
+	/// @brief Push constant that'll be passed to post-tonemap pipelien and it's shaders
 	struct Post_TonemapPC
 	{
+		/// @brief bits determining which processes to enable
 		uint32_t postProcessBits;
 		
+		/// @brief aspect ratio of render target
 		float aspectRatio;
 
+		/// @brief Vignette start value
 		float vignetteStart;
+		/// @brief Vignette end value
 		float vignetteEnd;
 
+		/// @brief Chromatic-aberration strength value
 		float chromaticAberrationStrength;
 	};
 } // namespace clz::renderer

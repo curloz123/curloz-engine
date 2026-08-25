@@ -21,6 +21,10 @@
 
 namespace clz::renderer
 {
+	/**
+	 * @struct SamplerData
+	 * @brief Sampler data of any texture, holded by primitive data at the time of creation
+	 */
 	struct SamplerData
 	{
 		SamplerFilter minFilter = SamplerFilter::Linear;

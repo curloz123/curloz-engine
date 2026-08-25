@@ -9,7 +9,6 @@
 #pragma once
 
 #include <immintrin.h>
-#include "types.hpp"
 
 namespace clz::math
 {
@@ -47,15 +46,6 @@ namespace clz::math
 			__m128 res = _mm_shuffle_ps(xmm, xmm, _MM_SHUFFLE(1, 1, 1, 1));
 			y = _mm_cvtss_f32(res);
 		}
-
-		/// @brief converts vec3 to vec2
-		/// only extracts x and y of vec3
-		/// @note defined in type_converter.hpp
-		vec2(const vec3& v3);
-
-		/// @brief converts vec4 to vec2
-		/// only extracts x and y of vec4
-		vec2(const vec4& v4);
 
 		/**
 		 * @brief Operator overloaded addition of current to rhs vector

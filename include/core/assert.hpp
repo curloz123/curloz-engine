@@ -1,13 +1,15 @@
 #pragma once
 
 #include <cassert>
-#include <print>
 #include <source_location>
 #include <string_view>
 
+#ifdef CLZ_ENABLE_EDITOR
+#include <print>
+#endif
+
 namespace clz
 {
-
 	/// @brief ANSI color codes for terminal output.
 	namespace color
 	{
@@ -18,6 +20,13 @@ namespace clz
 		constexpr const char* green = "\033[32m";
 	} // namespace color
 
+	/**
+	 * @brief Engine's interal assert function
+	 * @param condition If this is false, engine stops immediately
+	 * @param msg Message that is printed before exiting program
+	 * @param location Callers location
+	 * @note Is disabled in non debug build
+	 */
 	inline void CLZ_ASSERT(
 		const bool condition,
 		std::string_view msg,

@@ -22,10 +22,9 @@ namespace clz::physics
 	/// @brief Enumeration of supported rigid body types.
 	enum class BodyType
 	{
-		StaticBody = b3_staticBody,	  ///< @brief Immovable body.
-		KinematicBody = b3_kinematicBody, ///< @brief Body moved manually via code
-						  ///< (ignores forces).
-		DynamicBody = b3_dynamicBody ///< @brief Body affected by forces and collisions.
+		StaticBody = b3_staticBody,	  	///< @brief Immovable body.
+		KinematicBody = b3_kinematicBody, 	///< @brief Body moved manually via code
+		DynamicBody = b3_dynamicBody 		///< @brief Body affected by forces and collisions.
 	};
 
 	/// @brief Global storage for Box3D body handles, indexed by RigidBodyId.
@@ -45,27 +44,28 @@ namespace clz::physics
 
 		/// @brief Initial world-space position.
 		math::vec3 position = math::vec3(0.0f, 0.0f, 0.0f);
-		math::quat rotation = math::quat(
-			1.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		);			     ///< @brief Initial world-space rotation.
-		float linearDamping = 0.0f;  ///< @brief Linear damping coefficient.
-		float angularDamping = 0.1f; ///< @brief Angular damping coefficient.
+		/// @brief Initial world-space rotation.
+		math::quat rotation = math::quat(1.0f, 0.0f, 0.0f, 0.0f);			     		
+		///< @brief Linear damping coefficient.
+		float linearDamping = 0.0f;  		
+		///< @brief Angular damping coefficient.
+		float angularDamping = 0.1f; 		
+
+		///< @brief Locks for linear motion on X, Y, Z axes.
 		std::array<bool, 3> linearLocks = {
 			false,
 			false,
 			false
-		}; ///< @brief Locks for linear motion on X, Y, Z axes.
+		}; 		
+		///< @brief Locks for angular motion on X, Y, Z axes.
 		std::array<bool, 3> angularLocks = {
 			false,
 			false,
 			false
-		}; ///< @brief Locks for angular motion on X, Y, Z axes.
-		std::vector<ShapeDef> ShapeDefs =
-			{}; ///< @brief List of shape definitions to attach upon creation.
-	};
+		}; 		
+		///< @brief List of shape definitions to attach upon creation.
+		std::vector<ShapeDef> ShapeDefs = {}; 	};
+
 } // namespace clz::physics
 
 namespace clz::physics

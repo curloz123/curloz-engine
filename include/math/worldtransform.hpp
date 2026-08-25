@@ -1,3 +1,9 @@
+/**
+ * @file worldtransform.hpp
+ * @author curl0z
+ * @brief Provides World transformation matrices utilities.
+ * Provides Model matrix function, camera's view and projection.
+ */
 #pragma once
 
 #include "mat4x4.hpp"
@@ -7,6 +13,13 @@
 
 namespace clz::math
 {
+	/**
+	 * @brief Creates and returns a shader friendly (column-major) model matrix
+	 * @param r Quaternion roration
+	 * @param t Euler vec3 translation
+	 * @param s Euler vec3 scale
+	 * @return mat4 model matrix
+	 */
 	inline mat4 getModelMatrix(const quat& r, const vec3& t, const vec3& s)
 	{
 		const mat4 rotation = {
@@ -43,6 +56,13 @@ namespace clz::math
 		return scale * rotation * translation;
 	}
 
+	/**
+	 * @brief Constructs and returns a view matrix based on camera's attributes
+	 * @param eye Position of camera
+	 * @param target Local front vector of camera
+	 * @param worldUp World Up vector of camera
+	 * @return mat4 view matrix
+	 */
 	inline mat4 makeViewMatrix(const vec3& eye, const vec3& target, const vec3& worldUp)
 	{
 		const vec3 forward = normalize(subtract(target, eye));
@@ -63,6 +83,14 @@ namespace clz::math
 		return view;
 	}
 
+	/**
+	 * @brief Constructs and returns a perspective-projection matrix based on camera's attributes
+	 * @param far Far value of camera
+	 * @param near Near value of camera
+	 * @param aspectRation aspect ration of screen
+	 * @param foc Field of view of camera
+	 * @return mat4 perspective projection of camera
+	 */
 	inline mat4 makePerspectiveMatrix(
 		const float far,
 		const float near,

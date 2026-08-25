@@ -11,7 +11,6 @@
 #pragma once
 
 #include "scene/entity/entity.hpp"
-#include <array>
 #include <cstdint>
 
 namespace clz::ecs

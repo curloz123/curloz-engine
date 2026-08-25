@@ -1,10 +1,10 @@
-#pragma once
-
 /**
  * @file entitydata.hpp
  * @author curl0z
  * @brief Contains function related to entity data
  */
+
+#pragma once
 
 #include "core/logs.hpp"
 #include "renderer/entitydata/entitydata.hpp"

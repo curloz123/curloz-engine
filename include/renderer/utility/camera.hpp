@@ -1,3 +1,8 @@
+/**
+ * @file camera.hpp
+ * @author curl0z
+ * @brief Provides camera related 'data'
+ */
 #pragma once
 
 #include "math/vec3.hpp"

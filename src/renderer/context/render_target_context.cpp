@@ -1,3 +1,8 @@
+/**
+ * @file render_target_context.hpp
+ * @author curl0z
+ * @brief render target context implementation file
+ */
 #include "renderer/context/render_target_context.hpp"
 #include "config/config.hpp"
 #include "core/logs.hpp"
@@ -16,16 +21,27 @@
 
 namespace clz::renderer
 {
+	/// @brief Creates render target
+	/// @param width Width of render target's image
+	/// @param height Height of render target's image
+	/// @return True on succesful, false otherwise
 	static bool createRenderTarget(uint32_t width, uint32_t height);
+
+	/// @brief Destroy's render target's images
 	static void destroyRenderTarget();
 
+	/// @brief Create's render target context's depth resources
+	/// @return True on succesful, false otherwise
 	static bool createDepthResources();
+
+	/// @brief Destroy's render target context's depth resources
 	static void destroyDepthResources();
 
 }
 
 namespace clz::renderer
 {
+	/// @copydoc initRenderTargetContext
 	bool initRenderTargetContext(const uint32_t width, const uint32_t height)
 	{
 		if (!createRenderTarget(width, height))
@@ -48,12 +64,14 @@ namespace clz::renderer
 		return false;
 	}
 
+	/// @copydoc destroyRenderTargetContext
 	void destroyRenderTargetContext()
 	{
 		destroyDepthResources();
 		destroyRenderTarget();
 	}
-
+	
+	/// @copydoc recreateRenderTargetContext
 	bool recreateRenderTargetContext(const uint32_t width, const uint32_t height)
 	{
 		clz::log::debug("recreating render target with: "
@@ -72,6 +90,7 @@ namespace clz::renderer
 
 namespace clz::renderer
 {
+	/// @copydoc createRenderTarget
 	bool createRenderTarget(const uint32_t width, const uint32_t height)
 	{
 		r_renderTargetContext.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -232,6 +251,7 @@ namespace clz::renderer
 		return true;
 	}
 
+	/// @copydoc destroyRenderTarget
 	void destroyRenderTarget()
 	{
 		vkDestroySampler(r_deviceContext.device, r_renderTargetContext.imageSampler, nullptr);
@@ -244,6 +264,7 @@ namespace clz::renderer
 		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.msaaImageMemory, nullptr);
 	}
 
+	/// @copydoc createDepthResources
 	bool createDepthResources()
 	{
 		std::array<VkFormat, 1> formatCandidates = {VK_FORMAT_D32_SFLOAT};
@@ -358,6 +379,8 @@ namespace clz::renderer
 		clz::log::info("Created render depth resources");
 		return true;
 	}
+
+	/// @copydoc destroyDepthResources
 	void destroyDepthResources()
 	{
 		vkDestroyImageView(r_deviceContext.device, r_renderTargetContext.depthImageView, nullptr);

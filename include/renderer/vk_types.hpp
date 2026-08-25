@@ -26,8 +26,8 @@ namespace clz::renderer
 	 */
 	inline DeviceContext r_deviceContext{};
 
-	inline GPUInfo r_gpuInfo{};
 
+	/// @brief Commmand context of our application
 	inline CommandContext r_commandContext{};
 
 	/**
@@ -50,8 +50,12 @@ namespace clz::renderer
 	inline PipelineContext r_pipelineContext{};
 
 	inline PipelineContext r_bloomSamplePipelineContext{};
+
+	/// @brief bloom post_process pipeline context
 	inline PipelineContext r_bloomPipelineContext{};
+	/// @brief tonemap post_process pipeline context
 	inline PipelineContext r_tonemapPipelineContext{};
+	/// @brief post tonemap post processes pipeline context
 	inline PipelineContext r_postTonemapPipelineContext{};
 	
 	/**

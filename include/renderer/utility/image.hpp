@@ -224,13 +224,4 @@ namespace clz::renderer
 	 */
 	void generateMipmaps(VkCommandBuffer commandBuffer, VkImage& rImage, int32_t imageWidth, int32_t imageHeight, uint32_t mipLevels);
 
-	/**
-	 * @brief Transitions all mip-levels to a particular image layout
-	 * @param rImage reference to image handle
-	 * @param finalLayout image's final layout
-	 * @param mipLevels number of mip-levels
-	 */
-	/// @TODO
-	void transionAllMipLevels(VkImage& rImage, VkImageLayout finalLayout, uint32_t mipLevels);
-
 } // namespace clz::renderer

@@ -46,12 +46,9 @@ namespace clz::renderer
 		std::optional<uint32_t> presentFamily = {};	  ///< Present queue family index
 	};
 
-	struct GPUInfo
-	{
-		VkDeviceSize uniformBufferOffsetAlignment;
-		float maxAnisotropy;
-	};
 
+	/// @brief Command context of vulkan application
+	/// Consists of pool and a command buffer as of version 0.7.0
 	struct CommandContext
 	{
 		VkCommandPool commandPool = VK_NULL_HANDLE;	 ///< Command pool
@@ -81,6 +78,13 @@ namespace clz::renderer
 	/**
 	 * @struct RenderTargetContext
 	 * @brief Stores the render target resources
+	 * Consists of ->
+	 * 1. Render target image and its resources
+	 * 2. Msaa target and its resources
+	 * 3. Msaa value
+	 * 4. Depth resources
+	 * 5. Image extent of render target
+	 * 6. Image format of render target
 	 */
 	struct RenderTargetContext
 	{
