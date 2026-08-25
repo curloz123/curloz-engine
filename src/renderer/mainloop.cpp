@@ -19,6 +19,7 @@
 #include "renderer/postprocess/post_process.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/postprocess/bloom_sample.hpp"
+#include <vulkan/vulkan_core.h>
 
 
 #ifdef CLZ_ENABLE_EDITOR
@@ -112,24 +113,40 @@ namespace clz::renderer
 				VK_IMAGE_ASPECT_COLOR_BIT,
 				commandBuffer
 			);
+			transition_image_layout(
+				r_renderTargetContext.msaaImage,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				0,
+				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+				VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
+				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+				VK_IMAGE_ASPECT_COLOR_BIT,
+				commandBuffer
+			);
+
 
 			VkRenderingAttachmentInfo colorAttachment = {};
 			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 			colorAttachment.pNext = nullptr;
-			colorAttachment.imageView = r_renderTargetContext.imageView;
+			colorAttachment.imageView = r_renderTargetContext.msaaImageView;
 			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			colorAttachment.clearValue = {
 				.color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}
 			};
+			colorAttachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+			colorAttachment.resolveImageView = r_renderTargetContext.imageView;
+			colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 
 			VkRenderingAttachmentInfo depthAttachment = {};
 			depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 			depthAttachment.imageView = r_renderTargetContext.depthImageView;
 			depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depthAttachment.clearValue.depthStencil.depth = 1.0f;
 
 			VkRenderingInfo renderingInfo = {};

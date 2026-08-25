@@ -115,8 +115,7 @@ namespace clz::renderer
 				setHandleName(
 					reinterpret_cast<uint64_t>(cameraDescriptorSets[j]),
 					VK_OBJECT_TYPE_DESCRIPTOR_SET,
-					("camera descriptor [frame " + std::to_string(j) + "]")
-						.c_str()
+					("camera descriptor [frame " + std::to_string(j) + "]").c_str()
 				);
 			}
 		}

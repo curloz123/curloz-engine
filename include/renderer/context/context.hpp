@@ -17,6 +17,7 @@
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer
 {
@@ -87,6 +88,13 @@ namespace clz::renderer
 		VkImageView imageView = VK_NULL_HANDLE;
 		VkSampler imageSampler = VK_NULL_HANDLE;
 		VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+
+		VkSampleCountFlagBits msaaFlagBits = VK_SAMPLE_COUNT_1_BIT;
+		VkImage msaaImage = VK_NULL_HANDLE;
+		VkImageView msaaImageView = VK_NULL_HANDLE;
+		VkSampler msaaImageSampler = VK_NULL_HANDLE;
+		VkDeviceMemory msaaImageMemory = VK_NULL_HANDLE;
+
 		VkFormat imageFormat = VK_FORMAT_UNDEFINED;
 		VkExtent2D imageExtent;
 

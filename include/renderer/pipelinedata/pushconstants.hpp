@@ -44,11 +44,30 @@ namespace clz::renderer
 		uint32_t normalTextureIndex;
 	};
 
+	/// @brief Bloom pipeline's push constant
 	struct BloomPC
 	{
-		/// @brief u1->first time, u2->horizontal, u3->vertical
+		/**
+		 * @brief Determines bloom processes
+		 * 1u determines down-sampling.
+		 * 2u determines up-sampling
+		 * 3u determines disabled
+		 */
 		uint32_t bloomBits;
-		int bloomStrength;
+
+		/// @brief Determines which image to downsample right now
+		/// @note If index is -1, render target will be used
+		int32_t downIndex;
+
+		/// @brief Determines which image to updample right now
+		/// @note If index is -1, bloomed image should be used as attachment
+		int32_t upIndex;
+
+		/// @brief Filter-radius to use when up-sampling
+		float filterRadius;
+
+		/// @brief Bloom strength
+		float bloomStrength;
 	};
 	struct Pre_TonemapPC
 	{

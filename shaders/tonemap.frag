@@ -1,7 +1,7 @@
 #version 460
 
 layout(location = 0) in vec2 inUV;
-layout(binding = 2) uniform sampler2D preTonemapImage; // horizontal bloom image
+layout(binding = 3) uniform sampler2D bloomedImage; // horizontal bloom image
 layout(push_constant) uniform PushConstants
 {
 	float exposure;
@@ -28,8 +28,9 @@ vec3 Uncharted2Tonemap(vec3 hdrColor)
 
 void main()
 {
-	vec4 hdrColor = texture(preTonemapImage, inUV);
-	vec3 mapped = Uncharted2Tonemap(hdrColor.rgb) * exp2(PC.exposure);
+	vec4 hdrColor = texture(bloomedImage, inUV);
+	vec3 exposed = hdrColor.rgb * exp2(PC.exposure);
+	vec3 mapped = Uncharted2Tonemap(exposed);
 	vec3 whiteScale = 1.0f / Uncharted2Tonemap(vec3(W));
 
 	toneMappedColor = vec4(mapped * whiteScale, hdrColor.w);

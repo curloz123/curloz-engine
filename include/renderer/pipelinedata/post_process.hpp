@@ -8,8 +8,8 @@ namespace clz::renderer
 {
 	inline constexpr uint8_t RENDER_TARGET_IMAGE_BIND_POINT = 0;
 	inline constexpr uint8_t BLOOM_SAMPLE_IMAGE_BIND_POINT = 1;
-	inline constexpr uint8_t HORIZONTAL_BLOOM_IMAGE_BIND_POINT = 2;
-	inline constexpr uint8_t VERTICAL_BLOOM_IMAGE_BIND_POINT = 3;
+	inline constexpr uint8_t BLOOM_MIP_IMAGES_BIND_POINT = 2;
+	inline constexpr uint8_t BLOOMED_IMAGE_BIND_POINT = 3;
 	inline constexpr uint8_t TONEMAP_IMAGE_BIND_POINT = 4;
 	inline constexpr uint8_t POST_TONEMAP_IMAGE_BIND_POINT = 5;
 	inline VkDescriptorSetLayout post_processDescriptorLayout;

@@ -1,7 +1,7 @@
 [engine]
 name = "Curloz Engine"
 version_major = 0
-version_minor = 6
+version_minor = 7
 version_patch = 0
 
 [window]
@@ -17,7 +17,7 @@ enablesleep = false
 vsync = false
 refreshrate = 120
 triplebuffering = true
-
+msaa = 4
 [renderer.post_process]
 exposure = 1.0
 

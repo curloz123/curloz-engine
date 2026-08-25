@@ -28,27 +28,27 @@ namespace clz::renderer
 		constexpr std::array<uint32_t, count> bindPoints = {
 			RENDER_TARGET_IMAGE_BIND_POINT,
 			BLOOM_SAMPLE_IMAGE_BIND_POINT,
-			HORIZONTAL_BLOOM_IMAGE_BIND_POINT,
-			VERTICAL_BLOOM_IMAGE_BIND_POINT,
+			BLOOM_MIP_IMAGES_BIND_POINT,
+			BLOOMED_IMAGE_BIND_POINT,
 			TONEMAP_IMAGE_BIND_POINT,
 			POST_TONEMAP_IMAGE_BIND_POINT
 		};
-		constexpr std::array<VkDescriptorType, 6> descriptorTypes = {
+		constexpr std::array<VkDescriptorType, count> descriptorTypes = {
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		};
-		constexpr std::array<uint32_t, count> descriptorCounts = {1, 1, 1, 1, 1, 1};
+		constexpr std::array<uint32_t, count> descriptorCounts = {1, 1, post_process::NUM_BLOOM_MIPS, 1, 1, 1};
 		constexpr std::array<VkShaderStageFlags, count> shaderStages = {
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
-			VK_SHADER_STAGE_FRAGMENT_BIT
+			VK_SHADER_STAGE_FRAGMENT_BIT,
 		};
 		if (!createDescriptorLayout(
 			post_processDescriptorLayout,
@@ -72,7 +72,15 @@ namespace clz::renderer
 
 		VkDescriptorPoolSize poolSize = {};
 		poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSize.descriptorCount = r_FRAMES_IN_FLIGHT * 6;
+		/**
+		 * One for render target
+		 * One for Bloom sample
+		 * 5 for bloom mips
+		 * One for Bloomed
+		 * One for tonemap
+		 * One for post_tonemap
+		 */
+		poolSize.descriptorCount = r_FRAMES_IN_FLIGHT * 10;
 		poolSizes.push_back(poolSize);
 
 		return poolSizes;
@@ -125,15 +133,18 @@ namespace clz::renderer
 		bloomSampleInfo.imageView = post_process::bloomSampleImageView;
 		bloomSampleInfo.sampler = post_process::bloomSampleSampler;
 
-		VkDescriptorImageInfo horizontalBloomInfo = {};
-		horizontalBloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		horizontalBloomInfo.imageView = post_process::horizontalBloomImage.imageView;
-		horizontalBloomInfo.sampler= post_process::bloomSampler;
+		std::array<VkDescriptorImageInfo, post_process::NUM_BLOOM_MIPS> bloomMipInfos;
+		for (int i = 0; i < post_process::NUM_BLOOM_MIPS; ++i)
+		{
+			bloomMipInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			bloomMipInfos[i].imageView = post_process::bloomMips[i].imageView;
+			bloomMipInfos[i].sampler = post_process::bloomSampler;
+		}
 
-		VkDescriptorImageInfo verticalBloomInfo = {};
-		verticalBloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		verticalBloomInfo.imageView = post_process::verticalBloomImage.imageView;
-		verticalBloomInfo.sampler= post_process::bloomSampler;
+		VkDescriptorImageInfo bloomBlendInfo = {};
+		bloomBlendInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		bloomBlendInfo.imageView = post_process::bloomedImage.imageView;
+		bloomBlendInfo.sampler = post_process::bloomSampler;
 
 		VkDescriptorImageInfo tonemapInfo = {};
 		tonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -165,23 +176,23 @@ namespace clz::renderer
 			bloomSampleWrite.descriptorCount = 1;
 			bloomSampleWrite.pImageInfo = &bloomSampleInfo;
 
-			VkWriteDescriptorSet horizontalBloomWrite{};
-			horizontalBloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			horizontalBloomWrite.dstSet = post_processDescriptorSets[j];
-			horizontalBloomWrite.dstBinding = HORIZONTAL_BLOOM_IMAGE_BIND_POINT;
-			horizontalBloomWrite.dstArrayElement = 0;
-			horizontalBloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			horizontalBloomWrite.descriptorCount = 1;
-			horizontalBloomWrite.pImageInfo = &horizontalBloomInfo;
+			VkWriteDescriptorSet bloomMipWrite{};
+			bloomMipWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			bloomMipWrite.dstSet = post_processDescriptorSets[j];
+			bloomMipWrite.dstBinding = BLOOM_MIP_IMAGES_BIND_POINT;
+			bloomMipWrite.dstArrayElement = 0;
+			bloomMipWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			bloomMipWrite.descriptorCount = post_process::NUM_BLOOM_MIPS;
+			bloomMipWrite.pImageInfo = bloomMipInfos.data();
 
-			VkWriteDescriptorSet verticalBloomWrite{};
-			verticalBloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			verticalBloomWrite.dstSet = post_processDescriptorSets[j];
-			verticalBloomWrite.dstArrayElement = 0;
-			verticalBloomWrite.dstBinding = VERTICAL_BLOOM_IMAGE_BIND_POINT;
-			verticalBloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			verticalBloomWrite.descriptorCount = 1;
-			verticalBloomWrite.pImageInfo = &verticalBloomInfo;
+			VkWriteDescriptorSet bloomWrite = {};
+			bloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			bloomWrite.dstSet = post_processDescriptorSets[j];
+			bloomWrite.dstArrayElement = 0;
+			bloomWrite.dstBinding = BLOOMED_IMAGE_BIND_POINT;
+			bloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			bloomWrite.descriptorCount = 1;
+			bloomWrite.pImageInfo = &bloomBlendInfo;
 
 			VkWriteDescriptorSet tonemapWrite{};
 			tonemapWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -204,8 +215,8 @@ namespace clz::renderer
 			const std::array<VkWriteDescriptorSet, 6> writes = {
 				renderTargetWrite,
 				bloomSampleWrite,
-				horizontalBloomWrite,
-				verticalBloomWrite,
+				bloomMipWrite,
+				bloomWrite,
 				tonemapWrite, 
 				postTonemapWrite
 			};

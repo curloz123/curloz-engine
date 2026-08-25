@@ -1,5 +1,7 @@
 #include "renderer/context/render_target_context.hpp"
+#include "config/config.hpp"
 #include "core/logs.hpp"
+#include "renderer/utility/devicefeatures.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/image.hpp"
@@ -75,9 +77,13 @@ namespace clz::renderer
 		r_renderTargetContext.imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 		r_renderTargetContext.imageExtent.width = width;
 		r_renderTargetContext.imageExtent.height = height;
+
+		uint32_t msaaValue = clz::config::getInt("renderer", "msaa", 1);
+		r_renderTargetContext.msaaFlagBits = getMsaaFlagBitsFromInt(msaaValue);
+
 		if (!createImage(
 			r_renderTargetContext.image,
-			"main post processing image",
+			"main render target image",
 			width,
 			height,
 			r_renderTargetContext.imageFormat,
@@ -85,9 +91,26 @@ namespace clz::renderer
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
 				VK_IMAGE_USAGE_SAMPLED_BIT |
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-			0))
+			0)
+		)
 		{
 			clz::log::error("vulkan failed to create render target image");
+			return false;
+		}
+		if (!createImage(
+			r_renderTargetContext.msaaImage,
+			"main render target msaa image",
+			width,
+			height,
+			r_renderTargetContext.imageFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			0,
+			1,
+			r_renderTargetContext.msaaFlagBits)
+		)
+		{
+			clz::log::error("vulkan failed to create render target msaa image");
 			return false;
 		}
 
@@ -95,7 +118,8 @@ namespace clz::renderer
 		vkGetImageMemoryRequirements(
 			r_deviceContext.device,
 			r_renderTargetContext.image,
-			&memRequirements);
+			&memRequirements
+		);
 		VkMemoryAllocateInfo memAllocInfo = {};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memAllocInfo.allocationSize = memRequirements.size;
@@ -111,26 +135,67 @@ namespace clz::renderer
 			clz::log::error("vulkan failed to allocate render target image memory");
 			return false;
 		}
+
+		vkGetImageMemoryRequirements(
+			r_deviceContext.device,
+			r_renderTargetContext.msaaImage,
+			&memRequirements);
+		memAllocInfo.allocationSize = memRequirements.size;
+		memAllocInfo.memoryTypeIndex = 
+			findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		if (vkAllocateMemory(
+			r_deviceContext.device,
+			&memAllocInfo,
+			nullptr,
+			&r_renderTargetContext.msaaImageMemory) != VK_SUCCESS)
+		{
+			clz::log::error("vulkan failed to allocate render target msaa image memory");
+			return false;
+		}
+
 		vkBindImageMemory(
 			r_deviceContext.device,
 			r_renderTargetContext.image,
 			r_renderTargetContext.imageMemory,
-			0);
+			0
+		);
+		vkBindImageMemory(
+			r_deviceContext.device,
+			r_renderTargetContext.msaaImage,
+			r_renderTargetContext.msaaImageMemory,
+			0
+		);
 
 		setHandleName(
 			reinterpret_cast<uint64_t>(r_renderTargetContext.imageMemory),
 			VK_OBJECT_TYPE_DEVICE_MEMORY,
 			"render target image memory");
+		setHandleName(
+			reinterpret_cast<uint64_t>(r_renderTargetContext.msaaImageMemory),
+			VK_OBJECT_TYPE_DEVICE_MEMORY,
+			"render target msaa image memory");
 
 		if (!createImageView(
 			r_renderTargetContext.imageView,
-			"post processing image view",
+			"render target context image view",
 			r_renderTargetContext.image,
 			r_renderTargetContext.imageFormat,
 			VK_IMAGE_ASPECT_COLOR_BIT
 			))
 		{
 			clz::log::error("vulkan failed to create render target image view");
+			return false;
+		}
+		if (!createImageView(
+				r_renderTargetContext.msaaImageView,
+				"render target context's msaa image view",
+				r_renderTargetContext.msaaImage,
+				r_renderTargetContext.imageFormat,
+				VK_IMAGE_ASPECT_COLOR_BIT
+			)
+		)
+		{
+			clz::log::error("vulkan failed to create render target msaa image view");
 			return false;
 		}
 
@@ -149,15 +214,34 @@ namespace clz::renderer
 			return false;
 		}
 
+		if (!createSampler(
+			r_renderTargetContext.msaaImageSampler,
+			"render target sampler",
+			VK_FILTER_LINEAR,
+			VK_FILTER_LINEAR,
+			VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+			))
+		{
+			clz::log::error("Could not create render target msaa sampler");
+			return false;
+		}
+
 		return true;
 	}
 
 	void destroyRenderTarget()
 	{
 		vkDestroySampler(r_deviceContext.device, r_renderTargetContext.imageSampler, nullptr);
+		vkDestroySampler(r_deviceContext.device, r_renderTargetContext.msaaImageSampler, nullptr);
 		vkDestroyImageView(r_deviceContext.device, r_renderTargetContext.imageView, nullptr);
+		vkDestroyImageView(r_deviceContext.device, r_renderTargetContext.msaaImageView, nullptr);
 		vkDestroyImage(r_deviceContext.device, r_renderTargetContext.image, nullptr);
+		vkDestroyImage(r_deviceContext.device, r_renderTargetContext.msaaImage, nullptr);
 		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.imageMemory, nullptr);
+		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.msaaImageMemory, nullptr);
 	}
 
 	bool createDepthResources()
@@ -183,7 +267,9 @@ namespace clz::renderer
 			    r_renderTargetContext.depthFormat,
 			    VK_IMAGE_TILING_OPTIMAL,
 			    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			    0
+			    0,
+			    1,
+			    r_renderTargetContext.msaaFlagBits
 		    ))
 		{
 			clz::log::error("Could not create render target depth image");

@@ -64,6 +64,7 @@ namespace clz::renderer
 	 * @param usage Usage flags
 	 * @param flags which flags are these again??
 	 * @param Number of mipmaps to generate. If you are passing a value more than 1, be sure to add TRANSFER_SRC_BIT usage flag to flags parameter.
+	 * @param sampleCountFlagBits MSAA level of this image. By default set to 1x.
 	 * @return True if successful, false if not
 	 */
 	bool createImage(
@@ -75,7 +76,8 @@ namespace clz::renderer
 		VkImageTiling tiling,
 		VkImageUsageFlags usage,
 		VkImageCreateFlags flags,
-		uint32_t numMipmaps = 1
+		uint32_t numMipmaps = 1,
+		VkSampleCountFlagBits sampleCountFlagBits = VK_SAMPLE_COUNT_1_BIT
 	);
 
 	/**

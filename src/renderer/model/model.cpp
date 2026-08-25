@@ -690,7 +690,7 @@ namespace clz::renderer
 			}
 
 			// Submit extracted data to GPU buffers and register textures
-			ourMesh.primitives.emplace_back(
+			ourMesh.primitives.push_back(
 				registerPrimitive(primitiveData, asset, registeredId)
 			);
 		}
@@ -774,7 +774,13 @@ namespace clz::renderer
 			return textureId;
 		};
 
-		// Handle Texture Loading (URI or BufferView)
+		// Handle Texture Loading (URI or BufferView) and texture factors
+
+		ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
+		ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
+		ourPrimitive.metallicFactor = primitiveData.metallicFactor;
+		ourPrimitive.emissiveStrength = primitiveData.emissiveStrength;
+		ourPrimitive.emissiveFactor = primitiveData.emissiveFactor;
 
 		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> lookupKey;
 		if (primitiveData.baseTexture.has_value())
@@ -789,8 +795,14 @@ namespace clz::renderer
 		{
 			lookupKey = primitiveData.normalTexture.value();
 		}
-		else
+
+		ourPrimitive.baseTextureId = r_NULL_TEXTURE;
+		ourPrimitive.metallic_roughnessTextureId = r_NULL_TEXTURE;
+		ourPrimitive.emissiveTextureId = r_NULL_TEXTURE;
+		ourPrimitive.normalTextureId = r_NULL_TEXTURE;
+		if (!lookupKey.has_value())
 		{
+			clz::log::warn("no textures registered");
 			return ourPrimitive;
 		}
 
@@ -798,8 +810,6 @@ namespace clz::renderer
 			lookupKey.value()
 		    ))
 		{
-			ourPrimitive.baseTextureId = r_NULL_TEXTURE;
-			ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			if (primitiveData.baseTexture.has_value())
 			{
 				const std::filesystem::path baseTexturePath =
@@ -819,9 +829,6 @@ namespace clz::renderer
 
 			}
 
-			ourPrimitive.metallic_roughnessTextureId = r_NULL_TEXTURE;
-			ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
-			ourPrimitive.metallicFactor = primitiveData.metallicFactor;
 			if (primitiveData.metallic_roughnessTexture.has_value())
 			{
 				const std::filesystem::path mrTexturePath =
@@ -842,9 +849,6 @@ namespace clz::renderer
 
 			}
 
-			ourPrimitive.emissiveFactor = primitiveData.emissiveFactor;
-			ourPrimitive.emissiveTextureId = r_NULL_TEXTURE;
-			ourPrimitive.emissiveStrength = primitiveData.emissiveStrength;
 			if (primitiveData.emissiveTexture.has_value())
 			{
 				const std::filesystem::path emissiveTexturePath =
@@ -864,7 +868,6 @@ namespace clz::renderer
 
 			}
 
-			ourPrimitive.normalTextureId = r_NULL_TEXTURE;
 			if (primitiveData.normalTexture.has_value())
 			{
 				const std::filesystem::path normalTexturePath =
@@ -887,8 +890,6 @@ namespace clz::renderer
 			lookupKey.value()
 			))
 		{
-			ourPrimitive.baseTextureId = r_NULL_TEXTURE;
-			ourPrimitive.baseColorFactor = primitiveData.baseColorFactor;
 			if (primitiveData.baseTexture.has_value())
 			{
 				const auto& bufferViewSource =
@@ -925,9 +926,6 @@ namespace clz::renderer
 				);
 			}
 
-			ourPrimitive.metallic_roughnessTextureId = r_NULL_TEXTURE;
-			ourPrimitive.metallicFactor = primitiveData.metallicFactor;
-			ourPrimitive.roughnessFactor = primitiveData.roughnessFactor;
 			if (primitiveData.metallic_roughnessTexture.has_value())
 			{
 				const auto& bufferViewSource =
@@ -966,9 +964,6 @@ namespace clz::renderer
 
 			}
 
-			ourPrimitive.emissiveFactor = primitiveData.emissiveFactor;
-			ourPrimitive.emissiveTextureId = r_NULL_TEXTURE;
-			ourPrimitive.emissiveStrength = primitiveData.emissiveStrength;
 			if (primitiveData.emissiveTexture.has_value())
 			{
 				const auto& bufferViewSource =
@@ -1006,7 +1001,6 @@ namespace clz::renderer
 
 			}
 
-			ourPrimitive.normalTextureId = r_NULL_TEXTURE;
 			if (primitiveData.normalTexture.has_value())
 			{
 				const auto& bufferViewSource =

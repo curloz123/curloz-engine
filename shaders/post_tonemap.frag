@@ -27,17 +27,18 @@ void main()
 
 	if (enableChromaticAberration)
 	{
-		    vec2 uv = inUV - vec2(0.5);
-		    uv.x *= PC.aspectRatio;
-		    float dist = length(uv);
+		vec2 uv = inUV - vec2(0.5);
+		uv.x *= PC.aspectRatio;
+		float dist = length(uv);
 
-		    vec2 offset = uv * dist * PC.chromaticAberrationStrength;
+		vec2 offset = uv * dist * PC.chromaticAberrationStrength;
+		offset.x /= PC.aspectRatio;
 
-		    float r = texture(tonemappedImage, inUV + offset).r;
-		    float g = texture(tonemappedImage, inUV).g;
-		    float b = texture(tonemappedImage, inUV - offset).b;
+		float r = texture(tonemappedImage, inUV + offset).r;
+		float g = texture(tonemappedImage, inUV).g;
+		float b = texture(tonemappedImage, inUV - offset).b;
 
-		    outColor.rgb = vec3(r, g, b);
+		outColor.rgb = vec3(r, g, b);
 	}
 
 	if (enableVignette)

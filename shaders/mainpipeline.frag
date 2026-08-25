@@ -139,7 +139,6 @@ void main()
 
 	float metallic;
 	float roughness;
-
 	if (PC.metallic_roughnessTextureIndex == NULL_TEXTURE)
 	{
 		metallic = clamp(PC.metallicFactor, 0.0, 1.0);
@@ -154,6 +153,7 @@ void main()
 			texture(textures[PC.metallic_roughnessTextureIndex], inUV).g *
 			PC.roughnessFactor;
 	}
+
 
 
 	vec3 L0 = vec3(0.0);
@@ -182,6 +182,10 @@ void main()
 		emissiveColor = texture(textures[PC.emissiveTextureIndex], inUV).rgb * 
 				PC.emissiveFactor * PC.emissiveStrength;	
 		/* emissiveColor = vec3(27.0); */
+	}
+	else
+	{
+		emissiveColor = PC.emissiveFactor * PC.emissiveStrength;
 	}
 
 	vec3 ambient = vec3(0.001) * base.rgb;

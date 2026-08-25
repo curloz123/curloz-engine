@@ -52,9 +52,6 @@ namespace clz::renderer::post_process
 	}
 	inline void setVignette(float start, float end)
 	{
-		start = std::clamp(start, 0.0f, 1.0f);
-		end   = std::clamp(end, 0.0f, 1.0f);
-
 		vignetteStart 	= start;
 		vignetteEnd 	= end;
 	}
@@ -84,8 +81,6 @@ namespace clz::renderer::post_process
 	}
 	inline void setChromaticAberrationStrength(float value)
 	{
-		// value = std::clamp(value, -0.01f, 0.01f);
-
 		chromaticAbberationStrength = value;
 	}
 }

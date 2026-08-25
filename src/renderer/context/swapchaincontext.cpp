@@ -101,9 +101,8 @@ namespace clz::renderer
 
 		// Primarily select mailbox
 		r_swapchainContext.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		if (clz::config::getBool("window", "triplebuffering", false))
+		if (clz::config::getBool("renderer", "triplebuffering", false))
 		{
-
 			for (const auto& availablePresentMode : presentModes)
 			{
 				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)

@@ -40,6 +40,7 @@ namespace
 		if (exposure != clz::renderer::post_process::getExposure())
 			exposure = clz::renderer::post_process::getExposure();
 
+		ImGui::Separator();
 		if (ImGui::SliderFloat("Exposure", &exposure, -10.0f, 10.0f))
 		{
 			exposureChanged = true;
@@ -94,6 +95,7 @@ namespace
 			);
 		};
 
+		ImGui::Separator();
 		ImGui::Text("Vignette");
 		if (ImGui::SliderFloat("Inner Cutoff", &vignette.x, -2.0, 2.0))
 			vignetteChanged = true;
@@ -142,9 +144,10 @@ namespace
 			);
 		};
 
+		ImGui::Separator();
 		ImGui::Text("Chromatic Aberration");
 
-		if (ImGui::SliderFloat("Strength",&chromaticAberration, -0.1f, 0.1f))
+		if (ImGui::SliderFloat("Strength", &chromaticAberration, -0.5f, 0.5f))
 			chromaticAberrationChanged = true;
 		if (ImGui::IsItemActivated())
 			prevChromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
@@ -158,8 +161,62 @@ namespace
 			);
 		}
 
-		ImGui::Text("Bloom");
-		ImGui::Checkbox("Enable", &clz::renderer::post_process::enableBloom);
+		ImGui::Separator();
 
+		static auto prevBloomStrength = clz::renderer::post_process::getBloomStrength();
+		static auto prevFilterRadius = clz::renderer::post_process::getFilterRadius();
+		ImGui::Text("Bloom");
+		ImGui::Checkbox("Enable", &clz::renderer::post_process::Bloom);
+		ImGui::SliderFloat("Filter Radius", &clz::renderer::post_process::filterRadius, 0.0005f, 0.05f);
+		if (ImGui::IsItemActivated())
+		{
+			prevFilterRadius = clz::renderer::post_process::getFilterRadius();
+		}
+		if (ImGui::IsItemDeactivated())
+		{
+			auto oldFilterRadius = prevFilterRadius;
+			auto newFilterRadius = clz::renderer::post_process::getFilterRadius();
+			clz::timemachine::createSnapshot(
+				[oldFilterRadius]()
+				{
+					clz::renderer::post_process::setFilterRadius(
+						prevFilterRadius
+					);
+				},
+				[newFilterRadius]()
+				{
+					clz::renderer::post_process::setFilterRadius(
+						newFilterRadius
+					);
+				}
+			);	
+	
+		}
+		ImGui::SliderFloat("Bloom Strength", &clz::renderer::post_process::bloomStrength, 0.01, 0.6);
+		if (ImGui::IsItemActivated())
+		{
+			prevBloomStrength = clz::renderer::post_process::getBloomStrength();
+		}
+		if (ImGui::IsItemDeactivated())
+		{
+			auto oldStrength = prevBloomStrength;
+			auto newStrength = clz::renderer::post_process::getBloomStrength();
+
+			clz::timemachine::createSnapshot(
+				[oldStrength]()
+				{
+					clz::renderer::post_process::setBloomStrength(
+						oldStrength
+					);
+				},
+				[newStrength]()
+				{
+					clz::renderer::post_process::setBloomStrength(
+						newStrength
+					);
+				}
+			);	
+	
+		}
 	}
 }

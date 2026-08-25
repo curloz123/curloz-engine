@@ -13,7 +13,6 @@
 #include <vulkan/vulkan_core.h>
 #include <cmath>
 #include "core/assert.hpp"
-#include "renderer/utility/deviceFeatures.hpp"
 
 namespace clz::renderer
 {
@@ -77,10 +76,10 @@ namespace clz::renderer
 		const VkImageTiling tiling,
 		const VkImageUsageFlags usage,
 		const VkImageCreateFlags flags,
-		const uint32_t numMipmaps
+		const uint32_t numMipmaps,
+		const VkSampleCountFlagBits sampleCountFlagBits
 	)
 	{
-
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -93,7 +92,7 @@ namespace clz::renderer
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = sampleCountFlagBits;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.flags = flags;
 

@@ -14,50 +14,32 @@ namespace clz::renderer::post_process
 {
 	bool createBloomProcess()
 	{
-		std::array<bloomImage*, 3> images = {
-			&horizontalBloomImage,
-			&verticalBloomImage,
-			&bloomBlendImage
-		};
-		const std::array<VkExtent2D, 3> extent = {{
-			{
-				r_renderTargetContext.imageExtent.width / 2,
-				r_renderTargetContext.imageExtent.height / 2,
-			},
-			{
-				r_renderTargetContext.imageExtent.width / 2,
-				r_renderTargetContext.imageExtent.height / 2,
-			},
-			{
-				r_renderTargetContext.imageExtent.width,
-				r_renderTargetContext.imageExtent.height,
-			}
-		}
-		};
-
-		for (uint8_t i = 0; i < 2; ++i)
+		const uint32_t width = std::max(r_renderTargetContext.imageExtent.width, 1u);
+		const uint32_t height = std::max(r_renderTargetContext.imageExtent.height, 1u);
+		auto createBloomImage = [](auto& rBloomImage, const VkExtent2D extent, const uint32_t index)
 		{
+			rBloomImage.extent.width = extent.width;
+			rBloomImage.extent.height = extent.height;
 			if (!createImage(
-				images[i]->image,
-				"bloom image: " + std::to_string(i),
-				extent[i].width,
-				extent[i].height,
+				rBloomImage.image,
+				"bloom image: " + std::to_string(index),
+				extent.width,
+				extent.height,
 				BLOOM_IMAGE_FORMAT,
 				VK_IMAGE_TILING_OPTIMAL,
 			    	VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
-			    		VK_IMAGE_USAGE_SAMPLED_BIT | 
-					VK_IMAGE_USAGE_TRANSFER_SRC_BIT, // delete this
+			    		VK_IMAGE_USAGE_SAMPLED_BIT,
 				0
 			))
 			{
-				clz::log::error("failed to create bloom image: " + std::to_string(i));
+				clz::log::error("failed to create bloom image: " + std::to_string(index));
 				return false;
 			}
 
 			VkMemoryRequirements memReq;
 			vkGetImageMemoryRequirements(
 				renderer::r_deviceContext.device,
-				images[i]->image,
+				rBloomImage.image,
 				&memReq
 			);
 			VkMemoryAllocateInfo allocInfo = {};
@@ -71,35 +53,61 @@ namespace clz::renderer::post_process
 				    renderer::r_deviceContext.device,
 				    &allocInfo,
 				    nullptr,
-				    &images[i]->memory
+				    &rBloomImage.memory
 			    ) != VK_SUCCESS)
 			{
-				clz::log::error("failed to allocate pre tonemap image");
+				clz::log::error("failed to allocate bloom memory");
 				return false;
 			}
 			vkBindImageMemory(
 				r_deviceContext.device,
-				images[i]->image,
-				images[i]->memory,
+				rBloomImage.image,
+				rBloomImage.memory,
 				0
 			);
 			setHandleName(
-				reinterpret_cast<uint64_t>(images[i]->memory),
+				reinterpret_cast<uint64_t>(rBloomImage.memory),
 				VK_OBJECT_TYPE_DEVICE_MEMORY,
 				"bloom memory"
 			);
 			
 			if (!createImageView(
-					images[i]->imageView,
+					rBloomImage.imageView,
 					"bloom image view",
-					images[i]->image,
+					rBloomImage.image,
 					BLOOM_IMAGE_FORMAT,
 					VK_IMAGE_ASPECT_COLOR_BIT)
 			)
 			{
-				clz::log::error("failed to create bloom image view: " + std::to_string(i));
+				clz::log::error("failed to create bloom image view: " + std::to_string(index));
 				return false;
 			}
+			
+			return true;
+		};
+		for (int i = 0; i < NUM_BLOOM_MIPS; ++i)
+		{
+			const auto w = std::max(width / ((i + 1)*2), 1u);
+			const auto h = std::max(height / ((i + 1)*2), 1u);
+			VkExtent2D extent{
+				.width = w,
+				.height = h
+			};
+			
+			if (!createBloomImage(
+				bloomMips[i],
+				extent,
+				i)
+			)
+			{
+				clz::log::error("Failed to create bloom image: " + std::to_string(i));
+				return false;
+			}
+		}
+		if (!createBloomImage(bloomedImage, r_renderTargetContext.imageExtent, 0))
+		{
+			clz::log::error("Failed to create bloomed image: ");
+			return false;
 		}
 
 		if (!createSampler(
@@ -125,79 +133,28 @@ namespace clz::renderer::post_process
 	void destroyBloomProcess()
 	{
 		vkDestroySampler(r_deviceContext.device, bloomSampler, nullptr);
-		vkDestroyImageView(r_deviceContext.device, verticalBloomImage.imageView, nullptr);
-		vkDestroyImageView(r_deviceContext.device, horizontalBloomImage.imageView, nullptr);
-		vkDestroyImage(r_deviceContext.device, verticalBloomImage.image, nullptr);
-		vkDestroyImage(r_deviceContext.device, horizontalBloomImage.image, nullptr);
-		vkFreeMemory(r_deviceContext.device, verticalBloomImage.memory, nullptr);
-		vkFreeMemory(r_deviceContext.device, horizontalBloomImage.memory, nullptr);
+		for (int i = 0; i < NUM_BLOOM_MIPS; ++i)
+		{
+			vkDestroyImageView(r_deviceContext.device, bloomMips[i].imageView, nullptr);
+			vkDestroyImage(r_deviceContext.device, bloomMips[i].image, nullptr);
+			vkFreeMemory(r_deviceContext.device, bloomMips[i].memory, nullptr);
+		}
 	}
 
 	void applyBloomProcess(VkCommandBuffer commandBuffer)
 	{
-		constexpr int amount = 10;
-		bool horizontal = false;
-		bool first_iteration = true;
-		BloomPC pushConstant;
-		
-		for (int i = 0; i <= amount; ++i)
+		auto performBloom = 
+			[commandBuffer](
+				VkImage& rImage, 
+				VkImageView& rImageView, 
+				const VkExtent2D extent, 
+				BloomPC* pPushConstant)
 		{
-			VkImage attachment;
-			VkImageView attachmentView;
-			VkExtent2D extent = r_renderTargetContext.imageExtent;
-
-			if (i == amount)
-			{
-				attachment = horizontalBloomImage.image;
-				attachmentView = horizontalBloomImage.imageView;
-				pushConstant.bloomBits = BloomProcessBits::BLEND;
-				extent.width = r_renderTargetContext.imageExtent.width / 2;
-				extent.height = r_renderTargetContext.imageExtent.height / 2;
-
-			}
-			else if (first_iteration)
-			{
-				attachment = horizontalBloomImage.image;
-				attachmentView = horizontalBloomImage.imageView;
-
-				pushConstant.bloomBits = BloomProcessBits::FIRST_TIME;
-				first_iteration = false;
-				extent.width = r_renderTargetContext.imageExtent.width / 2;
-				extent.height = r_renderTargetContext.imageExtent.height / 2;
-			}
-			else if (horizontal)
-			{
-				attachment = horizontalBloomImage.image;
-				attachmentView = horizontalBloomImage.imageView;
-
-				pushConstant.bloomBits = BloomProcessBits::HORIZONTAL;
-				horizontal = false;
-				extent.width = r_renderTargetContext.imageExtent.width / 2;
-				extent.height = r_renderTargetContext.imageExtent.height / 2;
-
-			}
-			else
-			{
-				attachment = verticalBloomImage.image;
-				attachmentView = verticalBloomImage.imageView;
-				pushConstant.bloomBits = BloomProcessBits::VERTICAL;
-				horizontal = true;
-
-				extent.width = r_renderTargetContext.imageExtent.width / 2;
-				extent.height = r_renderTargetContext.imageExtent.height / 2;
-			}
-
-			if (!enableBloom)
-			{
-				pushConstant.bloomBits |= BloomProcessBits::DISABLED; 
-				extent = r_renderTargetContext.imageExtent;
-			}
-
 			transition_image_layout(
-				attachment,
+				rImage,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				0,
+				VK_ACCESS_NONE,
 				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
 				VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
 				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
@@ -208,7 +165,7 @@ namespace clz::renderer::post_process
 			VkRenderingAttachmentInfoKHR colorAttachment = {};
 			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 			colorAttachment.pNext = nullptr;
-			colorAttachment.imageView = attachmentView;
+			colorAttachment.imageView = rImageView;
 			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -252,12 +209,12 @@ namespace clz::renderer::post_process
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				0,
 				sizeof(BloomPC),
-				&pushConstant
+				pPushConstant
 			);
 
 			vkCmdBindDescriptorSets(
 				commandBuffer,
-			    	VK_PIPELINE_BIND_POINT_GRAPHICS,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				r_bloomPipelineContext.layout,
 				0, 
 				1,
@@ -270,7 +227,7 @@ namespace clz::renderer::post_process
 			vkCmdEndRendering(commandBuffer);
 
 			transition_image_layout(
-				attachment,
+				rImage,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -280,6 +237,67 @@ namespace clz::renderer::post_process
 				VK_IMAGE_ASPECT_COLOR_BIT,
 				commandBuffer
 			);
+
+		};
+
+		if (!Bloom)
+		{
+			BloomPC pushConstant;
+			pushConstant.bloomBits = BloomProcessBits::DISABLE;
+			performBloom(
+				bloomedImage.image,
+				bloomedImage.imageView,
+				bloomedImage.extent,
+				&pushConstant
+			);
+
+			return;
+		}
+
+		// down sample proces
+		for (int i = -1; i < NUM_BLOOM_MIPS - 1; ++i)
+		{
+			BloomPC pushConstant;
+			pushConstant.bloomBits = BloomProcessBits::DOWNSAMPLE;
+			pushConstant.downIndex = i;
+			pushConstant.bloomStrength = bloomStrength;
+			pushConstant.filterRadius = filterRadius;
+
+			performBloom(
+				bloomMips[i+1].image,
+				bloomMips[i+1].imageView,
+				bloomMips[i+1].extent,
+				&pushConstant
+			);
+		}
+
+		// upsample
+		for (int i = NUM_BLOOM_MIPS - 2; i >= -1; --i)
+		{
+			BloomPC pushConstant;
+			pushConstant.bloomBits = BloomProcessBits::UPSAMPLE;
+			pushConstant.upIndex = i;
+			pushConstant.bloomStrength = bloomStrength;
+			pushConstant.filterRadius = filterRadius;
+
+			if (i == -1)
+			{
+				performBloom(
+					bloomedImage.image,
+					bloomedImage.imageView,
+					bloomedImage.extent,
+					&pushConstant
+				);
+			}
+			else
+			{
+				performBloom(
+					bloomMips[i].image,
+					bloomMips[i].imageView,
+					bloomMips[i].extent,
+					&pushConstant
+				);
+			}
 		}
 	}
 }
