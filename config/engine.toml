@@ -1,17 +1,26 @@
 [engine]
 name = "Curloz Engine"
 version_major = 0
-version_minor = 5
+version_minor = 7
 version_patch = 0
 
 [window]
 width = 800
 height = 600
-vsync = false
-refreshrate = 120
-triplebuffering = true
 
 [physics]
 substepcount = 4
 timestep = 0.0167 # 1.0/60.0
 enablesleep = false
+
+[renderer]
+vsync = false
+refreshrate = 120
+triplebuffering = true
+msaa = 4
+[renderer.post_process]
+exposure = 1.0
+
+# implement john hoble's filmic hdr and dual kawase bloom
+# fix camera bug
+# fix cmake

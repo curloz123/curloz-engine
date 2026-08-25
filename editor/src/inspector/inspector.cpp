@@ -21,76 +21,97 @@
 #include "physics/physicscomponent.hpp"
 #include "renderer/rendercomponent.hpp"
 #include <imgui.h>
+#include "include/inspector/lightcomponent.hpp"
 
 namespace clz::editor
 {
-void showComponentSpecificWindows();
+	void showComponentSpecificWindows();
 }
 namespace clz::editor
 {
-/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-void showInspector(VkCommandBuffer commandBuffer)
-{
-	if (!ImGui::Begin("Inspector"))
+	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
+	void showInspector(VkCommandBuffer commandBuffer)
 	{
-		ImGui::End();
-		return;
-	}
-
-	if (currentSelectedEntity.has_value())
-	{
-		ImGui::PushFont(fontMonoBold, 20);
-		ImGui::Text(
-			"Selected Entity: %s",
-			ecs::getEntityName(currentSelectedEntity.value()).c_str()
-		);
-		ImGui::PopFont();
-
-		ImGui::Separator();
-
-		ImGui::PushFont(fontMono, 18);
-		ImGui::Text("Entity is currently: ");
-
-		ImGui::SameLine();
-		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
+		if (!ImGui::Begin("Inspector"))
 		{
-			ImGui::Text("Enabled");
+			ImGui::End();
+			return;
+		}
+
+		if (currentSelectedEntity.has_value())
+		{
+			ImGui::PushFont(fontMonoBold, 20);
+			ImGui::Text(
+				"Selected Entity: %s",
+				ecs::getEntityName(currentSelectedEntity.value()).c_str()
+			);
+			ImGui::PopFont();
+
+			ImGui::Separator();
+
+			ImGui::PushFont(fontMono, 18);
+			ImGui::Text("Entity is currently: ");
+
+			ImGui::SameLine();
+			if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
+			{
+				ImGui::Text("Enabled");
+			}
+			else
+			{
+				ImGui::Text("Disabled");
+			}
+			ImGui::PopFont();
+
+			ImGui::Separator();
+
+			// Every entity has transform component
+			showTransformComponentHeader();
+			ImGui::Separator();
+
+			if (ecs::hasComponent<renderer::ModelComponent>(
+				    currentSelectedEntity.value()
+			    ))
+			{
+				showModelComponentHeader();
+				ImGui::Separator();
+			}
+			if (ecs::hasComponent<renderer::DirectionalLightComponent>(
+				currentSelectedEntity.value()
+				))
+			{
+				showDirectionalLightHeader();
+				ImGui::Separator();
+			}
+			if (ecs::hasComponent<renderer::PointLightComponent>(
+				currentSelectedEntity.value()
+				))
+			{
+				showPointLightHeader();
+				ImGui::Separator();
+			}
+
+			if (ecs::hasComponent<physics::RigidBodyComponent>(
+				    currentSelectedEntity.value()
+			    ))
+			{
+				showRigidBodyHeader();
+				ImGui::Separator();
+			}
+
 		}
 		else
 		{
-			ImGui::Text("Disabled");
+			ImGui::TextDisabled("No entity selected");
 		}
-		ImGui::PopFont();
 
-		ImGui::Separator();
+		ImGui::End();
 
-		// Every entity has transform component
-		showTransformComponentHeader();
-		ImGui::Separator();
-
-		if (ecs::hasComponent<renderer::ModelComponent>(
-			    currentSelectedEntity.value()
-		    ))
-			showModelComponentHeader();
-		ImGui::Separator();
-
-		if (ecs::hasComponent<physics::RigidBodyComponent>(
-			    currentSelectedEntity.value()
-		    ))
-			showRigidBodyHeader();
-		ImGui::Separator();
+		showComponentSpecificWindows();
 	}
-	else
+
+	void showComponentSpecificWindows()
 	{
-		ImGui::TextDisabled("No entity selected");
+
 	}
-
-	ImGui::End();
-
-	showComponentSpecificWindows();
-}
-
-void showComponentSpecificWindows()
-{
-}
 } // namespace clz::editor

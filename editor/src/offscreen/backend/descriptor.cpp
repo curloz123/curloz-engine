@@ -5,6 +5,7 @@
 #include "renderer/vk_types.hpp"
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <string>
 
 namespace clz::editor::backend
 {
@@ -50,7 +51,7 @@ bool createEditorDescriptors()
 
 		const std::vector editorDescriptorLayouts(
 			renderer::r_FRAMES_IN_FLIGHT,
-			renderer::cameraUBOLayout
+			renderer::cameraDescriptorLayout
 		);
 		allocInfo.pSetLayouts = editorDescriptorLayouts.data();
 

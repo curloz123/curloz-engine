@@ -4,7 +4,7 @@
 #include "math/mat4x4.hpp"
 #include "renderer/context/context.hpp"
 #include "renderer/entitydata/texture.hpp"
-#include "renderer/pipelinedata/ubo.hpp"
+#include "renderer/pipelinedata/camera.hpp"
 #include "renderer/vk_types.hpp"
 
 namespace clz::editor::backend

@@ -24,8 +24,11 @@ struct OffscreenTarget
 	/// @brief Whether the owning editor window is currently open/visible.
 	bool showTarget = false;
 
-	/// @brief tells wheter image is outdated
+	/// @brief tells whether image is outdated
 	bool outDated = true;
+
+	/// @brief tells whether its image's first time being rendered on
+	bool firstTime = true;
 
 	/// @brief image specific camera
 	/// @note is initialized by scene and scene ONLY!!
@@ -35,9 +38,14 @@ struct OffscreenTarget
 	VkExtent2D extent = {.width = 256, .height = 256};
 
 	/// @brief Color image the scene is rendered into.
+
+	VkImage preProcessedImage = VK_NULL_HANDLE;
+	VkImageView preProcessedImageView = VK_NULL_HANDLE;
+	VkDeviceMemory preProcessedImageMemory = VK_NULL_HANDLE;
 	VkImage image = VK_NULL_HANDLE;
-	VkDeviceMemory imageMemory = VK_NULL_HANDLE;
 	VkImageView imageView = VK_NULL_HANDLE;
+	VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+
 
 	/// @brief Sampler used by ImGui to sample the color image as a texture.
 	VkSampler sampler = VK_NULL_HANDLE;
@@ -79,8 +87,16 @@ void drawOffscreenTargets(VkCommandBuffer commandBuffer);
 /// @brief Draws the ImGui windows for every currently-open offscreen target.
 void presentOffscreenWindows();
 
+	enum class OfffscreenPrepareResult
+	{
+		SAFE_TO_DRAW_ON,
+		RESIZED_THIS_FRAME,
+		FIRST_TIME
+	};
 /// @brief prepare's offscreen target before it can be used
-void prepareOffscreenTarget(OffscreenTarget& target);
+/// If it is outdated or image's first time, it will return appropriate enum
+/// If it's ok to draw on, it will return a good message
+OfffscreenPrepareResult prepareOffscreenTarget(OffscreenTarget& target);
 
 /// @brief Whether any offscreen target window is currently open.
 /// Used to suppress main viewport camera updates while an offscreen

@@ -8,39 +8,44 @@
 #include "core/logs.hpp"
 #include "renderer/renderer.hpp"
 #include "window/window_types.hpp"
+#include "renderer/cross_system_flags.hpp"
 
 namespace clz::window
 {
-/// @copydoc
-bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
-{
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	if (glfwExtensionCount == 0 || glfwExtensions == nullptr)
+	/// @copydoc
+	bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
 	{
-		log::error("Could not retrieve extensions required for instance by window");
-		return false;
-	}
-	rRequiredExtensions.assign(glfwExtensions, glfwExtensions + glfwExtensionCount);
-	return true;
-}
-
-/// @copydoc
-bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& rSurface)
-{
-	if (glfwCreateWindowSurface(instance, w_window, nullptr, &rSurface) != VK_SUCCESS)
-	{
-		log::error("Could not create window surface");
-		return false;
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions =
+			glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		if (glfwExtensionCount == 0 || glfwExtensions == nullptr)
+		{
+			log::error(
+				"Could not retrieve extensions required for instance by "
+				"window"
+			);
+			return false;
+		}
+		rRequiredExtensions.assign(glfwExtensions, glfwExtensions + glfwExtensionCount);
+		return true;
 	}
 
-	return true;
-}
+	/// @copydoc
+	bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& rSurface)
+	{
+		if (glfwCreateWindowSurface(instance, w_window, nullptr, &rSurface) != VK_SUCCESS)
+		{
+			log::error("Could not create window surface");
+			return false;
+		}
 
-/// @copydoc
-void hintRendererAboutResize(GLFWwindow* window, int, int)
-{
-	clz::renderer::r_recreateSwapchain = true;
-}
+		return true;
+	}
+
+	/// @copydoc
+	void hintRendererAboutResize(GLFWwindow* window, int, int)
+	{
+		renderer::flagRendererFramebufferResize();
+	}
 
 } // namespace clz::window

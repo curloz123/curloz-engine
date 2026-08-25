@@ -4,6 +4,6 @@
 
 namespace clz::audio
 {
-inline ALCdevice* au_device = nullptr;
-inline ALCcontext* au_context = nullptr;
+	inline ALCdevice* au_device = nullptr;
+	inline ALCcontext* au_context = nullptr;
 } // namespace clz::audio

@@ -11,15 +11,15 @@
 
 namespace clz::scene
 {
-/**
- * @brief Loads all entities from JSON file
- * @param entityJson JSON's entity-table containing entity data
- */
-bool loadEntities(const nlohmann::json& entityJson);
+	/**
+	 * @brief Loads all entities from JSON file
+	 * @param entityJson JSON's entity-table containing entity data
+	 */
+	bool loadEntities(const nlohmann::json& entityJson);
 
-/**
- * @brief Writes back entity scene data to JSON file
- * @param entityJson JSON Entity table
- */
-void saveEntities(nlohmann::json& entityJson);
+	/**
+	 * @brief Writes back entity scene data to JSON file
+	 * @param entityJson JSON Entity table
+	 */
+	void saveEntities(nlohmann::json& entityJson);
 } // namespace clz::scene

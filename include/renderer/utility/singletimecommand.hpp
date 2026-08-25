@@ -4,6 +4,6 @@
 
 namespace clz::renderer
 {
-VkCommandBuffer startSingleTimeCommand();
-void submitSingleTimeCommand(VkCommandBuffer commandBuffer);
+	VkCommandBuffer startSingleTimeCommand();
+	void submitSingleTimeCommand(VkCommandBuffer commandBuffer);
 } // namespace clz::renderer

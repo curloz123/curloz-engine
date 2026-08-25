@@ -1,11 +1,11 @@
 #include "../../../include/offscreen/backend/pipeline.hpp"
 #include "core/logs.hpp"
 #include "renderer/context/pipelinecontext.hpp"
-#include "renderer/entitydata/uvbuffer.hpp"
 #include "renderer/entitydata/vertexbuffer.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
-#include "renderer/pipelinedata/sampler.hpp"
+#include "renderer/pipelinedata/texture.hpp"
 #include "renderer/utility/namer.hpp"
+#include <array>
 #include "renderer/vk_types.hpp"
 
 namespace clz::editor::backend
@@ -34,7 +34,7 @@ bool initializeEditorPipeline()
 	);
 
 	// Use the camera and sampler layout from renderer
-	std::array layouts = {renderer::cameraUBOLayout, renderer::combinedSamplerLayout};
+	std::array<VkDescriptorSetLayout, 2> layouts = {renderer::cameraDescriptorLayout, renderer::textureDescriptorLayout};
 	if (!renderer::createPipelineLayout(
 		    editorPipelineContext,
 		    sizeof(renderer::ModelDataPC),
@@ -74,13 +74,12 @@ bool initializeEditorPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {
+	std::array<VkVertexInputBindingDescription, 1> bindingDescriptions = {
 		clz::renderer::getVertexBindingDescription(),
-		clz::renderer::getUVBindingDescription()
 	};
 	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
-		clz::renderer::getVertexAttributeDescription(),
-		clz::renderer::getUVAttributeDescription()
+		clz::renderer::getVertexAttributeDescription(renderer::VertexAttributeType::POSITION),
+		clz::renderer::getVertexAttributeDescription(renderer::VertexAttributeType::UV),
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
@@ -101,14 +100,14 @@ bool initializeEditorPipeline()
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(renderer::r_swapchainContext.extent.width);
-	viewport.height = static_cast<float>(renderer::r_swapchainContext.extent.height);
+	viewport.width = static_cast<float>(renderer::r_renderTargetContext.imageExtent.width);
+	viewport.height = static_cast<float>(renderer::r_renderTargetContext.imageExtent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	VkRect2D scissor{};
 	scissor.offset = {0, 0};
-	scissor.extent = renderer::r_swapchainContext.extent;
+	scissor.extent = renderer::r_renderTargetContext.imageExtent;
 
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -153,9 +152,8 @@ bool initializeEditorPipeline()
 	VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 	pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	pipelineRenderingCI.colorAttachmentCount = 1;
-	pipelineRenderingCI.pColorAttachmentFormats =
-		&renderer::r_swapchainContext.format.format;
-	pipelineRenderingCI.depthAttachmentFormat = renderer::r_swapchainContext.depthFormat;
+	pipelineRenderingCI.pColorAttachmentFormats = &renderer::r_renderTargetContext.imageFormat;
+	pipelineRenderingCI.depthAttachmentFormat = renderer::r_renderTargetContext.depthFormat;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
