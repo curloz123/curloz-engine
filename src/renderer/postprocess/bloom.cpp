@@ -14,9 +14,25 @@ namespace clz::renderer::post_process
 {
 	bool createBloomProcess()
 	{
-		std::array<bloomImage*, 2> images = {
+		std::array<bloomImage*, 3> images = {
 			&horizontalBloomImage,
-			&verticalBloomImage
+			&verticalBloomImage,
+			&bloomBlendImage
+		};
+		const std::array<VkExtent2D, 3> extent = {{
+			{
+				r_renderTargetContext.imageExtent.width / 2,
+				r_renderTargetContext.imageExtent.height / 2,
+			},
+			{
+				r_renderTargetContext.imageExtent.width / 2,
+				r_renderTargetContext.imageExtent.height / 2,
+			},
+			{
+				r_renderTargetContext.imageExtent.width,
+				r_renderTargetContext.imageExtent.height,
+			}
+		}
 		};
 
 		for (uint8_t i = 0; i < 2; ++i)
@@ -24,8 +40,8 @@ namespace clz::renderer::post_process
 			if (!createImage(
 				images[i]->image,
 				"bloom image: " + std::to_string(i),
-				r_renderTargetContext.imageExtent.width,
-				r_renderTargetContext.imageExtent.height,
+				extent[i].width,
+				extent[i].height,
 				BLOOM_IMAGE_FORMAT,
 				VK_IMAGE_TILING_OPTIMAL,
 			    	VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
@@ -120,7 +136,7 @@ namespace clz::renderer::post_process
 	void applyBloomProcess(VkCommandBuffer commandBuffer)
 	{
 		constexpr int amount = 10;
-		bool horizontal = false; // first iteration IS horizontal, but not on horizontal image
+		bool horizontal = false;
 		bool first_iteration = true;
 		BloomPC pushConstant;
 		
@@ -135,6 +151,9 @@ namespace clz::renderer::post_process
 				attachment = horizontalBloomImage.image;
 				attachmentView = horizontalBloomImage.imageView;
 				pushConstant.bloomBits = BloomProcessBits::BLEND;
+				extent.width = r_renderTargetContext.imageExtent.width / 2;
+				extent.height = r_renderTargetContext.imageExtent.height / 2;
+
 			}
 			else if (first_iteration)
 			{
@@ -143,6 +162,8 @@ namespace clz::renderer::post_process
 
 				pushConstant.bloomBits = BloomProcessBits::FIRST_TIME;
 				first_iteration = false;
+				extent.width = r_renderTargetContext.imageExtent.width / 2;
+				extent.height = r_renderTargetContext.imageExtent.height / 2;
 			}
 			else if (horizontal)
 			{
@@ -151,19 +172,25 @@ namespace clz::renderer::post_process
 
 				pushConstant.bloomBits = BloomProcessBits::HORIZONTAL;
 				horizontal = false;
+				extent.width = r_renderTargetContext.imageExtent.width / 2;
+				extent.height = r_renderTargetContext.imageExtent.height / 2;
+
 			}
 			else
 			{
 				attachment = verticalBloomImage.image;
 				attachmentView = verticalBloomImage.imageView;
-
 				pushConstant.bloomBits = BloomProcessBits::VERTICAL;
 				horizontal = true;
+
+				extent.width = r_renderTargetContext.imageExtent.width / 2;
+				extent.height = r_renderTargetContext.imageExtent.height / 2;
 			}
 
 			if (!enableBloom)
 			{
 				pushConstant.bloomBits |= BloomProcessBits::DISABLED; 
+				extent = r_renderTargetContext.imageExtent;
 			}
 
 			transition_image_layout(

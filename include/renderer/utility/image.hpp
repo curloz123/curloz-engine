@@ -109,6 +109,8 @@ namespace clz::renderer
 	 * @param addressModeV Address Mode V
 	 * @param addressModeW Address Mode W
 	 * @param maximum level of detail. Is 0 by default
+	 * @param enableAnisotropy Decides whether to enable anisotrpy. Is false by default
+	 * @param anisotropy If enableAnisotropy is true, it sets anisotropy value to this
 	 * @return True on creation, false if anything fails
 	 */
 	bool createSampler(
@@ -120,7 +122,9 @@ namespace clz::renderer
 		VkSamplerAddressMode addressModeU,
 		VkSamplerAddressMode addressModeV,
 		VkSamplerAddressMode addressModeW,
-		float maxLod = 0.0f
+		float maxLod = 0.0f,
+		bool enableAnisotropy = false,
+		float anisotropy = 1.0f
 	);
 
 	/// @brief Sampler filters
@@ -156,6 +160,8 @@ namespace clz::renderer
 	 * @param addressModeV Address Mode V
 	 * @param addressModeW Address Mode W
 	 * @param maximum level of detail. Is 0 by default
+	 * @param enableAnisotropy Decides whether to enable anisotrpy. Is false by default
+	 * @param anisotropy If enableAnisotropy is true, it sets anisotropy value to this
 	 * @return True on creation, false if anything fails
 	 */
 	bool createSampler(
@@ -167,7 +173,9 @@ namespace clz::renderer
 		SamplerAddressMode addressModeU,
 		SamplerAddressMode addressModeV,
 		SamplerAddressMode addressModeW,
-		float maxLod = 0.0f
+		float maxLod = 0.0f,
+		bool enableAnisotropy = false,
+		float anisotropy = 1.0f
 	);
 
 	/**

@@ -39,8 +39,7 @@ namespace clz::renderer
 		       ~(SSBOOffsetAlignment.value() - 1);
 	}
 
-	inline VkDeviceSize
-	nextImageOffset(const VkDeviceSize imageSize, const VkDeviceSize nextImageAlignment)
+	inline VkDeviceSize nextImageOffset(const VkDeviceSize imageSize, const VkDeviceSize nextImageAlignment)
 	{
 		return (imageSize + nextImageAlignment - 1) & ~(nextImageAlignment - 1);
 	}

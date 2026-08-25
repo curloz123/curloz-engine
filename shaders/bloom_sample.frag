@@ -22,9 +22,14 @@ void main()
 	/* if (fragColor.b > 1.0) */
 	/* 	outColor.b = fragColor.b; */
 		
-	float brightness = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if (brightness > 1.0)
-		outColor = fragColor;
-	else
-		outColor = vec4(vec3(0.0), 1.0);
+	const float T = 1.0;
+	const float K = 0.2;
+	const float B = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+	float S = B - T + K;
+	S = clamp(S, 0.0, K*2);
+	S = (S*S)/(4*K);
+	const float C = max(S, B-T);
+	const float F = C / max(B, 1e-5);
+
+	outColor = vec4(fragColor.rgb * F, 1.0);
 }

@@ -133,7 +133,7 @@ namespace clz::renderer
 
 	bool getValidationLayers(std::vector<const char*>& rValidationLayers)
 	{
-		rValidationLayers = {"VK_LAYER_KHRONOS_validation"};
+		// rValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 		uint32_t layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -367,7 +367,7 @@ namespace clz::renderer
 
 			bool graphicsSupport = false;
 			bool presentSupport = false;
-			for (int j = 0; j < queueFamilies.size(); ++j)
+			for (size_t j = 0; j < queueFamilies.size(); ++j)
 			{
 				// Graphics Support
 				if (!graphicsSupport &&
@@ -552,14 +552,14 @@ namespace clz::renderer
 		features13.synchronization2 = VK_TRUE;
 
 		// Normal device features
-		VkPhysicalDeviceFeatures2 deviceFeatures = {};
-		deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		deviceFeatures.pNext = &features13; // chain features 13
-		deviceFeatures.features.samplerAnisotropy = VK_TRUE;
+		VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+		deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		deviceFeatures2.pNext = &features13; // chain features 13
+		deviceFeatures2.features.samplerAnisotropy = VK_TRUE;
 
 		VkDeviceCreateInfo deviceInfo = {};
 		deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceInfo.pNext = &deviceFeatures; // chain all required features
+		deviceInfo.pNext = &deviceFeatures2; // chain all required features
 		deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
 		deviceInfo.pQueueCreateInfos = queueInfos.data();
 		deviceInfo.enabledExtensionCount =

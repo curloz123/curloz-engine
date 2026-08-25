@@ -17,13 +17,6 @@ namespace clz::renderer
 {
 	bool initTextureEngine()
 	{
-		if (!createSampler())
-		{
-			clz::CLZ_ASSERT(false, "could not create texture sampler");
-			clz::log::error("Could not create texture sampler");
-			return false;
-		}
-
 		return true;
 	}
 	TextureID registerTexture(
@@ -121,7 +114,9 @@ namespace clz::renderer
 			addressModeU, 
 			addressModeV, 
 			addressModeW, 
-			static_cast<float>(numMips)
+			static_cast<float>(numMips),
+			true,
+			4.0f
 		);
 
 		uint32_t IdValue = r_numRegisteredTextures++;
@@ -222,7 +217,9 @@ namespace clz::renderer
 			addressModeU, 
 			addressModeV, 
 			addressModeW, 
-			numMips
+			numMips,
+			true,
+			4.0f
 		);
 
 
@@ -431,49 +428,15 @@ namespace clz::renderer
 		return true;
 	}
 
-	bool createSampler()
-	{
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable = VK_TRUE;
-		samplerInfo.maxAnisotropy = r_gpuInfo.maxAnisotropy;
-		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
-
-		if (vkCreateSampler(
-			    r_deviceContext.device,
-			    &samplerInfo,
-			    nullptr,
-			    &r_sampler
-		    ) != VK_SUCCESS)
-		{
-			clz::log::error("Failed to create texture sampler");
-			return false;
-		}
-
-		return true;
-	}
-
-	void destroySampler()
-	{
-		vkDestroySampler(r_deviceContext.device, r_sampler, nullptr);
-	}
-
 	void destroyTextures()
 	{
 		for (uint32_t i = 0; i < r_numRegisteredTextures; i++)
 		{
+			vkDestroySampler(
+				r_deviceContext.device,
+				r_textures.imageSampler[i],
+				nullptr
+			);
 			vkDestroyImageView(
 				r_deviceContext.device,
 				r_textures.imageView[i],

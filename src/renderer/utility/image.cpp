@@ -12,7 +12,8 @@
 #include <string>
 #include <vulkan/vulkan_core.h>
 #include <cmath>
-#include "core/assert.hpp""
+#include "core/assert.hpp"
+#include "renderer/utility/deviceFeatures.hpp"
 
 namespace clz::renderer
 {
@@ -174,7 +175,9 @@ namespace clz::renderer
 		const VkSamplerAddressMode addressModeU,
 		const VkSamplerAddressMode addressModeV,
 		const VkSamplerAddressMode addressModeW,
-		const float maxLod
+		const float maxLod,
+		const bool enableAnisotropy,
+		const float anisotropy
 	)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
@@ -185,8 +188,8 @@ namespace clz::renderer
 		samplerInfo.addressModeU = addressModeU;
 		samplerInfo.addressModeV = addressModeV;
 		samplerInfo.addressModeW = addressModeW;
-		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 1.0f;
+		samplerInfo.anisotropyEnable = enableAnisotropy ? VK_TRUE : VK_FALSE;
+		samplerInfo.maxAnisotropy = anisotropy;
 		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_FALSE;
@@ -222,7 +225,9 @@ namespace clz::renderer
 		const SamplerAddressMode addressModeU,
 		const SamplerAddressMode addressModeV,
 		const SamplerAddressMode addressModeW,
-		const float maxLod
+		const float maxLod,
+		const bool enableAnisotropy,
+		const float anisotropy
 	)
 	{
 		const auto toVkFilter = [](const SamplerFilter filter) -> VkFilter
@@ -293,8 +298,8 @@ namespace clz::renderer
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = maxLod;
 
-		samplerInfo.anisotropyEnable = VK_FALSE;
-		samplerInfo.maxAnisotropy = 1.0f;
+		samplerInfo.anisotropyEnable = enableAnisotropy ? VK_TRUE : VK_FALSE;
+		samplerInfo.maxAnisotropy = anisotropy;
 
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;

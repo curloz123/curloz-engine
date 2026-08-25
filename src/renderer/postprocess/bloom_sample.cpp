@@ -15,13 +15,12 @@ namespace clz::renderer::post_process
 		if (!createImage(
 			bloomSampleImage,
 			    "bloom sample image",
-			    r_renderTargetContext.imageExtent.width,
-			    r_renderTargetContext.imageExtent.height,
+			    r_renderTargetContext.imageExtent.width / 2,
+			    r_renderTargetContext.imageExtent.height / 2,
 			    BLOOM_SAMPLE_IMAGE_FORMAT,
 			    VK_IMAGE_TILING_OPTIMAL,
 			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
-			    	VK_IMAGE_USAGE_SAMPLED_BIT | 
-				VK_IMAGE_USAGE_TRANSFER_SRC_BIT, // delete this
+			    	VK_IMAGE_USAGE_SAMPLED_BIT,
 			    0
 		    ))
 		{
@@ -126,7 +125,9 @@ namespace clz::renderer::post_process
 			.color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}
 		};
 
-		const auto extent = r_renderTargetContext.imageExtent;
+		VkExtent2D extent;
+		extent.width = r_renderTargetContext.imageExtent.width / 2;
+		extent.height = r_renderTargetContext.imageExtent.height / 2;
 		VkRenderingInfoKHR renderingInfo = {};
 		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
 		renderingInfo.pNext = nullptr;
@@ -179,28 +180,28 @@ namespace clz::renderer::post_process
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 		vkCmdEndRendering(commandBuffer);
 
-		transition_image_layout(
-			bloomSampleImage,
-			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-			VK_ACCESS_2_TRANSFER_READ_BIT,
-			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-			VK_IMAGE_ASPECT_COLOR_BIT,
-			commandBuffer
-		);
-
 		// transition_image_layout(
 		// 	bloomSampleImage,
 		// 	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		// 	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		// 	VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
-		// 	VK_ACCESS_2_SHADER_READ_BIT,
-		// 	VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-		// 	VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+		// 	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		// 	VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+		// 	VK_ACCESS_2_TRANSFER_READ_BIT,
+		// 	VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+		// 	VK_PIPELINE_STAGE_2_TRANSFER_BIT,
 		// 	VK_IMAGE_ASPECT_COLOR_BIT,
 		// 	commandBuffer
 		// );
+
+		transition_image_layout(
+			bloomSampleImage,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+			VK_ACCESS_2_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer
+		);
 	}
 }

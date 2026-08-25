@@ -13,6 +13,7 @@ namespace clz::renderer::post_process
 	inline constexpr VkFormat BLOOM_IMAGE_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 	inline bloomImage horizontalBloomImage;
 	inline bloomImage verticalBloomImage;
+	inline bloomImage bloomBlendImage;
 	inline VkSampler bloomSampler;
 	inline bool enableBloom = true;
 	enum BloomProcessBits : uint32_t
