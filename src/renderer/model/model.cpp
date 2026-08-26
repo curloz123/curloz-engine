@@ -9,6 +9,7 @@
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
+#include "fastgltf/core.hpp"
 #include "fastgltf/tools.hpp"
 #include "math/quat.hpp"
 #include "math/vec2.hpp"
@@ -20,13 +21,14 @@
 #include "renderer/rendercomponent.hpp"
 #include "renderer/vk_types.hpp"
 #include "core/time.hpp"
-
+#include <GLFW/glfw3.h>
 
 namespace clz::renderer
 {
 	/// @copydoc loadModel
 	std::expected<ModelId, std::string> loadModel(const std::filesystem::path& filePath)
 	{
+		auto timethen = glfwGetTime();
 		const ModelId Id = ModelLUT.size();
 		ModelLUT.resize(ModelLUT.size() + 1);
 		TextureCaches.resize(TextureCaches.size() + 1);
@@ -34,7 +36,8 @@ namespace clz::renderer
 		ModelPaths[Id] = ModelPath(filePath);
 
 		fastgltf::Parser parser{
-		   	fastgltf::Extensions::KHR_materials_emissive_strength
+		   	fastgltf::Extensions::KHR_materials_emissive_strength | 
+			fastgltf::Extensions::KHR_lights_punctual
 		};
 
 		auto data = fastgltf::GltfDataBuffer::FromPath(filePath);
@@ -75,6 +78,9 @@ namespace clz::renderer
 
 		ModelLUT[Id] = std::move(ourModel);
 		TextureCaches[Id].clear();
+
+		auto timenow = glfwGetTime();
+		clz::log::debug("Time took to load: " + filePath.string() + " : " + std::to_string(timenow - timethen) + "sec");
 		return Id;
 	}
 
