@@ -416,4 +416,162 @@ To generate locally:
 doxygen Doxyfile
 ```
 
+# Build Troubleshooting
+
+If configuration or compilation fails, check the following common setup issues before opening a new issue.
+
+## Vulkan SDK is not detected
+
+The project uses CMake's Vulkan package discovery during configuration. If CMake reports that Vulkan could not be found, first verify that the Vulkan SDK and tools are available on your system.
+
+Check whether the Vulkan tools are accessible from the terminal:
+
+```bash
+vulkaninfo --summary
+```
+
+If the command is not found, verify that the Vulkan SDK is installed and that its tools are available through the system `PATH`.
+
+On Windows, verify that the Vulkan SDK environment variable is set:
+
+```powershell
+echo $env:VULKAN_SDK
+```
+
+The command should print the path to the installed Vulkan SDK. If it is empty, verify the SDK installation and environment configuration, then restart the terminal before running CMake again.
+
+After correcting the SDK setup, remove the previous build directory and configure the project again:
+
+```bash
+cmake -E remove_directory build/linux/"Linux EngineDebug"
+cmake --preset "Linux EngineDebug"
+```
+
+(Substitute the preset name and path for whichever one you're using — see [CMakePresets.json](../CMakePresets.json) for the full list.)
+
+## CMake or Ninja is not available
+
+Verify that the required build tools are installed and accessible from the command line:
+
+```bash
+cmake --version
+ninja --version
+```
+
+The project requires CMake 3.25 or newer. If either command is not found, install the missing tool and reopen the terminal before configuring the project again.
+
+## CMake generator mismatch
+
+The project's [CMakePresets.json](../CMakePresets.json) pins the correct generator per platform (Ninja on Linux, Visual Studio on Windows), so this shouldn't come up if you configure via `cmake --preset ...`. It typically only happens if you mix a manual `cmake -B ... -G ...` invocation with a preset-configured build directory, or switch presets while reusing an old build directory.
+
+A CMake build directory remembers the generator used when it was first configured. Reusing the same directory with a different generator produces a generator mismatch error.
+
+Remove the existing build directory before configuring again with the intended preset:
+
+```bash
+cmake -E remove_directory build/linux/"Linux EngineDebug"
+cmake --preset "Linux EngineDebug"
+cmake --build --preset "Linux EngineDebug"
+```
+
+## Git submodules are missing or not initialized
+
+The project uses Git submodules for third-party dependencies stored under the `external/` directory. If CMake reports missing source directories, missing `CMakeLists.txt` files, or errors while adding external libraries, verify that all submodules have been initialized.
+
+Check the current submodule status:
+
+```bash
+git submodule status
+```
+
+If a submodule has not been initialized, its status may be prefixed with `-`.
+
+Initialize and update all submodules recursively:
+
+```bash
+git submodule update --init --recursive
+```
+
+If the repository was cloned without submodules, the same command can be run from the repository root after cloning.
+
+Alternatively, clone the repository and initialize submodules in one step:
+
+```bash
+git clone --recursive https://github.com/curloz123/curloz-engine.git
+cd curloz-engine
+```
+
+If submodule URLs or references appear out of sync, synchronize them before updating:
+
+```bash
+git submodule sync --recursive
+git submodule update --init --recursive
+```
+
+After restoring the submodules, remove the previous build directory and configure the project again:
+
+```bash
+cmake -E remove_directory build/linux/"Linux EngineDebug"
+cmake --preset "Linux EngineDebug"
+cmake --build --preset "Linux EngineDebug"
+```
+
+## Compiler does not support the required C++ standard
+
+Curloz Engine is configured to use C++23. Configuration or compilation may fail when the selected compiler does not support the required language features or when CMake selects a different compiler than expected.
+
+For a stable build, use one of the following minimum compiler versions:
+
+- GCC 13 or newer
+- Clang 17 or newer
+- MSVC 19.38 or newer, included with Visual Studio 2022 version 17.8 or newer
+
+Check the active compiler version before configuring the project.
+
+For GCC:
+
+```bash
+g++ --version
+```
+
+For Clang:
+
+```bash
+clang++ --version
+```
+
+For MSVC, open a Visual Studio Developer Command Prompt and run:
+
+```powershell
+cl
+```
+
+If multiple compilers are installed, CMake may select a compiler different from the one you intended to use. You can override the compiler on top of a preset with `-D` flags:
+
+To explicitly configure with GCC:
+
+```bash
+cmake --preset "Linux EngineDebug" \
+  -DCMAKE_C_COMPILER=gcc \
+  -DCMAKE_CXX_COMPILER=g++
+```
+
+To explicitly configure with Clang:
+
+```bash
+cmake --preset "Linux EngineDebug" \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++
+```
+
+When switching compilers, do not reuse an existing configured build directory. Remove it before running CMake again:
+
+```bash
+cmake -E remove_directory build/linux/"Linux EngineDebug"
+cmake --preset "Linux EngineDebug" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+cmake --build --preset "Linux EngineDebug"
+```
+
+If compilation still fails, verify that the selected compiler has suitable C++23 support and that CMake is detecting the intended compiler during configuration.
+
 Output goes to `docs/` which is in `.gitignore`. Do not commit it.

@@ -66,8 +66,6 @@ namespace clz::renderer
 			return false;
 		}
 
-		extractGPUInfo();
-
 		if (!createLogicalDevice())
 		{
 			clz::log::error("Could not create logical device");
@@ -439,15 +437,6 @@ namespace clz::renderer
 		clz::log::info("Using GPU: " + std::string(selectedDeviceProperties.deviceName));
 
 		return true;
-	}
-
-	void extractGPUInfo()
-	{
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(r_deviceContext.physicalDevice, &deviceProperties);
-		r_gpuInfo.uniformBufferOffsetAlignment =
-			deviceProperties.limits.minUniformBufferOffsetAlignment;
-		r_gpuInfo.maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy;
 	}
 
 	bool checkDeviceExtensions()

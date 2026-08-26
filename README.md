@@ -1,26 +1,33 @@
 # Curloz Engine
 
-A Vulkan 1.3 game engine written in C++23.
+A Vulkan 1.3 game engine written in C++23, built from scratch with a data-oriented design philosophy.
 
-## Tech Stack
+Curloz Engine is the foundation for [Project Name / horror train sim], and eventually the base for future titles. It's under active solo development.
 
-| System        | Library        |
-| ------------- | -------------- |
-| Renderer      | Vulkan 1.3     |
-| Windowing     | GLFW           |
-| ECS           | clz::ecs#      |
-| Physics       | Jolt Physics*  |
-| Audio         | OpenAL Soft*   |
-| Math          | clz::math#     |
-| Model Loading | assimp         |
-| Animation     | ozz-animation* |
-| Build System  | CMake + Ninja  |
+<!--
+Badges (uncomment and fill in once you have a CI pipeline set up):
+![Build Status](https://img.shields.io/github/actions/workflow/status/curloz123/curloz-engine/build.yml)
+![License](https://img.shields.io/github/license/curloz123/curloz-engine)
+![C++](https://img.shields.io/badge/C%2B%2B-23-blue)
+![Vulkan](https://img.shields.io/badge/Vulkan-1.3-red)
+-->
 
 ---
 
-> '#' Signifies that no external library is used and is self authorized
 
-> '*' Signifies that system is planned and has not yet been implemented yet, or needs further work
+## Tech Stack
+
+| System        | Library        | Status        |
+| ------------- | -------------- | ------------- |
+| Renderer      | Vulkan 1.3     | Implemented   |
+| Windowing     | GLFW           | Implemented   |
+| ECS           | clz::ecs       | Implemented (self-authored) |
+| Math          | clz::math      | Implemented (self-authored) |
+| Model Loading | fastgltf       | Implemented   |
+| Physics       | Box3D          | Planned       |
+| Audio         | OpenAL Soft    | Planned       |
+| Animation     | ozz-animation  | Planned / WIP |
+| Build System  | CMake + Ninja / Visual Studio (via CMake Presets) | —             |
 
 ---
 
@@ -57,6 +64,8 @@ sudo apt install cmake ninja-build clang-format vulkan-tools libvulkan-dev
 
 ## Building
 
+The project uses [CMake Presets](CMakePresets.json) to configure builds, so you don't need to pass generator/architecture flags manually — the right preset picks those up for your platform.
+
 ```bash
 # Clone with submodules
 git clone --recursive https://github.com/curloz123/curloz-engine.git
@@ -65,177 +74,23 @@ cd curloz-engine
 # If you forgot --recursive
 git submodule update --init --recursive
 
-# Configure and build
-cmake -B build/debug -G Ninja
-cmake --build build/debug
+# List available presets
+cmake --list-presets
+
+# Configure (pick the preset for your platform)
+cmake --preset "Linux EngineDebug"      # Linux
+cmake --preset "Windows x64"            # Windows
+
+# Build (pick the matching build preset)
+cmake --build --preset "Linux EngineDebug"
 ```
 
-Binary lands at `build/debug/CurlozEngine`.
+Available configure presets: `Windows x64` (Windows) and `Linux EngineDebug` / `Linux EngineRelease` / `Linux GameDebug` / `Linux GameRelease` (Linux). Build presets mirror these, with `Windows EngineDebug` / `Windows EngineRelease` / `Windows GameDebug` / `Windows GameRelease` selecting the configuration under the Windows configure preset.
 
----
+- **Engine** builds target engine development; **Game** builds target the shipped game itself.
+- Linux binaries land at `build/linux/<preset-name>/`; Windows binaries land at `build/win/Windows x64/<configuration>/`.
 
-## Build Troubleshooting
-
-If configuration or compilation fails, check the following common setup issues before opening a new issue.
-
-### Vulkan SDK is not detected
-
-The project uses CMake's Vulkan package discovery during configuration. If CMake reports that Vulkan could not be found, first verify that the Vulkan SDK and tools are available on your system.
-
-Check whether the Vulkan tools are accessible from the terminal:
-
-```bash
-vulkaninfo --summary
-```
-
-If the command is not found, verify that the Vulkan SDK is installed and that its tools are available through the system `PATH`.
-
-On Windows, verify that the Vulkan SDK environment variable is set:
-
-```powershell
-echo $env:VULKAN_SDK
-```
-
-The command should print the path to the installed Vulkan SDK. If it is empty, verify the SDK installation and environment configuration, then restart the terminal before running CMake again.
-
-After correcting the SDK setup, remove the previous build directory and configure the project again:
-
-```bash
-cmake -E remove_directory build/debug
-cmake -B build/debug -G Ninja
-```
-
-### CMake or Ninja is not available
-
-Verify that the required build tools are installed and accessible from the command line:
-
-```bash
-cmake --version
-ninja --version
-```
-
-The project requires CMake 3.25 or newer. If either command is not found, install the missing tool and reopen the terminal before configuring the project again.
-
-### CMake generator mismatch
-
-The documented build commands use the Ninja generator:
-
-```bash
-cmake -B build/debug -G Ninja
-cmake --build build/debug
-```
-
-A CMake build directory remembers the generator used when it was first configured. Reusing the same directory with a different generator may produce a generator mismatch error.
-
-Remove the existing build directory before configuring it again with Ninja:
-
-```bash
-cmake -E remove_directory build/debug
-cmake -B build/debug -G Ninja
-cmake --build build/debug
-```
-
-### Git submodules are missing or not initialized
-
-The project uses Git submodules for third-party dependencies stored under the `external/` directory. If CMake reports missing source directories, missing `CMakeLists.txt` files, or errors while adding external libraries, verify that all submodules have been initialized.
-
-Check the current submodule status:
-
-```bash
-git submodule status
-```
-
-If a submodule has not been initialized, its status may be prefixed with `-`.
-
-Initialize and update all submodules recursively:
-
-```bash
-git submodule update --init --recursive
-```
-
-If the repository was cloned without submodules, the same command can be run from the repository root after cloning.
-
-Alternatively, clone the repository and initialize submodules in one step:
-
-```bash
-git clone --recursive https://github.com/curloz123/curloz-engine.git
-cd curloz-engine
-```
-
-If submodule URLs or references appear out of sync, synchronize them before updating:
-
-```bash
-git submodule sync --recursive
-git submodule update --init --recursive
-```
-
-After restoring the submodules, remove the previous build directory and configure the project again:
-
-```bash
-cmake -E remove_directory build/debug
-cmake -B build/debug -G Ninja
-cmake --build build/debug
-```
-
-### Compiler does not support the required C++ standard
-
-Curloz Engine is configured to use C++23. Configuration or compilation may fail when the selected compiler does not support the required language features or when CMake selects a different compiler than expected.
-
-For a stable build, use one of the following minimum compiler versions:
-
-- GCC 13 or newer
-- Clang 17 or newer
-- MSVC 19.38 or newer, included with Visual Studio 2022 version 17.8 or newer
-
-Check the active compiler version before configuring the project.
-
-For GCC:
-
-```bash
-g++ --version
-```
-
-For Clang:
-
-```bash
-clang++ --version
-```
-
-For MSVC, open a Visual Studio Developer Command Prompt and run:
-
-```powershell
-cl
-```
-
-If multiple compilers are installed, CMake may select a compiler different from the one you intended to use.
-
-To explicitly configure with GCC:
-
-```bash
-cmake -B build/debug -G Ninja \
-  -DCMAKE_C_COMPILER=gcc \
-  -DCMAKE_CXX_COMPILER=g++
-```
-
-To explicitly configure with Clang:
-
-```bash
-cmake -B build/debug -G Ninja \
-  -DCMAKE_C_COMPILER=clang \
-  -DCMAKE_CXX_COMPILER=clang++
-```
-
-When switching compilers, do not reuse an existing configured build directory. Remove it before running CMake again:
-
-```bash
-cmake -E remove_directory build/debug
-cmake -B build/debug -G Ninja
-cmake --build build/debug
-```
-
-If compilation still fails, verify that the selected compiler has suitable C++23 support and that CMake is detecting the intended compiler during configuration.
-
----
+Having build issues? See [docs/CONTRIBUTING.md](CONTRIBUTING.md) for troubleshooting (Vulkan SDK detection, missing submodules, compiler mismatches, and more).
 
 ## Project Structure
 
@@ -247,11 +102,42 @@ curloz-engine/
 ├── assets/             # Models, textures, audio
 ├── external/           # Git submodules (do not modify manually)
 ├── core/               # Utility functions, basically helpers used in entire engine
+├── docs/               # Additional documentation (build troubleshooting, images, etc.)
 ├── .clang-format       # clang-format configuration
 ├── .editorconfig       # editorconfig configuration
 ├── CMakeLists.txt      # CMake build configuration
+├── CMakePresets.json   # Platform/config build presets
 └── LICENSE             # License file
 ```
+
+---
+
+## Roadmap
+
+* [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector
+* [ ] Box3D physics integration
+* [ ] OpenAL Soft audio system
+* [ ] ozz-animation skeletal animation support
+* [ ] Editor UI improvements
+
+<!-- Add/reorder items as priorities shift — a single-item to-do reads as stale, so keep this list populated. -->
+
+---
+
+## Gallery
+
+![Revolver](gallery/gun.png)
+[Revolver Black Rose](https://sketchfab.com/3d-models/revolver-black-rose-44448687a44d45afb67ed5882edde3b4) by [@SGTIncogniTO](https://sketchfab.com/SGTIncogniTO).
+
+![Intel's Sponza](gallery/intel_sponza.png)
+[Sponza](https://www.intel.com/content/www/us/en/developer/topic-technology/graphics-research/samples.html) by Intel.
+
+![Emissive Strength Test](gallery/emission_test.png)
+[Emissive Strength Test](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/EmissiveStrengthTest) from Khronos Group / glTF-Sample-Assets.
+
+![Thanos's Infinity Sword](gallery/sword.png)
+[Thanos's Infinity Sword](https://sketchfab.com/3d-models/thanos-infinity-sword-with-emission-43cb592807f34a77b97e8e81466456e8) by [@ikhlasfathoni](https://sketchfab.com/ikhlasfathoni).
+
 
 ---
 
@@ -259,13 +145,9 @@ curloz-engine/
 
 Contributors are always welcome! If you feel there is any issue, or think there's something that can either be added or be better, feel free to open an issue or submit a pull request.
 
-If you think can handle a subsystem for long term, feel free to approach and it will be assigned to you.
+If you think you can handle a subsystem for the long term, reach out and it will be assigned to you.
 
-### To-Do
-
-* Display model component's Node->Mesh->Primitives hierarchy in editor's inspector
-
-For More details, see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
