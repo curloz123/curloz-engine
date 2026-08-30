@@ -1,3 +1,8 @@
+/**
+ * @file bloom_sample.cpp
+ * @author curl0z
+ * @brief Bloom post process texture sampling implementation
+ */
 #include "core/logs.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
@@ -10,6 +15,7 @@
 
 namespace clz::renderer::post_process
 {
+	/// @copydoc createBloomSampleProcess
 	bool createBloomSampleProcess()
 	{
 		if (!createImage(
@@ -93,6 +99,7 @@ namespace clz::renderer::post_process
 		return true;
 	}
 
+	/// @copydoc destroyBloomProcess
 	void destroyBloomSampleProcess()
 	{
 		vkDestroySampler(r_deviceContext.device, bloomSampleSampler, nullptr);
@@ -101,6 +108,7 @@ namespace clz::renderer::post_process
 		vkFreeMemory(r_deviceContext.device, bloomSampleImageMemory, nullptr);
 	}
 
+	/// @copydoc applyBloomSampleProcess
 	void applyBloomSampleProcess(VkCommandBuffer commandBuffer)
 	{
 		transition_image_layout(

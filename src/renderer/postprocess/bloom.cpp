@@ -1,3 +1,8 @@
+/**
+ * @file bloom.cpp
+ * @author curl0z
+ * @brief Bloom post process implementation file
+ */
 #include "renderer/postprocess/bloom.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
@@ -9,9 +14,11 @@
 #include "core/logs.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/utility/namer.hpp"
+#include "renderer/config.hpp"
 
 namespace clz::renderer::post_process
 {
+	/// @copydoc createBloomProcess
 	bool createBloomProcess()
 	{
 		const uint32_t width = std::max(r_renderTargetContext.imageExtent.width, 1u);
@@ -126,10 +133,15 @@ namespace clz::renderer::post_process
 			return false;
 		}
 
+		// retrieve back data from config
+		setBloomStrength(bloomStrengthFromConfig());
+		setFilterRadius(bloomFilterRadiusFromConfig());
+
 		clz::log::info("Created bloom post-process");
 		return true;
 	}
 
+	/// @copydoc destroyBloomProcess
 	void destroyBloomProcess()
 	{
 		vkDestroySampler(r_deviceContext.device, bloomSampler, nullptr);
@@ -141,6 +153,7 @@ namespace clz::renderer::post_process
 		}
 	}
 
+	/// @copydoc applyBloomProcess
 	void applyBloomProcess(VkCommandBuffer commandBuffer)
 	{
 		auto performBloom = 

@@ -21,14 +21,13 @@
 #include "renderer/rendercomponent.hpp"
 #include "renderer/vk_types.hpp"
 #include "core/time.hpp"
-#include <GLFW/glfw3.h>
 
 namespace clz::renderer
 {
 	/// @copydoc loadModel
 	std::expected<ModelId, std::string> loadModel(const std::filesystem::path& filePath)
 	{
-		auto timethen = glfwGetTime();
+		auto timethen = time::getTotalElapsedTime();
 		const ModelId Id = ModelLUT.size();
 		ModelLUT.resize(ModelLUT.size() + 1);
 		TextureCaches.resize(TextureCaches.size() + 1);
@@ -79,7 +78,7 @@ namespace clz::renderer
 		ModelLUT[Id] = std::move(ourModel);
 		TextureCaches[Id].clear();
 
-		auto timenow = glfwGetTime();
+		auto timenow = time::getTotalElapsedTime();
 		clz::log::debug("Time took to load: " + filePath.string() + " : " + std::to_string(timenow - timethen) + "sec");
 		return Id;
 	}
@@ -353,7 +352,6 @@ namespace clz::renderer
 				{
 					primitiveData.attributes[i].uv = {0.0f, 0.0f};
 				}
-				clz::log::warn("mesh has no textures");
 			}
 			// --- Extract Normals ---
 			const auto& normalIt = primitive.findAttribute("NORMAL");
@@ -808,7 +806,6 @@ namespace clz::renderer
 		ourPrimitive.normalTextureId = r_NULL_TEXTURE;
 		if (!lookupKey.has_value())
 		{
-			clz::log::warn("no textures registered");
 			return ourPrimitive;
 		}
 

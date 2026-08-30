@@ -358,19 +358,18 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = pushConstant.color;
+	outColor = pushConstant.color;
 
-    if (pushConstant.shape == 0 || pushConstant.shape == 1)
-    {
-        gl_Position = pushConstant.mvp * vec4(cubeVertices[gl_VertexIndex], 1.0);
-        return;
-    }
-
-    if (pushConstant.shape == 2)
-    {
-        gl_Position = pushConstant.mvp * vec4(sphereVertices[gl_VertexIndex], 1.0);
-        return;
-    }
+	if (pushConstant.shape == 0 || pushConstant.shape == 1)
+	{
+		gl_Position = pushConstant.mvp * vec4(cubeVertices[gl_VertexIndex], 1.0);
+		return;
+	}
+	if (pushConstant.shape == 2)
+	{
+		gl_Position = pushConstant.mvp * vec4(sphereVertices[gl_VertexIndex], 1.0);
+		return;
+	}
 }
 
 

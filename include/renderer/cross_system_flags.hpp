@@ -6,16 +6,9 @@
 #pragma once
 
 #include "renderer.hpp"
-#include "vk_types.hpp"
-#include "context/render_target_context.hpp"
-#include "context/swapchaincontext.hpp"
-#include "renderer/camera/camera.hpp"
-#include "core/enginestate.hpp"
-#include "pipelinedata/post_process.hpp"
-#include "postprocess/post_process.hpp"
 #include "core/logs.hpp"
-#include "include/sceneview.hpp""
 #include "window/mouse.hpp"
+#include "core/enginestate.hpp"
 
 namespace clz::renderer
 {

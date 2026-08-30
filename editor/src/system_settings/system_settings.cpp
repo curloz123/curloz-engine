@@ -5,14 +5,18 @@ namespace clz::editor
 {
 	void showSystemSettings()
 	{
-		if (!ImGui::Begin("System Settings"))
+		if (!ImGui::Begin("System Settings Window"))
+		{
+			ImGui::End();
 			return;
+		}
 
-		if (ImGui::BeginTabBar("System Settings"))
+		if (ImGui::BeginTabBar("System Settings Tab bar"))
 		{
 			showRenderSystemSettings();
 			ImGui::EndTabBar();
 		}
+
 
 		ImGui::End();
 	}

@@ -19,74 +19,127 @@
 
 #include <string>
 #include <toml++/toml.hpp>
+#include "core/logs.hpp"
 
 namespace clz::config
 {
+	/// @brief Parsed TOML configuration table.
+	inline toml::table cfg_config;
+
 	/**
 	 * @brief Loads and parses config/engine.toml.
 	 *
 	 * Must be called before any getter. Logs an error and returns
 	 * early if the file is missing or malformed.
 	 */
-	void init();
+	bool init();
 
 	/**
-	 * @brief Reads an integer value from the config.
-	 * @param section TOML section name (e.g. "window").
-	 * @param key     Key within the section (e.g. "width").
-	 * @param defaultVal Value returned if section or key is missing.
-	 * @return The integer value or defaultVal.
+	 * @brief You can make any changes mid-run
+	 * All the changes will be written back to the config
+	 * @note Changes have to be manually saved by calling the write function by you,
+	 * we ain't doing anything ourselves
 	 */
-	int getInt(
-			std::string_view section, 
-			std::string_view key, 
-			int defaultVal);
+	void shutdown();
 
-	/**
-	 * @brief Reads a float value from the config.
-	 * @param section TOML section name.
-	 * @param key     Key within the section.
-	 * @param defaultVal Value returned if section or key is missing.
-	 * @return The float value or defaultVal.
-	 */
-	float getFloat(
-			std::string_view section, 
-			std::string_view key, 
-			float defaultVal);
+	template<typename T>
+	T getValue(
+		std::string_view section,
+		std::string_view key,
+		const T& defaultVal
+	)
+	{
+		const auto node = cfg_config[section][key];
+		if (!node)
+		{
+			clz::log::warn(
+				"Config value not found: " + 
+				std::string(section) +  "[" + std::string(key) + "]"
+			);
+			return defaultVal;
+		}
 
-	/**
-	 * @brief Reads a boolean value from the config.
-	 * @param section TOML section name.
-	 * @param key     Key within the section.
-	 * @param defaultVal Value returned if section or key is missing.
-	 * @return The bool value or defaultVal.
-	 */
-	bool getBool(
-			std::string_view section, 
-			std::string_view key, 
-			bool defaultVal);
+		if (const auto value = node.value<T>(); value.has_value())
+			return value.value();
 
-	/**
-	 * @brief Reads a string value from the config.
-	 * @param section TOML section name.
-	 * @param key     Key within the section.
-	 * @param defaultVal Value returned if section or key is missing.
-	 * @return The string value or defaultVal.
-	 */
-	std::string getString(
-			std::string_view section, 
-			std::string_view key, 
-			std::string_view defaultVal);
+		clz::log::warn(
+			"some error happened while parsing: " + 
+			std::string(section) + "[" + std::string(key) + "]" + 
+			"\nMaybe you queried this value via wrong data type??"
+		);
+		return defaultVal;
+	}
 
-	/**
-	 * @brief Returns application name
-	 * @return returns application name from config.
-	 */
-	std::string getAppName();
+	template<typename T>
+	void writeValue(
+		std::string_view section,
+		std::string_view key,
+		const T& value
+	)
+	{
+		toml::table* sec = cfg_config[section].as_table();
+		if (!sec)
+		{
+			cfg_config.insert_or_assign(section, toml::table{});
+			sec = cfg_config[section].as_table();
+		}
+		sec->insert_or_assign(key, value);
+	}
 
-	/**
-	 * @brief Logs the engine version from config as major.minor.patch.
-	 */
-	void printAppVersion();
+	template<typename T>
+	T getValue(
+		std::string_view section,
+		std::string_view subSection,
+		std::string_view key,
+		const T& defaultVal
+	)
+	{
+		const auto node = cfg_config[section][subSection][key];
+		if (!node)
+		{
+			clz::log::warn(
+				"Config value not found: " + 
+				std::string(section) +  "." + std::string(subSection) + 
+				"[" + std::string(key) + "]"
+			);
+			return defaultVal;
+		}
+
+		if (const auto value = node.value<T>(); value.has_value())
+			return value.value();
+
+		clz::log::warn(
+			"some error happened while parsing: " + 
+			std::string(section) +  "." + std::string(subSection) + 
+			"[" + std::string(key) + "]"
+			"\nMaybe you queried this value via wrong data type??"
+		);
+		return defaultVal;
+		
+	}
+	template<typename T>
+	void writeValue(
+		std::string_view section,
+		std::string_view subSection,
+		std::string_view key,
+		const T& value
+	)
+	{
+		toml::table* sec = cfg_config[section].as_table();
+		if (!sec)
+		{
+			cfg_config.insert_or_assign(section, toml::table{});
+			sec = cfg_config[section].as_table();
+		}
+
+		toml::table* sub = (*sec)[subSection].as_table();
+		if (!sub)
+		{
+			sec->insert_or_assign(section, toml::table{});
+			sub = (*sec)[subSection].as_table();
+
+		}
+		sub->insert_or_assign(key, value);
+	}
 
 } // namespace clz::config

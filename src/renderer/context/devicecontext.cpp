@@ -27,7 +27,7 @@ namespace clz::renderer
 #endif
 
 	constexpr auto r_debugExtensionName = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-	constexpr auto r_validationLayers = "VK_LAYER_KHRONOS_validation";
+	constexpr auto r_validationLayers   = "VK_LAYER_KHRONOS_validation";
 	constexpr std::array<const char*, 1> r_requiredDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
@@ -104,16 +104,16 @@ namespace clz::renderer
 		std::vector<VkExtensionProperties> availableExtensions(count);
 		vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensions.data());
 
-		for (auto requiredExtension : rRequiredExtensions)
+		for (const auto& requiredExtension : rRequiredExtensions)
 		{
 			const bool found = std::ranges::any_of(
 				availableExtensions.begin(),
 				availableExtensions.end(),
-				[&](auto& availableExtension) {
+				[requiredExtension](const auto& availableExtension) 
+				{
 					return std::strcmp(
-						       availableExtension.extensionName,
-						       requiredExtension
-					       ) == 0;
+							availableExtension.extensionName,
+						      	requiredExtension) == 0;
 				}
 			);
 			if (!found)
@@ -131,8 +131,6 @@ namespace clz::renderer
 
 	bool getValidationLayers(std::vector<const char*>& rValidationLayers)
 	{
-		// rValidationLayers = {"VK_LAYER_KHRONOS_validation"};
-
 		uint32_t layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 		std::vector<VkLayerProperties> availableLayers(layerCount);
@@ -166,13 +164,13 @@ namespace clz::renderer
 		// Define which type of object is this
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		// Name of our application
-		const std::string appName = clz::config::getAppName();
+		const std::string appName = clz::config::getValue<std::string>("engine", "name", "Curloz Engine");
 		appInfo.pApplicationName = appName.c_str();
 		// Our application's version
 		appInfo.applicationVersion = VK_MAKE_VERSION(
-			clz::config::getInt("engine", "version_major", 0),
-			clz::config::getInt("engine", "version_minor", 0),
-			clz::config::getInt("engine", "version_patch", 0)
+			clz::config::getValue<int>("engine", "version_major", 0),
+			clz::config::getValue<int>("engine", "version_minor", 0),
+			clz::config::getValue<int>("engine", "version_patch", 0)
 		);
 
 		// Our application's name
@@ -268,13 +266,13 @@ namespace clz::renderer
 			return true;
 
 		VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
-		messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-						VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-						VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		messengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-					    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-					    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		messengerInfo.sType 		= VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		messengerInfo.messageSeverity 	= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+							VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+							VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		messengerInfo.messageType 	= VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+					    		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+					    		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		messengerInfo.pfnUserCallback = printMessage;
 		messengerInfo.pUserData = nullptr; // Optional
 

@@ -14,6 +14,7 @@
 
 namespace clz::renderer
 {
+	/// @copydoc createBuffer
 	bool createBuffer(
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory,
@@ -56,6 +57,7 @@ namespace clz::renderer
 		return true;
 	}
 
+	/// @copydoc copyBuffer
 	bool copyBuffer(
 		const VkBuffer srcBuffer,
 		const VkBuffer dstBuffer,

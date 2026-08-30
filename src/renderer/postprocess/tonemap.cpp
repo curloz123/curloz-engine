@@ -1,5 +1,11 @@
+/**
+ * @file tonemap.cpp
+ * @author curl0z
+ * @brief Applies tonemapping to the render target
+ */
 #include "renderer/postprocess/tonemap.hpp"
 #include "core/logs.hpp"
+#include "renderer/config.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
@@ -9,6 +15,7 @@
 
 namespace clz::renderer::post_process
 {
+	/// @copydoc createTonemapProcess
 	bool createTonemapProcess()
 	{
 		if (!createImage(
@@ -112,10 +119,14 @@ namespace clz::renderer::post_process
 			"tonemap sampler"
 		);
 
+		// get back config data
+		setExposure(exposureFromConfig());
+
 		clz::log::info("Created tonemap process resources");
 		return true;
 	}
 
+	/// @copydoc destroyTonemapProcess
 	void destroyTonemapProcess()
 	{
 		vkDestroySampler(r_deviceContext.device, tonemapSampler, nullptr);
@@ -124,6 +135,7 @@ namespace clz::renderer::post_process
 		vkFreeMemory(r_deviceContext.device, tonemapMemory, nullptr);
 	}
 
+	/// @copydoc applyTonemapProcess
 	void applyTonemapProcess(VkCommandBuffer commandBuffer)
 	{
 		transition_image_layout(

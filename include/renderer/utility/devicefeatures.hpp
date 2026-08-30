@@ -117,4 +117,33 @@ namespace clz::renderer
 
                 return VK_SAMPLE_COUNT_1_BIT;
         }
+        /**
+         * @brief Converts VkSampleCountFlagBits to integer sample count
+         * 
+         * @param Vulkan's msaa sample flag bits
+         * @return The corresponding MSAA integer value
+         */
+        inline uint32_t getIntFromMsaaFlagBits(VkSampleCountFlagBits msaaFlagBits)
+        {
+                switch(msaaFlagBits)
+                {
+		case VK_SAMPLE_COUNT_1_BIT:
+			return 1;
+		case VK_SAMPLE_COUNT_2_BIT:
+			return 2;
+		case VK_SAMPLE_COUNT_4_BIT:
+			return 4;
+		case VK_SAMPLE_COUNT_8_BIT:
+			return 8;
+		case VK_SAMPLE_COUNT_16_BIT:
+			return 16;
+		case VK_SAMPLE_COUNT_32_BIT:
+			return 32;
+                default:
+                        clz::log::warn("Vulkan Msaa invalid flag bits sent, returning 1 bit flag");
+                }
+
+                return 1;
+        }
+
 } // namespace clz::renderer

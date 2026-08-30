@@ -4,33 +4,38 @@
  * @brief Loads model component of an entity
  */
 
+#include "core/logs.hpp"
 #include "renderer/rendercomponent.hpp"
 #include "scene/entity/loader.hpp"
 
 namespace clz::scene
 {
-	/// @brief Retrieves Model component of any entity.
-	/// @param path of entity's model
-	/// @return ModelComponent of given entity
-	/// @note will return NULL_ASSET if renderer could not load model
-	/// and log an error
-	renderer::ModelComponent retrieveModelComponent(const std::filesystem::path& path)
+	/// @copydoc retrieveModelComponent
+	renderer::ModelComponent retrieveModelComponent(
+			const std::filesystem::path& path,
+			std::string_view entityName)
 	{
 		const renderer::ModelComponent modelComponent =
 			renderer::createModelComponent(path);
 		if (modelComponent.modelId == renderer::NULL_MODEL)
 		{
-			clz::log::error("Could not load model component");
+			clz::log::error(
+				"Could not load model component for entity: " + 
+				std::string(entityName)
+			);
 		}
 
 		return modelComponent;
 	}
 
-	/// @brief Saves model component of any entity.
-	/// @param mc modelComponent of given entity
-	/// @param componentData JSON index of entity
-	void saveModelComponent(const renderer::ModelComponent& mc, nlohmann::json& componentData)
+	/// @copydoc saveModelComponent
+	void saveModelComponent(
+			const renderer::ModelComponent& mc,
+			nlohmann::json& componentData,
+			std::string_view entityName)
 	{
 		componentData["path"] = renderer::getModelPath(mc.modelId);
+
+		clz::log::info("Saved model component for entity: " + std::string(entityName));
 	}
 } // namespace clz::scene

@@ -1,7 +1,13 @@
+/**
+ * @file post_tonemap.cpp
+ * @author curl0z
+ * @brief Implements all 'minor' post proceses prior to tonemapping.
+ * Example vignette, chromatic aberration etc..
+ */
 #include "renderer/postprocess/post_tonemap.hpp"
-
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
+#include "renderer/config.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
@@ -15,6 +21,7 @@
 
 namespace clz::renderer::post_process
 {
+	/// @copydoc createPostTonemapProcess
 	bool createPostTonemapProcess()
 	{
 		if (!createImage(
@@ -93,10 +100,14 @@ namespace clz::renderer::post_process
 			return false;
 		}
 
+		// get back config data
+		setChromaticAberrationStrength(chromaticAberrationFromConfig());
+		setVignette(vignetteNearFromConfig(), vignetteEndFromConfig());
 		clz::log::info("Created post-tonemap post process resources");
 		return true;
 	}
 
+	/// @copydoc destroyPostTonemapProcess
 	void destroyPostTonemapProcess()
 	{
 		vkDestroySampler(r_deviceContext.device, postTonemapSampler, nullptr);
@@ -105,6 +116,7 @@ namespace clz::renderer::post_process
 		vkFreeMemory(r_deviceContext.device, postTonemapMemory, nullptr);
 	}
 
+	/// @copydoc applyPostTonemapProcess
 	void applyPostTonemapProcess(VkCommandBuffer commandBuffer)
 	{
 		transition_image_layout(

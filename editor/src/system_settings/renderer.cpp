@@ -16,17 +16,20 @@ namespace clz::editor
 	void showRenderSystemSettings()
 	{
 		ImGui::PushFont(fontMonoBold);
-		if (!ImGui::BeginTabItem("Renderer"))
+		if (ImGui::BeginTabItem("Renderer"))
 		{
 			ImGui::PopFont();
+
+
+			showPostProcessSettings();
+
+
 			ImGui::EndTabItem();
-			return;
 		}
-		ImGui::PopFont();
-
-		showPostProcessSettings();
-
-		ImGui::EndTabItem();
+		else
+		{
+			ImGui::PopFont();
+		}
 	}
 }
 namespace
@@ -180,7 +183,7 @@ namespace
 				[oldFilterRadius]()
 				{
 					clz::renderer::post_process::setFilterRadius(
-						prevFilterRadius
+						oldFilterRadius
 					);
 				},
 				[newFilterRadius]()

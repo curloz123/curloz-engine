@@ -8,24 +8,32 @@ layout(location = 1) in vec2 inUV;
 
 layout(push_constant) uniform PushConstants
 {
-    mat4 model;
-    uint textureIndex;
-} pushConstant;
+	mat4 model;
 
-layout(set = 0, binding = 0) uniform UniformBufferObject
+	vec4 baseColorFactor;
+	uint baseTextureIndex;
+	float metallicFactor;
+	float roughnessFactor;
+	uint metallic_roughnessTextureIndex;
+	vec3 emissiveFactor;
+	uint emissiveTextureIndex;
+	float emissiveStrength;
+	uint normalTextureIndex;
+} PC;
+
+
+layout(set = 0, binding = 0) uniform CameraUBO
 {
-    mat4 projection;
-    mat4 view;
-    vec4 cameraPos;
-} ubo;
+	mat4 projection;
+	mat4 view;
+	vec4 cameraPos;
+} cameraUBO;
 
 // Out's
 layout(location = 0) out vec2 outUV;
-layout(location = 1) flat out uint outTextureIndex;
 
 void main()
 {
-    gl_Position = ubo.projection * ubo.view * pushConstant.model * vec4(inPosition, 1.0);
-    outUV = inUV;
-    outTextureIndex = pushConstant.textureIndex;
+   	gl_Position = cameraUBO.projection * cameraUBO.view * PC.model * vec4(inPosition, 1.0);
+    	outUV = inUV;
 }

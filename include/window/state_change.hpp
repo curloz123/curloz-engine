@@ -20,7 +20,5 @@ namespace clz::window
 			static_cast<float>(cursorX),
 			static_cast<float>(cursorY));
 		cursorOffset = math::vec2(0.0f, 0.0f);
-
-
 	}
 }

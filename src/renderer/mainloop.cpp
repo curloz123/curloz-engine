@@ -94,7 +94,7 @@ namespace clz::renderer
 
 
 	/**
-	 * @brief MOST IMPORTANT PART OF VULKAN
+	 * @brief MOST IMPORTANT PART OF THE RENDERER
 	 * So, first off scene is rendered into the render target context through msaa or wtv
 	 * Then we proceed to apply post process into that image,
 	 * then we copy that back to final wherever we want.

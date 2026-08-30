@@ -13,15 +13,16 @@
 #include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
 #include <nlohmann/json.hpp>
+#include "window/mouse.hpp"
 
 namespace clz::renderer
 {
-
 	/// @copydoc
 	void processKeyBoardInput(const CameraId id)
 	{
 		auto dir = math::vec3(0.0f, 0.0f, 0.0f);
-		const float dt = time::getDeltaTime();
+		const float  dt = static_cast<float>(time::getDeltaTime());
+		clz::log::debug("dt in camera: " + std::to_string(dt));
 
 		if (window::isKeyPressed(input::Key::W))
 			dir += LocalFront[id];

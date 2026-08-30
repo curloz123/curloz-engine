@@ -34,15 +34,14 @@ namespace clz::scene
 		{
 			/// @brief Name is always retrieved first
 			ecs::entity e;
+			std::string entityName = "Unnamed Entity";
 			if (!entityData.contains("name"))
-			{
 				clz::log::warn("an entity is unnamed");
-				e = ecs::createEntity("Unnamed Entity");
-			}
 			else
-			{
-				e = ecs::createEntity(entityData["name"]);
-			}
+				entityName = entityData["name"];
+
+			e = ecs::createEntity(entityName);
+
 
 			// Attach TransformComponent, should be present on every entity
 			if (!entityData.contains("transform"))
@@ -68,7 +67,7 @@ namespace clz::scene
 			else
 			{
 				const auto transform =
-					retrieveTransformComponent(entityData["transform"]);
+					retrieveTransformComponent(entityData["transform"], entityName);
 				addComponent<ecs::TransformComponent>(e, transform);
 #ifdef CLZ_ENABLE_EDITOR
 				/// @brief If Editor is enabled,
@@ -85,14 +84,15 @@ namespace clz::scene
 			{
 				ecs::addComponent<renderer::ModelComponent>(
 					e,
-					retrieveModelComponent(entityData["model"]["path"])
+					retrieveModelComponent(entityData["model"]["path"], entityName)
 				);
 			}
 			// Attach Dir light Component if present
 			if (entityData.contains("directionallight"))
 			{
 				const auto result = retrieveDirectionalLightComponent(
-					entityData["directionallight"]
+					entityData["directionallight"],
+					entityName
 				);
 				if (!result)
 				{
@@ -111,7 +111,7 @@ namespace clz::scene
 			if (entityData.contains("pointlight"))
 			{
 				const auto result =
-					retrievePointLightComponent(entityData["pointlight"]);
+					retrievePointLightComponent(entityData["pointlight"], entityName);
 				if (!result)
 				{
 					clz::log::warn(result.error());
@@ -129,7 +129,7 @@ namespace clz::scene
 			// Attach physics Component if present
 			if (entityData.contains("rigidbody"))
 			{
-				auto body = retrieveBodyComponent(entityData["rigidbody"], e);
+				auto body = retrieveBodyComponent(entityData["rigidbody"], e, entityName);
 				ecs::addComponent<physics::RigidBodyComponent>(e, body);
 			}
 		}
@@ -150,14 +150,16 @@ namespace clz::scene
 		for (const auto& entity : ecs::entities)
 		{
 			nlohmann::json entityJson;
-			entityJson["name"] = ecs::getEntityName(entity);
+			std::string entityName = ecs::getEntityName(entity);
+			entityJson["name"] = entityName;
 
 			/// --- 1. Transform components ---
 			if (ecs::hasComponent<ecs::TransformComponent>(entity))
 			{
 				saveTransformComponent(
 					ecs::getComponent<ecs::TransformComponent>(entity),
-					entityJson["transform"]
+					entityJson["transform"],
+					entityName
 				);
 			}
 
@@ -166,7 +168,8 @@ namespace clz::scene
 			{
 				saveModelComponent(
 					ecs::getComponent<renderer::ModelComponent>(entity),
-					entityJson["model"]
+					entityJson["model"],
+					entityName
 				);
 			}
 			if (ecs::hasComponent<renderer::DirectionalLightComponent>(entity))
@@ -175,14 +178,16 @@ namespace clz::scene
 					ecs::getComponent<renderer::DirectionalLightComponent>(
 						entity
 					),
-					entityJson["directionallight"]
+					entityJson["directionallight"],
+					entityName
 				);
 			}
 			if (ecs::hasComponent<renderer::PointLightComponent>(entity))
 			{
 				savePointLightComponent(
 					ecs::getComponent<renderer::PointLightComponent>(entity),
-					entityJson["pointlight"]
+					entityJson["pointlight"],
+					entityName
 				);
 			}
 
@@ -191,7 +196,8 @@ namespace clz::scene
 			{
 				saveRigidBodyComponent(
 					ecs::getComponent<physics::RigidBodyComponent>(entity),
-					entityJson["rigidbody"]
+					entityJson["rigidbody"],
+					entityName
 				);
 			}
 			sceneJson["entities"].push_back(entityJson);

@@ -1,3 +1,10 @@
+/**
+ * @file post_process.cpp
+ * @author curl0z
+ * @brief Main post process implementation file
+ * Provides all the basic sub-system level functions
+ * @note assumes swapchain context has been initialized
+ */
 #include "renderer/pipelinedata/post_process.hpp"
 #include "core/logs.hpp"
 #include "renderer/postprocess/bloom.hpp"
@@ -5,9 +12,9 @@
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 
-// assumes swapchain context has been initialized
 namespace clz::renderer::post_process
 {
+	/// @copydoc initializePostProcesses
 	bool initializePostProcesses()
 	{
 		if (!createBloomSampleProcess())
@@ -38,6 +45,8 @@ namespace clz::renderer::post_process
 		clz::log::info("Initialized post process resources");
 		return true;
 	}
+
+	/// @copydoc destroyPostProcesses
 	void destroyPostProcesses()
 	{
 		destroyPostTonemapProcess();
@@ -46,6 +55,7 @@ namespace clz::renderer::post_process
 		destroyBloomSampleProcess();
 	}
 
+	/// @copydoc recreatePostProcesses
 	bool recreatePostProcesses()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
@@ -63,6 +73,7 @@ namespace clz::renderer::post_process
 		return true;
 	}
 
+	/// @copydoc applyPostProcessing
 	void applyPostProcessing(VkCommandBuffer commandBuffer)
 	{
 		applyBloomSampleProcess(commandBuffer);
@@ -71,6 +82,7 @@ namespace clz::renderer::post_process
 		applyPostTonemapProcess(commandBuffer);
 	}
 
+	/// @copydoc hintPostProcessStateChange
 	void hintPostProcessStateChange()
 	{
 		updatePostProcessDescriptorSets();

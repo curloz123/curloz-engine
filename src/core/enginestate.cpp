@@ -39,8 +39,7 @@ namespace clz::state
 			);
 			break;
 		default:
-			CLZ_ASSERT(
-				false,
+			clz::log::error(
 				"Unknown engine state called by: " + std::string(callerLocation)
 			);
 		}

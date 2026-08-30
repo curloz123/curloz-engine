@@ -1,3 +1,4 @@
+#include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
 #include "math/vec3.hpp"
 #include "renderer/lighting/lighting.hpp"
@@ -5,10 +6,11 @@
 
 namespace clz::scene
 {
-
 	/// @copydoc retrieveDirectionalLightComponent
 	std::expected<renderer::DirectionalLightComponent, std::string>
-	retrieveDirectionalLightComponent(const nlohmann::json& componentData)
+	retrieveDirectionalLightComponent(
+			const nlohmann::json& componentData,
+			std::string_view entityName)
 	{
 		math::vec3 direction;
 		{
@@ -21,9 +23,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"directional light does not have direction "
-					"component, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': directional "
+					"light does not have direction component, assigning it "
+					"default value"
 				);
 				direction = math::vec3(0.0f, -1.0f, 0.0f);
 			}
@@ -40,8 +42,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"color component does not have color, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': color "
+					"component does not have color, assigning it default "
+					"value"
 				);
 				color = math::vec3(1.0f);
 			}
@@ -56,9 +59,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"intensity component does not have intensity "
-					"component, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': intensity "
+					"component does not have intensity component, assigning "
+					"it default value"
 				);
 				intensity = 1.0f;
 			}
@@ -72,16 +75,17 @@ namespace clz::scene
 			{
 			case renderer::LightRegisterError::INVALID_PARAMETER:
 				clz::log::warn(
-					"directional light entry in JSON has invalid "
-					"parameters, "
-					"unless resolved, directional light will be disabled"
+					"entity '" + std::string(entityName) + "': directional "
+					"light entry in JSON has invalid parameters, unless "
+					"resolved, directional light will be disabled"
 				);
 				break;
 
 			case renderer::LightRegisterError::LIMIT_EXCEEDED:
 				clz::log::warn(
-					"MAX LIMIT reached for directional lights, "
-					"cannot add further lights"
+					"entity '" + std::string(entityName) + "': MAX LIMIT "
+					"reached for directional lights, cannot add further "
+					"lights"
 				);
 				break;
 			}
@@ -96,7 +100,8 @@ namespace clz::scene
 	/// @copydoc saveDirectionalLightComponent
 	void saveDirectionalLightComponent(
 		const renderer::DirectionalLightComponent& dlt,
-		nlohmann::json& componentData
+		nlohmann::json& componentData,
+		std::string_view entityName
 	)
 	{
 		const auto LightId = dlt.Id;
@@ -109,11 +114,18 @@ namespace clz::scene
 
 		const float intensity = renderer::getDirLightIntensity(LightId);
 		componentData["intensity"] = intensity;
+
+		clz::log::info(
+			"Saved directional light component for entity '" +
+			std::string(entityName) + "'"
+		);
 	}
 
 	/// @copydoc retrievePointLightComponent
 	std::expected<renderer::PointLightComponent, std::string>
-	retrievePointLightComponent(const nlohmann::json& componentData)
+	retrievePointLightComponent(
+			const nlohmann::json& componentData,
+			std::string_view entityName)
 	{
 		math::vec3 position;
 		{
@@ -126,8 +138,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point light does not have position field, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have position field, assigning it default "
+					"value"
 				);
 				position = math::vec3(0.0f, -1.0f, 0.0f);
 			}
@@ -141,8 +154,8 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point light does not have range, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have range, assigning it default value"
 				);
 				range = 10.0f;
 			}
@@ -158,8 +171,8 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point lightdoes not have color, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have color, assigning it default value"
 				);
 				color = math::vec3(1.0f);
 			}
@@ -173,8 +186,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point light does not have intensity component, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have intensity component, assigning it "
+					"default value"
 				);
 				intensity = 1.0f;
 			}
@@ -190,8 +204,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point light does not have attenuation component, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have attenuation component, assigning it "
+					"default value"
 				);
 				attenuation_linear = 0.09f;
 			}
@@ -204,8 +219,9 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"point light does not have attenuation component, "
-					"assigning it default value"
+					"entity '" + std::string(entityName) + "': point light "
+					"does not have attenuation component, assigning it "
+					"default value"
 				);
 				attenuation_quadratic = 0.032f;
 			}
@@ -226,15 +242,17 @@ namespace clz::scene
 			{
 			case renderer::LightRegisterError::INVALID_PARAMETER:
 				clz::log::warn(
-					"point light entry in JSON has invalid parameters, "
-					"unless resolved, this light will be disabled"
+					"entity '" + std::string(entityName) + "': point light "
+					"entry in JSON has invalid parameters, unless resolved, "
+					"this light will be disabled"
 				);
 				break;
 
 			case renderer::LightRegisterError::LIMIT_EXCEEDED:
 				clz::log::warn(
-					"MAX LIMIT was already reached for point lights, "
-					"cannot add further lights"
+					"entity '" + std::string(entityName) + "': MAX LIMIT "
+					"was already reached for point lights, cannot add "
+					"further lights"
 				);
 				break;
 			}
@@ -249,7 +267,8 @@ namespace clz::scene
 	/// @copydoc savePointLightComponent
 	void savePointLightComponent(
 		const renderer::PointLightComponent& plc,
-		nlohmann::json& componentData
+		nlohmann::json& componentData,
+		std::string_view entityName
 	)
 	{
 		const auto lightId = plc.Id;
@@ -266,6 +285,11 @@ namespace clz::scene
 			renderer::getPointLightLinearAttenuation(lightId);
 		componentData["attenuationquadratic"] =
 			renderer::getPointLightQuadraticAttenuation(lightId);
+
+		clz::log::info(
+			"Saved point light component for entity '" +
+			std::string(entityName) + "'"
+		);
 	}
 
 } // namespace clz::scene

@@ -27,7 +27,7 @@ namespace clz::physics
 		// No multithreading for now
 		p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
 		worldDef.gravity = p_gravity;
-		worldDef.enableSleep = config::getBool("physics", "enablesleep", false);
+		worldDef.enableSleep = config::getValue<bool>("physics", "enablesleep", false);
 		p_world = b3CreateWorld(&worldDef);
 		if (B3_IS_NULL(p_world))
 		{
@@ -35,8 +35,8 @@ namespace clz::physics
 			return false;
 		}
 
-		p_timeStep = config::getFloat("physics", "timestep", 0.0167f);
-		p_subStepCount = config::getInt("physics", "substepcount", 4);
+		p_timeStep = config::getValue<float>("physics", "timestep", 0.0167f);
+		p_subStepCount = config::getValue<int>("physics", "substepcount", 4);
 		p_accumulator = 0.0f;
 
 		clz::log::info("Created physics world");

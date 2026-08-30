@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include "assert.hpp"
 #include "string_view"
-
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/editor.hpp"

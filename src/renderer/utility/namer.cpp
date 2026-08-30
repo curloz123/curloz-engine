@@ -4,8 +4,10 @@
 
 namespace clz::renderer
 {
+	///< @brief Vulkan's inbuilt pointer to object namer function
 	static PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT = nullptr;
 
+	/// @copydoc setHandleName
 	void setHandleName(const uint64_t handle, const VkObjectType objectType, const char* name)
 	{
 #ifdef CLZ_DEBUG

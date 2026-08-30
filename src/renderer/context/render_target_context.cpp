@@ -6,6 +6,7 @@
 #include "renderer/context/render_target_context.hpp"
 #include "config/config.hpp"
 #include "core/logs.hpp"
+#include "renderer/config.hpp"
 #include "renderer/utility/devicefeatures.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/namer.hpp"
@@ -97,8 +98,7 @@ namespace clz::renderer
 		r_renderTargetContext.imageExtent.width = width;
 		r_renderTargetContext.imageExtent.height = height;
 
-		uint32_t msaaValue = clz::config::getInt("renderer", "msaa", 1);
-		r_renderTargetContext.msaaFlagBits = getMsaaFlagBitsFromInt(msaaValue);
+		r_renderTargetContext.msaaFlagBits = getMSAAFromConfig();
 
 		if (!createImage(
 			r_renderTargetContext.image,

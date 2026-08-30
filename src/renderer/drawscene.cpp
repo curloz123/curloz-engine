@@ -14,14 +14,13 @@
 #include "renderer/pipelinedata/lights.hpp"
 #include "renderer/pipelinedata/texture.hpp"
 #include "renderer/vk_types.hpp"
-
 #include <array>
 
-// #ifdef CLZ_ENABLE_EDITOR
+#ifdef CLZ_ENABLE_EDITOR
 #include "include/offscreen/offscreentarget.hpp"
 #include "include/sceneview.hpp"
 #include "renderer/camera/camerafunctions.hpp"
-// #endif
+#endif
 
 namespace clz::renderer
 {
@@ -31,7 +30,7 @@ namespace clz::renderer
 		CameraId activeCameraId = NULL_CAMERA;
 		CameraShaderUBO cameraShaderUBO;
 
-// #ifdef CLZ_ENABLE_EDITOR
+#ifdef CLZ_ENABLE_EDITOR
 		if (clz::state::g_engineState == clz::state::EngineState::Editor)
 		{
 			// editor handles camera updating itself
@@ -48,7 +47,7 @@ namespace clz::renderer
 			};
 		}
 		else
-// #endif
+#endif
 		/// --- This part is an if-else block when editor is enabled ---
 		/// --- In main binary, its the only part ---
 		{

@@ -5,6 +5,7 @@
 
 namespace clz::renderer
 {
+	/// @copydoc startSingleTimeCommand
 	VkCommandBuffer startSingleTimeCommand()
 	{
 		VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
@@ -31,6 +32,8 @@ namespace clz::renderer
 
 		return commandBuffer;
 	}
+
+	/// @copydoc submitSingleTimeCommand
 	void submitSingleTimeCommand(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);

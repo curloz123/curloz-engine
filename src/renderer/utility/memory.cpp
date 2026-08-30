@@ -12,6 +12,7 @@
 
 namespace clz::renderer
 {
+	/// @copydoc findMemoryType
 	uint32_t findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;

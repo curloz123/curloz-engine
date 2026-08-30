@@ -181,7 +181,6 @@ void main()
 	{
 		emissiveColor = texture(textures[PC.emissiveTextureIndex], inUV).rgb * 
 				PC.emissiveFactor * PC.emissiveStrength;	
-		/* emissiveColor = vec3(27.0); */
 	}
 	else
 	{

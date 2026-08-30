@@ -23,16 +23,16 @@
 
 namespace clz::scene
 {
-	/// @brief Loads all body and shapes from JSON
-	/// @param physicsTable Physics table in JSON file
-	/// @param entity Entity for which we are creating this entity
-	/// @return Newly created physics::RigidBodyComponent
-	/// @note if a value is not present in JSON, will assign default value
+	/// @copydoc retrieveBodyComponent
 	physics::RigidBodyComponent
-	retrieveBodyComponent(const nlohmann::json& physicsTable, const ecs::entity& entity)
+	retrieveBodyComponent(
+			const nlohmann::json& physicsTable,
+			const ecs::entity& entity,
+			std::string_view entityName)
 	{
 		physics::BodyData data{};
 
+		if (physicsTable.contains("type"))
 		{
 			const auto type = physicsTable["type"].get<std::string>();
 			if (type == "static")
@@ -44,11 +44,21 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"entity entry does not specify physics:bodytype,"
-					"assigning it dynamic by default"
+					"entity '" + std::string(entityName) + "' does not "
+					"have a valid physics:bodytype, assigning it dynamic by "
+					"default"
 				);
 				data.type = physics::BodyType::DynamicBody;
 			}
+		}
+		else
+		{
+			clz::log::warn(
+				"entity '" + std::string(entityName) + "' does not "
+				"have physics:bodytype entry, assigning it dynamic by "
+				"default"
+			);
+			data.type = physics::BodyType::DynamicBody;
 		}
 
 		const auto& tc = ecs::getComponent<ecs::TransformComponent>(entity);
@@ -63,8 +73,8 @@ namespace clz::scene
 		else
 		{
 			clz::log::warn(
-				"entity entry does not specify physics:lineardamping, "
-				"assigning it 0 by default"
+				"entity '" + std::string(entityName) + "' does not specify "
+				"physics:lineardamping, assigning it 0 by default"
 			);
 			data.linearDamping = 0.0f;
 		}
@@ -76,8 +86,8 @@ namespace clz::scene
 		else
 		{
 			clz::log::warn(
-				"entity entry does not specify physics:angulardamping, "
-				"assigning it 0.1 by default"
+				"entity '" + std::string(entityName) + "' does not specify "
+				"physics:angulardamping, assigning it 0.1 by default"
 			);
 			data.angularDamping = 0.1f;
 		}
@@ -89,8 +99,8 @@ namespace clz::scene
 		else
 		{
 			clz::log::warn(
-				"entity entry does not specify physics:enablesleep, "
-				"assigning it true by default"
+				"entity '" + std::string(entityName) + "' does not specify "
+				"physics:enablesleep, assigning it true by default"
 			);
 			data.enableSleep = true;
 		}
@@ -106,8 +116,8 @@ namespace clz::scene
 		else
 		{
 			clz::log::warn(
-				"entity entry does not specify physics:linearlock, "
-				"assigning all axes unlocked by default"
+				"entity '" + std::string(entityName) + "' does not specify "
+				"physics:linearlock, assigning all axes unlocked by default"
 			);
 			data.linearLocks = {false, false, false};
 		}
@@ -123,8 +133,8 @@ namespace clz::scene
 		else
 		{
 			clz::log::warn(
-				"entity entry does not specify physics:angularlock, "
-				"assigning all axes unlocked by default"
+				"entity '" + std::string(entityName) + "' does not specify "
+				"physics:angularlock, assigning all axes unlocked by default"
 			);
 			data.angularLocks = {false, false, false};
 		}
@@ -139,8 +149,8 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"Shape does not have density, "
-					"assigning it default value: 10.0f"
+					"entity '" + std::string(entityName) + "': shape does "
+					"not have density, assigning it default value: 10.0f"
 				);
 				density = 10.0f;
 			}
@@ -153,8 +163,8 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"Shape does not have friction, "
-					"assigning it default value: 0.7f"
+					"entity '" + std::string(entityName) + "': shape does "
+					"not have friction, assigning it default value: 0.7f"
 				);
 				friction = 0.67f;
 			}
@@ -167,8 +177,8 @@ namespace clz::scene
 			else
 			{
 				clz::log::warn(
-					"Shape does not have restitution, "
-					"assigning it default value: 0.5f"
+					"entity '" + std::string(entityName) + "': shape does "
+					"not have restitution, assigning it default value: 0.5f"
 				);
 				restitution = 0.5f;
 			}
@@ -185,9 +195,14 @@ namespace clz::scene
 				shape["rotation"][2]
 			};
 
-			math::vec3 halfExtents;
-			float radius;
-			float height;
+			// NOTE: these three are only meaningfully filled in for the
+			// branch matching their shape type below. They're zero-inited
+			// here (rather than left uninitialized) since ShapeDef's
+			// constructor takes all of them regardless of shapeType, and
+			// reading an uninitialized float even when unused is UB.
+			math::vec3 halfExtents{0.0f, 0.0f, 0.0f};
+			float radius = 0.0f;
+			float height = 0.0f;
 			physics::ShapeType shapeType;
 
 			const std::string type = shape["type"];
@@ -196,8 +211,8 @@ namespace clz::scene
 				shapeType = physics::ShapeType::BOX;
 				CLZ_ASSERT(
 					shape.contains("halfdimensions"),
-					"corrupted scene file"
-					"lacks half dimensions entry in a box shape field"
+					"corrupted scene file: entity '" + std::string(entityName) +
+					"' lacks half dimensions entry in a box shape field"
 				);
 				halfExtents = {
 					shape["halfdimensions"][0],
@@ -210,8 +225,8 @@ namespace clz::scene
 				shapeType = physics::ShapeType::SPHERE;
 				CLZ_ASSERT(
 					shape.contains("radius"),
-					"corrupted scene file"
-					"lacks radius entry in a sphere shape field"
+					"corrupted scene file: entity '" + std::string(entityName) +
+					"' lacks radius entry in a sphere shape field"
 				);
 				radius = shape["radius"];
 			}
@@ -220,9 +235,8 @@ namespace clz::scene
 				shapeType = physics::ShapeType::CYLINDER;
 				CLZ_ASSERT(
 					shape.contains("radius") && shape.contains("height"),
-					"corrupted scene file"
-					"lacks radius or height entry in a cylinder shape "
-					"field"
+					"corrupted scene file: entity '" + std::string(entityName) +
+					"' lacks radius or height entry in a cylinder shape field"
 				);
 				radius = shape["radius"];
 				height = shape["height"];
@@ -232,16 +246,18 @@ namespace clz::scene
 				shapeType = physics::ShapeType::CAPSULE;
 				CLZ_ASSERT(
 					shape.contains("radius") && shape.contains("height"),
-					"corrupted scene file"
-					"lacks radius or height entry in a capsule shape "
-					"field"
+					"corrupted scene file: entity '" + std::string(entityName) +
+					"' lacks radius or height entry in a capsule shape field"
 				);
 				radius = shape["radius"];
 				height = shape["height"];
 			}
 			else
 			{
-				CLZ_ASSERT(false, "Unknown shape type present in scene");
+				clz::log::warn(
+					"Unknown shape type present in scene for entity '" +
+					std::string(entityName) + "'"
+				);
 			}
 
 			return physics::ShapeDef(
@@ -283,8 +299,9 @@ namespace clz::scene
 
 	/// @copydoc saveRigidBodyComponent
 	void saveRigidBodyComponent(
-		const physics::RigidBodyComponent rigidBodyComponent,
-		nlohmann::json& physicsTable
+		physics::RigidBodyComponent rigidBodyComponent,
+		nlohmann::json& physicsTable,
+		std::string_view entityName
 	)
 	{
 		const auto bodyId = rigidBodyComponent.rigidBodyId;
@@ -302,7 +319,10 @@ namespace clz::scene
 			physicsTable["type"] = "kinematic";
 			break;
 		default:
-			log::error("Invalid body type when saving scene.json: body[type]");
+			log::error(
+				"Invalid body type when saving scene.json for entity '" +
+				std::string(entityName) + "': body[type]"
+			);
 			break;
 		}
 
@@ -373,7 +393,10 @@ namespace clz::scene
 			}
 
 			default:
-				log::warn("Unknown shape type");
+				log::warn(
+					"Unknown shape type for entity '" +
+					std::string(entityName) + "'"
+				);
 			}
 
 			shapesTable.push_back(shapeEntry);

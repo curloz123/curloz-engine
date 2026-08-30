@@ -8,6 +8,7 @@
  *
  * @note init() must be called after config::init() as it reads
  * vsync and refresh rate from the window config section.
+ * @note computeTime must be the first funcion to be called at update loop
  */
 
 #pragma once
@@ -20,16 +21,19 @@
 namespace clz::time
 {
 	/// @brief Actual delta time
-	inline float t_deltaTime = 0.0f;
+	inline float t_deltaTime = 0.0;
 
 	/// @brief Total elapsed time
 	inline double t_totalElapsedTime = 0.0;
 
+	/// @brief Time at the start of engine
+	inline std::chrono::time_point<std::chrono::steady_clock> t_timeAtStart;
+
 	/// @brief Timestamp of the current frame.
-	inline std::chrono::time_point<std::chrono::high_resolution_clock> t_timeTakenThisFrame;
+	inline std::chrono::time_point<std::chrono::steady_clock> t_timeTakenThisFrame;
 
 	/// @brief Timestamp of the previous frame.
-	inline std::chrono::time_point<std::chrono::high_resolution_clock> t_timeTakenLastFrame;
+	inline std::chrono::time_point<std::chrono::steady_clock> t_timeTakenLastFrame;
 
 	/// @brief Whether vsync should be enabled.
 	inline bool t_VSync = true;
@@ -51,11 +55,14 @@ namespace clz::time
 	 */
 	inline void init()
 	{
-		t_timeTakenLastFrame = std::chrono::high_resolution_clock::now();
-		t_timeTakenThisFrame = std::chrono::high_resolution_clock::now();
-		t_VSync = clz::config::getBool("renderer", "vsync", true);
-		t_refreshRate = config::getInt("renderer", "refreshrate", 60);
-		t_targetDeltaTime = 1.0f / static_cast<float>(t_refreshRate);
+		t_timeAtStart 	     = std::chrono::steady_clock::now();
+		t_timeTakenLastFrame = std::chrono::steady_clock::now();
+		t_timeTakenThisFrame = std::chrono::steady_clock::now();
+
+		t_VSync 	     = clz::config::getValue<bool>("engine", "vsync", true);
+		t_refreshRate        = config::getValue<int>("engine", "refreshrate", 60);
+		t_targetDeltaTime    = 1.0f / static_cast<float>(t_refreshRate);
+
 		clz::log::info("target dt: " + std::to_string(t_targetDeltaTime));
 	}
 
@@ -68,19 +75,17 @@ namespace clz::time
 	 */
 	inline void computeTime()
 	{
-		t_timeTakenThisFrame = std::chrono::high_resolution_clock::now();
-		t_deltaTime =
-			std::chrono::duration<float>(t_timeTakenThisFrame - t_timeTakenLastFrame)
-				.count();
-		t_timeTakenLastFrame = t_timeTakenThisFrame;
-
-		t_totalElapsedTime += t_deltaTime;
+		t_timeTakenThisFrame 	= std::chrono::steady_clock::now();
+		t_deltaTime 		= std::chrono::duration<float>(
+						t_timeTakenThisFrame - t_timeTakenLastFrame).count();
+		t_timeTakenLastFrame 	= t_timeTakenThisFrame;
+		t_totalElapsedTime 	+= t_deltaTime;
 
 		// Software frame cap — sleep remaining time if frame finished early
-		if (t_VSync && t_deltaTime < t_targetDeltaTime)
+		if ((t_VSync) && (t_deltaTime < t_targetDeltaTime))
 		{
 			std::this_thread::sleep_for(
-				std::chrono::duration<float>(t_targetDeltaTime - t_deltaTime)
+				std::chrono::duration<double>(t_targetDeltaTime - t_deltaTime)
 			);
 			t_deltaTime = t_targetDeltaTime;
 		}
@@ -96,12 +101,13 @@ namespace clz::time
 	}
 
 	/**
-	 * @brief Returns delta time
-	 * @return t_totalElapsedTime in seconds
+	 * @brief Returns Total elapsed time
+	 * @return total elapsed at this moment in seconds
 	 */
 	inline double getTotalElapsedTime()
 	{
-		return t_totalElapsedTime;
+		const auto time = std::chrono::steady_clock::now();
+		return std::chrono::duration<double>(time - t_timeAtStart).count();
 	}
 
 } // namespace clz::time

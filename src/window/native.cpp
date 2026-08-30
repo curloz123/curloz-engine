@@ -13,8 +13,8 @@ namespace clz::window
 	/// @copydoc
 	bool initializeGLFW(GLFWwindow** pWindow)
 	{
-		const int width = clz::config::getInt("window", "width", 800);
-		const int height = clz::config::getInt("window", "height", 600);
+		const int width = clz::config::getValue<int>("window", "width", 800);
+		const int height = clz::config::getValue<int>("window", "height", 600);
 		if (width < 0 || height < 0)
 		{
 			log::error("Window system passed invalid window dimensions");
@@ -31,7 +31,7 @@ namespace clz::window
 		*pWindow = glfwCreateWindow(
 			width,
 			height,
-			clz::config::getAppName().c_str(),
+			clz::config::getValue<std::string>("engine", "name", "Curloz Engine").c_str(),
 			nullptr,
 			nullptr
 		);

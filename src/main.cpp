@@ -10,7 +10,6 @@
  * as all other subsystems read from it.
  */
 
-#include "../editor/include/editor.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
 #include "core/enginestate.hpp"
@@ -22,15 +21,21 @@
 #include "scene/scene.hpp"
 #include "window/window.hpp"
 
+#ifdef CLZ_ENABLE_EDITOR
+#include "../editor/include/editor.hpp"
+#endif
+
 int main()
 {
 	// Initialize config first. All subsystems depend on it
-	clz::config::init();
-	if (clz::log::errorOccurred()) [[unlikely]]
+	if (!clz::config::init())
 		return 1;
-	// Print App details
-	clz::log::info("Welcome to " + clz::config::getAppName());
-	clz::config::printAppVersion();
+	clz::log::info("Welcome to " + clz::config::getValue<std::string>("engine", "name", "Curloz Engine"));
+	clz::log::info("Version: " + 
+		std::to_string(clz::config::getValue<int>("engine", "version_major", 0)) + "." + 
+		std::to_string(clz::config::getValue<int>("engine", "version_minor", 0)) + "." +
+		std::to_string(clz::config::getValue<int>("engine", "version_patch", 0))
+	);
 
 	// Start clock, Whole system uses it, so make sure to start it first
 	clz::time::init();
@@ -58,8 +63,7 @@ int main()
 	clz::ecs::init();
 
 	// Initialize Scene
-	clz::scene::loadScene();
-	if (clz::log::errorOccurred()) [[unlikely]]
+	if (!clz::scene::loadScene()) [[unlikely]]
 		return 1;
 
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
@@ -69,6 +73,7 @@ int main()
 		clz::state::updateEngineState();
 		clz::window::update();
 		clz::physics::update();
+		// editor is updated by renderer itself
 		clz::renderer::update();
 	}
 
@@ -82,6 +87,8 @@ int main()
 	clz::renderer::shutdown();
 	clz::physics::shutdown();
 	clz::window::shutdown();
+
+	clz::config::shutdown();
 	clz::log::info("Exiting successfully");
 	return 0;
 }

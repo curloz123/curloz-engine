@@ -8,6 +8,7 @@
 #include "renderer/renderer.hpp"
 #include "core/logs.hpp"
 #include "renderer/camera/camera.hpp"
+#include "renderer/config.hpp"
 #include "renderer/context/commandcontext.hpp"
 #include "renderer/context/devicecontext.hpp"
 #include "renderer/context/framecontext.hpp"
@@ -27,8 +28,12 @@
 
 namespace clz::renderer
 {
+	/// @copydoc init
 	bool init()
 	{
+		/// --- 0. Parse config data
+		parseConfigData();
+
 		/// --- 1. Initialize all context's
 		if (!initDeviceContext())
 		{
@@ -81,6 +86,7 @@ namespace clz::renderer
 		return false;
 	}
 
+	/// @copydoc update
 	void update()
 	{
 		if (r_swapchainOutdated) [[unlikely]]
@@ -125,6 +131,7 @@ namespace clz::renderer
 		r_currentFrame = (r_currentFrame + 1) % r_FRAMES_IN_FLIGHT;
 	}
 
+	/// @copydoc shutdown
 	void shutdown()
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
@@ -143,6 +150,9 @@ namespace clz::renderer
 		destroySwapchainContext();
 		destroyCommandContext();
 		destroyDeviceContext();
+
+		/// --- write back config data
+		writeBackConfigData();
 
 		clz::log::info("renderer shutdown completed");
 	}

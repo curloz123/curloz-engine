@@ -26,7 +26,6 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <window/window.hpp>
-#include "renderer/cross_system_flags.hpp"
 #include "../include/system_settings/system_settings.hpp"
 
 namespace clz::editor
@@ -112,7 +111,6 @@ namespace clz::editor
 
 		ImFontConfig config_default;
 
-		// Load Nerd Fonts as independent fonts (MergeMode = false by default)
 		fontSans = io.Fonts->AddFontFromFileTTF(
 			"assets/fonts/NotoSansNerdFont-Black.ttf",
 			18.0f,
@@ -172,8 +170,6 @@ namespace clz::editor
 		ImGui_ImplVulkan_Init(&initInfo);
 		createOffscreenTargets();
 
-
-		renderer::flagRendererEditorInitialized();
 		clz::log::info("Initialized editor");
 
 		return true;
@@ -195,6 +191,7 @@ namespace clz::editor
 				)
 			);
 		}
+
 	}
 
 	void update(VkCommandBuffer commandBuffer)
