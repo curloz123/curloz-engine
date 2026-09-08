@@ -9,12 +9,21 @@
  */
 
 #pragma once
+
 #include "math/vec2.hpp"
 #include <vulkan/vulkan.h>
-#include <optional>
-#include "core/logs.hpp"
-#include <algorithm>
+#include <array>
 
+namespace clz::renderer::post_process
+{
+	/// @brief chromatic aberration 
+	inline float chromaticAberrationStrength = 0.0f;
+
+	/// @brief Vignette value
+	/// index 0 is near, 1 is far
+	inline std::array<float, 2> vignette = {0.3f, 0.7f};
+
+}
 namespace clz::renderer::post_process
 {
         /// @brief The pixel format used for the post-tonemap image (8-bit sRGB).
@@ -64,12 +73,6 @@ namespace clz::renderer::post_process
         /// @brief Global flag to enable or disable the vignette effect.
         inline bool enableVignette = false;
 
-        /// @brief The start radius for the vignette effect.
-        inline std::optional<float> vignetteStart;
-
-        /// @brief The end radius for the vignette effect.
-        inline std::optional<float> vignetteEnd;
-
         /**
          * @brief Checks if the vignette effect is enabled.
          * @return true if the vignette effect is enabled, false otherwise.
@@ -94,13 +97,8 @@ namespace clz::renderer::post_process
          * @note Returns default values (0.3f, 0.7f) and logs a warning if values are not set.
          */
         inline math::vec2 getVignette()
-        {
-                if (vignetteStart.has_value() && vignetteEnd.has_value()) [[likely]]
-                {
-                        return math::vec2(vignetteStart.value(), vignetteEnd.value());
-                }
-                clz::log::warn("vignette values queried, even tho they are not set");
-                return math::vec2(0.3f, 0.7f);
+	{
+		return math::vec2(vignette[0], vignette[1]);
         }
 
         /**
@@ -110,25 +108,22 @@ namespace clz::renderer::post_process
          */
         inline void setVignette(float start, float end)
         {
-                vignetteStart     = start;
-                vignetteEnd       = end;
+                vignette[0] = start;
+                vignette[1] = end;
         }
 
         /**
          * @brief Sets the vignette start and end values using a vec2.
-         * @param vignette A vec2 where x is the start radius and y is the end radius.
+         * @param v A vec2 where x is the start radius and y is the end radius.
          */
-        inline void setVignette(const math::vec2& vignette)
+        inline void setVignette(const math::vec2& v)
         {
-                vignetteStart = vignette.x;
-                vignetteEnd = vignette.y;
+                vignette[0] = v.x;
+                vignette[1] = v.y;
         }
 
         /// @brief Global flag to enable or disable the chromatic aberration effect.
         inline bool enableChromaticAberration = false;
-
-        /// @brief The strength of the chromatic aberration effect.
-        inline std::optional<float> chromaticAbberationStrength;
 
         /**
          * @brief Checks if the chromatic aberration effect is enabled.
@@ -155,10 +150,7 @@ namespace clz::renderer::post_process
          */
         inline float getChromaticAberrationStrength()
         {
-                if (chromaticAbberationStrength.has_value()) [[likely]]
-                        return chromaticAbberationStrength.value();
-                clz::log::warn("chromatic aberration value queried, even tho its not set");
-                return 0.002f;
+		return chromaticAberrationStrength;
         }
 
         /**
@@ -167,6 +159,6 @@ namespace clz::renderer::post_process
          */
         inline void setChromaticAberrationStrength(float value)
         {
-                chromaticAbberationStrength = value;
+                chromaticAberrationStrength = value;
         }
 }

@@ -8,10 +8,15 @@
  */
 
 #pragma once
-#include <vulkan/vulkan.h>
-#include <optional>
-#include "core/logs.hpp"
 
+#include <vulkan/vulkan.h>
+
+namespace clz::renderer::post_process
+{
+	/// @brief exposure
+	/// @note is set by config
+	inline float exposure = 1.0f;
+}
 namespace clz::renderer::post_process
 {
         /// @brief The pixel format used for the tonemap image (8-bit sRGB).
@@ -46,9 +51,6 @@ namespace clz::renderer::post_process
          */
         void applyTonemapProcess(VkCommandBuffer commandBuffer);
 
-        /// @brief Global exposure value for the tonemap effect.
-        inline std::optional<float> exposure;
-
         /**
          * @brief Sets the exposure value for the tonemap effect.
          * @param newExposure The new exposure value.
@@ -65,11 +67,6 @@ namespace clz::renderer::post_process
          */
         inline float getExposure()
         {
-                if (exposure.has_value()) [[likely]]
-                {
-                        return exposure.value();
-                }
-                clz::log::warn("Post process's 'exposure' queried, before it was even set");
-                return 1.0f;
+		return exposure;
         }
 } // namespace clz::renderer::post_process

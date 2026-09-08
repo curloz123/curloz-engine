@@ -14,6 +14,20 @@
 
 namespace clz::renderer::post_process
 {
+	/// @brief bloom strength
+	/// @note is set by config
+	inline float bloomStrength = 0.015f;
+
+	/// @brief Bloom's filter radius
+	/// @note is set by config
+	inline float bloomFilterRadius = 0.002f;
+
+        /// @brief Global flag to enable or disable the bloom effect.
+        inline bool Bloom = true;
+
+}
+namespace clz::renderer::post_process
+{
         /**
          * @struct bloomImage
          * @brief Encapsulates a Vulkan image and its associated resources for the bloom pass.
@@ -71,14 +85,6 @@ namespace clz::renderer::post_process
          */
         void applyBloomProcess(VkCommandBuffer commandBuffer);
 
-        /// @brief Global flag to enable or disable the bloom effect.
-        inline bool Bloom = true;
-
-        /// @brief Global multiplier for the bloom intensity.
-        inline float bloomStrength = 0.05f;
-
-        /// @brief Global radius for the bloom filter kernel.
-        inline float filterRadius = 0.005;
 
         /**
          * @brief Disables the bloom effect.
@@ -118,17 +124,17 @@ namespace clz::renderer::post_process
          * @brief Sets the bloom filter radius.
          * @param radius The new filter radius value.
          */
-        inline void setFilterRadius(const float radius)
+        inline void setBloomFilterRadius(const float radius)
         {
-                filterRadius = radius;
+                bloomFilterRadius = radius;
         }
 
         /**
          * @brief Gets the current bloom filter radius.
          * @return The current filter radius value.
          */
-        inline float getFilterRadius()
+        inline float getBloomFilterRadius()
         {
-                return filterRadius;
+                return bloomFilterRadius;
         }
 }

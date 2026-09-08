@@ -4,10 +4,7 @@
  * @brief render target context implementation file
  */
 #include "renderer/context/render_target_context.hpp"
-#include "config/config.hpp"
 #include "core/logs.hpp"
-#include "renderer/config.hpp"
-#include "renderer/utility/devicefeatures.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/image.hpp"
@@ -98,7 +95,7 @@ namespace clz::renderer
 		r_renderTargetContext.imageExtent.width = width;
 		r_renderTargetContext.imageExtent.height = height;
 
-		r_renderTargetContext.msaaFlagBits = getMSAAFromConfig();
+		r_renderTargetContext.msaaFlagBits = MSAA;
 
 		if (!createImage(
 			r_renderTargetContext.image,

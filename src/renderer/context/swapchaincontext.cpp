@@ -6,17 +6,11 @@
  */
 
 #include "renderer/context/swapchaincontext.hpp"
-#include "config/config.hpp"
 #include "core/logs.hpp"
-#include "renderer/config.hpp"
-#include "renderer/utility/image.hpp"
-#include "renderer/utility/memory.hpp"
-#include "renderer/utility/namer.hpp"
-#include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/entitydata/texture.hpp"
 #include "window/window.hpp"
 #include <string>
+#include "renderer/utility/namer.hpp"
 
 namespace clz::renderer
 {
@@ -102,7 +96,7 @@ namespace clz::renderer
 
 		// Primarily select mailbox
 		r_swapchainContext.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		if (getTripleBufferingFromConfig())
+		if (tripleBuffering)
 		{
 			for (const auto& availablePresentMode : presentModes)
 			{

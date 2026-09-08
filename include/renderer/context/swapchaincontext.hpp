@@ -8,6 +8,10 @@
 
 namespace clz::renderer
 {
+	inline bool tripleBuffering;
+}
+namespace clz::renderer
+{
 	/**
 	 * @brief Initializes the swapchain context.
 	 * ie all the device handles.

@@ -5,7 +5,6 @@
  */
 #include "renderer/postprocess/tonemap.hpp"
 #include "core/logs.hpp"
-#include "renderer/config.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
@@ -118,9 +117,6 @@ namespace clz::renderer::post_process
 			VK_OBJECT_TYPE_SAMPLER,
 			"tonemap sampler"
 		);
-
-		// get back config data
-		setExposure(exposureFromConfig());
 
 		clz::log::info("Created tonemap process resources");
 		return true;

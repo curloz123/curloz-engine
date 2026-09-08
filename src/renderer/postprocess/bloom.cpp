@@ -134,8 +134,8 @@ namespace clz::renderer::post_process
 		}
 
 		// retrieve back data from config
-		setBloomStrength(bloomStrengthFromConfig());
-		setFilterRadius(bloomFilterRadiusFromConfig());
+		setBloomStrength(bloomStrength);
+		setBloomFilterRadius(bloomFilterRadius);
 
 		clz::log::info("Created bloom post-process");
 		return true;
@@ -274,7 +274,7 @@ namespace clz::renderer::post_process
 			pushConstant.bloomBits = BloomProcessBits::DOWNSAMPLE;
 			pushConstant.downIndex = i;
 			pushConstant.bloomStrength = bloomStrength;
-			pushConstant.filterRadius = filterRadius;
+			pushConstant.filterRadius = bloomFilterRadius;
 
 			performBloom(
 				bloomMips[i+1].image,
@@ -291,7 +291,7 @@ namespace clz::renderer::post_process
 			pushConstant.bloomBits = BloomProcessBits::UPSAMPLE;
 			pushConstant.upIndex = i;
 			pushConstant.bloomStrength = bloomStrength;
-			pushConstant.filterRadius = filterRadius;
+			pushConstant.filterRadius = bloomFilterRadius;
 
 			if (i == -1)
 			{

@@ -7,10 +7,11 @@
 #include "renderer/postprocess/tonemap.hpp"
 #include "../../include/timemachine.hpp"
 
-namespace
+namespace clz::editor
 {
 	static void showPostProcessSettings();
 }
+
 namespace clz::editor
 {
 	void showRenderSystemSettings()
@@ -20,9 +21,7 @@ namespace clz::editor
 		{
 			ImGui::PopFont();
 
-
 			showPostProcessSettings();
-
 
 			ImGui::EndTabItem();
 		}
@@ -32,7 +31,8 @@ namespace clz::editor
 		}
 	}
 }
-namespace
+
+namespace clz::editor
 {
 	static void showPostProcessSettings()
 	{
@@ -167,28 +167,33 @@ namespace
 		ImGui::Separator();
 
 		static auto prevBloomStrength = clz::renderer::post_process::getBloomStrength();
-		static auto prevFilterRadius = clz::renderer::post_process::getFilterRadius();
+		static auto prevFilterRadius = clz::renderer::post_process::getBloomFilterRadius();
 		ImGui::Text("Bloom");
 		ImGui::Checkbox("Enable", &clz::renderer::post_process::Bloom);
-		ImGui::SliderFloat("Filter Radius", &clz::renderer::post_process::filterRadius, 0.0005f, 0.05f);
+
+		auto bloomFilterRadius = clz::renderer::post_process::getBloomFilterRadius();
+		if (ImGui::SliderFloat("Filter Radius", &bloomFilterRadius, 0.0005f, 0.05f))
+		{
+			clz::renderer::post_process::setBloomFilterRadius(bloomFilterRadius);
+		}
 		if (ImGui::IsItemActivated())
 		{
-			prevFilterRadius = clz::renderer::post_process::getFilterRadius();
+			prevFilterRadius = clz::renderer::post_process::getBloomFilterRadius();
 		}
 		if (ImGui::IsItemDeactivated())
 		{
 			auto oldFilterRadius = prevFilterRadius;
-			auto newFilterRadius = clz::renderer::post_process::getFilterRadius();
+			auto newFilterRadius = clz::renderer::post_process::getBloomFilterRadius();
 			clz::timemachine::createSnapshot(
 				[oldFilterRadius]()
 				{
-					clz::renderer::post_process::setFilterRadius(
+					clz::renderer::post_process::setBloomFilterRadius(
 						oldFilterRadius
 					);
 				},
 				[newFilterRadius]()
 				{
-					clz::renderer::post_process::setFilterRadius(
+					clz::renderer::post_process::setBloomFilterRadius(
 						newFilterRadius
 					);
 				}

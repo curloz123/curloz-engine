@@ -6,6 +6,14 @@
 #pragma once
 
 #include <cstdint>
+#include <vulkan/vulkan_core.h>
+
+namespace clz::renderer
+{
+	/// @brief MSAA value
+	/// Is initially set by config data
+	inline VkSampleCountFlagBits MSAA = VK_SAMPLE_COUNT_1_BIT;
+}
 
 namespace clz::renderer
 {

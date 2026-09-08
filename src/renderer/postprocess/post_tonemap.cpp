@@ -4,10 +4,9 @@
  * @brief Implements all 'minor' post proceses prior to tonemapping.
  * Example vignette, chromatic aberration etc..
  */
+
 #include "renderer/postprocess/post_tonemap.hpp"
-#include "core/enginestate.hpp"
 #include "core/logs.hpp"
-#include "renderer/config.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
@@ -90,9 +89,9 @@ namespace clz::renderer::post_process
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
 			VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+			VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
 			)
 		)
 		{
@@ -101,8 +100,6 @@ namespace clz::renderer::post_process
 		}
 
 		// get back config data
-		setChromaticAberrationStrength(chromaticAberrationFromConfig());
-		setVignette(vignetteNearFromConfig(), vignetteEndFromConfig());
 		clz::log::info("Created post-tonemap post process resources");
 		return true;
 	}
