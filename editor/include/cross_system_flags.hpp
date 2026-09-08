@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/enginestate.hpp"
+#include <cstdint>
 
 namespace clz::editor
 {
@@ -8,6 +9,6 @@ namespace clz::editor
 		clz::state::EngineState oldState,
 		clz::state::EngineState newState);
 
-	void flagEditorFramebufferResize();
+	void flagEditorFramebufferResize(const uint32_t width, const uint32_t height);
 
 }

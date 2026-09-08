@@ -12,6 +12,7 @@
 #include "core/logs.hpp"
 #include "imgui_impl_vulkan.h"
 #include "include/inspector/rigidbodycomponent.hpp"
+#include "renderer/camera/camera.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/utility/singletimecommand.hpp"
@@ -136,6 +137,7 @@ namespace clz::editor
 			clz::log::error("failed to re-create offscreen target");
 			return false;
 		}
+		renderer::updateCameraProjMatrix(target.cameraId);
 		target.outDated = false;
 
 		return true;

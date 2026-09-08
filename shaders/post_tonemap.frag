@@ -32,11 +32,10 @@ void main()
 	if (enableChromaticAberration)
 	{
 		vec2 uv = inUV - vec2(0.5);
-		vec2 aspectUV = uv;
-		aspectUV.x *= PC.aspectRatio;
-		float dist = dot(aspectUV, aspectUV);
+		float dist = length(aspectUV);
+		vec2 direction = normalize(uv);
 
-		vec2 offset = uv * (PC.chromaticAberrationStrength * dist);
+		vec2 offset = direction * PC.chromaticAberrationStrength * dist * dist;
 
 		vec2 rUV = clamp(inUV + offset, 0.0, 1.0);
 		vec2 bUV = clamp(inUV - offset, 0.0, 1.0);

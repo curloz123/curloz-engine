@@ -181,7 +181,10 @@ namespace clz::renderer
 		}
 
 #ifdef CLZ_ENABLE_EDITOR
-		editor::flagEditorFramebufferResize();
+		editor::flagEditorFramebufferResize(
+			r_swapchainContext.extent.width,
+			r_swapchainContext.extent.height
+		);
 #endif
 		return true;
 	}

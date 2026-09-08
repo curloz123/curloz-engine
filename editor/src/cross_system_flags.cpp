@@ -28,9 +28,13 @@ namespace clz::editor
 		}
 	}
 
-	void flagEditorFramebufferResize()
+	void flagEditorFramebufferResize(const uint32_t width, const uint32_t height)
 	{
 		mainViewportImage.outDated = true;
+		mainViewportImage.extent = VkExtent2D{
+			.width = width, 
+			.height = height
+		};
 		physicsBodyShapeImage.outDated = true;
 	}
 }

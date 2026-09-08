@@ -107,6 +107,7 @@ curloz-engine/
 
 ## Roadmap
 
+* [ ] Fix Aspect ratio correction to post processing effects
 * [ ] Add a per material data ssbo
 * [ ] Fix light entity's not disabling bug
 * [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector

@@ -13,11 +13,12 @@
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
 #include "include/gizmo/gizmo.hpp"
-#include "include/inspector/rigidbodycomponent.hpp"
+#include "renderer/vk_types.hpp"
 #include "include/scenetable.hpp"
 #include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
+#include <X11/X.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -65,29 +66,23 @@ namespace clz::editor
 	/// every frame in order to avoid camera-snap
 	void drawMainViewPort()
 	{
-		const ImVec2 avail = ImGui::GetContentRegionAvail();
-		if (avail.x < 1.0f || avail.y < 1.0f)
+		const ImVec2 availableRegion = ImGui::GetContentRegionAvail();
+		if (availableRegion.x < 1.0f || availableRegion.y < 1.0f)
 		{
 			return;
 		}
-		const auto width = static_cast<uint32_t>(avail.x);
-		const auto height = static_cast<uint32_t>(avail.y);
-		if ((width != mainViewportImage.extent.width ||
-		     height != mainViewportImage.extent.height) &&
-		    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
-		{
-			mainViewportImage.extent.width = width;
-			mainViewportImage.extent.height = height;
-			renderer::updateCameraProjMatrix(mainViewportImage.cameraId);
-			mainViewportImage.outDated = true;
-		}
+		// const auto width = static_cast<uint32_t>(availableRegion.x);
+		// const auto height = static_cast<uint32_t>(availableRegion.y);
+		// if ((width != mainViewportImage.extent.width ||
+		//      height != mainViewportImage.extent.height) &&
+		//     clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
+		// {
+		// 	mainViewportImage.extent.width = width;
+		// 	mainViewportImage.extent.height = height;
+		// 	renderer::updateCameraProjMatrix(mainViewportImage.cameraId);
+		// 	mainViewportImage.outDated = true;
+		// }
 
-		/*
-		if (ImGui::IsWindowHovered())
-		{
-			ImGui::SetWindowFocus(ImGui::GetCurrentWindow()->Name);
-		}
-		*/
 
 		static bool rightClickThisFrame = false;
 		static bool rightClickLastFrame = false;
@@ -123,9 +118,35 @@ namespace clz::editor
 			rightClickLastFrame = rightClickThisFrame;
 		}
 
-		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
 
-		ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, avail);
+		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
+		const ImVec2 canvasSize = availableRegion;
+		const float imageAspect = (float)mainViewportImage.extent.width / 
+						(float)mainViewportImage.extent.height;
+		const float canvasAspect = canvasSize.x / canvasSize.y;
+
+		ImVec2 finalCanvasSize;
+		if (imageAspect > canvasAspect)
+		{
+			finalCanvasSize.x = canvasSize.x;
+			finalCanvasSize.y = canvasSize.x / imageAspect;
+		}
+		else
+		{
+			finalCanvasSize.y = canvasSize.y;
+			finalCanvasSize.x = canvasSize.y * imageAspect;
+		}
+		ImVec2 offset = {
+			(canvasSize.x - finalCanvasSize.x) * 0.5f,
+			(canvasSize.y - finalCanvasSize.y) * 0.5f
+		};
+		ImVec2 currectPos = ImGui::GetCursorPos();
+		ImGui::SetCursorPos(ImVec2(
+				currectPos.x + offset.x,
+				currectPos.y + offset.y)
+		);
+
+		ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, finalCanvasSize);
 
 		const Rect2D rect{
 			.x = static_cast<uint32_t>(cursorPosBefore.x),
