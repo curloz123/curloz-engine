@@ -6,19 +6,24 @@
 #include "physics/body.hpp"
 #include "core/assert.hpp"
 #include "core/logs.hpp"
+#include "entity/entitymanager.hpp"
 #include "physics/math.hpp"
+#include "physics/physics.hpp"
 #include "physics/physics_types.hpp"
 #include "physics/shape.hpp"
 #include <box3d/box3d.h>
+#include "entity/entity.hpp"
 
 namespace clz::physics
 {
 	/// @copydoc
-	RigidBodyId createBody(BodyData& def)
+	RigidBodyId createBody(const ecs::entity entity, BodyData& def)
 	{
 		const auto rigidBodyId = numRigidBodies;
 		b3BodyDef bodyDef = b3DefaultBodyDef();
 		bodyDef.type = static_cast<b3BodyType>(def.type);
+		bodyDef.userData = reinterpret_cast<void*>(static_cast<ecs::entityPtr>(entity));
+
 		bodyDef.position = toVec3(def.position);
 		bodyDef.rotation = toQuat(def.rotation);
 		bodyDef.linearDamping = def.linearDamping;
@@ -42,7 +47,8 @@ namespace clz::physics
 		std::vector<Shape> shapes;
 		for (const auto& shapeDef : def.ShapeDefs)
 		{
-			Shape shape(shapeDef, rigidBodyId);
+			const RigidBodyShapeId shapeId{.value = static_cast<uint8_t>(shapes.size())};
+			Shape shape(shapeDef, rigidBodyId, shapeId);
 			shapes.emplace_back(shape);
 		}
 		// that's why, always push back after attaching
@@ -51,10 +57,29 @@ namespace clz::physics
 	}
 
 	/// @copydoc
-	void attachShapeToBody(const RigidBodyId rigidBodyId, const ShapeDef& shapeDef)
+	ecs::entity getAttachedEntity(const RigidBodyId rigidBodyId)
 	{
-		Shape shape(shapeDef, rigidBodyId);
-		Shapes[rigidBodyId].emplace_back(shape);
+		b3BodyId bodyId = Bodies[rigidBodyId];
+		return static_cast<ecs::entity>(
+				reinterpret_cast<ecs::entityPtr>(
+					b3Body_GetUserData(bodyId)));
+	}
+	ecs::entity getAttachedEntity(const b3BodyId box3dBodyId)
+	{
+		return static_cast<ecs::entity>(
+				reinterpret_cast<ecs::entityPtr>(
+					b3Body_GetUserData(box3dBodyId)));
+	}
+
+	/// @copydoc
+	RigidBodyShapeId attachShapeToBody(const RigidBodyId rigidBodyId, const ShapeDef& shapeDef)
+	{
+		RigidBodyShapeId shapeId{
+			.value = static_cast<uint8_t>(Shapes[rigidBodyId].size())
+		};
+
+		Shapes[rigidBodyId].emplace_back(shapeDef, rigidBodyId, shapeId);
+		return shapeId;
 	}
 
 	/// @copydoc
@@ -116,12 +141,34 @@ namespace clz::physics
 		return Shapes[rigidBodyId];
 	}
 
+	Shape& getBodyShape(RigidBodyId rigidBodyId, RigidBodyShapeId shapeId)
+	{
+		CLZ_ASSERT(
+			rigidBodyId < numRigidBodies,
+			"invalid id enquired "
+			"while requesting body shapes"
+		);
+
+		auto& bodyShapes = Shapes[rigidBodyId];
+		CLZ_ASSERT(
+			shapeId.value < Shapes[rigidBodyId].size(),
+			"invalid shape id enquired "
+			"while requesting body shape"
+		);
+		return bodyShapes[shapeId.value];
+	}
+
 	/// @copydoc
 	void refreshAttachedShapes(const RigidBodyId rigidBodyId)
 	{
 		auto& shapes = Shapes[rigidBodyId];
-		std::erase_if(shapes, [](const Shape& shape) {
-			return shape.isItTimeSon();
+		std::erase_if(shapes, [](Shape& shape) {
+			if (shape.isMarkedForDeletetion())
+			{
+				shape.destroyShape();
+				return true;
+			}
+			return false;
 		});
 
 		for (size_t i = 0; i < shapes.size(); ++i)
@@ -136,6 +183,7 @@ namespace clz::physics
 			{
 				shapes[i].recreateShape(rigidBodyId);
 			}
+			shapes[i].setShapeId(RigidBodyShapeId{.value = static_cast<uint8_t>(i)});
 		}
 	}
 

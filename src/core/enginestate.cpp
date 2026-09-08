@@ -1,7 +1,9 @@
 #include "core/enginestate.hpp"
 #include "include/cross_system_flags.hpp"
+#include "physics/cross_system_flags.hpp"
 #include "renderer/cross_system_flags.hpp"
 #include "core/logs.hpp"
+#include "window/inputmanager.hpp"
 
 
 
@@ -44,8 +46,11 @@ namespace clz::state
 			);
 		}
 
-		clz::renderer::flagRendererStateChange(oldState, g_engineState);
+		/// @note Editor is always hinted first about state change.
+		/// As it has to update entities transforms
 		clz::editor::flagEditorStateChange(oldState, g_engineState);
+		clz::renderer::flagRendererStateChange(oldState, g_engineState);
+		clz::physics::flagPhysicsStateChange(oldState, g_engineState);
 	}
 
 	/// @copydoc updateEngineState

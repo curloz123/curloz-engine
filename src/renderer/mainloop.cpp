@@ -7,6 +7,7 @@
 #include "renderer/mainloop.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
+#include "include/offscreen/offscreentarget.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/context/render_target_context.hpp"
 #include "renderer/drawscene.hpp"
@@ -318,22 +319,6 @@ namespace clz::renderer
 			);
 		};
 
-		/*
-		drawNullScene();
-		goto endCommandBuffer;
-		*/
-
-		if (r_swapchainOutdated) [[unlikely]]
-		{
-			drawNullScene(
-				r_swapchainContext.images[imageIndex],
-				r_swapchainContext.imageViews[imageIndex],
-				r_swapchainContext.extent,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-				0,
-				VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
-			goto endCommandBuffer;
-		}
 
 		drawSceneIntoRenderTarget();
 		post_process::applyPostProcessing(commandBuffer);
@@ -343,32 +328,14 @@ namespace clz::renderer
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
-			/// Don't copy render target into editor's main viewport image
-			/// As most probably extents are wrong this frame
-			/// Wait a frame, then draw on it
-			const auto result = editor::prepareOffscreenTarget(editor::mainViewportImage);
-			if (result == editor::OfffscreenPrepareResult::SAFE_TO_DRAW_ON) [[likely]]
-			{
-				copyPostprocessResultInto(
-					editor::mainViewportImage.image,
-					editor::mainViewportImage.extent,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
-					VK_ACCESS_2_SHADER_READ_BIT_KHR
-				);
-			}
-			/// else js convert its layout to shader read only
-			/// and let editor read a blank image
-			else
-			{
-				drawNullScene(
-					editor::mainViewportImage.image,
-					editor::mainViewportImage.imageView,
-					editor::mainViewportImage.extent,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-					VK_ACCESS_2_SHADER_READ_BIT,
-					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-			}
+			editor::prepareOffscreenTarget(editor::mainViewportImage);
+			copyPostprocessResultInto(
+				editor::mainViewportImage.image,
+				editor::mainViewportImage.extent,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+				VK_ACCESS_2_SHADER_READ_BIT_KHR
+			);
 
 			// ImGui chrome (panels, including the viewport image widget)
 			// renders onto the swapchain image directly.

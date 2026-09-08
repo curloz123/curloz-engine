@@ -47,8 +47,18 @@ namespace clz::renderer
 	inline void parseConfigData()
 	{
 		tripleBuffering = clz::config::getValue<bool>("renderer", "triple_buffering", false);
-		MSAA = getMsaaFlagBitsFromInt(
+
+		auto msaaInt = clz::config::getValue<uint32_t>("renderer", "msaa", 4);
+		if (msaaInt > getIntFromMsaaFlagBits(getMaxMsaaSamples()))
+		{
+			clz::log::warn("engine.toml's renderer section has msaa value greater than supported by the gpu. Clamping it");
+			MSAA = getMaxMsaaSamples();
+		}
+		else
+		{
+			MSAA = getMsaaFlagBitsFromInt(
 				clz::config::getValue<uint32_t>("renderer", "msaa", 4));
+		}
 		clz::log::debug("MSAA value: " + std::to_string(clz::config::getValue<uint32_t>("renderer", "msaa", 4)));
 	
 		exposure = clz::config::getValue<float>("renderer", "post_process", "exposure", 1.0f);

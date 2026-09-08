@@ -18,7 +18,11 @@ namespace clz::ecs
 
 	/// @brief Entity handle
 	/// just a unique integer ID.
-	using entity = uint32_t;
+	using entity = std::uint32_t;
+
+	/// @brief Entity pointer handle
+	/// Useful when passing to pUserData.
+	using entityPtr = std::uintptr_t;
 
 	/// @brief Sentinel value representing an invalid or null entity.
 	inline constexpr entity NULL_ENTITY = std::numeric_limits<uint32_t>::max();

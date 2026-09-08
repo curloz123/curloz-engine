@@ -8,6 +8,7 @@
 #include "renderer/context/swapchaincontext.hpp"
 #include "config/config.hpp"
 #include "core/logs.hpp"
+#include "renderer/config.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/utility/namer.hpp"
@@ -101,7 +102,7 @@ namespace clz::renderer
 
 		// Primarily select mailbox
 		r_swapchainContext.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		if (clz::config::getValue<bool>("renderer", "triplebuffering", false))
+		if (getTripleBufferingFromConfig())
 		{
 			for (const auto& availablePresentMode : presentModes)
 			{

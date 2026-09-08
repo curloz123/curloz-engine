@@ -20,6 +20,13 @@ namespace clz::renderer
 		Shape shape;
 	};
 
+	inline bool initShapes()
+	{
+		
+
+		return true;
+	}
+
 	inline void drawShape(
 		VkCommandBuffer commandBuffer,
 		const Shape shape,
@@ -30,7 +37,7 @@ namespace clz::renderer
 	)
 	{
 		ShapePushConstants pc = {
-			.mvp = model * view * projection,
+			.mvp = model * view * projection, /// reversed purposefully
 			.color = color,
 			.shape = shape
 		};

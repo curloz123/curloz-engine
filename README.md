@@ -2,15 +2,8 @@
 
 A Vulkan 1.3 game engine written in C++23, built from scratch with a data-oriented design philosophy.
 
-Curloz Engine is the foundation for [Project Name / horror train sim], and eventually the base for future titles. It's under active solo development.
+Curloz Engine is the foundation for zolkin games. It's under active solo development.
 
-<!--
-Badges (uncomment and fill in once you have a CI pipeline set up):
-![Build Status](https://img.shields.io/github/actions/workflow/status/curloz123/curloz-engine/build.yml)
-![License](https://img.shields.io/github/license/curloz123/curloz-engine)
-![C++](https://img.shields.io/badge/C%2B%2B-23-blue)
-![Vulkan](https://img.shields.io/badge/Vulkan-1.3-red)
--->
 
 ---
 
@@ -21,13 +14,13 @@ Badges (uncomment and fill in once you have a CI pipeline set up):
 | ------------- | -------------- | ------------- |
 | Renderer      | Vulkan 1.3     | Implemented   |
 | Windowing     | GLFW           | Implemented   |
-| ECS           | clz::ecs       | Implemented (self-authored) |
+| Entity        | clz::ecs       | Implemented (self-authored) |
 | Math          | clz::math      | Implemented (self-authored) |
 | Model Loading | fastgltf       | Implemented   |
-| Physics       | Box3D          | Planned       |
+| Physics       | Box3D          | Implemented   |
 | Audio         | OpenAL Soft    | Planned       |
-| Animation     | ozz-animation  | Planned / WIP |
-| Build System  | CMake + Ninja / Visual Studio (via CMake Presets) | —             |
+| Animation     | ozz-animation  | Planned       |
+| Build System  | CMake + (Ninja / Visual Studio) | |
 
 ---
 
@@ -39,7 +32,7 @@ Badges (uncomment and fill in once you have a CI pipeline set up):
 * CMake 3.25+
 * Ninja
 * clang-format (for code style enforcement)
-* GCC 13+ or Clang 17+ with C++23 support
+* GCC 15+ or Clang 19+ with C++23 support
 
 On Gentoo:
 
@@ -114,6 +107,8 @@ curloz-engine/
 
 ## Roadmap
 
+* [ ] Add a per material data ssbo
+* [ ] Fix light entity's not disabling bug
 * [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector
 * [ ] Box3D physics integration
 * [ ] OpenAL Soft audio system
@@ -138,6 +133,8 @@ curloz-engine/
 ![Thanos's Infinity Sword](gallery/sword.png)
 [Thanos's Infinity Sword](https://sketchfab.com/3d-models/thanos-infinity-sword-with-emission-43cb592807f34a77b97e8e81466456e8) by [@ikhlasfathoni](https://sketchfab.com/ikhlasfathoni).
 
+![San Miguel 2.0](gallery/san_miguel.png)
+[San Miguel 2.0](https://casual-effects.com/data/)
 
 ---
 

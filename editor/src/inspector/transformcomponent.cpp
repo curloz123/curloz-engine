@@ -8,14 +8,16 @@
 
 #include "../../include/inspector/transformcomponent.hpp"
 #include "../../include/editor_types.hpp"
-#include "../../include/inspector/inspector.hpp"
 #include "../../include/scenetable.hpp"
 #include "../../include/timemachine.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
+#include "entity/entitymanager.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include <imgui.h>
+#include <string>
+#include "../../include/gizmo/gizmo.hpp"
 
 namespace clz::editor
 {
@@ -32,11 +34,14 @@ namespace clz::editor
 		if (!ImGui::CollapsingHeader("Transform"))
 			return;
 
-		auto& editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(
+
+		auto editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(
 			currentSelectedEntity.value()
 		);
 
-		bool anyChangeStarted = false;
+
+
+		bool anyChange = false;
 		bool anyEditFinished = false;
 
 		ImGui::PushFont(fontMono);
@@ -52,9 +57,12 @@ namespace clz::editor
 
 		if (ImGui::SliderFloat3("Position", &editorTransform.position.x, -100.0f, 100.0f))
 		{
+			anyChange = true;
+		}
+		if (ImGui::IsItemActivated())
+		{
 			ActiveTransform = TransformType::TRANSLATE;
 			saveOldData();
-			anyChangeStarted = true;
 		}
 		if (ImGui::IsItemDeactivatedAfterEdit())
 		{
@@ -63,9 +71,12 @@ namespace clz::editor
 
 		if (ImGui::SliderFloat3("Rotation", &editorTransform.rotation.x, -179.9f, 179.9f))
 		{
+			anyChange = true;
+		}
+		if (ImGui::IsItemActivated())
+		{
 			ActiveTransform = TransformType::ROTATE;
 			saveOldData();
-			anyChangeStarted = true;
 		}
 		if (ImGui::IsItemDeactivatedAfterEdit())
 		{
@@ -74,9 +85,12 @@ namespace clz::editor
 
 		if (ImGui::SliderFloat3("Scale", &editorTransform.scale.x, 0.01f, 10.0f))
 		{
+			anyChange = true;
+		}
+		if (ImGui::IsItemActivated())
+		{
 			ActiveTransform = TransformType::SCALE;
 			saveOldData();
-			anyChangeStarted = true;
 		}
 		if (ImGui::IsItemDeactivatedAfterEdit())
 		{
@@ -85,10 +99,11 @@ namespace clz::editor
 
 		ImGui::PopFont();
 
-		if (anyChangeStarted)
+		if (anyChange)
 		{
+			ecs::setComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value(), editorTransform);
 			ecs::setComponent<ecs::TransformComponent>(currentSelectedEntity.value(), ecs::TransformComponent(
-			math::quatFromEuler(math::radians(editorTransform.rotation)),
+				math::quatFromEuler(math::radians(editorTransform.rotation)),
 				editorTransform.position,
 				editorTransform.scale)
 			);
@@ -131,9 +146,7 @@ namespace clz::editor
 				}
 			);
 
-			clz::log::debug("created snapshot");
 		}
 
 	}
-
 } // namespace clz::editor

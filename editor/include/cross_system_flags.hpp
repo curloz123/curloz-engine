@@ -8,7 +8,6 @@ namespace clz::editor
 		clz::state::EngineState oldState,
 		clz::state::EngineState newState);
 
-
 	void flagEditorFramebufferResize();
 
 }

@@ -46,7 +46,7 @@ namespace clz::editor
 			);
 			return false;
 		}
-		/// Always show th
+		/// Always show main viewport
 		mainViewportImage.showTarget = true;
 
 		/// --- Body editor window
@@ -106,21 +106,21 @@ namespace clz::editor
 	}
 
 	/// @copydoc
-	OfffscreenPrepareResult prepareOffscreenTarget(OffscreenTarget& target)
+	OffscreenPrepareResult prepareOffscreenTarget(OffscreenTarget& target)
 	{
 		if (target.firstTime) [[unlikely]]
 		{
 			target.firstTime = false;
-			return OfffscreenPrepareResult::FIRST_TIME;
+			return OffscreenPrepareResult::FIRST_TIME;
 		}
 
 		if (target.outDated) [[unlikely]]
 		{
 			recreateOffscreenTarget(target, target.extent.width, target.extent.height);
-			return OfffscreenPrepareResult::RESIZED_THIS_FRAME;
+			return OffscreenPrepareResult::RESIZED_THIS_FRAME;
 		}
 
-		return OfffscreenPrepareResult::SAFE_TO_DRAW_ON;
+		return OffscreenPrepareResult::SAFE_TO_DRAW_ON;
 	}
 
 	/// @brief Destroys and recreates a target's Vulkan resources at a new

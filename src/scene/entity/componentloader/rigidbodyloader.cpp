@@ -20,6 +20,7 @@
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
 #include "scene/entity/loader.hpp"
+#include <iterator>
 
 namespace clz::scene
 {
@@ -209,16 +210,22 @@ namespace clz::scene
 			if (type == "box")
 			{
 				shapeType = physics::ShapeType::BOX;
-				CLZ_ASSERT(
-					shape.contains("halfdimensions"),
-					"corrupted scene file: entity '" + std::string(entityName) +
-					"' lacks half dimensions entry in a box shape field"
-				);
-				halfExtents = {
-					shape["halfdimensions"][0],
-					shape["halfdimensions"][1],
-					shape["halfdimensions"][2]
-				};
+				if (shape.contains("halfdimensions"))
+				{
+					halfExtents = {
+						shape["halfdimensions"][0],
+						shape["halfdimensions"][1],
+						shape["halfdimensions"][2]
+
+					};
+				}
+				else
+				{
+					clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
+							"' lacks half dimensions entry in a box shape field" + 
+							"assigning default values");
+					halfExtents = math::vec3(0.5f);
+				}
 			}
 			else if (type == "sphere")
 			{
@@ -256,10 +263,60 @@ namespace clz::scene
 			{
 				clz::log::warn(
 					"Unknown shape type present in scene for entity '" +
-					std::string(entityName) + "'"
+					std::string(entityName) + " "
 				);
 			}
 
+			bool isSensor = false;
+			if (shape.contains("issensor"))
+			{
+				isSensor = shape["issensor"];
+			}
+			else
+			{
+				clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
+						"' lacks 'issensor' entry in shape field" +
+						"disabling by default");
+
+			}
+
+			bool enableSensorEvents = false;
+			if (shape.contains("enablesensorevents"))
+			{
+				enableSensorEvents = shape["enablesensorevents"];
+			}
+			else
+			{
+				clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
+						"' lacks 'enablesensorevents' entry in shape field" +
+						"disabling by default");
+			}
+
+			bool enableContactEvents = false;
+			if (shape.contains("enablecontactevents"))
+			{
+				enableContactEvents = shape["enablecontactevents"];
+			}
+			else
+			{
+				clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
+						"' lacks 'enablecontactevents' entry in shape field" +
+						"disabling by default");
+			}
+
+			bool enableHitEvents = false;
+			if (shape.contains("enablehitevents"))
+			{
+				enableHitEvents = shape["enablehitevents"];
+			}
+			else
+			{
+				clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
+						"' lacks 'enablehitevents' entry in shape field" +
+						"disabling by default");
+			}
+
+			
 			return physics::ShapeDef(
 				shapeType,
 				position,
@@ -269,7 +326,11 @@ namespace clz::scene
 				restitution,
 				halfExtents,
 				radius,
-				height
+				height,
+				isSensor,
+				enableSensorEvents,
+				enableContactEvents,
+				enableHitEvents
 			);
 		};
 
@@ -282,12 +343,15 @@ namespace clz::scene
 			{
 				shapeDefs.emplace_back(loadShape(shapesTable[i]));
 			}
-			data.ShapeDefs
-				.insert(data.ShapeDefs.end(), shapeDefs.begin(), shapeDefs.end());
+			data.ShapeDefs.insert(
+					data.ShapeDefs.end(), 
+					std::make_move_iterator(shapeDefs.begin()), 
+					std::make_move_iterator(shapeDefs.end())
+			);
 		}
 
 		physics::RigidBodyComponent rigidBodyComponent(
-			physics::createBody(data),
+			physics::createBody(entity, data),
 			tc.rotation,
 			tc.rotation,
 			tc.position,
@@ -347,7 +411,7 @@ namespace clz::scene
 		auto& shapesTable = physicsTable["shapes"];
 		for (const auto& shape : shapes)
 		{
-			if (shape.isItTimeSon())
+			if (shape.isMarkedForDeletetion())
 				continue;
 
 			nlohmann::json shapeEntry;
@@ -398,6 +462,11 @@ namespace clz::scene
 					std::string(entityName) + "'"
 				);
 			}
+
+			shapeEntry["issensor"] = shape.isSensor();
+			shapeEntry["enablesensorevents"] = shape.areSensorEventsEnabled();
+			shapeEntry["enablecontactevents"] = shape.areContactEventsEnabled();
+			shapeEntry["enablehitevents"] = shape.areHitEventsEnabled();
 
 			shapesTable.push_back(shapeEntry);
 		}

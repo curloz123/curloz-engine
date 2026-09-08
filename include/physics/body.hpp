@@ -1,15 +1,19 @@
 /**
-@file body.hpp
-@author curl0z
-@brief Box3D's body main header interface
-*/
+ * @file body.hpp
+ * @author curl0z
+ * @brief Box3D's body main header interface
+ */
+
 #pragma once
+
 #include "math/quat.hpp"
 #include "math/vec3.hpp"
+#include "physics/physics.hpp"
 #include "shape.hpp"
 #include <array>
 #include <box3d/box3d.h>
 #include <vector>
+#include "entity/entitymanager.hpp"
 
 namespace clz::physics
 {
@@ -64,7 +68,8 @@ namespace clz::physics
 			false
 		}; 		
 		///< @brief List of shape definitions to attach upon creation.
-		std::vector<ShapeDef> ShapeDefs = {}; 	};
+		std::vector<ShapeDef> ShapeDefs = {}; 	
+	};
 
 } // namespace clz::physics
 
@@ -72,8 +77,19 @@ namespace clz::physics
 {
 	/// @brief Creates a new rigid body in the physics world from the given definition.
 	/// @param def Body definition data (type, mass, transform, damping, sleep, locks).
+	/// @param entity to which this body is being attached to
 	/// @return Handle to the newly created body.
-	RigidBodyId createBody(BodyData& def);
+	RigidBodyId createBody(const ecs::entity entity, BodyData& def);
+
+	/// @brief Returns the entity to which a body is attached
+	/// @param rigidBodyId engine's internal rigidbody Id
+	/// @return entityId Id of entity to which this body is attached
+	ecs::entity getAttachedEntity(const RigidBodyId rigidBodyId);
+	
+	/// @brief Returns the entity to which a body is attached
+	/// @param box3dBodyId Box3d's internal body Id
+	/// @return entityId Id of entity to which this body is attached
+	ecs::entity getAttachedEntity(const b3BodyId box3dBodyId);
 
 	/// @brief Disables a rigid body and invalidates its handle.
 	/// @details Done because mid-editing, deleting is too costly, also helps in
@@ -99,12 +115,19 @@ namespace clz::physics
 	/// @brief Attaches a new shape to an existing body.
 	/// @param rigidBodyId Handle to the target body.
 	/// @param shapeDef Definition of the shape to attach.
-	void attachShapeToBody(RigidBodyId rigidBodyId, const ShapeDef& shapeDef);
+	/// @return Shape ID
+	RigidBodyShapeId attachShapeToBody(RigidBodyId rigidBodyId, const ShapeDef& shapeDef);
 
 	/// @brief Retrieves the list of shapes attached to a specific body.
 	/// @param rigidBodyId Handle to the target body.
 	/// @return Reference to the vector of shapes.
 	std::vector<Shape>& getBodyShapes(RigidBodyId rigidBodyId);
+
+	/// @brief Returns a particula shape of a body, retrieved by shape's id
+	/// @param rigidBodyId ID of rigid body
+	/// @param shapeId ID of shape
+	/// @return reference to the shape
+	Shape& getBodyShape(RigidBodyId rigidBodyId, RigidBodyShapeId shapeId);
 
 	/// @brief Refreshes attached shapes, destroying outdated ones and recreating them.
 	/// @param rigidBodyId Handle to the target body.
@@ -120,14 +143,12 @@ namespace clz::physics
 	/// @param type Which type to set the body to.
 	void setBodyType(RigidBodyId rigidBodyId, BodyType type);
 
-	/**
-	 * @brief Retrieve mass of body.
-	 * @note Mass can only be retrieved via physics engine. Mass properties are
-	 *       automatically computed via the engine. As of now, there's no way to
-	 *       set them manually.
-	 * @param rigidBodyId ID of body to retrieve data.
-	 * @return Mass of the body.
-	 */
+	/// @brief Retrieve mass of body.
+	/// @note Mass can only be retrieved via physics engine. Mass properties are
+	/// automatically computed via the engine. As of now, there's no way to
+	/// set them manually.
+	/// @param rigidBodyId ID of body to retrieve data.
+	/// @return Mass of the body.
 	float getBodyMass(RigidBodyId rigidBodyId);
 
 	/// @brief Sets the world-space position of a body, preserving its current rotation.

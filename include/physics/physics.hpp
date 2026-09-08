@@ -24,4 +24,15 @@ namespace clz::physics
 {
 	/// @brief typename identifiers for external subsystems to use
 	using RigidBodyId = uint32_t;
+
+	/// @brief Shape Id of any created body, is just index to shape's vector
+	struct RigidBodyShapeId
+	{
+		uint8_t value;
+
+		[[nodiscard]] bool operator==(const RigidBodyShapeId otherId)
+		{
+			return this->value == otherId.value;
+		}
+	};
 } // namespace clz::physics

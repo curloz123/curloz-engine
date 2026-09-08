@@ -179,7 +179,7 @@ namespace clz::editor
 	{
 		for (const auto& entityId : ecs::getEntitiesWithComponent<ecs::TransformComponent>())
 		{
-			const auto editorTransform =
+			const auto& editorTransform =
 				ecs::getComponent<ecs::EditorTransformComponent>(entityId);
 
 			ecs::setComponent<ecs::TransformComponent>(

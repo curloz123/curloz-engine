@@ -22,7 +22,6 @@ namespace clz::renderer
 	{
 		auto dir = math::vec3(0.0f, 0.0f, 0.0f);
 		const float  dt = static_cast<float>(time::getDeltaTime());
-		clz::log::debug("dt in camera: " + std::to_string(dt));
 
 		if (window::isKeyPressed(input::Key::W))
 			dir += LocalFront[id];

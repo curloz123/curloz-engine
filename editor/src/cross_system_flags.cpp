@@ -1,4 +1,6 @@
 #include "../include/cross_system_flags.hpp"
+#include "../include/editor.hpp"
+#include "window/mouse.hpp"
 #include "renderer/camera/camerafunctions.hpp"
 #include "../include/sceneview.hpp"
 #include "renderer/vk_types.hpp"
@@ -16,7 +18,7 @@ namespace clz::editor
 			prepareEditor();
 			window::enableCursor();
 
-			const auto editorCameraId =mainViewportImage.cameraId;
+			const auto editorCameraId = mainViewportImage.cameraId;
 
 			renderer::setCameraPosition(editorCameraId, renderer::getCameraPosition(renderer::r_cameraId));
 			renderer::setCameraPitch(editorCameraId, renderer::getCameraPitch(renderer::r_cameraId));

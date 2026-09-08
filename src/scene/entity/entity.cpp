@@ -66,15 +66,20 @@ namespace clz::scene
 			}
 			else
 			{
-				const auto transform =
-					retrieveTransformComponent(entityData["transform"], entityName);
-				addComponent<ecs::TransformComponent>(e, transform);
+				const auto transform = retrieveTransformComponent(
+								entityData["transform"], entityName);
+
+				addComponent<ecs::TransformComponent>(
+						e, 
+						transform
+					);
 #ifdef CLZ_ENABLE_EDITOR
 				/// @brief If Editor is enabled,
 				/// only then create these components
+				auto editorTransform = ecs::EditorTransformComponent(transform);
 				ecs::addComponent<ecs::EditorTransformComponent>(
 					e,
-					ecs::EditorTransformComponent(transform)
+					editorTransform
 				);
 #endif
 			}

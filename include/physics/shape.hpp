@@ -6,6 +6,7 @@ Provides BoxShape Data-Structure which holds all the data of any shape attached 
 */
 #pragma once
 
+#include "box3d/box3d.h"
 #include "core/assert.hpp"
 #include "core/logs.hpp"
 #include "math/quateulerconv.hpp"
@@ -18,7 +19,6 @@ namespace clz::physics
 	/// @brief Enumeration of supported primitive shape types.
 	enum class ShapeType
 	{
-		NULL_TYPE, ///< @brief Null shape type
 		BOX,	   ///< @brief Box/Cuboid shape.
 		SPHERE,	   ///< @brief Sphere shape.
 		CAPSULE,   ///< @brief Capsule shape.
@@ -28,19 +28,24 @@ namespace clz::physics
 	/// @brief Definition data for creating a physics shape.
 	struct ShapeDef
 	{
-		ShapeType shapeType = ShapeType::NULL_TYPE; ///< @brief The type of the shape.
-		math::vec3 position =
-			math::vec3(0.0f); ///< @brief Local position relative to the body.
-		math::vec3 rotation = math::vec3(
-			0.0f
-		); ///< @brief Local rotation (Euler angles) relative to the body.
-		float density = 25.0f; ///< @brief Density of the shape (used for mass calculation).
-		float friction = 1.0f; ///< @brief Friction coefficient.
+		ShapeType shapeType = ShapeType::BOX; ///< @brief The type of the shape.
+
+		math::vec3 position = math::vec3(0.0f); ///< @brief Local position relative to the body.
+		math::vec3 rotation = math::vec3(0.0f); ///< @brief Local rotation (Euler angles) relative to the body.
+							
+		float density 	  = 25.0f; ///< @brief Density of the shape (used for mass calculation).
+		float friction    = 1.0f; ///< @brief Friction coefficient.
 		float restitution = 0.5f; ///< @brief Restitution (bounciness) coefficient.
-		math::vec3 halfExtents;	  ///< @brief Half-extents for BOX shape.
-		float radius;		  ///< @brief Radius for SPHERE, CAPSULE, CYLINDER shapes.
-		float height;		  ///< @brief Height for CAPSULE, CYLINDER shapes.
-		bool shouldBeDestroyed = false; ///< @brief Hints whether shape should be destroyed
+					 
+		math::vec3 halfExtents = math::vec3(0.5f);	///< @brief Half-extents for BOX shape.
+		float radius = 0.5f;		  		///< @brief Radius for SPHERE, CAPSULE, CYLINDER shapes.
+		float height = 1.0f;		  		///< @brief Height for CAPSULE, CYLINDER shapes.
+					  
+		bool isSensor = false;	///< Is this shape a sensor??
+		bool enableSensorEvents = false;	///< Enable sensor events for this shape
+		bool enableContactEvents = false;	///< Enable contact events for this shape
+		bool enableHitEvents = false;		///< Enable hit events for this shape
+
 		ShapeDef()
 		{
 		}
@@ -54,7 +59,11 @@ namespace clz::physics
 			const float restitution = 0.1f,
 			const math::vec3 halfExtents = math::vec3(0.5f),
 			const float radius = 0.5f,
-			const float height = 1.0f
+			const float height = 1.0f,
+			const bool isSensor = false,
+			const bool enableSensorEvents = false,
+			const bool enableContactEvents = false,
+			const bool enableHitEvents = false
 		)
 		{
 			this->shapeType = shapeType;
@@ -66,41 +75,31 @@ namespace clz::physics
 			this->halfExtents = halfExtents;
 			this->radius = radius;
 			this->height = height;
-		}
-
-		bool operator==(const ShapeDef& shapeDef) const
-		{
-			return shapeType == shapeDef.shapeType && position == shapeDef.position &&
-			       rotation == shapeDef.rotation && density == shapeDef.density &&
-			       friction == shapeDef.friction &&
-			       restitution == shapeDef.restitution &&
-			       halfExtents == shapeDef.halfExtents && radius == shapeDef.radius &&
-			       height == shapeDef.height &&
-			       shouldBeDestroyed == shapeDef.shouldBeDestroyed;
-		}
-		bool operator!=(const ShapeDef& shapeDef) const
-		{
-			return !(*this == shapeDef);
+			this->isSensor = isSensor;
+			this->enableSensorEvents = enableSensorEvents;
+			this->enableContactEvents = enableContactEvents;
+			this->enableHitEvents = enableHitEvents;
 		}
 	};
 
 	/// @brief Wrapper class for a Box3D shape, managing its lifecycle and properties.
 	class Shape
 	{
-	      private:
-		b3ShapeId m_shapeId;		///< @brief Internal Box3D shape handle.
+	private:
+		RigidBodyShapeId m_externalId;	///< @brief Engine's internal shape handle
+		b3ShapeId m_shapeId;		///< @brief Box3D's internal shape handle.
 		ShapeType m_shapeType;		///< @brief The primitive type of the shape.
 		math::vec3 m_position;		///< @brief Local position offset.
 		math::vec3 m_rotation;		///< @brief Local rotation offset.
 		math::vec3 m_halfExtents;	///< @brief Half-extents (for BOX).
 		float m_radius;			///< @brief Radius (for SPHERE, CAPSULE, CYLINDER).
 		float m_height;			///< @brief Height (for CAPSULE, CYLINDER).
-		bool needsRecreation = false;	///< @brief Flag indicating if shape properties
-						///< changed and require rebuilding.
-		bool shouldBeDestroyed = false; ///< @brief Flag indicating if the shape is
-						///< marked for permanent deletion.
+		bool m_isSensor;		///< @brief Is this shape a sensor??
+		bool m_needsRecreation;		///< @brief Flag indicating if shape require rebuilding.
+		bool m_shouldBeDestroyed; 	///< @brief Flag indicating if the shape is marked for permanent deletion.
 
-	      public:
+
+	public:
 		/// @brief Default constructor.
 		Shape()
 		{
@@ -109,12 +108,13 @@ namespace clz::physics
 		/// @brief Constructs a shape and attaches it to a body.
 		/// @param shapeDef The shape definition.
 		/// @param rigidBodyId The ID of the body to attach to.
-		Shape(const ShapeDef& shapeDef, RigidBodyId rigidBodyId);
+		Shape(const ShapeDef& shapeDef, RigidBodyId rigidBodyId, const RigidBodyShapeId shapeId);
 
 		/// @brief Creates the underlying Box3D shape.
 		/// @param shapeDef The shape definition.
 		/// @param rigidBodyId The ID of the body to attach to.
-		void createShape(const ShapeDef& shapeDef, RigidBodyId rigidBodyId);
+		/// @param Engine's internal shape handle
+		void createShape(const ShapeDef& shapeDef, const RigidBodyId rigidBodyId, const RigidBodyShapeId shapeId);
 
 		/// @brief Destroys the underlying Box3D shape.
 		/// @param isRecreating If true, marks the shape for recreation rather than
@@ -143,13 +143,35 @@ namespace clz::physics
 			);
 		}
 
+		void markForDeletion()
+		{
+			m_shouldBeDestroyed = true;
+		}
+		void unMarkForDeletion()
+		{
+			m_shouldBeDestroyed = false;
+		}
+		[[nodiscard]] bool isMarkedForDeletetion() const
+		{
+			return m_shouldBeDestroyed;
+		}
+
+		void markOutdated()
+		{
+			m_needsRecreation = true;
+		}
+		void unMarkOutdated()
+		{
+			m_needsRecreation = false;
+		}
 		/// @brief Checks if the shape's properties have been modified and require
 		/// recreation.
 		/// @return True if the shape is outdated and needs recreation.
-		bool isOutdated() const
+		[[nodiscard]] bool isOutdated() const
 		{
-			return needsRecreation;
+			return m_needsRecreation;
 		}
+
 
 		void logData() const
 		{
@@ -161,18 +183,36 @@ namespace clz::physics
 			clz::log::info("density: " + std::to_string(this->getDensity()));
 		}
 
-		/// @brief Checks if the shape is marked for permanent destruction.
-		/// @return True if the shape should be destroyed.
-		bool isItTimeSon() const
-		{
-			return shouldBeDestroyed;
-		}
-
 		/// @brief Gets the shape type.
 		/// @return The ShapeType enum value.
 		ShapeType getShapeType() const
 		{
 			return m_shapeType;
+		}
+
+
+		void setShapeId(RigidBodyShapeId id)
+		{
+			m_externalId = id;
+		}
+		RigidBodyShapeId getShapeId() const
+		{
+			CLZ_ASSERT(
+				B3_IS_NON_NULL(m_shapeId),
+				"attempt to call shape id getter on a null shape"
+			);
+
+			return m_externalId;
+		}
+		/// @brief Gets the internal Box3D shape ID.
+		/// @return The b3ShapeId handle.
+		b3ShapeId getBox3DId() const
+		{
+			CLZ_ASSERT(
+				B3_IS_NON_NULL(m_shapeId),
+				"attempt to call shape id getter on a null shape"
+			);
+			return m_shapeId;
 		}
 
 		/// @brief Gets the ID of the body this shape is attached to.
@@ -182,15 +222,9 @@ namespace clz::physics
 			return b3Shape_GetBody(m_shapeId);
 		}
 
-		/// @brief Gets the internal Box3D shape ID.
-		/// @return The b3ShapeId handle.
-		b3ShapeId getShapeId() const
+		RigidBodyShapeId getExternalId() const
 		{
-			CLZ_ASSERT(
-				B3_IS_NON_NULL(m_shapeId),
-				"attempt to call shape getter on a null shape"
-			);
-			return m_shapeId;
+			return m_externalId;
 		}
 
 		/// @brief Gets the friction coefficient.
@@ -300,7 +334,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_position = pos;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the local rotation offset.
@@ -314,7 +348,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_rotation = rot;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Gets the half-extents of a BOX shape.
@@ -400,7 +434,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_halfExtents = extents;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the radius of a SPHERE shape.
@@ -414,7 +448,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_radius = r;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the radius of a CAPSULE shape.
@@ -428,7 +462,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_radius = r;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the height of a CAPSULE shape.
@@ -442,7 +476,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_height = h;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the radius of a CYLINDER shape.
@@ -456,7 +490,7 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_radius = r;
-			needsRecreation = true;
+			m_needsRecreation = true;
 		}
 
 		/// @brief Sets the height of a CYLINDER shape.
@@ -470,7 +504,46 @@ namespace clz::physics
 				"unless it is attached to any body"
 			);
 			m_height = h;
-			needsRecreation = true;
+			m_needsRecreation = true;
+		}
+
+		bool isSensor() const
+		{
+			return m_isSensor;
+		}
+		/// @note Internally recreates the shape
+		/// Not something you'd do every frame at all
+		void makeSensor(const bool flag)
+		{
+			if (m_isSensor == flag)
+				return;
+
+			m_isSensor = flag;
+			m_needsRecreation = true;
+		}
+		bool areSensorEventsEnabled() const
+		{
+			return b3Shape_AreSensorEventsEnabled(m_shapeId);
+		}
+		void enableSensorEvents(const bool enable)
+		{
+			b3Shape_EnableSensorEvents(m_shapeId, enable);
+		}
+		bool areContactEventsEnabled() const
+		{
+			return b3Shape_AreContactEventsEnabled(m_shapeId);
+		}
+		void enableContactEvents(const bool enable)
+		{
+			b3Shape_EnableContactEvents(m_shapeId, enable);
+		}
+		bool areHitEventsEnabled() const
+		{
+			return b3Shape_AreHitEventsEnabled(m_shapeId);
+		}
+		void enableHitEvents(const bool enable)
+		{
+			b3Shape_EnableHitEvents(m_shapeId, enable);
 		}
 
 		/// @brief Equality operator comparing internal shape IDs.
@@ -479,11 +552,11 @@ namespace clz::physics
 		[[nodiscard]] bool operator==(const Shape& otherShape) const
 		{
 			CLZ_ASSERT(
-				B3_IS_NON_NULL(otherShape.getShapeId()) &&
+				B3_IS_NON_NULL(otherShape.getBox3DId()) &&
 					B3_IS_NON_NULL(m_shapeId),
 				"comparing shape with a null shape id"
 			);
-			return B3_ID_EQUALS(m_shapeId, otherShape.getShapeId());
+			return B3_ID_EQUALS(m_shapeId, otherShape.getBox3DId());
 		}
 
 		/// @brief Checks if two shapes are attached to the same body.
@@ -493,7 +566,7 @@ namespace clz::physics
 		{
 			CLZ_ASSERT(
 				B3_IS_NON_NULL(m_shapeId) &&
-					B3_IS_NON_NULL(otherShape.getShapeId()),
+					B3_IS_NON_NULL(otherShape.getBox3DId()),
 				"comparing shape bodies with a null body id"
 			);
 			return B3_ID_EQUALS(

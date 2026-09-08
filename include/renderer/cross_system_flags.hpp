@@ -22,7 +22,7 @@ namespace clz::renderer
 		const clz::state::EngineState oldState,
 		const clz::state::EngineState newState)
 	{
-		clz::log::debug("state change called by renderer");
+		clz::log::info("state change hinted to renderer");
 		if (newState == clz::state::EngineState::Game)
 		{
 			window::disableCursor();

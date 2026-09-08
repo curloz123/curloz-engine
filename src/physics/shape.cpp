@@ -6,21 +6,32 @@
 #include "physics/shape.hpp"
 #include "physics/body.hpp"
 #include "physics/math.hpp"
+#include "physics/physics.hpp"
 
 namespace clz::physics
 {
 	/// @copydoc
-	Shape::Shape(const ShapeDef& shapeDef, const RigidBodyId rigidBodyId)
+	Shape::Shape(
+		const ShapeDef& shapeDef, 
+		const RigidBodyId rigidBodyId, 
+		const RigidBodyShapeId shapeId)
 	{
-		createShape(shapeDef, rigidBodyId);
+		createShape(shapeDef, rigidBodyId, shapeId);
 	}
 
 	/// @copydoc
-	void Shape::createShape(const ShapeDef& shapeDef, const RigidBodyId rigidBodyId)
+	void Shape::createShape(
+			const ShapeDef& shapeDef, 
+			const RigidBodyId rigidBodyId, 
+			const RigidBodyShapeId shapeId)
 	{
+		/// Set internal data
+		m_externalId = shapeId;
 		m_shapeType = shapeDef.shapeType;
 		m_position = shapeDef.position;
 		m_rotation = shapeDef.rotation;
+		m_isSensor = shapeDef.isSensor;
+
 		const b3Vec3 pos = toVec3(m_position);
 		const b3Quat quat = toQuat(math::quatFromEuler(m_rotation));
 		const b3Transform localTransform = {pos, quat};
@@ -29,6 +40,11 @@ namespace clz::physics
 		sDef.density = shapeDef.density;
 		sDef.baseMaterial.friction = shapeDef.friction;
 		sDef.baseMaterial.restitution = shapeDef.restitution;
+
+		sDef.isSensor = m_isSensor;
+		sDef.enableSensorEvents = shapeDef.enableSensorEvents;
+		sDef.enableContactEvents = shapeDef.enableContactEvents;
+		sDef.enableHitEvents = shapeDef.enableHitEvents;
 
 		switch (m_shapeType)
 		{
@@ -60,9 +76,13 @@ namespace clz::physics
 			break;
 		}
 		}
+
+		///< Apply mass
 		b3Body_ApplyMassFromShapes(getBox3dBodyId(rigidBodyId));
-		needsRecreation = false;
-		shouldBeDestroyed = false;
+
+
+		m_needsRecreation = false;
+		m_shouldBeDestroyed = false;
 	}
 
 	/// @copydoc
@@ -71,7 +91,7 @@ namespace clz::physics
 		b3DestroyShape(m_shapeId, true);
 		m_shapeId = b3_nullShapeId;
 		if (!isRecreating)
-			shouldBeDestroyed = true;
+			m_shouldBeDestroyed = true;
 	}
 
 	/// @copydoc
@@ -86,10 +106,14 @@ namespace clz::physics
 			this->getRestitution(),
 			m_halfExtents,
 			m_radius,
-			m_height
+			m_height,
+			m_isSensor,
+			this->areSensorEventsEnabled(),
+			this->areContactEventsEnabled(),
+			this->areHitEventsEnabled()
 		);
 		this->destroyShape(true);
-		this->createShape(shapeDef, rigidBodyId);
-		needsRecreation = false;
+		this->createShape(shapeDef, rigidBodyId, m_externalId);
+		m_needsRecreation = false;
 	}
 } // namespace clz::physics

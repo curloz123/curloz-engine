@@ -32,12 +32,4 @@ enum class CurrentFocusedWindow
 	BodyEditor
 };
 
-/// @brief Gizmo Transform helper
-enum class TransformType
-{
-	TRANSLATE,
-	ROTATE,
-	SCALE,
-};
-inline TransformType ActiveTransform = TransformType::TRANSLATE;
 } // namespace clz::editor

@@ -11,7 +11,7 @@ void main()
 	vec4 fragColor = texture(renderTarget, inUV);
 		
 	const float T = 1.0;
-	const float K = 0.2;
+	const float K = 0.3;
 	const float B = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
 	float S = B - T + K;
 	S = clamp(S, 0.0, K*2);

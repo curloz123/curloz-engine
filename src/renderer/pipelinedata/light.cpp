@@ -73,17 +73,18 @@ namespace clz::renderer
 	/// @copydoc updateLightDescriptor
 	void updateLightDescriptor()
 	{
-		const ShaderLightData lightData{
-			.numPointLights = static_cast<uint32_t>(numPointLights),
-			.numSpotLights = static_cast<uint32_t>(numSpotLights)
-		};
-		memcpy(lightDataUBO.mapped[r_currentFrame], &lightData, sizeof(ShaderLightData));
-
 		memcpy(dirUBO.mapped[r_currentFrame],
 		       Lights.directionalLight.data(),
 		       sizeof(DirectionalLight) * numDirectionalLights);
 
 		auto& pointLightEntities = ecs::getEntitiesWithComponent<PointLightComponent>();
+		const uint32_t activePointLights = pointLightEntities.size();
+		const ShaderLightData lightData{
+			.numPointLights = activePointLights,
+			.numSpotLights = static_cast<uint32_t>(numSpotLights)
+		};
+		memcpy(lightDataUBO.mapped[r_currentFrame], &lightData, sizeof(ShaderLightData));
+
 		for (auto& entity : pointLightEntities)
 		{
 			Lights.pointLights[ecs::getComponent<PointLightComponent>(entity).Id.value]
@@ -92,7 +93,7 @@ namespace clz::renderer
 		}
 		memcpy(pointSSBO.mapped[r_currentFrame],
 		       Lights.pointLights.data(),
-		       sizeof(PointLight) * numPointLights);
+		       sizeof(PointLight) * activePointLights);
 
 		/*
 		auto& spotLightEntities = ecs::getEntitiesWithComponent<SpotLightComponent>();

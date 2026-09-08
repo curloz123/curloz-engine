@@ -31,15 +31,17 @@ namespace clz::renderer
 	/// @copydoc init
 	bool init()
 	{
-		/// --- 0. Parse config data
-		parseConfigData();
-
-		/// --- 1. Initialize all context's
+		/// --- 0. Device is always initialized first
 		if (!initDeviceContext())
 		{
 			clz::log::error("Could not initialize device context");
 			goto failure;
 		}
+
+		/// --- 1. Parse config data
+		parseConfigData();
+
+		/// --- 2. Rest context's
 		if (!initCommandContext())
 		{
 			clz::log::error("Could not initialize frame context");

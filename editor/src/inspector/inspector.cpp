@@ -38,72 +38,73 @@ namespace clz::editor
 			return;
 		}
 
-		if (currentSelectedEntity.has_value())
+		if (!currentSelectedEntity.has_value())
 		{
-			ImGui::PushFont(fontMonoBold, 20);
-			ImGui::Text(
-				"Selected Entity: %s",
-				ecs::getEntityName(currentSelectedEntity.value()).c_str()
-			);
-			ImGui::PopFont();
+			ImGui::TextDisabled("No entity selected");
+			ImGui::End();
+			return;
+		}
 
-			ImGui::Separator();
+		ImGui::PushFont(fontMonoBold, 20);
+		ImGui::Text(
+			"Selected Entity: %s",
+			ecs::getEntityName(currentSelectedEntity.value()).c_str()
+		);
+		ImGui::PopFont();
 
-			ImGui::PushFont(fontMono, 18);
-			ImGui::Text("Entity is currently: ");
+		ImGui::Separator();
 
-			ImGui::SameLine();
-			if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
-			{
-				ImGui::Text("Enabled");
-			}
-			else
-			{
-				ImGui::Text("Disabled");
-			}
-			ImGui::PopFont();
+		ImGui::PushFont(fontMono, 18);
+		ImGui::Text("Entity is currently: ");
 
-			ImGui::Separator();
-
-			// Every entity has transform component
-			showTransformComponentHeader();
-			ImGui::Separator();
-
-			if (ecs::hasComponent<renderer::ModelComponent>(
-				    currentSelectedEntity.value()
-			    ))
-			{
-				showModelComponentHeader();
-				ImGui::Separator();
-			}
-			if (ecs::hasComponent<renderer::DirectionalLightComponent>(
-				currentSelectedEntity.value()
-				))
-			{
-				showDirectionalLightHeader();
-				ImGui::Separator();
-			}
-			if (ecs::hasComponent<renderer::PointLightComponent>(
-				currentSelectedEntity.value()
-				))
-			{
-				showPointLightHeader();
-				ImGui::Separator();
-			}
-
-			if (ecs::hasComponent<physics::RigidBodyComponent>(
-				    currentSelectedEntity.value()
-			    ))
-			{
-				showRigidBodyHeader();
-				ImGui::Separator();
-			}
-
+		ImGui::SameLine();
+		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
+		{
+			ImGui::Text("Enabled");
 		}
 		else
 		{
-			ImGui::TextDisabled("No entity selected");
+			ImGui::Text("Disabled");
 		}
+		ImGui::PopFont();
+
+		ImGui::Separator();
+
+		// Every entity has transform component
+		showTransformComponentHeader();
+		ImGui::Separator();
+
+		if (ecs::hasComponent<renderer::ModelComponent>(
+			    currentSelectedEntity.value()
+		    ))
+		{
+			showModelComponentHeader();
+			ImGui::Separator();
+		}
+		if (ecs::hasComponent<renderer::DirectionalLightComponent>(
+			currentSelectedEntity.value()
+			))
+		{
+			showDirectionalLightHeader();
+			ImGui::Separator();
+		}
+		if (ecs::hasComponent<renderer::PointLightComponent>(
+			currentSelectedEntity.value()
+			))
+		{
+			showPointLightHeader();
+			ImGui::Separator();
+		}
+
+		if (ecs::hasComponent<physics::RigidBodyComponent>(
+			    currentSelectedEntity.value()
+		    ))
+		{
+			showRigidBodyHeader();
+			ImGui::Separator();
+		}
+
+		
 
 		ImGui::End();
 

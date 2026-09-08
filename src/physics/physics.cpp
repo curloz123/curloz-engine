@@ -16,6 +16,10 @@
 #include "physics/physics_types.hpp"
 #include "physics/physicscomponent.hpp"
 #include "physics/math.hpp"
+#include "physics/sensor_events.hpp"
+
+#ifdef CLZ_ENABLE_EDITOR
+#endif
 
 namespace clz::physics
 {
@@ -25,7 +29,7 @@ namespace clz::physics
 		b3WorldDef worldDef = b3DefaultWorldDef();
 
 		// No multithreading for now
-		p_gravity = (b3Vec3){0.0f, -9.8f, 0.0f};
+		p_gravity = b3Vec3{0.0f, -9.8f, 0.0f};
 		worldDef.gravity = p_gravity;
 		worldDef.enableSleep = config::getValue<bool>("physics", "enablesleep", false);
 		p_world = b3CreateWorld(&worldDef);
@@ -44,39 +48,16 @@ namespace clz::physics
 	}
 
 	/// @brief Update's the physics engine
-	/// @note in editor mode, the physics engine reads EditorTransformComponent of the
-	/// entity, and writes back data to internal data structure. Cuz we don't want
-	/// physics mingling while we're editing do we?? Also we use fixed time step with
+	/// @note in editor mode, we don't iterate physics engine at all
+	/// @note Also we use fixed time step with
 	/// that remainder accumulator method Uses slerp and lerp for smooth transition of
 	/// transform
 	void update()
 	{
-#ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState != state::EngineState::Game)
 		{
-			for (auto& entities = ecs::getEntitiesWithComponent<RigidBodyComponent>();
-			     auto& entity : entities)
-			{
-				auto& body = ecs::getComponent<RigidBodyComponent>(entity);
-				const auto& transformComponent =
-					ecs::getComponent<ecs::TransformComponent>(entity);
-
-				setBodyPosition(body.rigidBodyId, transformComponent.position);
-				body.newPosition = transformComponent.position;
-				body.prevPosition = body.newPosition;
-
-				const auto bodyRotation = transformComponent.rotation;
-				setBodyRotation(body.rigidBodyId, bodyRotation);
-
-				body.newRotation = bodyRotation;
-				body.prevRotation = bodyRotation;
-
-				setBodyVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
-				setBodyAngularVelocity(body.rigidBodyId, {0.0f, 0.0f, 0.0f});
-			}
 			return;
 		}
-#endif
 
 		p_accumulator += time::getDeltaTime();
 		const auto& entities = ecs::getEntitiesWithComponent<RigidBodyComponent>();
@@ -93,10 +74,16 @@ namespace clz::physics
 				body.prevRotation = body.newRotation;
 				body.newPosition = getBodyPosition(body.rigidBodyId);
 				body.newRotation = getBodyRotation(body.rigidBodyId);
+
 			}
+
+			///< Process sensor events
+			processSensorEvents();
+
 		}
 		const float alpha = p_accumulator / p_timeStep;
 
+		///< update entity's transform
 		for (const auto& entity : entities)
 		{
 			auto& transformComponent =
@@ -108,6 +95,7 @@ namespace clz::physics
 			transformComponent.rotation =
 				math::slerp(body.prevRotation, body.newRotation, alpha);
 		}
+
 	}
 
 	/// @brief Shuts down the physics engine

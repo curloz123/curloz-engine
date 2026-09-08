@@ -35,8 +35,8 @@ namespace clz::renderer
 		ModelPaths[Id] = ModelPath(filePath);
 
 		fastgltf::Parser parser{
-		   	fastgltf::Extensions::KHR_materials_emissive_strength | 
-			fastgltf::Extensions::KHR_lights_punctual
+		   	fastgltf::Extensions::KHR_materials_emissive_strength 
+			// fastgltf::Extensions::KHR_lights_punctual
 		};
 
 		auto data = fastgltf::GltfDataBuffer::FromPath(filePath);
@@ -83,9 +83,7 @@ namespace clz::renderer
 		return Id;
 	}
 
-	/**
-	 * @copydoc drawAllModels
-	 */
+	/// @copydoc drawAllModels
 	void drawAllModels(VkCommandBuffer commandBuffer)
 	{
 		const auto& model_entities = clz::ecs::getEntitiesWithComponent<ModelComponent>();

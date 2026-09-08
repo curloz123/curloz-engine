@@ -8,10 +8,14 @@
  */
 
 #include "../include/sceneview.hpp"
-#include "../include/gizmo/entitytransformgizmo.hpp"
 #include "../include/offscreen/offscreentarget.hpp"
-#include "core/logs.hpp"
+#include "../include/timemachine.hpp"
+#include "entity/componentmanager.hpp"
+#include "entity/corecomponents.hpp"
+#include "include/gizmo/gizmo.hpp"
 #include "include/inspector/rigidbodycomponent.hpp"
+#include "include/scenetable.hpp"
+#include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 #include <imgui.h>
@@ -19,119 +23,192 @@
 
 namespace clz::editor
 {
-// Forward declaration of the internal viewport drawing function.
-void drawMainViewPort();
+	// Forward declaration of the internal viewport drawing function.
+	static void drawMainViewPort();
+	static void showTransformGizmo(const Rect2D& rect);
 } // namespace clz::editor
 
 namespace clz::editor
 {
-/**
- * @brief Draws the "Curloz Engine" window and its tab bar.
- *
- * This is the entry point for the scene view. It creates the top‑level
- * window and a tab bar, then delegates to `drawMainViewPort()`.
- *
- * @par Decision: Tab bar for future multi‑view support
- *      Even though currently only one tab ("Game view") exists, the tab
- *      bar structure allows adding other views later.
- *      All other offscreen images shall be drawn here only.
- */
-void drawSceneView()
-{
-	if (!ImGui::Begin("Curloz Engine"))
+	/**
+	 * @brief Draws the "Curloz Engine" window and its tab bar.
+	 *
+	 * This is the entry point for the scene view. It creates the top‑level
+	 * window and a tab bar, then delegates to `drawMainViewPort()`.
+	 *
+	 * @par Decision: Tab bar for future multi‑view support
+	 *      Even though currently only one tab ("Game view") exists, the tab
+	 *      bar structure allows adding other views later.
+	 *      All other offscreen images shall be drawn here only.
+	 */
+	void drawSceneView()
 	{
+		if (!ImGui::Begin("Curloz Engine"))
+		{
+			ImGui::End();
+			return;
+		}
+
+		/// --- Main Scene
+		if (mainViewportImage.showTarget)
+			drawMainViewPort();
+
+		/// --- Rigid body editor
 		ImGui::End();
-		return;
 	}
-	/// --- Main Scene
-	if (mainViewportImage.showTarget)
-		drawMainViewPort();
-
-	if (physicsBodyShapeImage.showTarget)
-		presentBodyEditorWindow();
-
-	/// --- Rigid body editor
-	ImGui::End();
-}
 } // namespace clz::editor
 
 namespace clz::editor
 {
-
-/// @brief Draws the main viewport
-/// @note Updates camera only on focus, but mouse's right-click is checked
-/// every frame in order to avoid camera-snap
-void drawMainViewPort()
-{
-	const ImVec2 avail = ImGui::GetContentRegionAvail();
-	if (avail.x < 1.0f || avail.y < 1.0f)
+	/// @brief Draws the main viewport
+	/// @note Updates camera only on focus, but mouse's right-click is checked
+	/// every frame in order to avoid camera-snap
+	void drawMainViewPort()
 	{
-		return;
-	}
-	const auto width = static_cast<uint32_t>(avail.x);
-	const auto height = static_cast<uint32_t>(avail.y);
-	if ((width != mainViewportImage.extent.width ||
-	     height != mainViewportImage.extent.height) &&
-	    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
-	{
-		mainViewportImage.extent.width = width;
-		mainViewportImage.extent.height = height;
-		renderer::updateCameraProjMatrix(mainViewportImage.cameraId);
-		mainViewportImage.outDated = true;
-	}
-
-	/*
-	if (ImGui::IsWindowHovered())
-	{
-		ImGui::SetWindowFocus(ImGui::GetCurrentWindow()->Name);
-	}
-	*/
-
-	static bool rightClickThisFrame = false;
-	static bool rightClickLastFrame = false;
-
-	if (ImGui::IsWindowHovered() &&
-		window::isMousePressed(clz::input::Mouse::MouseRight))
-	{
-		rightClickThisFrame = true;
-		ImGuiWindow* window = ImGui::GetCurrentContext()->HoveredWindow;
-		ImGui::FocusWindow(window);
-	}
-	else
-	{
-		rightClickThisFrame = false;
-	}
-
-	if (ImGui::IsWindowFocused())
-	{
-		if (rightClickThisFrame && !rightClickLastFrame)
+		const ImVec2 avail = ImGui::GetContentRegionAvail();
+		if (avail.x < 1.0f || avail.y < 1.0f)
 		{
-			window::disableCursor();
+			return;
 		}
-		else if (!rightClickThisFrame && rightClickLastFrame)
+		const auto width = static_cast<uint32_t>(avail.x);
+		const auto height = static_cast<uint32_t>(avail.y);
+		if ((width != mainViewportImage.extent.width ||
+		     height != mainViewportImage.extent.height) &&
+		    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
 		{
-			window::enableCursor();
+			mainViewportImage.extent.width = width;
+			mainViewportImage.extent.height = height;
+			renderer::updateCameraProjMatrix(mainViewportImage.cameraId);
+			mainViewportImage.outDated = true;
 		}
 
-		if (rightClickThisFrame)
+		/*
+		if (ImGui::IsWindowHovered())
 		{
-			renderer::updateCamera(mainViewportImage.cameraId);
+			ImGui::SetWindowFocus(ImGui::GetCurrentWindow()->Name);
+		}
+		*/
+
+		static bool rightClickThisFrame = false;
+		static bool rightClickLastFrame = false;
+
+		if (ImGui::IsWindowHovered() &&
+			window::isMousePressed(clz::input::Mouse::MouseRight))
+		{
+			rightClickThisFrame = true;
+			ImGuiWindow* window = ImGui::GetCurrentContext()->HoveredWindow;
+			ImGui::FocusWindow(window);
+		}
+		else
+		{
+			rightClickThisFrame = false;
 		}
 
-		rightClickLastFrame = rightClickThisFrame;
+		if (ImGui::IsWindowFocused())
+		{
+			if (rightClickThisFrame && !rightClickLastFrame)
+			{
+				window::disableCursor();
+			}
+			else if (!rightClickThisFrame && rightClickLastFrame)
+			{
+				window::enableCursor();
+			}
+
+			if (rightClickThisFrame)
+			{
+				renderer::updateCamera(mainViewportImage.cameraId);
+			}
+
+			rightClickLastFrame = rightClickThisFrame;
+		}
+
+		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
+
+		ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, avail);
+
+		const Rect2D rect{
+			.x = static_cast<uint32_t>(cursorPosBefore.x),
+			.y = static_cast<uint32_t>(cursorPosBefore.y),
+			.width = mainViewportImage.extent.width,
+			.height = mainViewportImage.extent.height
+		};
+		showTransformGizmo(rect);
 	}
 
-	const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
+	void showTransformGizmo(const Rect2D& rect)
+	{
+		if (!currentSelectedEntity.has_value())
+			return;
 
-	ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, avail);
+		/// --- static variables ---
+		static bool gizmoUsedLastFrame = false;
+		static bool gizmoUsedThisFrame = false;
+		static auto previousGizmoEditorTransform = 
+			ecs::getComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value());
+		static auto previousGizmoTransform = 
+			ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
 
-	const Rect2D rect{
-		.x = static_cast<uint32_t>(cursorPosBefore.x),
-		.y = static_cast<uint32_t>(cursorPosBefore.y),
-		.width = mainViewportImage.extent.width,
-		.height = mainViewportImage.extent.height
-	};
-	drawEntityTransformGizmo(rect);
-}
+		auto proj = renderer::getCameraProjMatrix(
+				mainViewportImage.cameraId, 
+				mainViewportImage.extent.width,
+				mainViewportImage.extent.height);
+		auto view = renderer::getCameraViewMatrix(mainViewportImage.cameraId);
+		const auto currentTransform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
+		const auto [newTransform, newEditorTransform, change] = gizmoTransform(rect, proj, view, currentTransform);
 
+
+		///< @brief determines if gizmo was changed this frame
+		///< @note at the end of this function, gizmoUsedLastFrame is set
+		gizmoUsedThisFrame = change;	
+
+		if (change)
+		{
+			gizmoUsedThisFrame = true;
+			if (!gizmoUsedLastFrame)
+			{
+				previousGizmoTransform = currentTransform;
+				previousGizmoEditorTransform = ecs::EditorTransformComponent(currentTransform);
+			}
+			ecs::setComponent<ecs::TransformComponent>(
+					currentSelectedEntity.value(), newTransform);
+			ecs::setComponent<ecs::EditorTransformComponent>(
+					currentSelectedEntity.value(), newEditorTransform);
+		}
+		else
+		{
+			gizmoUsedThisFrame = false;
+			if (gizmoUsedLastFrame)
+			{
+				const auto entityId = currentSelectedEntity.value();
+				auto oldTransform = previousGizmoTransform;
+				auto oldEditorTransform = previousGizmoEditorTransform;
+				timemachine::createSnapshot(
+					[entityId, oldTransform, oldEditorTransform] {
+						ecs::setComponent<ecs::TransformComponent>(
+							entityId,
+							oldTransform
+						);
+						ecs::setComponent<ecs::EditorTransformComponent>(
+							entityId,
+							oldEditorTransform
+						);
+					},
+					[entityId, newTransform, newEditorTransform] {
+						ecs::setComponent<ecs::TransformComponent>(
+							entityId,
+							newTransform
+						);
+						ecs::setComponent<ecs::EditorTransformComponent>(
+							entityId,
+							newEditorTransform
+						);
+					}
+				);
+			}
+		}
+
+		/// @brief Swap gizmo frame checkers
+		gizmoUsedLastFrame = gizmoUsedThisFrame;
+	}
 } // namespace clz::editor

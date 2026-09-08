@@ -49,11 +49,9 @@ namespace clz::window
 	 * @brief Hides the cursor and locks it to the window for unlimited relative movement
 	 * (e.g., FPS camera look).
 	 */
-	inline void disableCursor(
-	     const std::source_location loc = std::source_location::current())
+	inline void disableCursor()
 	{
 		glfwSetInputMode(w_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		clz::log::debug("cursor disabled by: ", loc);
 
 		double cursorX = 0;
 		double cursorY = 0;
@@ -71,11 +69,9 @@ namespace clz::window
 	/**
 	 * @brief Restores the cursor to normal behavior and visibility.
 	 */
-	inline void enableCursor(
-	     const std::source_location loc = std::source_location::current())
+	inline void enableCursor()
 	{
 		glfwSetInputMode(w_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		clz::log::debug("cursor enabled by: ", loc);
 
 		double cursorX = 0;
 		double cursorY = 0;

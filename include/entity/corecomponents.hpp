@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "math/angle.hpp"
 #include "math/quat.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/vec3.hpp"
@@ -69,8 +70,8 @@ namespace clz::ecs
 		{
 		}
 
-		explicit EditorTransformComponent(const TransformComponent& transformComponent)
-		    : rotation(math::quatToEulerXYZ(transformComponent.rotation)),
+		EditorTransformComponent(const TransformComponent& transformComponent)
+		    : rotation(math::degrees(math::quatToEulerXYZ(transformComponent.rotation))),
 		      position(transformComponent.position), scale(transformComponent.scale)
 		{
 		}

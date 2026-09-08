@@ -31,7 +31,7 @@ void main()
 		uv.x *= PC.aspectRatio;
 		float dist = length(uv);
 
-		vec2 offset = uv * dist * PC.chromaticAberrationStrength;
+		vec2 offset = uv * PC.chromaticAberrationStrength;
 		offset.x /= PC.aspectRatio;
 
 		float r = texture(tonemappedImage, inUV + offset).r;
