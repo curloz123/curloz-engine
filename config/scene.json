@@ -1,4 +1,7 @@
 {
+	"scripts": [
+		
+	],
     "camera": [
         {
             "acceleration": 15.0,

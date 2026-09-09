@@ -126,3 +126,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
 #BOX3D
 add_subdirectory(external/box3d)
 target_link_libraries(${PROJECT_NAME} PRIVATE box3d::box3d)
+
+#LUA and SOL2
+add_subdirectory(external/lua)
+add_subdirectory(external/sol2)
+target_link_libraries(${PROJECT_NAME} PRIVATE lua_static sol2::sol2)
