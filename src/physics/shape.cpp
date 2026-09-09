@@ -3,9 +3,11 @@
 @author curl0z
 @brief Box3D's shape implementation file
 */
+
 #include "physics/shape.hpp"
 #include "physics/body.hpp"
 #include "physics/math.hpp"
+#include "math/angle.hpp"
 #include "physics/physics.hpp"
 
 namespace clz::physics
@@ -33,7 +35,7 @@ namespace clz::physics
 		m_isSensor = shapeDef.isSensor;
 
 		const b3Vec3 pos = toVec3(m_position);
-		const b3Quat quat = toQuat(math::quatFromEuler(m_rotation));
+		const b3Quat quat = toQuat(math::quatFromEuler(math::radians(m_rotation)));
 		const b3Transform localTransform = {pos, quat};
 
 		b3ShapeDef sDef = b3DefaultShapeDef();
