@@ -1,13 +1,18 @@
+/**
+ * file sensor_events.cpp
+ * @author curl0z
+ * @brief manages all sensor events in physics system
+ */
 #include "physics/sensor_events.hpp"
 #include "box3d/box3d.h"
 #include "box3d/types.h"
 #include "entity/entitymanager.hpp"
 #include "physics/physics_types.hpp"
 #include "physics/body.hpp"
-#include <string>
 
 namespace clz::physics
 {
+	/// @copydoc processSensorEvents
 	void processSensorEvents()
 	{
 		///< Get all events from box3d

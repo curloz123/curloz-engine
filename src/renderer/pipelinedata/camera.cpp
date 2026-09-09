@@ -6,12 +6,9 @@
 
 #include "renderer/pipelinedata/camera.hpp"
 #include "core/logs.hpp"
-#include "memory.h"
-#include "renderer/lighting/lighting.hpp"
-#include "renderer/utility/buffer.hpp"
+#include <cstring>
 #include "renderer/utility/descriptor.hpp"
-#include "renderer/utility/namer.hpp"
-#include "renderer/utility/offsetalignment.hpp"
+#include "renderer/vk_types.hpp"
 
 namespace clz::renderer
 {
@@ -48,7 +45,7 @@ namespace clz::renderer
 
 	void updateCameraDescriptor(const CameraShaderUBO& cameraShaderUBO)
 	{
-		memcpy(cameraUBO.mapped[r_currentFrame], &cameraShaderUBO, sizeof(CameraShaderUBO));
+		std::memcpy(cameraUBO.mapped[r_currentFrame], &cameraShaderUBO, sizeof(CameraShaderUBO));
 	}
 
 	void destroyCameraDescriptor()

@@ -13,7 +13,6 @@
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
 #include "include/gizmo/gizmo.hpp"
-#include "renderer/vk_types.hpp"
 #include "include/scenetable.hpp"
 #include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
@@ -71,18 +70,6 @@ namespace clz::editor
 		{
 			return;
 		}
-		// const auto width = static_cast<uint32_t>(availableRegion.x);
-		// const auto height = static_cast<uint32_t>(availableRegion.y);
-		// if ((width != mainViewportImage.extent.width ||
-		//      height != mainViewportImage.extent.height) &&
-		//     clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
-		// {
-		// 	mainViewportImage.extent.width = width;
-		// 	mainViewportImage.extent.height = height;
-		// 	renderer::updateCameraProjMatrix(mainViewportImage.cameraId);
-		// 	mainViewportImage.outDated = true;
-		// }
-
 
 		static bool rightClickThisFrame = false;
 		static bool rightClickLastFrame = false;
@@ -119,7 +106,6 @@ namespace clz::editor
 		}
 
 
-		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
 		const ImVec2 canvasSize = availableRegion;
 		const float imageAspect = (float)mainViewportImage.extent.width / 
 						(float)mainViewportImage.extent.height;
@@ -140,19 +126,20 @@ namespace clz::editor
 			(canvasSize.x - finalCanvasSize.x) * 0.5f,
 			(canvasSize.y - finalCanvasSize.y) * 0.5f
 		};
-		ImVec2 currectPos = ImGui::GetCursorPos();
-		ImGui::SetCursorPos(ImVec2(
-				currectPos.x + offset.x,
-				currectPos.y + offset.y)
-		);
+		ImVec2 currentPosLocal  = ImGui::GetCursorPos();      
+		ImVec2 currentPosScreen = ImGui::GetCursorScreenPos();
 
+		ImVec2 newCursorPosLocal  = ImVec2(currentPosLocal.x + offset.x,  currentPosLocal.y + offset.y);
+		ImVec2 newCursorPosScreen = ImVec2(currentPosScreen.x + offset.x, currentPosScreen.y + offset.y);
+
+		ImGui::SetCursorPos(newCursorPosLocal);
 		ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, finalCanvasSize);
 
 		const Rect2D rect{
-			.x = static_cast<uint32_t>(cursorPosBefore.x),
-			.y = static_cast<uint32_t>(cursorPosBefore.y),
-			.width = mainViewportImage.extent.width,
-			.height = mainViewportImage.extent.height
+			.x = static_cast<uint32_t>(newCursorPosScreen.x),
+			.y = static_cast<uint32_t>(newCursorPosScreen.y),
+			.width = static_cast<uint32_t>(finalCanvasSize.x),
+			.height = static_cast<uint32_t>(finalCanvasSize.y),
 		};
 		showTransformGizmo(rect);
 	}

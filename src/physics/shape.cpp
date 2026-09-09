@@ -114,6 +114,8 @@ namespace clz::physics
 		);
 		this->destroyShape(true);
 		this->createShape(shapeDef, rigidBodyId, m_externalId);
+
+		/// mark it un-outdated
 		m_needsRecreation = false;
 	}
 } // namespace clz::physics

@@ -124,6 +124,7 @@ namespace clz::physics
 		/// @brief Recreates the shape (e.g., after property changes that require
 		/// rebuilding).
 		/// @param rigidBodyId The ID of the attached body.
+		/// @note Internally marks shape un-outdated
 		void recreateShape(RigidBodyId rigidBodyId);
 
 		/// @brief Retrieves the complete definition data of the shape.
@@ -143,44 +144,35 @@ namespace clz::physics
 			);
 		}
 
+		/// @brief Marks shape for deletion
+		/// @note shape is deleted next time the body it is attached
+		/// to is refreshed
 		void markForDeletion()
 		{
 			m_shouldBeDestroyed = true;
 		}
+
+		/// @brief Unmarks shape for deletion
+		/// @note shape is still recreated next time the body it is attached
+		/// to is refreshed
 		void unMarkForDeletion()
 		{
 			m_shouldBeDestroyed = false;
 		}
-		[[nodiscard]] bool isMarkedForDeletetion() const
+
+		/// @brief Queries whether shape is marked for deletion
+		/// @return Is shape marked for deletion
+		bool isMarkedForDeletetion() const
 		{
 			return m_shouldBeDestroyed;
 		}
 
-		void markOutdated()
-		{
-			m_needsRecreation = true;
-		}
-		void unMarkOutdated()
-		{
-			m_needsRecreation = false;
-		}
 		/// @brief Checks if the shape's properties have been modified and require
 		/// recreation.
 		/// @return True if the shape is outdated and needs recreation.
 		[[nodiscard]] bool isOutdated() const
 		{
 			return m_needsRecreation;
-		}
-
-
-		void logData() const
-		{
-			clz::log::info("density: " + std::to_string(this->getDensity()));
-			clz::log::info("mass: " + std::to_string(this->getDensity()));
-			clz::log::info("density: " + std::to_string(this->getRestitution()));
-			clz::log::info("density: " + std::to_string(this->getFriction()));
-			clz::log::info("density: " + std::to_string(this->getDensity()));
-			clz::log::info("density: " + std::to_string(this->getDensity()));
 		}
 
 		/// @brief Gets the shape type.
@@ -190,7 +182,9 @@ namespace clz::physics
 			return m_shapeType;
 		}
 
-
+		/// @brief Engine's internal rigid body id is not stable
+		/// And may change each time body is refreshed.
+		/// This function is called whenever we need to change ID's
 		void setShapeId(RigidBodyShapeId id)
 		{
 			m_externalId = id;
@@ -222,6 +216,8 @@ namespace clz::physics
 			return b3Shape_GetBody(m_shapeId);
 		}
 
+		/// @brief engine internal ID
+		/// @return engine's internal rigidbody ID
 		RigidBodyShapeId getExternalId() const
 		{
 			return m_externalId;
