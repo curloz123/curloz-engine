@@ -93,5 +93,9 @@ namespace clz::renderer
 
 		/// @brief Chromatic-aberration strength value
 		float chromaticAberrationStrength;
+		/// @brief Chromatic aberration's edge fade near value
+		float edgeFadeNear;
+		/// @brief Chromatic aberration's edge fade far value
+		float edgeFadeFar;
 	};
 } // namespace clz::renderer

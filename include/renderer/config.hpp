@@ -62,6 +62,21 @@ namespace clz::renderer
 				"post_process", 
 				"chromatic_aberration", 
 				0.0f));
+		post_process::ChromaticAbberationEdgeFade edgeFade;
+		edgeFade.near = clz::config::getValue<float>(
+					"renderer",
+					"post_process",
+					"ca_edgefade_near",
+					0.35f
+				);
+		edgeFade.far = clz::config::getValue<float>(
+					"renderer",
+					"post_process",
+					"ca_edgefade_far",
+					0.5f
+				);
+		post_process::setCAEdgeFade(edgeFade);
+
 		post_process::setVignette(
 			clz::config::getValue<float>(
 					"renderer", 
@@ -111,11 +126,26 @@ namespace clz::renderer
 				"post_process", 
 				"exposure", 
 				clz::renderer::post_process::getExposure());
+
                 clz::config::writeValue(
 				"renderer", 
 				"post_process", 
 				"chromatic_aberration", 
 				clz::renderer::post_process::getChromaticAberrationStrength());
+		const auto caEdgeFade = clz::renderer::post_process::getCAEdgeFade();
+		clz::config::writeValue(
+				"renderer",
+				"post_process",
+				"ca_edgefade_near",
+				caEdgeFade.near
+				);
+		clz::config::writeValue(
+				"renderer",
+				"post_process",
+				"ca_edgefade_far",
+				caEdgeFade.far
+				);
+
 		const auto vignette = clz::renderer::post_process::getVignette(); 
 		clz::config::writeValue(
 				"renderer", 
@@ -127,6 +157,7 @@ namespace clz::renderer
 				"post_process", 
 				"vignette_far", 
 				vignette.y);
+
                 clz::config::writeValue(
 				"renderer", 
 				"post_process", 

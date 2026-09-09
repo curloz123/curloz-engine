@@ -19,6 +19,22 @@ namespace clz::renderer::post_process
 	/// @brief chromatic aberration 
 	inline float chromaticAberrationStrength = 0.0f;
 
+	struct ChromaticAbberationEdgeFade
+	{
+		float near = 0.35f;
+		float far = 0.5f;
+
+		bool operator!=(const ChromaticAbberationEdgeFade& other)
+		{
+			return (other.near != near) || (other.far != far);
+		}
+	};
+	/// @brief Chromatic aberration's edge fade values
+	inline ChromaticAbberationEdgeFade caEdgeFade = {
+		.near = 0.35f, 
+		.far = 0.5f
+	};
+
 	/// @brief Vignette value
 	/// index 0 is near, 1 is far
 	inline std::array<float, 2> vignette = {0.3f, 0.7f};
@@ -146,12 +162,16 @@ namespace clz::renderer::post_process
         /**
          * @brief Gets the current chromatic aberration strength.
          * @return The current strength value.
-         * @note Returns a default value (0.002f) and logs a warning if the value is not set.
          */
         inline float getChromaticAberrationStrength()
         {
 		return chromaticAberrationStrength;
         }
+
+	inline ChromaticAbberationEdgeFade getCAEdgeFade()
+	{
+		return caEdgeFade;
+	}
 
         /**
          * @brief Sets the chromatic aberration strength.
@@ -161,4 +181,9 @@ namespace clz::renderer::post_process
         {
                 chromaticAberrationStrength = value;
         }
+
+	inline void setCAEdgeFade(ChromaticAbberationEdgeFade values)
+	{
+		caEdgeFade = values;
+	}
 }

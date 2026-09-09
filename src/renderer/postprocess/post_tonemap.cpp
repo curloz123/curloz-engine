@@ -194,7 +194,9 @@ namespace clz::renderer::post_process
 			.aspectRatio	 = aspectRatio,
 			.vignetteStart 	 = vignette.x,
 			.vignetteEnd 	 = vignette.y,
-			.chromaticAberrationStrength = getChromaticAberrationStrength()
+			.chromaticAberrationStrength = chromaticAberrationStrength,
+			.edgeFadeNear = caEdgeFade.near,
+			.edgeFadeFar  = caEdgeFade.far
 		};
 		vkCmdPushConstants(
 			commandBuffer,

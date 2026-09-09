@@ -17,6 +17,8 @@ layout(push_constant) uniform PushConstants
 	float vignetteEnd;
 
 	float chromaticAberrationStrength;
+	float edgeFadeNear;
+	float edgeFadeFar;
 	
 } PC;
 
@@ -31,19 +33,19 @@ void main()
 
 	if (enableChromaticAberration)
 	{
-		vec2 uv = inUV - vec2(0.5);
-		float dist = length(aspectUV);
-		vec2 direction = normalize(uv);
+	    vec2 uv = inUV - vec2(0.5);
+	    float dist = length(uv);
+	    vec2 direction = (dist > 0.0001) ? normalize(uv) : vec2(0.0);
+	    vec2 offset = direction * PC.chromaticAberrationStrength * dist * dist;
 
-		vec2 offset = direction * PC.chromaticAberrationStrength * dist * dist;
+	    float edgeFade = 1.0 - smoothstep(PC.edgeFadeNear, PC.edgeFadeFar, dist);
+	    offset *= edgeFade;
 
-		vec2 rUV = clamp(inUV + offset, 0.0, 1.0);
-		vec2 bUV = clamp(inUV - offset, 0.0, 1.0);
-		float r = texture(tonemappedImage,  rUV).r;
-		float g = texture(tonemappedImage, inUV).g;
-		float b = texture(tonemappedImage,  bUV).b;
+	    float r = texture(tonemappedImage, inUV - offset).r;
+	    float g = texture(tonemappedImage, inUV).g;
+	    float b = texture(tonemappedImage, inUV + offset).b;
 
-		outColor.rgb = vec3(r, g, b);
+	    outColor.rgb = vec3(r, g, b);
 	}
 
 	if (enableVignette)

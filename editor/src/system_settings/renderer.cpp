@@ -36,6 +36,7 @@ namespace clz::editor
 {
 	static void showPostProcessSettings()
 	{
+
 		static float exposure = clz::renderer::post_process::getExposure();
 		static float prevExposure = clz::renderer::post_process::getExposure();
 		static bool exposureChanged = false;	
@@ -120,14 +121,22 @@ namespace clz::editor
 
 		static float chromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
 		static float prevChromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
-		static bool chromaticAberrationChanged = false;
-
 		if (chromaticAberration != clz::renderer::post_process::getChromaticAberrationStrength())
 		{
 			chromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
 		}
-		auto createChromaticAberrationSnapshot = []()
+
+		static bool chromaticAberrationChanged = false;
+		ImGui::Separator();
+		ImGui::Text("Chromatic Aberration");
+
+		if (ImGui::SliderFloat("Strength", &chromaticAberration, -0.5f, 0.5f))
+			chromaticAberrationChanged = true;
+		if (ImGui::IsItemActivated())
+			prevChromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
+		if (ImGui::IsItemDeactivated())
 		{
+			/// create snapshot
 			auto oldChromaticAberration = prevChromaticAberration;
 			auto newChromaticAberration = chromaticAberration;
 
@@ -145,24 +154,82 @@ namespace clz::editor
 					);
 				}
 			);
-		};
 
-		ImGui::Separator();
-		ImGui::Text("Chromatic Aberration");
-
-		if (ImGui::SliderFloat("Strength", &chromaticAberration, -0.5f, 0.5f))
-			chromaticAberrationChanged = true;
-		if (ImGui::IsItemActivated())
-			prevChromaticAberration = clz::renderer::post_process::getChromaticAberrationStrength();
-		if (ImGui::IsItemDeactivated())
-			createChromaticAberrationSnapshot();
-
+		}
 		if (chromaticAberrationChanged)
 		{
 			clz::renderer::post_process::setChromaticAberrationStrength(
 				chromaticAberration
 			);
 		}
+
+		
+		static auto edgeFade = clz::renderer::post_process::getCAEdgeFade();
+		static auto prevEdgeFade = edgeFade;
+		bool edgeFadeChanged = false;
+
+		if (edgeFade != clz::renderer::post_process::getCAEdgeFade())
+		{
+			edgeFade = clz::renderer::post_process::getCAEdgeFade();
+		}
+
+		ImGui::Text("Edge Fade");
+		if (ImGui::SliderFloat("Near", &edgeFade.near, 0.0f, 1.0f))
+		{
+			edgeFadeChanged = true;
+		}
+		if (ImGui::IsItemActivated())
+		{
+			prevEdgeFade = clz::renderer::post_process::getCAEdgeFade();
+		}
+		if (ImGui::IsItemDeactivated())
+		{
+			auto oldEdgeFade = prevEdgeFade;
+			auto newEdgeFade = edgeFade;
+			timemachine::createSnapshot(
+				[oldEdgeFade]()
+				{
+					clz::renderer::post_process::setCAEdgeFade(oldEdgeFade);
+				},
+				[newEdgeFade]()
+				{
+					clz::renderer::post_process::setCAEdgeFade(newEdgeFade);
+				}
+			);
+		}
+		if (edgeFadeChanged)
+		{
+			clz::renderer::post_process::setCAEdgeFade(edgeFade);
+		}
+		if (ImGui::SliderFloat("Far", &edgeFade.far, 0.0f, 1.0f))
+		{
+			edgeFadeChanged = true;
+		}
+		if (ImGui::IsItemActivated())
+		{
+			prevEdgeFade = clz::renderer::post_process::getCAEdgeFade();
+		}
+		if (ImGui::IsItemDeactivated())
+		{
+			auto oldEdgeFade = prevEdgeFade;
+			auto newEdgeFade = edgeFade;
+			timemachine::createSnapshot(
+				[oldEdgeFade]()
+				{
+					clz::renderer::post_process::setCAEdgeFade(oldEdgeFade);
+				},
+				[newEdgeFade]()
+				{
+					clz::renderer::post_process::setCAEdgeFade(newEdgeFade);
+				}
+			);
+		}
+		if (edgeFadeChanged)
+		{
+			clz::renderer::post_process::setCAEdgeFade(edgeFade);
+		}
+
+
 
 		ImGui::Separator();
 
