@@ -5,6 +5,7 @@
  * Provides all the basic sub-system level functions
  * @note assumes swapchain context has been initialized
  */
+
 #include "renderer/pipelinedata/post_process.hpp"
 #include "core/logs.hpp"
 #include "renderer/postprocess/bloom.hpp"
@@ -15,27 +16,27 @@
 namespace clz::renderer::post_process
 {
 	/// @copydoc initializePostProcesses
-	bool initializePostProcesses()
+	bool initializePostProcesses(const std::uint32_t width, const std::uint32_t height)
 	{
-		if (!createBloomSampleProcess())
+		if (!createBloomSampleProcess(width, height))
 		{
 			clz::log::error("failed to create bloom sample process");
 			return false;
 		}
 		
-		if (!createBloomProcess())
+		if (!createBloomProcess(width, height))
 		{
 			clz::log::error("failed to create bloom process");
 			return false;
 		}
 
-		if (!createTonemapProcess())
+		if (!createTonemapProcess(width, height))
 		{
 			clz::log::error("failed to create tonemap pass");
 			return false;
 		}
 
-		if (!createPostTonemapProcess())
+		if (!createPostTonemapProcess(width, height))
 		{
 			clz::log::error("failed to create post-tonemap resources");
 			return false;
@@ -56,13 +57,13 @@ namespace clz::renderer::post_process
 	}
 
 	/// @copydoc recreatePostProcesses
-	bool recreatePostProcesses()
+	bool recreatePostProcesses(const std::uint32_t width, const std::uint32_t height)
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
 
 		destroyPostProcesses();
 
-		if (!initializePostProcesses())
+		if (!initializePostProcesses(width, height))
 		{
 			clz::log::error("failed to re-initialize post-process resources");
 			return false;
@@ -87,6 +88,5 @@ namespace clz::renderer::post_process
 	{
 		updatePostProcessDescriptorSets();
 	}
-
 
 }

@@ -26,7 +26,7 @@ namespace clz::renderer
 	 */
 	inline void parseConfigData()
 	{
-		tripleBuffering = clz::config::getValue<bool>(
+		r_enableTripleBuffering = clz::config::getValue<bool>(
 				"renderer", 
 				"triple_buffering", 
 				false);
@@ -114,7 +114,7 @@ namespace clz::renderer
                 clz::config::writeValue(
 				"renderer", 
 				"triple_buffering", 
-				tripleBuffering);
+				r_enableTripleBuffering);
                 clz::config::writeValue<uint32_t>(
 				"renderer", 
 				"msaa", 

@@ -19,10 +19,8 @@
 namespace clz::renderer::post_process
 {
 	/// @copydoc createBloomProcess
-	bool createBloomProcess()
+        bool createBloomProcess(std::uint32_t width, std::uint32_t height)
 	{
-		const uint32_t width = std::max(r_renderTargetContext.imageExtent.width, 1u);
-		const uint32_t height = std::max(r_renderTargetContext.imageExtent.height, 1u);
 		auto createBloomImage = [](auto& rBloomImage, const VkExtent2D extent, const uint32_t index)
 		{
 			rBloomImage.extent.width = extent.width;

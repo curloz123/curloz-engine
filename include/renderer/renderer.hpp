@@ -31,15 +31,30 @@ namespace clz::renderer
 	 */
 	void shutdown();
 
-	/**
-	 * @brief A flag that checks if
-	 * window was resized or not
-	 *
-	 * @warning SHOULD ONLY BE CALLED BY WINDOW SUBSYSTEM's
-	 * callback function defined inside window/vulkanhelper.hpp
-	 * or when swapchain goes out of date or suboptimal
-	 */
-	inline bool r_swapchainOutdated = false;
+	///< @brief Flag set by hintRendererFramebufferResize function
+	///< called by window system, whenever window is resized.
+	///< @warning Make sure that swapchain is recreated once per frame
+	///< Before recording of command buffer has started
+	inline bool r_framebufferResized = false;
 
-	bool recreateImagesOnFramebufferResize();
+	///< @brief Enum depicting result of resizing images
+	///< on framebuffer resize.
+	///< Success defines all images were re-created successfully.
+	///< Failure defines somewhere some issue happened.
+	///< Not-resized is the case where maybe width or height of framebuffer was 0, 
+	///< So we're not resizing this frame.
+	enum ImagesResizeResult
+	{
+		SUCCESS,
+		FAILURE,
+		INVALID_EXTENTS
+	};
+	/// @brief recreates all outdated images whenever
+	/// window is resized
+	/// @warning Make sure that swapchain is recreated once per frame
+	/// Before recording of command buffer has started
+	/// @return true if each image has been succesfully created
+	/// false otherwise.
+	ImagesResizeResult recreateImagesOnFramebufferResize();
+
 } // namespace clz::renderer

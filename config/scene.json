@@ -5,21 +5,21 @@
             "far": 1000.0,
             "fov": 71.0,
             "localfront": [
-                -0.5808649659156799,
-                -0.8044394254684448,
-                -0.1234058290719986
+                -0.9625028371810913,
+                -0.26923802495002747,
+                0.029243817552924156
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -53.56562423706055,
+            "pitch": -15.620885848999023,
             "position": [
-                5.599816799163818,
-                5.747671127319336,
-                0.5682069063186646
+                5.91330623626709,
+                1.5298900604248047,
+                -1.9016410112380981
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 3791.994384765625
+            "yaw": 3058.259765625
         }
     ],
     "entities": [
@@ -207,9 +207,9 @@
         },
         {
             "model": {
-                "path": "assets/models/sword/thanos_sword.glb"
+                "path": "assets/models/sponza/Sponza.gltf"
             },
-            "name": "Thanos's sword",
+            "name": "Sponza",
             "rigidbody": {
                 "angulardamping": 0.0,
                 "angularlock": [
@@ -260,10 +260,10 @@
                     2.4598076343536377
                 ],
                 "rotation": [
-                    0.9241415858268738,
-                    -0.3136149048805237,
-                    0.07011795043945313,
-                    -0.20661897957324982
+                    0.04683053493499756,
+                    -0.840969443321228,
+                    0.21660250425338745,
+                    -0.4936198592185974
                 ],
                 "scale": [
                     0.9999997019767761,
@@ -400,73 +400,6 @@
                     0.5,
                     0.5,
                     0.5
-                ]
-            }
-        },
-        {
-            "model": {
-                "path": "assets/models/ground/ground.gltf"
-            },
-            "name": "Ground",
-            "rigidbody": {
-                "angulardamping": 0.009999999776482582,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.0,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 0.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": true,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            10.0,
-                            1.0,
-                            10.0
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            -1.0,
-                            0.0
-                        ],
-                        "restitution": 0.6000000238418579,
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "static"
-            },
-            "transform": {
-                "position": [
-                    -40.57476043701172,
-                    0.19825707376003265,
-                    -1.795920491218567
-                ],
-                "rotation": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
                 ]
             }
         },

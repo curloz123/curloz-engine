@@ -59,9 +59,11 @@ namespace clz::renderer::post_process
 
         /**
          * @brief Initializes and allocates all Vulkan resources required for the post-tonemap pass.
+	 * @param width New width of post_process images
+	 * @param height New height of post_process images
          * @return true if creation was successful, false otherwise.
          */
-        bool createPostTonemapProcess();
+        bool createPostTonemapProcess(std::uint32_t width, std::uint32_t height);
 
         /**
          * @brief Destroys and frees all Vulkan resources associated with the post-tonemap pass.

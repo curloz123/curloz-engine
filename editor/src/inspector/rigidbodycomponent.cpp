@@ -923,14 +923,18 @@ namespace clz::editor
 			return;
 		}
 		prepareOffscreenTarget(physicsBodyShapeImage);
+
+		/// over here, src is set to ~fragment shader,
+		/// cuz imgui also has to read this image that frame
+		/// dn wanna mess with that at all.
 		renderer::transition_image_layout(
 			physicsBodyShapeImage.image,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			0,
-			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
-			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
-			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_ACCESS_2_SHADER_READ_BIT,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			commandBuffer
 		);

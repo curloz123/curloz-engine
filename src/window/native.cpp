@@ -3,6 +3,7 @@
  * @author curl0z
  * @brief implements all the internal GLFW functions
  */
+
 #include "window/native.hpp"
 #include "config/config.hpp"
 #include "core/enginestate.hpp"
@@ -15,6 +16,7 @@ namespace clz::window
 	{
 		const int width = clz::config::getValue<int>("window", "width", 800);
 		const int height = clz::config::getValue<int>("window", "height", 600);
+
 		if (width < 0 || height < 0)
 		{
 			log::error("Window system passed invalid window dimensions");
@@ -26,8 +28,12 @@ namespace clz::window
 			log::error("Could not initialize GLFW");
 			return false;
 		}
+
+		/// --- Disable opengl context --- ///
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		/// --- Enable resizability --- ///
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 		*pWindow = glfwCreateWindow(
 			width,
 			height,
@@ -40,6 +46,15 @@ namespace clz::window
 			log::error("Could not create GLFW window");
 			return false;
 		}
+
+		/// --- Enable Raw mouse input if enabled--- ///
+		const bool enableRawInput =
+			clz::config::getValue<bool>("window", "enable_raw_input", true);
+		if (glfwRawMouseMotionSupported() && enableRawInput)
+		{
+			glfwSetInputMode((*pWindow), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
+
 
 		return true;
 	}

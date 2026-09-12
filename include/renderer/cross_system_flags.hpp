@@ -40,6 +40,6 @@ namespace clz::renderer
 	/// As of now, recreates all the renderer's images
 	inline void flagRendererFramebufferResize()
 	{
-		recreateImagesOnFramebufferResize();
+		r_framebufferResized = true;
 	}
 }
