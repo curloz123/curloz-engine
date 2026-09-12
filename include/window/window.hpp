@@ -12,6 +12,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <tuple>
 
 namespace clz::window
 {
@@ -36,10 +37,9 @@ namespace clz::window
 	/**
 	 * @brief Returns actual framebuffer extents
 	 * Basically coords in pixel space not screen space
-	 * @param width
-	 * @param height
+	 * @return tuple where first index has width, second index has width
 	 */
-	void getFramebufferExtents(int* width, int* height);
+	std::tuple<int, int> getFramebufferExtents();
 
 	/**
 	 * @brief Retrieves current window handle

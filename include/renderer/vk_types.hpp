@@ -49,8 +49,8 @@ namespace clz::renderer
 	 */
 	inline PipelineContext r_pipelineContext{};
 
+	/// @brief Bloom sampling process pipeline context
 	inline PipelineContext r_bloomSamplePipelineContext{};
-
 	/// @brief bloom post_process pipeline context
 	inline PipelineContext r_bloomPipelineContext{};
 	/// @brief tonemap post_process pipeline context

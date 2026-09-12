@@ -19,6 +19,7 @@
 #include "renderer/vk_types.hpp"
 #include "renderer/context/render_target_context.hpp"
 #include "renderer/postprocess/post_process.hpp"
+#include "window/window.hpp"
 #include <vector>
 
 #ifdef CLZ_ENABLE_EDITOR
@@ -31,92 +32,104 @@ namespace clz::renderer
 	/// @copydoc init
 	bool init()
 	{
-		/// --- 0. Device is always initialized first
+		/// --- Device is always initialized first --- ///
 		if (!initDeviceContext())
 		{
 			clz::log::error("Could not initialize device context");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 
-		/// --- 1. Parse config data
+		/// --- Parse config data --- ///
 		parseConfigData();
 
-		/// --- 2. Rest context's
+		/// --- Rest context's --- ///
 		if (!initCommandContext())
 		{
 			clz::log::error("Could not initialize frame context");
-			goto failure;
-		}
-		if (!initSwapchainContext())
-		{
-			clz::log::error("Could not initialize swapchain context");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 
-		if (!initRenderTargetContext(
-			r_swapchainContext.extent.width,
-			r_swapchainContext.extent.height))
+		/// --- Get framebuffer extents --- ///
+		auto [width, height] = window::getFramebufferExtents();
+
+		if (!initSwapchainContext(width, height))
+		{
+			clz::log::error("Could not initialize swapchain context");
+			clz::log::error("Could not initialize renderer");
+		}
+
+		if (!initRenderTargetContext(width, height))
 		{
 			clz::log::error("Could not initialize render target context");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 
 		if (!initPipelineContexts())
 		{
 			clz::log::error("Could not initialize pipeline context");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 		if (!initFrameContext())
 		{
 			clz::log::error("Could not initialize frame context");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 
-
-		if (!post_process::initializePostProcesses())
+		if (!post_process::initializePostProcesses(width, height))
 		{
 			clz::log::error("Could not initialize post process");
-			goto failure;
+			clz::log::error("Could not initialize renderer");
 		}
 
 		clz::log::info("initialized all renderer context's");
 		clz::log::info("Initialized renderer");
 		return true;
-
-	failure:
-		clz::log::error("Could not initialize renderer");
-		return false;
 	}
 
 	/// @copydoc update
 	void update()
 	{
-		if (r_swapchainOutdated) [[unlikely]]
+		if (r_framebufferResized) [[unlikely]]
 		{
-			clz::log::warn("swapchain out of date, recreating it");
+			clz::log::warn(
+				"Framebuffer has been resized. "
+				"Recreating outdated images"
+			);
 
-			if (!recreateImagesOnFramebufferResize())
+			const auto resizeResult = recreateImagesOnFramebufferResize();
+			switch (resizeResult)
 			{
-				clz::log::error("Could not recreate images");
-				return;
-			}
+				case ImagesResizeResult::SUCCESS:
+					/// Update camera with current swapchain extents
+					updateCameraProjMatrix(r_cameraId);
+					r_framebufferResized = false;
+					break;
 
-			// Update camera with current swapchain extents
-			updateCameraProjMatrix(r_cameraId);
-			r_swapchainOutdated = false;
+				case ImagesResizeResult::INVALID_EXTENTS:
+					/// Don't move further at all
+					/// Just keep looping at this step
+					/// Until valid extents are fetched
+					return;
+
+				case ImagesResizeResult::FAILURE:
+					clz::log::error(
+						"Unable to recreate images"
+						"on framebuffer resize"
+					);
+					break;	
+			}
 		}
+
 		waitForGPU(r_frameContext.inFlightFences[r_currentFrame]);
 		acquireNextImage(
 			r_frameContext.renderReadySemaphores[r_currentFrame],
 			r_imageIndex
 		);
-		if (r_swapchainOutdated) [[unlikely]]
-			return;
 		resetFence(r_frameContext.inFlightFences[r_currentFrame]);
 		startCommandBuffer(r_commandContext.commandBuffer[r_currentFrame]);
 
-		// Everything that's not defined in mainloop.hpp, shall go inside this
-		// function
+		/// Everything that's not defined in mainloop.hpp,
+		/// shall go inside this function
 		recordCommandBuffer(r_commandContext.commandBuffer[r_currentFrame], r_imageIndex);
 
 		submitCommandBuffer(
@@ -126,8 +139,7 @@ namespace clz::renderer
 			r_frameContext.inFlightFences[r_currentFrame]
 		);
 
-		present(
-			r_frameContext.presentReadySemaphores[r_imageIndex],
+		present(r_frameContext.presentReadySemaphores[r_imageIndex],
 			r_imageIndex); // Internally can also do r_swapchainOutdated = true
 
 		r_currentFrame = (r_currentFrame + 1) % r_FRAMES_IN_FLIGHT;
@@ -136,6 +148,7 @@ namespace clz::renderer
 	/// @copydoc shutdown
 	void shutdown()
 	{
+		/// --- Hold up GPU!!!! wait a minute, let prv task finish first --- ///
 		vkDeviceWaitIdle(r_deviceContext.device);
 
 		/// --- First Destroy Entity Data ---
@@ -159,33 +172,62 @@ namespace clz::renderer
 		clz::log::info("renderer shutdown completed");
 	}
 
-
-	bool recreateImagesOnFramebufferResize()
+	/// @copydoc recreateImagesOnFramebufferResize
+	ImagesResizeResult recreateImagesOnFramebufferResize()
 	{
+		/// --- Hold up GPU!!!! wait a minute, let prv task finish first --- ///
 		vkDeviceWaitIdle(r_deviceContext.device);
 
-		recreateSwapchainContext();
+		/// --- print this message always on failure
+		auto printFailure = []() {
+			clz::log::error("Could not recreate images :(");
+		};
 
-		if (!recreateRenderTargetContext(
-			r_swapchainContext.extent.width,
-			r_swapchainContext.extent.height))
+		/// --- Get new framebuffer extents --- ///
+		auto [newWidth, newHeight] = window::getFramebufferExtents();
+		if (newWidth == 0 || newHeight == 0)
 		{
-			clz::log::error("Could not recreate images");
-			return false;
+			clz::log::warn(
+				"Either width or height of framebuffer is 0, "
+				"not resizing this frame"
+			);
+			return ImagesResizeResult::INVALID_EXTENTS;
+		}
+		const uint32_t width  = static_cast<uint32_t>(newWidth);
+		const uint32_t height = static_cast<uint32_t>(newHeight);
+
+		/// --- Recreate swapchain --- ///
+		if (!recreateSwapchainContext(width, height))
+		{
+			clz::log::error("Could not recreate swapchain context");
+			printFailure();
+			return ImagesResizeResult::FAILURE;
 		}
 
-		if (!post_process::recreatePostProcesses())
+		/// --- Recreate render target context --- ///
+		if (!recreateRenderTargetContext(width, height))
+		{
+			clz::log::error("Could not recreate render target context");
+			printFailure();
+			return ImagesResizeResult::FAILURE;
+		}
+
+		if (!post_process::recreatePostProcesses(width, height))
 		{
 			clz::log::error("Could not recreate images");
-			return false;
+			return ImagesResizeResult::FAILURE;
 		}
 
 #ifdef CLZ_ENABLE_EDITOR
 		editor::flagEditorFramebufferResize(
-			r_swapchainContext.extent.width,
-			r_swapchainContext.extent.height
+			width,
+			height
 		);
 #endif
-		return true;
+
+		/// --- Let everything be created first --- ///
+		vkDeviceWaitIdle(r_deviceContext.device);
+
+		return ImagesResizeResult::SUCCESS;
 	}
 } // namespace clz::renderer

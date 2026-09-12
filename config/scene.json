@@ -5,21 +5,21 @@
             "far": 1000.0,
             "fov": 77.0,
             "localfront": [
-                0.9479880928993225,
-                -0.000365436018910259,
-                -0.31792181730270386
+                -0.9625028371810913,
+                -0.26923802495002747,
+                0.029243817552924156
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -0.020940497517585754,
+            "pitch": -15.620885848999023,
             "position": [
-                6.197183132171631,
-                1.7100614309310913,
-                -1.9632117748260498
+                5.91330623626709,
+                1.5298900604248047,
+                -1.9016410112380981
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 3221.46044921875
+            "yaw": 3058.259765625
         }
     ],
     "entities": [
@@ -207,9 +207,9 @@
         },
         {
             "model": {
-                "path": "assets/models/sword/thanos_sword.glb"
+                "path": "assets/models/sponza/Sponza.gltf"
             },
-            "name": "Thanos's sword",
+            "name": "Sponza",
             "rigidbody": {
                 "angulardamping": 0.0,
                 "angularlock": [
@@ -260,10 +260,10 @@
                     1.2320257425308228
                 ],
                 "rotation": [
-                    0.046830520033836365,
+                    0.04683053493499756,
                     -0.840969443321228,
-                    0.21660254895687103,
-                    -0.4936198890209198
+                    0.21660250425338745,
+                    -0.4936198592185974
                 ],
                 "scale": [
                     1.0,
@@ -405,73 +405,6 @@
         },
         {
             "model": {
-                "path": "assets/models/ground/ground.gltf"
-            },
-            "name": "Ground",
-            "rigidbody": {
-                "angulardamping": 0.009999999776482582,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.0,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 0.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": true,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            10.0,
-                            1.0,
-                            10.0
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            -1.0,
-                            0.0
-                        ],
-                        "restitution": 0.6000000238418579,
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "static"
-            },
-            "transform": {
-                "position": [
-                    1.1625381708145142,
-                    0.0,
-                    -1.7359217405319214
-                ],
-                "rotation": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "model": {
                 "path": "assets/models/test/DamagedHelmet.glb"
             },
             "name": "Damaged Helmet",
@@ -491,282 +424,6 @@
                     0.5,
                     0.5,
                     0.5
-                ]
-            }
-        },
-        {
-            "model": {
-                "path": "assets/models/metro/Metro_9.gltf"
-            },
-            "name": "Metro",
-            "rigidbody": {
-                "angulardamping": 1.0,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.0,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 10.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": true,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.5,
-                            0.5,
-                            3.8499999046325684
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            0.15000000596046448,
-                            0.0
-                        ],
-                        "restitution": 0.20000000298023224,
-                        "rotation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "dynamic"
-            },
-            "transform": {
-                "position": [
-                    -0.317501038312912,
-                    15.11608600616455,
-                    -1.2467973232269287
-                ],
-                "rotation": [
-                    0.9998541474342346,
-                    -3.5601765979720312e-09,
-                    -0.017079493030905724,
-                    2.7311565986565256e-07
-                ],
-                "scale": [
-                    0.12401174753904343,
-                    0.1500951647758484,
-                    0.1938922107219696
-                ]
-            }
-        },
-        {
-            "model": {
-                "path": "assets/models/gun/gun.glb"
-            },
-            "name": "Gun",
-            "rigidbody": {
-                "angulardamping": 0.20000000298023224,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.10000000149011612,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 40.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.019776925444602966,
-                            0.15793749690055847,
-                            0.1289539784193039
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.03815449774265289,
-                            0.025237714871764183,
-                            -0.07835807651281357
-                        ],
-                        "restitution": 0.20000000298023224,
-                        "rotation": [
-                            20.418006896972656,
-                            -0.8793312311172485,
-                            -33.31686019897461
-                        ],
-                        "type": "box"
-                    },
-                    {
-                        "density": 20.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.006399740930646658,
-                            0.09087482839822769,
-                            0.09486328810453415
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.07403011620044708,
-                            0.08114973455667496,
-                            -0.3206591308116913
-                        ],
-                        "restitution": 0.20000000298023224,
-                        "rotation": [
-                            20.417943954467773,
-                            -0.8789093494415283,
-                            -33.31686019897461
-                        ],
-                        "type": "box"
-                    },
-                    {
-                        "density": 20.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.014330358244478703,
-                            0.03854333236813545,
-                            0.18624526262283325
-                        ],
-                        "issensor": false,
-                        "position": [
-                            -0.011859413236379623,
-                            -0.05451958626508713,
-                            0.23018957674503326
-                        ],
-                        "restitution": 0.20000000298023224,
-                        "rotation": [
-                            20.41798973083496,
-                            -0.8789841532707214,
-                            -33.317020416259766
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "dynamic"
-            },
-            "transform": {
-                "position": [
-                    0.4720105230808258,
-                    6.789309024810791,
-                    3.8978161811828613
-                ],
-                "rotation": [
-                    0.32099494338035583,
-                    -0.7674357295036316,
-                    -0.4068036675453186,
-                    0.377512127161026
-                ],
-                "scale": [
-                    0.010000073350965977,
-                    0.010000018402934074,
-                    0.010000018402934074
-                ]
-            }
-        },
-        {
-            "model": {
-                "path": "assets/models/gun/rose.glb"
-            },
-            "name": "Rose",
-            "rigidbody": {
-                "angulardamping": 0.20000000298023224,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.10000000149011612,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 10.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.032569605857133865,
-                            0.08504422008991241,
-                            0.3660186231136322
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            -0.04439443349838257,
-                            0.14732766151428223
-                        ],
-                        "restitution": 0.10000000149011612,
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    },
-                    {
-                        "density": 10.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.042191680520772934,
-                            0.09810318797826767,
-                            0.03915613144636154
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            -0.17912687361240387,
-                            -0.19458302855491638
-                        ],
-                        "restitution": 0.10000000149011612,
-                        "rotation": [
-                            24.728748321533203,
-                            -0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "dynamic"
-            },
-            "transform": {
-                "position": [
-                    2.11460018157959,
-                    5.757849216461182,
-                    2.735448122024536
-                ],
-                "rotation": [
-                    0.5962834358215332,
-                    0.38629812002182007,
-                    -0.3767716586589813,
-                    -0.5943592190742493
-                ],
-                "scale": [
-                    0.0010000003967434168,
-                    0.001000000280328095,
-                    0.001000000280328095
                 ]
             }
         }

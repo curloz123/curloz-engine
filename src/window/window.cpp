@@ -14,7 +14,7 @@
 
 namespace clz::window
 {
-	/// @copydoc
+	/// @copydoc init
 	bool init()
 	{
 		// Initialize window
@@ -54,13 +54,13 @@ namespace clz::window
 		return true;
 	}
 
-	/// @copydoc
+	/// @copydoc shutdown
 	void shutdown()
 	{
 		shutdownGLFW(&w_window);
 	}
 
-	/// @copydoc
+	/// @copydoc update
 	void update()
 	{
 		pollEventsGLFW(&w_window);
@@ -77,25 +77,29 @@ namespace clz::window
 		cursorPosLastFrame = cursorPosThisFrame;
 	}
 
-	/// @copydoc
-	void getFramebufferExtents(int* width, int* height)
+	/// @copydoc getFramebufferExtents
+	std::tuple<int, int> getFramebufferExtents()
 	{
-		glfwGetFramebufferSize(w_window, width, height);
+		int width = 0;
+		int height = 0;
+		glfwGetFramebufferSize(w_window, &width, &height);
+
+		return std::make_tuple(width, height);
 	}
 
-	/// @copydoc
+	/// @copydoc getWindowHandle
 	GLFWwindow* getWindowHandle()
 	{
 		return w_window;
 	}
 
-	/// @copydoc
+	/// @copydoc minimizeWindow
 	void minimizeWindow()
 	{
 		glfwIconifyWindow(w_window);
 	}
 
-	/// @copydoc
+	/// @copydoc maximizeWindow
 	void maximizeWindow()
 	{
 		glfwMaximizeWindow(w_window);

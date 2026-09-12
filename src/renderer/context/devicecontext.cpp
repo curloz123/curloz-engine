@@ -20,15 +20,19 @@
 
 namespace clz::renderer
 {
+	// Enable validation layers??
 #ifdef CLZ_DEBUG
 	constexpr bool r_enableValidationLayers = true;
 #else
 	constexpr bool r_enableValidationLayers = false;
 #endif
 
+	// Extensions
 	constexpr auto r_debugExtensionName = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-	constexpr auto r_validationLayers   = "VK_LAYER_KHRONOS_validation";
-	constexpr std::array<const char*, 1> r_requiredDeviceExtensions = {
+	constexpr std::array r_validationLayers = {
+		"VK_LAYER_KHRONOS_validation"
+	};
+	constexpr std::array r_requiredDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
@@ -129,14 +133,20 @@ namespace clz::renderer
 		return true;
 	}
 
+	/// @brief retrieves all validation layers into passed array
+	/// @note in case of any errors, it returns fals
+	/// @param rValidationLayers reference to array in which VL's will be stored
+	/// @return true on success, false otherwise
 	bool getValidationLayers(std::vector<const char*>& rValidationLayers)
 	{
+		/// --- Retrieve all available layers --- ///
 		uint32_t layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (auto layer : rValidationLayers)
+		/// --- Check if all layers are present --- ///
+		for (const auto layer : r_validationLayers)
 		{
 			const bool found = std::ranges::any_of(
 				availableLayers.begin(),
@@ -216,8 +226,10 @@ namespace clz::renderer
 			instanceInfo.ppEnabledLayerNames = nullptr;
 		}
 
-		if (vkCreateInstance(&instanceInfo, nullptr, &r_deviceContext.instance) !=
-		    VK_SUCCESS)
+		if (vkCreateInstance(
+			&instanceInfo,
+			nullptr,
+			&r_deviceContext.instance) != VK_SUCCESS)
 		{
 			clz::log::error("Vulkan could not create instance");
 			return false;

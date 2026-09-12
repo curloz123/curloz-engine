@@ -16,13 +16,13 @@
 namespace clz::renderer::post_process
 {
 	/// @copydoc createBloomSampleProcess
-	bool createBloomSampleProcess()
+	bool createBloomSampleProcess(const std::uint32_t width, const std::uint32_t height)
 	{
 		if (!createImage(
 			bloomSampleImage,
 			    "bloom sample image",
-			    r_renderTargetContext.imageExtent.width / 2,
-			    r_renderTargetContext.imageExtent.height / 2,
+			    width,
+			    height,
 			    BLOOM_SAMPLE_IMAGE_FORMAT,
 			    VK_IMAGE_TILING_OPTIMAL,
 			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 

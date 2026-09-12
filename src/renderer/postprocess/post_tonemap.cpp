@@ -21,13 +21,13 @@
 namespace clz::renderer::post_process
 {
 	/// @copydoc createPostTonemapProcess
-	bool createPostTonemapProcess()
+        bool createPostTonemapProcess(const std::uint32_t width, const std::uint32_t height)
 	{
 		if (!createImage(
 			postTonemapImage,
 			"post tone-map image",
-			r_renderTargetContext.imageExtent.width,
-			r_renderTargetContext.imageExtent.height,
+			width,
+			height,
 			POST_TONEMAP_IMAGE_FORMAT,
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |

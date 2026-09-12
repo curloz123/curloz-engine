@@ -46,8 +46,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 	set(CLZ_DEBUG_WARNINGS -Wall -Wextra -Wsign-compare)
 	set(CLZ_SIMD_FLAGS -msse4.1 -mfma)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CLZ_DEBUG_WARNINGS /W4)
-    set(CLZ_SIMD_FLAGS /arch:AVX2)
+	set_target_properties(${PROJECT_NAME}
+		PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+	set(CLZ_DEBUG_WARNINGS /W4)
+	set(CLZ_SIMD_FLAGS /arch:AVX2)
 endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE
