@@ -47,13 +47,12 @@ namespace clz::window
 	 */
 	GLFWwindow* getWindowHandle();
 
-	/**
-	 * @brief Minimizes window
-	 */
+	/// @brief Minimizes window
 	void minimizeWindow();
 
-	/**
-	 * @brief Maximizes window
-	 */
-	void maximizeWindow();
+	/// @brief Maximizes window
+	void toggleWindowedBorderlessMode();
+
+	/// @brief Toggles bw exclusive fullscreen and windowed borderless
+	void toggleExclusiveFullscreenMode();
 } // namespace clz::window

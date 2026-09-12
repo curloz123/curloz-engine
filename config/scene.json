@@ -206,73 +206,6 @@
             }
         },
         {
-            "model": {
-                "path": "assets/models/helmet/helmet.glb"
-            },
-            "name": "Helmet",
-            "rigidbody": {
-                "angulardamping": 0.0,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.0,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 20.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": false,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            2.633831262588501,
-                            0.04408017918467522,
-                            0.23122718930244446
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            0.0,
-                            0.061822280287742615
-                        ],
-                        "restitution": 0.30000001192092896,
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "dynamic"
-            },
-            "transform": {
-                "position": [
-                    4.271233081817627,
-                    17.065658569335938,
-                    2.4598076343536377
-                ],
-                "rotation": [
-                    0.046830594539642334,
-                    -0.840969443321228,
-                    0.21660247445106506,
-                    -0.493619829416275
-                ],
-                "scale": [
-                    0.9999997019767761,
-                    0.9999999403953552,
-                    0.9999998211860657
-                ]
-            }
-        },
-        {
             "name": "Sensor",
             "rigidbody": {
                 "angulardamping": 0.10000000149011612,
@@ -405,7 +338,7 @@
         },
         {
             "model": {
-                "path": "assets/models/test/DamagedHelmet.glb"
+                "path": "assets/models/helmet/DamagedHelmet.glb"
             },
             "name": "Damaged Helmet",
             "rigidbody": {
@@ -467,73 +400,6 @@
                     0.5,
                     0.5,
                     0.5
-                ]
-            }
-        },
-        {
-            "model": {
-                "path": "assets/models/metro/Metro_9.gltf"
-            },
-            "name": "Metro",
-            "rigidbody": {
-                "angulardamping": 1.0,
-                "angularlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "enablesleep": false,
-                "lineardamping": 0.0,
-                "linearlock": [
-                    false,
-                    false,
-                    false
-                ],
-                "shapes": [
-                    {
-                        "density": 10.0,
-                        "enablecontactevents": false,
-                        "enablehitevents": false,
-                        "enablesensorevents": true,
-                        "friction": 0.699999988079071,
-                        "halfdimensions": [
-                            0.5,
-                            0.5,
-                            3.8499999046325684
-                        ],
-                        "issensor": false,
-                        "position": [
-                            0.0,
-                            0.15000000596046448,
-                            0.0
-                        ],
-                        "restitution": 0.20000000298023224,
-                        "rotation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "type": "box"
-                    }
-                ],
-                "type": "dynamic"
-            },
-            "transform": {
-                "position": [
-                    0.06381276994943619,
-                    18.626562118530273,
-                    3.395721912384033
-                ],
-                "rotation": [
-                    0.6930223703384399,
-                    -0.7065007090568542,
-                    0.11137635260820389,
-                    -0.09039987623691559
-                ],
-                "scale": [
-                    0.12400989979505539,
-                    0.1500934660434723,
-                    0.1938798874616623
                 ]
             }
         },
@@ -638,7 +504,7 @@
             "transform": {
                 "position": [
                     -2.4310688972473145,
-                    14.916451454162598,
+                    1.4422353506088257,
                     -2.486686944961548
                 ],
                 "rotation": [

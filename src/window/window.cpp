@@ -3,6 +3,8 @@
  * @author curl0z
  * @brief Implementation of the window public header
  */
+
+#include "window/config.hpp"
 #include "window/window.hpp"
 #include "core/logs.hpp"
 #include "window/mouse.hpp"
@@ -17,6 +19,9 @@ namespace clz::window
 	/// @copydoc init
 	bool init()
 	{
+		/// --- First of all, parse config data --- ///
+		parseConfigData();
+
 		// Initialize window
 		if (!initializeGLFW(&w_window))
 		{
@@ -100,9 +105,57 @@ namespace clz::window
 	}
 
 	/// @copydoc maximizeWindow
-	void maximizeWindow()
+	void toggleWindowedBorderlessMode()
 	{
-		glfwMaximizeWindow(w_window);
+		static bool makeFullScreen = false;
+		makeFullScreen = !makeFullScreen;
+
+		if (makeFullScreen)
+		{
+			glfwSetWindowAttrib(w_window, GLFW_DECORATED, GLFW_FALSE);
+			glfwMaximizeWindow(w_window);
+		}
+		else
+		{
+			glfwSetWindowAttrib(w_window, GLFW_DECORATED, GLFW_TRUE);
+			glfwSetWindowSize(w_window, w_width, w_height);
+		}
 	}
 
+	/// @brief toggleexclusivefullscreenmode
+	void toggleExclusiveFullscreenMode()
+	{
+		static bool makeFullScreen = false;
+		makeFullScreen = !makeFullScreen;
+
+		if (makeFullScreen)
+		{
+			glfwSetWindowAttrib(w_window, GLFW_DECORATED, GLFW_FALSE);
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+			glfwSetWindowMonitor(
+				w_window,
+				monitor,
+				0,
+				0,
+				mode->width,
+				mode->height,
+				mode->refreshRate
+			);
+		}
+		else
+		{
+			glfwSetWindowMonitor(
+				w_window,
+				nullptr,
+				0,
+				0,
+				w_width,
+				w_height,
+				GLFW_DONT_CARE
+			);
+			glfwSetWindowAttrib(w_window, GLFW_DECORATED, GLFW_TRUE);
+		}
+		
+	}
 } // namespace clz::window
