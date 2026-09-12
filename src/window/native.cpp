@@ -34,11 +34,23 @@ namespace clz::window
 		/// --- Enable resizability --- ///
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+		/// --- Have full screen mode?? --- ///
+		GLFWmonitor* monitor = nullptr;
+		const bool fullscreen = clz::config::getValue<bool>("window", "fullscreen", false);
+		if (fullscreen)
+		{
+			monitor = glfwGetPrimaryMonitor();
+		}
+
+		/// --- create window finally --- ///
 		*pWindow = glfwCreateWindow(
-			width,
-			height,
-			clz::config::getValue<std::string>("engine", "name", "Curloz Engine").c_str(),
-			nullptr,
+			1920,
+			1080,
+			clz::config::getValue<std::string>(
+				"engine", 
+				"name", 
+				"Curloz Engine").c_str(),
+			monitor,
 			nullptr
 		);
 		if (!(*pWindow))

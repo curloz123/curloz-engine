@@ -13,6 +13,7 @@
 #include "math/vec2.hpp"
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cstdint>
 
 namespace clz::renderer::post_process
 {

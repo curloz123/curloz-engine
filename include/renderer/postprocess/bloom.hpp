@@ -9,8 +9,10 @@
  */
 
 #pragma once
+
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cstdint>
 
 namespace clz::renderer::post_process
 {
