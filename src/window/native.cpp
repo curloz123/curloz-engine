@@ -15,7 +15,7 @@ namespace clz::window
 	/// @copydoc
 	bool initializeGLFW(GLFWwindow** pWindow)
 	{
-		if (w_width < 0 || w_height < 0)
+		if (w_configWidth < 0 || w_configHeight < 0)
 		{
 			log::error("Window system passed invalid window dimensions");
 			return false;
@@ -34,15 +34,15 @@ namespace clz::window
 
 		/// --- Have full screen mode?? --- ///
 		GLFWmonitor* monitor = nullptr;
-		if (w_exclusiveFullscreen)
+		if (w_configExclusiveFullscreen)
 		{
 			monitor = glfwGetPrimaryMonitor();
 		}
 
 		/// --- create window finally --- ///
 		*pWindow = glfwCreateWindow(
-			w_width,
-			w_height,
+			w_configWidth,
+			w_configHeight,
 			clz::config::getValue<std::string>(
 				"engine", 
 				"name", 
@@ -57,7 +57,7 @@ namespace clz::window
 		}
 
 		/// --- Enable Raw mouse input if enabled--- ///
-		if (glfwRawMouseMotionSupported() && w_enableRawInput)
+		if (glfwRawMouseMotionSupported() && w_configEnableRawInput)
 		{
 			glfwSetInputMode((*pWindow), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
