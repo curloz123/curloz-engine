@@ -1,5 +1,10 @@
-#include "../../include/system_settings/system_settings.hpp"
+/**
+ * @file renderer.cpp
+ * @author curl0z
+ * @brief Shows renderer system's settings
+ */
 #include <imgui.h>
+#include "../../include/system_settings/system_settings.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 #include "../../include/editor_types.hpp"
@@ -9,11 +14,13 @@
 
 namespace clz::editor
 {
+	/// @brief Shows post processes settings
 	static void showPostProcessSettings();
 }
 
 namespace clz::editor
 {
+	/// @copydoc showRenderSystemSettings
 	void showRenderSystemSettings()
 	{
 		ImGui::PushFont(fontMonoBold);
@@ -34,9 +41,9 @@ namespace clz::editor
 
 namespace clz::editor
 {
+	/// @copydoc showPostProcessSettings
 	static void showPostProcessSettings()
 	{
-
 		static float exposure = clz::renderer::post_process::getExposure();
 		static float prevExposure = clz::renderer::post_process::getExposure();
 		static bool exposureChanged = false;	

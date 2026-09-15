@@ -10,14 +10,12 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 namespace clz::editor
 {
 /**
  * @brief Renders the Inspector panel for the currently selected entity.
  */
-void showInspector(VkCommandBuffer commandBuffer);
+void showInspector();
 
 /// @brief Identifies which window is in current context right now.
 /// Mainly used to check which window to inspect on.

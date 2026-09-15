@@ -18,7 +18,7 @@ namespace clz::timemachine
 	inline std::deque<Snapshot> undoStack;
 	inline std::deque<Snapshot> redoStack;
 
-	inline void undo()
+	inline void performUndo()
 	{
 		if (undoStack.empty())
 			return;
@@ -32,7 +32,7 @@ namespace clz::timemachine
 
 		undoStack.pop_back();
 	}
-	inline void redo()
+	inline void performRedo()
 	{
 		if (redoStack.empty())
 			return;
@@ -57,33 +57,6 @@ namespace clz::timemachine
 		undoStack.emplace_back(Snapshot{.undo = std::move(undo), .redo = std::move(redo)});
 	}
 
-	inline bool ZPressedLastFrame = false;
-	inline bool ZPressedThisFrame = false;
-	inline void timeTravel()
-	{
-		if (undoStack.empty() && redoStack.empty())
-		{
-			return;
-		}
-
-		ZPressedThisFrame = window::isKeyPressed(input::Key::Z);
-		const bool leftShiftPressed = window::isKeyPressed(input::Key::LeftShift);
-		const bool leftControlPressed = window::isKeyPressed(input::Key::LeftControl);
-
-		if (leftControlPressed && ZPressedThisFrame && !ZPressedLastFrame)
-		{
-			if (leftShiftPressed)
-			{
-				redo();
-			}
-			else
-			{
-				undo();
-			}
-		}
-
-		ZPressedLastFrame = ZPressedThisFrame;
-	}
 
 	inline void clearSnapshots(const std::source_location& loc = std::source_location::current())
 	{
