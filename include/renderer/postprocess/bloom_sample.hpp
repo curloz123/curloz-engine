@@ -10,7 +10,13 @@ namespace clz::renderer::post_process
 	inline VkSampler bloomSampleSampler;
 	inline VkDeviceMemory bloomSampleImageMemory;
 
-	bool createBloomSampleProcess();
+	/**
+	 * @brief Creates bloom sample process
+	 * @param width New width of post_process images
+	 * @param height New height of post_process images
+	 * @return True on success, false otherwise
+	 */
+	bool createBloomSampleProcess(std::uint32_t width, std::uint32_t height);
 	void destroyBloomSampleProcess();
 	void applyBloomSampleProcess(VkCommandBuffer commandBuffer);
 }

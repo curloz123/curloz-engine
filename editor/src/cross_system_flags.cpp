@@ -1,3 +1,9 @@
+/**
+ * @file cross_system_flags.cpp
+ * @author curl0z
+ * @brief Process all flags hinted to editor by other subsystems
+ */
+
 #include "../include/cross_system_flags.hpp"
 #include "../include/editor.hpp"
 #include "window/mouse.hpp"

@@ -7,19 +7,24 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <cstdint>
 
 namespace clz::renderer::post_process
 {
 	/// @brief Initializes all post-processes
+	/// @param width New width of post_process images
+	/// @param height New height of post_process images
 	/// @return True on success, false otherwise
-	bool initializePostProcesses();
+	bool initializePostProcesses(std::uint32_t width, std::uint32_t height);
 
 	/// @brief Destroy's post processes resources
 	void destroyPostProcesses();
 
 	/// @brief Recreates post processes resources
+	/// @param width New width of post_process images
+	/// @param height New height of post_process images
 	/// @return True on success, false otherwise
-	bool recreatePostProcesses();
+	bool recreatePostProcesses(std::uint32_t width, std::uint32_t height);
 
 	/// @brief Runs the full ping-pong post_process chain
 	/// @note Leaves postTonemapImage in VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.

@@ -3,7 +3,9 @@
  * @author curl0z
  * @brief implements all the internal GLFW functions
  */
+
 #include "window/native.hpp"
+#include "window/config.hpp"
 #include "config/config.hpp"
 #include "core/enginestate.hpp"
 #include "core/logs.hpp"
@@ -13,9 +15,7 @@ namespace clz::window
 	/// @copydoc
 	bool initializeGLFW(GLFWwindow** pWindow)
 	{
-		const int width = clz::config::getValue<int>("window", "width", 800);
-		const int height = clz::config::getValue<int>("window", "height", 600);
-		if (width < 0 || height < 0)
+		if (w_configWidth < 0 || w_configHeight < 0)
 		{
 			log::error("Window system passed invalid window dimensions");
 			return false;
@@ -26,13 +26,28 @@ namespace clz::window
 			log::error("Could not initialize GLFW");
 			return false;
 		}
+
+		/// --- Disable opengl context --- ///
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		/// --- Enable resizability --- ///
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+		/// --- Have full screen mode?? --- ///
+		GLFWmonitor* monitor = nullptr;
+		if (w_configExclusiveFullscreen)
+		{
+			monitor = glfwGetPrimaryMonitor();
+		}
+
+		/// --- create window finally --- ///
 		*pWindow = glfwCreateWindow(
-			width,
-			height,
-			clz::config::getValue<std::string>("engine", "name", "Curloz Engine").c_str(),
-			nullptr,
+			w_configWidth,
+			w_configHeight,
+			clz::config::getValue<std::string>(
+				"engine", 
+				"name", 
+				"Curloz Engine").c_str(),
+			monitor,
 			nullptr
 		);
 		if (!(*pWindow))
@@ -40,6 +55,13 @@ namespace clz::window
 			log::error("Could not create GLFW window");
 			return false;
 		}
+
+		/// --- Enable Raw mouse input if enabled--- ///
+		if (glfwRawMouseMotionSupported() && w_configEnableRawInput)
+		{
+			glfwSetInputMode((*pWindow), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
+
 
 		return true;
 	}

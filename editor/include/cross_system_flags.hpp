@@ -1,3 +1,8 @@
+/**
+ * @file cross_system_flags.hpp
+ * @author curl0z
+ * @brief Process all flags hinted to editor by other subsystems
+ */
 #pragma once
 
 #include "core/enginestate.hpp"
@@ -9,6 +14,7 @@ namespace clz::editor
 		clz::state::EngineState oldState,
 		clz::state::EngineState newState);
 
-	void flagEditorFramebufferResize(const uint32_t width, const uint32_t height);
-
+	void flagEditorFramebufferResize(
+		uint32_t width,
+		uint32_t height);
 }

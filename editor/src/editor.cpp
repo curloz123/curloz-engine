@@ -2,12 +2,11 @@
  * @file editor.cpp
  * @author curl0z
  *
- * @brief Sandbox editor implementation
+ * @brief Curloz Engine's editor implementation
  */
 
 #include "../include/editor.hpp"
 #include "../include/editor_types.hpp"
-#include "../include/editorshortcuts.hpp"
 #include "../include/inspector/inspector.hpp"
 #include "../include/scenetable.hpp"
 #include "../include/sceneview.hpp"
@@ -30,8 +29,8 @@
 
 namespace clz::editor
 {
-	/// @copydoc render
-	void render(VkCommandBuffer commandBuffer)
+	/// @brief Builds all ImGui widget calls for the current frame.
+	static void render()
 	{
 		/// @brief top menu bar
 		showTopBar();
@@ -47,9 +46,7 @@ namespace clz::editor
 			ImGui::EndTabBar();
 		}
 		drawSceneView();
-		processShortcuts();
-		showInspector(commandBuffer);
-		timemachine::timeTravel();
+		showInspector();
 
 		ImGui::End();
 	}
@@ -201,7 +198,7 @@ namespace clz::editor
 		ImGui::NewFrame();
 
 		/// All Rendering functions go here
-		render(commandBuffer);
+		render();
 		presentOffscreenWindows();
 
 		ImGui::Render();

@@ -12,7 +12,7 @@
 
 namespace clz::window
 {
-	/// @copydoc
+	/// @copydoc getRequiredVulkanExtensions
 	bool getRequiredVulkanExtensions(std::vector<const char*>& rRequiredExtensions)
 	{
 		uint32_t glfwExtensionCount = 0;
@@ -30,7 +30,7 @@ namespace clz::window
 		return true;
 	}
 
-	/// @copydoc
+	/// @copydoc createVulkanSurface
 	bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& rSurface)
 	{
 		if (glfwCreateWindowSurface(instance, w_window, nullptr, &rSurface) != VK_SUCCESS)
@@ -42,7 +42,7 @@ namespace clz::window
 		return true;
 	}
 
-	/// @copydoc
+	/// @copydoc hintRendererAboutResize
 	void hintRendererAboutResize(GLFWwindow* window, int, int)
 	{
 		renderer::flagRendererFramebufferResize();

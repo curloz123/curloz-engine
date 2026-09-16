@@ -9,8 +9,10 @@
  */
 
 #pragma once
+
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cstdint>
 
 namespace clz::renderer::post_process
 {
@@ -68,9 +70,11 @@ namespace clz::renderer::post_process
 
         /**
          * @brief Initializes and allocates all Vulkan resources required for the bloom post-process.
+	 * @param width New width of post_process images
+	 * @param height New height of post_process images
          * @return true if creation was successful, false otherwise.
          */
-        bool createBloomProcess();
+        bool createBloomProcess(std::uint32_t width, std::uint32_t height);
 
         /**
          * @brief Destroys and frees all Vulkan resources associated with the bloom post-process.

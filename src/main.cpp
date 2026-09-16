@@ -10,11 +10,9 @@
  * as all other subsystems read from it.
  */
 
+#include "core/core.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
-#include "core/enginestate.hpp"
-#include "core/logs.hpp"
-#include "core/time.hpp"
 #include "entity/entity.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
@@ -27,7 +25,7 @@
 
 int main()
 {
-	// Initialize config first. All subsystems depend on it
+	/// --- Initialize config first. All subsystems depend on it --- ///
 	if (!clz::config::init())
 		return 1;
 	clz::log::info("Welcome to " + clz::config::getValue<std::string>("engine", "name", "Curloz Engine"));
@@ -37,10 +35,10 @@ int main()
 		std::to_string(clz::config::getValue<int>("engine", "version_patch", 0))
 	);
 
-	// Start clock, Whole system uses it, so make sure to start it first
+	/// --- Start clock, Whole system uses it, so make sure to start it first --- ///
 	clz::time::init();
 
-	// Initialize Window. Should be the first subsystem to initialize
+	/// --- Initialize Window. Should be the first subsystem to initialize --- ///
 	if (!clz::window::init()) [[unlikely]]
 		return 1;
 
@@ -69,11 +67,16 @@ int main()
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
-		clz::time::computeTime();
-		clz::state::updateEngineState();
+		/// --- Update core system first!!! --- ///
+		clz::updateCoreSystems();
+
+		/// --- Update window system --- ///
 		clz::window::update();
+
+		/// --- Update physics --- ///
 		clz::physics::update();
-		// editor is updated by renderer itself
+
+		/// --- editor is updated by renderer itself --- ///
 		clz::renderer::update();
 	}
 

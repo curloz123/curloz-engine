@@ -39,8 +39,7 @@ namespace clz::renderer
 			    1,
 			    &fence,
 			    VK_TRUE,
-			    UINT64_MAX
-		    ) != VK_SUCCESS) [[unlikely]]
+			    UINT64_MAX) != VK_SUCCESS) [[unlikely]]
 		{
 			clz::log::error("failed to wait for fence");
 		}
@@ -57,11 +56,11 @@ namespace clz::renderer
 			VK_NULL_HANDLE,
 			&rImageIndex
 		);
-		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR || acquireResult == VK_SUBOPTIMAL_KHR)
-			[[unlikely]]
+		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ||
+			acquireResult == VK_SUBOPTIMAL_KHR) [[unlikely]]
 		{
 			clz::log::debug("swapchain will be recreated");
-			r_swapchainOutdated = true;
+			r_framebufferResized = true;
 		}
 		else if (acquireResult != VK_SUCCESS) [[unlikely]]
 		{
@@ -490,7 +489,7 @@ namespace clz::renderer
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) [[unlikely]]
 		{
 			clz::log::debug("Swapchain will be recreated");
-			r_swapchainOutdated = true;
+			r_framebufferResized = true;
 		}
 		else if (result != VK_SUCCESS) [[unlikely]]
 		{

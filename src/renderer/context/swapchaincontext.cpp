@@ -11,12 +11,14 @@
 #include "window/window.hpp"
 #include <string>
 #include "renderer/utility/namer.hpp"
+#include <algorithm>
 
 namespace clz::renderer
 {
-	bool initSwapchainContext()
+	/// @copydoc initSwapchainContext
+	bool initSwapchainContext(const std::uint32_t width, const std::uint32_t height)
 	{
-		if (!createSwapchain())
+		if (!createSwapchain(width, height))
 		{
 			clz::log::error("Failed to create swapchain");
 			clz::log::error("Could not initialize swapchain context");
@@ -26,7 +28,8 @@ namespace clz::renderer
 		return true;
 	}
 
-	bool createSwapchain()
+	/// @copydoc createSwapchain
+	bool createSwapchain(const std::uint32_t width, const std::uint32_t height)
 	{
 		VkSurfaceCapabilitiesKHR capabilities;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -96,7 +99,7 @@ namespace clz::renderer
 
 		// Primarily select mailbox
 		r_swapchainContext.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		if (tripleBuffering)
+		if (r_enableTripleBuffering)
 		{
 			for (const auto& availablePresentMode : presentModes)
 			{
@@ -116,13 +119,7 @@ namespace clz::renderer
 		}
 		else
 		{
-			int width, height;
-			clz::window::getFramebufferExtents(&width, &height);
-
-			VkExtent2D actualExtent = {
-				static_cast<uint32_t>(width),
-				static_cast<uint32_t>(height)
-			};
+			VkExtent2D actualExtent = {width, height};
 
 			r_swapchainContext.extent.width = std::clamp(
 				actualExtent.width,
@@ -261,14 +258,18 @@ namespace clz::renderer
 	}
 
 
-	void recreateSwapchainContext()
+	/// @copydoc recreateSwapchainContext
+	bool recreateSwapchainContext(const std::uint32_t width, const std::uint32_t height)
 	{
 		destroySwapchainContext();
 
-		if (!initSwapchainContext()) [[unlikely]]
+		if (!initSwapchainContext(width, height)) [[unlikely]]
 		{
 			clz::log::error("Mid loop, failed to recreate swapchain");
+			return false;
 		}
+
+		return true;
 	}
 } // namespace clz::renderer
 

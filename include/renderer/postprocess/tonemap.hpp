@@ -10,6 +10,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <cstdint>
 
 namespace clz::renderer::post_process
 {
@@ -37,8 +38,10 @@ namespace clz::renderer::post_process
         /**
          * @brief Initializes and allocates all Vulkan resources required for the tonemap pass.
          * @return true if creation was successful, false otherwise.
+	 * @param width New width of post_process images
+	 * @param height New height of post_process images
          */
-        bool createTonemapProcess();
+        bool createTonemapProcess(std::uint32_t width, std::uint32_t height);
 
         /**
          * @brief Destroys and frees all Vulkan resources associated with the tonemap pass.

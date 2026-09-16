@@ -119,7 +119,7 @@ void showTopBar()
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 1.0f, 0.7f));
 	if (ImGui::Button("", ImVec2(buttonSize, buttonSize)))
 	{
-		window::maximizeWindow();
+		window::toggleWindowedBorderlessMode();
 	}
 	ImGui::PopStyleColor(2);
 	ImGui::SameLine(0, spacing);

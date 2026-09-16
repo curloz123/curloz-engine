@@ -30,7 +30,7 @@ namespace clz::editor
 namespace clz::editor
 {
 	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-	void showInspector(VkCommandBuffer commandBuffer)
+	void showInspector()
 	{
 		if (!ImGui::Begin("Inspector"))
 		{

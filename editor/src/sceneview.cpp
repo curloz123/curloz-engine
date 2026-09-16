@@ -17,7 +17,6 @@
 #include "renderer/camera/camera.hpp"
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
-#include <X11/X.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -71,38 +70,38 @@ namespace clz::editor
 			return;
 		}
 
-		static bool rightClickThisFrame = false;
-		static bool rightClickLastFrame = false;
+		/// Identifies whether
+		/// (player viewing) || (Right mouse button is pressed) or not
+		static bool isLooking = false;
 
-		if (ImGui::IsWindowHovered() &&
-			window::isMousePressed(clz::input::Mouse::MouseRight))
+		/// --- Is Right mouse button pressed this frame???? ---
+		const bool RMousePressed = window::isMousePressed(clz::input::Mouse::MouseRight);
+
+		/// If user suddenly brings mouse over scene view and right-clicks,
+		/// Make scene window the current focused window
+		if (!isLooking && ImGui::IsWindowHovered() && RMousePressed)
 		{
-			rightClickThisFrame = true;
 			ImGuiWindow* window = ImGui::GetCurrentContext()->HoveredWindow;
 			ImGui::FocusWindow(window);
 		}
-		else
+
+		/// --- update if started viewing this frame, disable cursor --- ///
+		if (!isLooking && ImGui::IsWindowFocused() && RMousePressed)
 		{
-			rightClickThisFrame = false;
+			isLooking = true;
+			window::disableCursor();
 		}
-
-		if (ImGui::IsWindowFocused())
+		/// --- Else enable cursor --- ///
+		if (isLooking && !RMousePressed)
 		{
-			if (rightClickThisFrame && !rightClickLastFrame)
-			{
-				window::disableCursor();
-			}
-			else if (!rightClickThisFrame && rightClickLastFrame)
-			{
-				window::enableCursor();
-			}
-
-			if (rightClickThisFrame)
-			{
-				renderer::updateCamera(mainViewportImage.cameraId);
-			}
-
-			rightClickLastFrame = rightClickThisFrame;
+			isLooking = false;
+			window::enableCursor();
+		}
+		
+		/// --- If looking right now, only then update camera --- ///
+		if (isLooking)
+		{
+			renderer::updateCamera(mainViewportImage.cameraId);
 		}
 
 

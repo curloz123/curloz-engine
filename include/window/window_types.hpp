@@ -19,4 +19,18 @@ namespace clz::window
 	inline math::vec2 w_cursorPosition;
 	/// Cursor Scroll offset
 	inline float w_scrollOffset;
+
+	/// @brief Explains in which mode window is.
+	/// Fullscreen means exclusive fullscreen mode.
+	/// WindowedBorderless is just window but fullscreen.
+	/// Windowed is well, just windowed lol.
+	enum WindowMode
+	{
+		FULLSCREEN,
+		WINDOWED_BORDERLESS,
+		WINDOW
+	};
+	/// @brief Window Mode handle
+	inline WindowMode w_windowMode = WindowMode::WINDOWED_BORDERLESS;
+
 } // namespace clz::window
