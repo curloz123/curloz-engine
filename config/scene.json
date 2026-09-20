@@ -1,28 +1,25 @@
 {
-	"scripts": [
-		
-	],
     "camera": [
         {
             "acceleration": 15.0,
             "far": 1000.0,
-            "fov": 71.0,
+            "fov": 70.0,
             "localfront": [
-                -0.9372274875640869,
-                -0.2789575457572937,
-                0.2086700201034546
+                0.736392617225647,
+                -0.6454582214355469,
+                -0.20275485515594482
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -16.200031280517578,
+            "pitch": -40.200042724609375,
             "position": [
-                -4.064846992492676,
-                8.266679763793945,
-                -1.8544504642486572
+                -8.074618339538574,
+                1.114302396774292,
+                0.33969056606292725
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 3407.447998046875
+            "yaw": 3584.60595703125
         }
     ],
     "entities": [
@@ -253,11 +250,14 @@
                 ],
                 "type": "static"
             },
+            "sensor_scripts": [
+                "assets/scripts/test.lua"
+            ],
             "transform": {
                 "position": [
                     0.0,
-                    1.8572416305541992,
-                    4.294669151306152
+                    -1.49399995803833,
+                    0.0
                 ],
                 "rotation": [
                     1.0,
@@ -341,7 +341,7 @@
         },
         {
             "model": {
-                "path": "assets/models/helmet/DamagedHelmet.glb"
+                "path": "assets/models/test/DamagedHelmet.glb"
             },
             "name": "Damaged Helmet",
             "rigidbody": {
@@ -430,7 +430,7 @@
                         "density": 40.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.019776925444602966,
@@ -455,7 +455,7 @@
                         "density": 20.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.006399740930646658,
@@ -480,7 +480,7 @@
                         "density": 20.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.014330358244478703,
@@ -506,9 +506,9 @@
             },
             "transform": {
                 "position": [
-                    -2.4310688972473145,
+                    0.0,
                     1.4422353506088257,
-                    -2.486686944961548
+                    0.0
                 ],
                 "rotation": [
                     1.0,
@@ -864,7 +864,7 @@
                         "density": 10.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.032569605857133865,
@@ -889,7 +889,7 @@
                         "density": 10.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.042191680520772934,
@@ -915,9 +915,9 @@
             },
             "transform": {
                 "position": [
-                    -4.369453430175781,
-                    9.027933120727539,
-                    2.835721015930176
+                    0.0,
+                    2.1370320320129395,
+                    -5.759406089782715
                 ],
                 "rotation": [
                     1.0,

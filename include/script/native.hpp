@@ -5,8 +5,6 @@
 namespace clz::script
 {
 	inline sol::state s_SolHandle;
-}
-namespace clz::script
-{
+
 	bool initializeSol();
 }

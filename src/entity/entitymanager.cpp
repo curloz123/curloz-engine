@@ -21,6 +21,7 @@ namespace clz::ecs
 		const uint32_t index = entityCounter++;
 		entities.emplace_back(index);
 		entityName.emplace_back(name);
+		mapEntityIdByName[name] = index;
 		return index;
 	}
 
@@ -62,6 +63,13 @@ namespace clz::ecs
 			return NULL_ENTITY_NAME;
 		}
 		return entityName[e];
+	}
+
+	/// @copydoc getEntityByName
+	std::expected<entity, std::string> getEntityByName(
+			const std::string& name)
+	{
+		return mapEntityIdByName[name];
 	}
 
 	/// @copydoc disableEntity
