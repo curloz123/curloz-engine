@@ -3,23 +3,23 @@
         {
             "acceleration": 15.0,
             "far": 1000.0,
-            "fov": 70.0,
+            "fov": 75.0,
             "localfront": [
-                0.736392617225647,
-                -0.6454582214355469,
-                -0.20275485515594482
+                0.7123420834541321,
+                -0.4225660562515259,
+                0.5601451396942139
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -40.200042724609375,
+            "pitch": -24.999961853027344,
             "position": [
-                -8.074618339538574,
-                1.114302396774292,
-                0.33969056606292725
+                -3.5330724716186523,
+                -1.4411166906356812,
+                -0.6565383076667786
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 3584.60595703125
+            "yaw": 3638.179443359375
         }
     ],
     "entities": [
@@ -210,16 +210,16 @@
             "rigidbody": {
                 "angulardamping": 0.10000000149011612,
                 "angularlock": [
-                    false,
-                    false,
-                    false
+                    true,
+                    true,
+                    true
                 ],
                 "enablesleep": true,
                 "lineardamping": 0.0,
                 "linearlock": [
-                    false,
-                    false,
-                    false
+                    true,
+                    true,
+                    true
                 ],
                 "shapes": [
                     {
@@ -251,7 +251,9 @@
                 "type": "static"
             },
             "sensor_scripts": [
-                "assets/scripts/test.lua"
+                "assets/scripts/test.lua",
+                "assets/scripts/test2.lua",
+                "assets/scripts/foo.lua"
             ],
             "transform": {
                 "position": [
@@ -363,7 +365,7 @@
                         "density": 5.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.20000000298023224,
                         "halfdimensions": [
                             0.46678298711776733,
@@ -389,9 +391,9 @@
             },
             "transform": {
                 "position": [
-                    8.08877182006836,
+                    0.0,
                     5.336245536804199,
-                    -0.8105658888816833
+                    0.0
                 ],
                 "rotation": [
                     1.0,

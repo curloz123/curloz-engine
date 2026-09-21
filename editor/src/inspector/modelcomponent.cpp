@@ -18,9 +18,7 @@ namespace clz::editor
 /// @brief Displays read-only Model component info, if the entity has one.
 void showModelComponentHeader()
 {
-	if (!ecs::hasComponent<renderer::ModelComponent>(currentSelectedEntity.value()))
-		return;
-	if (!ImGui::CollapsingHeader("Model"))
+	if (!ImGui::CollapsingHeader("󰐫 Model"))
 		return;
 
 	const renderer::ModelId id =

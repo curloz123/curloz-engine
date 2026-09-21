@@ -15,6 +15,7 @@
 #ifdef CLZ_ENABLE_EDITOR
 #include "../../editor/include/gizmo/gizmo.hpp"
 #include "../../editor/include/timemachine.hpp"
+#include "../../editor/include/timemachine.hpp"
 #endif
 
 ///< @brief All sub-system local processer function def go here
@@ -116,6 +117,7 @@ namespace clz
 			{
 				/// --- Don't save every nanosecond key is held --- ///	
 				clz::scene::saveScene();
+				clz::timemachine::clearSnapshots();
 			}
 			CTRL_SPressedLastFrame = true;
 		}

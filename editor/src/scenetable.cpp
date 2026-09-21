@@ -61,7 +61,7 @@ namespace clz::editor
 
 				if (ImGui::IsItemClicked())
 					ecs::disableEntity(entity);
-				if (ImGui::IsItemHovered())
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 					ImGui::SetTooltip("Disable entity");
 			}
 			else

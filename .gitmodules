@@ -32,3 +32,6 @@
 [submodule "external/lua"]
 	path = external/lua
 	url = https://github.com/walterschell/Lua.git
+[submodule "external/ImGuiFileDialog"]
+	path = external/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

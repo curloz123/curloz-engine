@@ -92,6 +92,7 @@ int main()
 	// Shut down
 	clz::scene::saveScene();
 	clz::ecs::shutdown();
+	clz::script::shutdown();
 	clz::audio::shutdown();
 #ifdef CLZ_ENABLE_EDITOR
 	clz::editor::shutdown();

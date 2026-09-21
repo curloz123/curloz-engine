@@ -11,6 +11,7 @@
 #include "entity/tags.hpp"
 #include "physics/physicscomponent.hpp"
 #include "renderer/rendercomponent.hpp"
+#include <expected>
 
 namespace clz::ecs
 {
@@ -69,7 +70,10 @@ namespace clz::ecs
 	std::expected<entity, std::string> getEntityByName(
 			const std::string& name)
 	{
-		return mapEntityIdByName[name];
+		if (mapEntityIdByName.contains(name))
+			return mapEntityIdByName[name];
+
+		return std::unexpected("Unable to find entity with name: " + name);
 	}
 
 	/// @copydoc disableEntity

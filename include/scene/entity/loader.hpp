@@ -117,9 +117,16 @@ namespace clz::scene
 		std::string_view entityName
 	);
 
+	/// @brief Retrieves sensor script component from JSON.
+	/// It should be a json-array with name "sensor_scripts".
+	/// @param scriptsPathArray Json array handle to scripts path array
+	/// @return Sensor script component object
 	script::SensorScriptComponent retrieveSensorScriptComponent(
 		const nlohmann::json& scriptsPathArray
 	);
+	/// @brief Saves all sensor scripts data of entity back to json.
+	/// @param sensorScriptComponent Actual component.
+	/// @param sensorScriptTable json array where all this would be saved.
 	void saveSensorScriptComponent(
 		const script::SensorScriptComponent& sensorScriptComponent,
 		nlohmann::json& sensorScriptTable

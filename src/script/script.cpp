@@ -1,3 +1,9 @@
+/**
+ * @file script.cpp
+ * @author curl0z
+ * @brief Script system public header implementation
+ */
+
 #include "script/script.hpp"
 #include "script/native.hpp"
 #include "script/functions.hpp"
@@ -5,6 +11,7 @@
 
 namespace clz::script
 {
+	/// @copydoc init()
 	bool init()
 	{
 		/// --- Initializ Sol --- ///
@@ -25,6 +32,7 @@ namespace clz::script
 		return true;
 	}
 
+	/// @copydoc shutdown()
 	void shutdown()
 	{
 

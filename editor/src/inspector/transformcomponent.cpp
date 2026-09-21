@@ -31,7 +31,7 @@ namespace clz::editor
 	/// completes.
 	void showTransformComponentHeader()
 	{
-		if (!ImGui::CollapsingHeader("Transform"))
+		if (!ImGui::CollapsingHeader("󰵉 Transform"))
 			return;
 
 

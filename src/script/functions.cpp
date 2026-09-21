@@ -1,3 +1,9 @@
+/**
+ * @file functions.cpp
+ * @author curl0z
+ * @brief Introduces C++ side functions to LUA
+ */
+
 #include "script/functions.hpp"
 #include "core/logs.hpp"
 #include "script/native.hpp"
@@ -5,6 +11,7 @@
 
 namespace clz::script
 {
+	/// @copydoc registerCoreFunctions
 	void registerCoreFunctions()
 	{
 		/// --- Log functions --- ///
@@ -37,6 +44,7 @@ namespace clz::script
 		s_SolHandle["log"] = log;
 	}
 
+	/// @copydoc registerEntityFunctions
 	void registerEntityFunctions()
 	{
 		/// --- get entity by name --- ///
@@ -50,9 +58,9 @@ namespace clz::script
 					return result.value();
 				}
 				clz::log::warn(
-					"Script tried retrieve entity w name: " + 
+					"Script tried retrieve entity with name: '" + 
 					name + 
-					" But that entity doesn't exist");
+					"' But that entity doesn't exist");
 				return ecs::NULL_ENTITY;
 			}
 		);

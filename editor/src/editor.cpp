@@ -93,7 +93,6 @@ namespace clz::editor
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		// io.ConfigFlags |= ImGuiBackendFlags_RendererHasTextures;
 
 		/// Colors
 		setTheme();
