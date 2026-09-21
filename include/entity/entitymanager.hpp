@@ -12,6 +12,7 @@
 
 #include "scene/entity/entity.hpp"
 #include <cstdint>
+#include <expected>
 
 namespace clz::ecs
 {
@@ -37,6 +38,8 @@ namespace clz::ecs
 	inline constexpr auto NULL_ENTITY_NAME = "NULL_ENTITY_NAME";
 	/// @brief All entity's names
 	inline std::vector<std::string> entityName;
+	/// @brief Hash map for of entityName : entityId type
+	inline std::unordered_map<std::string, entity> mapEntityIdByName;
 
 	/**
 	 * @brief Creates a new entity and returns its ID.
@@ -77,6 +80,14 @@ namespace clz::ecs
 	 * @return name string
 	 */
 	std::string getEntityName(entity e);
+
+	/**
+	 * @brief Returns entity Id indexed via its name
+	 * @param name Name of the entity
+	 * @return entityId if name is found, else std::unexpected
+	 */
+	std::expected<entity, std::string> getEntityByName(
+			const std::string& name);
 
 	/// @brief Disables entity
 	/// @param e entity

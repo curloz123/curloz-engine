@@ -58,7 +58,7 @@ namespace clz::editor
 	 */
 	void showRigidBodyHeader()
 	{
-		if (!ImGui::CollapsingHeader("RigidBody"))
+		if (!ImGui::CollapsingHeader("󱢖 RigidBody"))
 			return;
 
 		const auto& rigidBodyId =

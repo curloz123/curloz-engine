@@ -22,6 +22,8 @@
 #include "renderer/rendercomponent.hpp"
 #include <imgui.h>
 #include "include/inspector/lightcomponent.hpp"
+#include "../../include/inspector/scripts_component.hpp"
+#include "script/script_components.hpp"
 
 namespace clz::editor
 {
@@ -104,7 +106,10 @@ namespace clz::editor
 			ImGui::Separator();
 		}
 
-		
+		if (ecs::hasComponent<script::SensorScriptComponent>(currentSelectedEntity.value()))
+		{
+			showSensorScriptComponent();
+		}
 
 		ImGui::End();
 

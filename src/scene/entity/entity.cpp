@@ -12,6 +12,8 @@
 #include "physics/physicscomponent.hpp"
 #include "renderer/model/model.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "script/cross_system_flags.hpp"
+#include "script/script_components.hpp"
 
 namespace clz::scene
 {
@@ -137,10 +139,22 @@ namespace clz::scene
 				auto body = retrieveBodyComponent(entityData["rigidbody"], e, entityName);
 				ecs::addComponent<physics::RigidBodyComponent>(e, body);
 			}
+
+
+			// Attach sensor script component, if present
+			if (entityData.contains("sensor_scripts"))
+			{
+				ecs::addComponent<script::SensorScriptComponent>(
+					e, 
+					retrieveSensorScriptComponent(
+						entityData["sensor_scripts"])
+				);
+			}
 		}
 
 		// Entities loaded flag
 		renderer::flagRenderComponentsLoaded();
+		script::flagScriptSystemEntitiesLoaded();
 
 		clz::log::info("Loaded entities");
 		return true;
@@ -196,13 +210,22 @@ namespace clz::scene
 				);
 			}
 
-			/// --- 3. Physics components ---
+			/// --- 3. Physics components --- ///
 			if (ecs::hasComponent<physics::RigidBodyComponent>(entity))
 			{
 				saveRigidBodyComponent(
 					ecs::getComponent<physics::RigidBodyComponent>(entity),
 					entityJson["rigidbody"],
 					entityName
+				);
+			}
+
+			/// --- 4. Sensor script components --- ///
+			if (ecs::hasComponent<script::SensorScriptComponent>(entity))
+			{
+				saveSensorScriptComponent(
+					ecs::getComponent<script::SensorScriptComponent>(entity),
+					entityJson["sensor_scripts"]
 				);
 			}
 			sceneJson["entities"].push_back(entityJson);

@@ -15,7 +15,7 @@ void showDirectionalLightHeader()
 {
 	static renderer::DirectionalLight previousDirLight;
 
-	if (!ImGui::CollapsingHeader("Directional Light"))
+	if (!ImGui::CollapsingHeader(" Directional Light"))
 		return;
 
 	const auto entityId = currentSelectedEntity.value();
@@ -79,7 +79,7 @@ void showPointLightHeader()
 {
 	static renderer::PointLight previousPointLight;
 
-	if (!ImGui::CollapsingHeader("Point Light"))
+	if (!ImGui::CollapsingHeader("󱩎 Point Light"))
 		return;
 
 	const auto entityId = currentSelectedEntity.value();

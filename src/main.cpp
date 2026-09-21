@@ -18,6 +18,7 @@
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
+#include "script/script.hpp"
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "../editor/include/editor.hpp"
@@ -28,7 +29,12 @@ int main()
 	/// --- Initialize config first. All subsystems depend on it --- ///
 	if (!clz::config::init())
 		return 1;
-	clz::log::info("Welcome to " + clz::config::getValue<std::string>("engine", "name", "Curloz Engine"));
+	clz::log::info(
+		"Welcome to " + 
+		clz::config::getValue<std::string>(
+			"engine", 
+			"name", 
+			"Curloz Engine"));
 	clz::log::info("Version: " + 
 		std::to_string(clz::config::getValue<int>("engine", "version_major", 0)) + "." + 
 		std::to_string(clz::config::getValue<int>("engine", "version_minor", 0)) + "." +
@@ -57,10 +63,13 @@ int main()
 	// Initialize audio
 	clz::audio::init();
 
+	// Initialize script system
+	clz::script::init();
+
 	// Initialize entity system
 	clz::ecs::init();
 
-	// Initialize Scene
+	// Initialize Scene [Must be loaded last]
 	if (!clz::scene::loadScene()) [[unlikely]]
 		return 1;
 
@@ -83,6 +92,7 @@ int main()
 	// Shut down
 	clz::scene::saveScene();
 	clz::ecs::shutdown();
+	clz::script::shutdown();
 	clz::audio::shutdown();
 #ifdef CLZ_ENABLE_EDITOR
 	clz::editor::shutdown();

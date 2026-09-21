@@ -12,6 +12,7 @@
 #include "entity/entitymanager.hpp"
 #include "physics/physicscomponent.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "script/script_components.hpp"
 #include <nlohmann/json.hpp>
 
 namespace clz::scene
@@ -102,9 +103,9 @@ namespace clz::scene
 	/// @note if a value is not present in JSON, will assign default value
 	physics::RigidBodyComponent
 	retrieveBodyComponent(
-			const nlohmann::json& physicsTable,
-			const ecs::entity& entity,
-			std::string_view entityName);
+		const nlohmann::json& physicsTable,
+		const ecs::entity& entity,
+		std::string_view entityName);
 
 	/// @brief Saves back all physics data of entities to JSON
 	/// @param rigidBodyComponent RigidBodyComponent of entity
@@ -114,6 +115,21 @@ namespace clz::scene
 		physics::RigidBodyComponent rigidBodyComponent,
 		nlohmann::json& physicsTable,
 		std::string_view entityName
+	);
+
+	/// @brief Retrieves sensor script component from JSON.
+	/// It should be a json-array with name "sensor_scripts".
+	/// @param scriptsPathArray Json array handle to scripts path array
+	/// @return Sensor script component object
+	script::SensorScriptComponent retrieveSensorScriptComponent(
+		const nlohmann::json& scriptsPathArray
+	);
+	/// @brief Saves all sensor scripts data of entity back to json.
+	/// @param sensorScriptComponent Actual component.
+	/// @param sensorScriptTable json array where all this would be saved.
+	void saveSensorScriptComponent(
+		const script::SensorScriptComponent& sensorScriptComponent,
+		nlohmann::json& sensorScriptTable
 	);
 
 } // namespace clz::scene

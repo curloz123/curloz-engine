@@ -26,3 +26,12 @@
 [submodule "external/fastgltf"]
     path = external/fastgltf
     url = https://github.com/spnda/fastgltf.git
+[submodule "external/sol2"]
+	path = external/sol2
+	url = https://github.com/ThePhD/sol2.git
+[submodule "external/lua"]
+	path = external/lua
+	url = https://github.com/walterschell/Lua.git
+[submodule "external/ImGuiFileDialog"]
+	path = external/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

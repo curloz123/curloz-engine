@@ -113,6 +113,9 @@ target_link_libraries(imgui PUBLIC
         Vulkan::Vulkan
         glfw
 )
+target_compile_definitions(imgui PUBLIC
+	IMGUI_USE_WCHAR32
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
 
 #IMGUIZMO
@@ -123,9 +126,23 @@ target_include_directories(imguizmo PUBLIC
         external/ImGuizmo/src
 )
 target_link_libraries(imguizmo PUBLIC imgui)
-#target_compile_options(imguizmo PRIVATE -Wno-error -Wno-unsafe-buffer-usage)
 target_link_libraries(${PROJECT_NAME} PRIVATE imguizmo)
+
+#IMGUI_FILE_DIALOG
+add_library(imguifiledialog STATIC 
+	external/ImGuiFileDialog/ImGuiFileDialog.cpp
+)
+target_include_directories(imguifiledialog PUBLIC 
+	external/ImGuiFileDialog
+)
+target_link_libraries(imguifiledialog PUBLIC imgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE imguifiledialog)
 
 #BOX3D
 add_subdirectory(external/box3d)
 target_link_libraries(${PROJECT_NAME} PRIVATE box3d::box3d)
+
+#LUA and SOL2
+add_subdirectory(external/lua)
+add_subdirectory(external/sol2)
+target_link_libraries(${PROJECT_NAME} PRIVATE lua_static sol2::sol2)

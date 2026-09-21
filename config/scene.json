@@ -3,23 +3,23 @@
         {
             "acceleration": 15.0,
             "far": 1000.0,
-            "fov": 71.0,
+            "fov": 75.0,
             "localfront": [
-                -0.9372274875640869,
-                -0.2789575457572937,
-                0.2086700201034546
+                0.7123420834541321,
+                -0.4225660562515259,
+                0.5601451396942139
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -16.200031280517578,
+            "pitch": -24.999961853027344,
             "position": [
-                -4.064846992492676,
-                8.266679763793945,
-                -1.8544504642486572
+                -3.5330724716186523,
+                -1.4411166906356812,
+                -0.6565383076667786
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 3407.447998046875
+            "yaw": 3638.179443359375
         }
     ],
     "entities": [
@@ -210,16 +210,16 @@
             "rigidbody": {
                 "angulardamping": 0.10000000149011612,
                 "angularlock": [
-                    false,
-                    false,
-                    false
+                    true,
+                    true,
+                    true
                 ],
                 "enablesleep": true,
                 "lineardamping": 0.0,
                 "linearlock": [
-                    false,
-                    false,
-                    false
+                    true,
+                    true,
+                    true
                 ],
                 "shapes": [
                     {
@@ -250,11 +250,16 @@
                 ],
                 "type": "static"
             },
+            "sensor_scripts": [
+                "assets/scripts/test.lua",
+                "assets/scripts/test2.lua",
+                "assets/scripts/foo.lua"
+            ],
             "transform": {
                 "position": [
                     0.0,
-                    1.8572416305541992,
-                    4.294669151306152
+                    -1.49399995803833,
+                    0.0
                 ],
                 "rotation": [
                     1.0,
@@ -338,7 +343,7 @@
         },
         {
             "model": {
-                "path": "assets/models/helmet/DamagedHelmet.glb"
+                "path": "assets/models/test/DamagedHelmet.glb"
             },
             "name": "Damaged Helmet",
             "rigidbody": {
@@ -360,7 +365,7 @@
                         "density": 5.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.20000000298023224,
                         "halfdimensions": [
                             0.46678298711776733,
@@ -386,9 +391,9 @@
             },
             "transform": {
                 "position": [
-                    8.08877182006836,
+                    0.0,
                     5.336245536804199,
-                    -0.8105658888816833
+                    0.0
                 ],
                 "rotation": [
                     1.0,
@@ -427,7 +432,7 @@
                         "density": 40.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.019776925444602966,
@@ -452,7 +457,7 @@
                         "density": 20.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.006399740930646658,
@@ -477,7 +482,7 @@
                         "density": 20.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.014330358244478703,
@@ -503,9 +508,9 @@
             },
             "transform": {
                 "position": [
-                    -2.4310688972473145,
+                    0.0,
                     1.4422353506088257,
-                    -2.486686944961548
+                    0.0
                 ],
                 "rotation": [
                     1.0,
@@ -861,7 +866,7 @@
                         "density": 10.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.032569605857133865,
@@ -886,7 +891,7 @@
                         "density": 10.0,
                         "enablecontactevents": false,
                         "enablehitevents": false,
-                        "enablesensorevents": false,
+                        "enablesensorevents": true,
                         "friction": 0.699999988079071,
                         "halfdimensions": [
                             0.042191680520772934,
@@ -912,9 +917,9 @@
             },
             "transform": {
                 "position": [
-                    -4.369453430175781,
-                    9.027933120727539,
-                    2.835721015930176
+                    0.0,
+                    2.1370320320129395,
+                    -5.759406089782715
                 ],
                 "rotation": [
                     1.0,
