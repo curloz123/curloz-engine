@@ -3,7 +3,7 @@ name = 'Curloz Engine'
 refreshrate = 120
 version_major = 0
 version_minor = 7
-version_patch = 5
+version_patch = 6
 vsync = false
 
 [physics]
