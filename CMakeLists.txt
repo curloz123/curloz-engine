@@ -86,10 +86,19 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE AL_LIBTYPE_STATIC)
 #JSON
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/json)
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+	nlohmann_json::nlohmann_json
+)
 
-#STB_IMAGE
-target_include_directories(${PROJECT_NAME} PRIVATE external/stb)
+#STB
+target_include_directories(${PROJECT_NAME} PRIVATE 
+	external/stb
+)
+
+#DR_WAV
+target_include_directories(${PROJECT_NAME} PRIVATE
+	external/dr_libs
+)
 
 # FASTGLTF
 set(FASTGLTF_COMPILE_AS_CPP20 ON CACHE BOOL "" FORCE)

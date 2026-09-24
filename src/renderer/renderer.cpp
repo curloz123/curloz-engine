@@ -230,4 +230,11 @@ namespace clz::renderer
 
 		return ImagesResizeResult::SUCCESS;
 	}
+
+
+	/// @copydoc getCameraHandle
+	CameraId getGameCameraHandle()
+	{
+		return r_cameraId;
+	}
 } // namespace clz::renderer

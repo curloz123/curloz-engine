@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "camera/camera.hpp"
+
 namespace clz::renderer
 {
 	/**
@@ -56,5 +58,8 @@ namespace clz::renderer
 	/// @return true if each image has been succesfully created
 	/// false otherwise.
 	ImagesResizeResult recreateImagesOnFramebufferResize();
-
+	
+	/// @brief retrieves handle to main game camera
+	/// @warn Must be called only after entities have loaded
+	CameraId getGameCameraHandle();
 } // namespace clz::renderer

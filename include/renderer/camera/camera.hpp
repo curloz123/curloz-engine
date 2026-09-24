@@ -30,8 +30,7 @@ namespace clz::renderer
 		// Transform
 		std::optional<math::vec3> position;
 
-		// Derived vectors (typically set from pitch/yaw, but you want defaults if
-		// missing)
+		/// OUTDATE THIS
 		std::optional<math::vec3> localFront;
 	};
 
@@ -93,6 +92,17 @@ namespace clz::renderer
 	/// @param newFarPlane New near plane value
 	/// @return Far Plane value of camera
 	void setCameraFarPlane(CameraId Id, float newFarPlane);
+
+	/// @brief Retrieves camera's current velocity
+	/// @param Id ID of camera
+	math::vec3 getCameraVelocity(CameraId Id);
+
+	/// @brief Retrieves camera's local front vector
+	/// @param Id ID of camera
+	math::vec3 getCameraLocalFrontVector(CameraId Id);
+	/// @brief Retrieves camera's local right vector
+	/// @param Id ID of camera
+	math::vec3 getCameraLocalRightVector(CameraId Id);
 
 	/// @brief Gets camera pitch
 	/// @param Id Camera id

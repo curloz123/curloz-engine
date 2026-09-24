@@ -218,4 +218,10 @@ namespace clz::editor
 		/// @brief Swap gizmo frame checkers
 		gizmoUsedLastFrame = gizmoUsedThisFrame;
 	}
+
+	/// @copydoc getEditorMainViewCameraId
+	renderer::CameraId getEditorMainViewCameraId()
+	{
+		return mainViewportImage.cameraId;
+	}
 } // namespace clz::editor

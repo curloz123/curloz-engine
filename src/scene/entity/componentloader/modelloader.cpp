@@ -35,7 +35,6 @@ namespace clz::scene
 			std::string_view entityName)
 	{
 		componentData["path"] = renderer::getModelPath(mc.modelId);
-
 		clz::log::info("Saved model component for entity: " + std::string(entityName));
 	}
 } // namespace clz::scene

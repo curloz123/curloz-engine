@@ -10,6 +10,7 @@
  * as all other subsystems read from it.
  */
 
+#include "audio/audio_components.hpp"
 #include "core/core.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
@@ -24,6 +25,11 @@
 #include "../editor/include/editor.hpp"
 #endif
 
+
+/// debug
+#include "audio/buffer_manager.hpp"
+#include "entity/entitymanager.hpp"
+///
 int main()
 {
 	/// --- Initialize config first. All subsystems depend on it --- ///
@@ -56,6 +62,7 @@ int main()
 	if (!clz::renderer::init()) [[unlikely]]
 		return 1;
 #ifdef CLZ_ENABLE_EDITOR
+	/// --- initialize editor, only after renderer has initialized --- ///
 	if (!clz::editor::init()) [[unlikely]]
 		return 1;
 #endif
@@ -87,6 +94,9 @@ int main()
 
 		/// --- editor is updated by renderer itself --- ///
 		clz::renderer::update();
+
+		/// --- Update audio system --- ///
+		clz::audio::update();
 	}
 
 	// Shut down

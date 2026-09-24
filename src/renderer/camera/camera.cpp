@@ -74,7 +74,6 @@ namespace clz::renderer
 	{
 		CLZ_ASSERT(id < NumCameras, "Invalid CameraId");
 
-		const math::vec2 cursorPos = window::getCursorPosition();
 		processKeyBoardInput(id);
 		processMouseInput(id);
 		processMouseScroll(id);
@@ -144,6 +143,22 @@ namespace clz::renderer
 	{
 		CLZ_ASSERT(Id < NumCameras, "Invalid CameraId");
 		Far[Id] = newFarPlane;
+	}
+
+	/// @copydoc getCameraVelocity
+	math::vec3 getCameraVelocity(const CameraId Id)
+	{
+		return Velocity[Id];
+	}
+	/// @copydoc getCameraLocalFrontVector
+	math::vec3 getCameraLocalFrontVector(const CameraId Id)
+	{
+		return LocalFront[Id];
+	}
+	/// @copydoc getCameraLocalRightVector
+	math::vec3 getCameraLocalRightVector(const CameraId Id)
+	{
+		return LocalRight[Id];
 	}
 
 	/// @copydoc
