@@ -132,4 +132,39 @@ namespace clz::audio
 		}
 	}
 
+	/// @copydoc bufferPlayerStop
+	void bufferPlayerStop(
+		const BufferPlayerId bufferPlayerId
+	)
+	{
+#ifdef CLZ_DEBUG
+		if (bufferPlayerId.isNull())
+		{
+			clz::log::warn("Tried to stop a null buffer player");
+			return;
+		}
+		if (au_associatedSources[bufferPlayerId.getId()].isNull())
+		{
+			clz::log::warn("Tried to stop a non-active buffer player");
+			return;
+		}
+#endif
+		
+		/// --- free source first --- ///
+		SourceId associatedSource = 
+			au_associatedSources[bufferPlayerId.getId()];
+		freeSource(associatedSource);
+
+		/// --- remove this player from busy list --- ///
+		std::erase_if(
+			au_activeBufferPlayers,
+			[bufferPlayerId](const BufferPlayerId bPlayerId)
+			{
+				return bufferPlayerId.getId() ==
+						bPlayerId.getId();
+			}
+		);
+	}
+
+
 }

@@ -34,8 +34,6 @@ namespace clz::physics
 			ecs::entity sensorEntity = getAttachedEntity(sensorBody);
 			ecs::entity visitorEntity = getAttachedEntity(visitorBody);
 
-			clz::log::debug("Sensor begin from engine");
-
 			/// --- Let script do rest of work --- ///
 			if (ecs::hasComponent<script::SensorScriptComponent>(sensorEntity))
 			{
@@ -59,7 +57,6 @@ namespace clz::physics
 
 			ecs::entity sensorEntity = getAttachedEntity(sensorBody);
 			ecs::entity visitorEntity = getAttachedEntity(visitorBody);
-			clz::log::debug("Sensor end from engine");
 
 			/// --- Let script do rest of work --- ///
 			if (ecs::hasComponent<script::SensorScriptComponent>(sensorEntity))

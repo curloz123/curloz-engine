@@ -4,8 +4,9 @@
  * @brief Entity subsystem implementation
  */
 
-#include "../../../include/scene/entity/entity.hpp"
-#include "../../../include/scene/entity/loader.hpp"
+#include "scene/entity/entity.hpp"
+#include "audio/audio_components.hpp"
+#include "scene/entity/loader.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
 #include "entity/entitymanager.hpp"
@@ -150,6 +151,18 @@ namespace clz::scene
 						entityData["sensor_scripts"])
 				);
 			}
+			
+			// Attach buffer player component, if present
+			if (entityData.contains("buffer_player"))
+			{
+				ecs::addComponent<audio::AudioBufferPlayerComponent>(
+					e,
+					retrieveBufferPlayerComponent(
+						entityData["buffer_player"],
+						e
+					)
+				);
+			}
 		}
 
 		// Entities loaded flag
@@ -226,6 +239,15 @@ namespace clz::scene
 				saveSensorScriptComponent(
 					ecs::getComponent<script::SensorScriptComponent>(entity),
 					entityJson["sensor_scripts"]
+				);
+			}
+
+			/// --- 5. Buffer player components --- ///
+			if (ecs::hasComponent<audio::AudioBufferPlayerComponent>(entity))
+			{
+				saveBufferPlayerComponent(
+					ecs::getComponent<audio::AudioBufferPlayerComponent>(entity),
+					entityJson["buffer_player"]
 				);
 			}
 			sceneJson["entities"].push_back(entityJson);

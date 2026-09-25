@@ -80,6 +80,28 @@ int main()
 	if (!clz::scene::loadScene()) [[unlikely]]
 		return 1;
 
+         {
+		using namespace clz::audio;
+		clz::audio::setDistanceModel(clz::audio::DistanceModel::INVERSE);
+		clz::ecs::entity e = clz::ecs::getEntityByName("Sponza").value();
+		BufferPlayerDef bufferPlayerData{
+		        .looping = true,
+		        .gain = 1.0f,
+		        .pitch = 1.0f,
+		        .entt = e,
+		};
+		const BufferPlayerId id = createBufferPlayer(
+		       	 bufferPlayerData
+		);
+		const BufferId bufferId = loadBuffer(
+		       	 "assets/audio/hl2.ogg");
+		bufferPlayerSetLooping(id, true);
+		// bufferPlayerPlay(id, bufferId);
+
+		clz::log::debug("Associated gain: " +
+				 std::to_string(bufferPlayerGetGain(id)));
+	 }
+
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{

@@ -6,12 +6,8 @@
 
 #pragma once
 
-#include "entity/entitymanager.hpp"
-#include "physics/body.hpp"
+#include "buffer_manager.hpp"
 #include "buffer_player.hpp"
-#include "entity/corecomponents.hpp"
-#include "entity/componentmanager.hpp"
-#include "physics/physicscomponent.hpp"
 
 namespace clz::audio
 {
@@ -33,7 +29,6 @@ namespace clz::audio
 		};
 	}
 
-	
 	///< @brief Audio buffer component
 	struct AudioBufferComponent
 	{

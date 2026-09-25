@@ -7,6 +7,7 @@
 #include "audio/buffer_manager.hpp"
 #include "audio/native.hpp"
 #include "core/logs.hpp"
+#include <algorithm>
 
 namespace clz::audio
 {
@@ -30,6 +31,7 @@ namespace clz::audio
 		{
 			const uint32_t newBufferIndex = au_bufferLUT.size();
 			au_bufferLUT.push_back(buffer);
+			au_bufferPathLUT.push_back(audioFile.string());
 			au_pathToBufferIndexMap[audioFile.string()] = newBufferIndex;
 			return BufferId(newBufferIndex);
 		};
@@ -72,6 +74,17 @@ namespace clz::audio
 				" Supported are: '.ogg', '.wav'");
 
 		return BufferId();
+	}
+
+	/// @copydoc getAllBuffersPath
+	void getAllBuffersPath(std::vector<std::string>& rBufferPaths)
+	{
+		rBufferPaths.resize(au_bufferPathLUT.size());
+		std::copy(
+			au_bufferPathLUT.begin(),
+			au_bufferPathLUT.end(),
+			rBufferPaths.begin()
+		);
 	}
 
 	/// @copydoc deleteAllBuffers

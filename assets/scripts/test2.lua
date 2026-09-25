@@ -2,7 +2,6 @@ local sensor = {}
 local Gun
 
 function sensor.onInit()
-	log.debug("Hello there, from sensor script 2")
 	Gun = entity.getEntityByName("Gun")
 	log.debug(tostring(Gun))
 end

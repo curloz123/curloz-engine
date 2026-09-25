@@ -31,4 +31,9 @@ namespace clz::script
 	 * relies on the `entity` global is loaded.
 	 */
 	void registerEntityFunctions();
+
+
+	/// @brief Registers all audio system functions.
+	/// In lua they are namespaced by 'audio'
+	void registerAudioInterface();
 }

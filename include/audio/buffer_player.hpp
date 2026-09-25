@@ -75,12 +75,23 @@ namespace clz::audio
 		const BufferId bufferId
 	);
 
+	/// @brief Stops a buffer player
+	/// Also frees the associated source too
+	/// @param bufferPlayerId Id of buffer player
+	/// @note Is technically an O(n) function, 
+	/// so don't go gunh-ho and use this each frame
+	void bufferPlayerStop(
+		const BufferPlayerId bufferPlayerId
+	);
+
 	/// @brief Updates the buffer player's data
 	/// Precisely position and velocity
 	/// @param bufferPlayerId Id of buffer player to update
 	/// @note To be called only for buffer players who are active right now.
 	/// Aka Those who has a source attached to them.
-	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId);
+	void updateBufferPlayerData(
+		const BufferPlayerId bufferPlayerId
+	);
 
 	/// @brief Gets the gain (volume) value for the given audio source.
 	/// @param id The BufferPlayerId whose gain to retrieve.
@@ -95,7 +106,8 @@ namespace clz::audio
 	/// @param value The new gain value.
 	inline void bufferPlayerSetGain(
 		const BufferPlayerId bufferPlayerId, 
-		const float value)
+		const float value
+	)
 	{
 		au_bufferPlayerGain[bufferPlayerId.getId()] = value;
 		if (!au_associatedSources[bufferPlayerId.getId()].isNull())
@@ -197,5 +209,19 @@ namespace clz::audio
 		);
 	}
 
+	/// @brief Stops all active buffers
+	inline void bufferPlayerStopAll()
+	{
+		std::erase_if(
+			au_activeBufferPlayers,
+			[](const BufferPlayerId bufferPlayerId)
+			{
+				auto associatedSource = 
+					au_associatedSources[bufferPlayerId.getId()];
+				freeSource(associatedSource);
+				return true;
+			}
+		);
+	}
 
 }

@@ -16,6 +16,7 @@
 #include "scene/entity/entity.hpp"
 #include "scene/scene.hpp"
 #include <fstream>
+#include "scene/data/audio.hpp"
 
 namespace clz::scene
 {
@@ -53,6 +54,21 @@ namespace clz::scene
 			return false;
 		}
 
+		/// Load data
+		if (sceneFile.contains("data"))
+		{
+			auto& dataEntry = sceneFile["data"];
+			if (dataEntry.contains("audio_buffers"))
+			{
+				loadAudioBuffers(dataEntry["audio_buffers"]);
+			}
+			else
+			{
+				clz::log::warn("Scene file does not has "
+						" data->audio_buffers entry");
+			}
+		}
+
 		// Load entities
 		if (!sceneFile.contains("entities"))
 		{
@@ -78,6 +94,7 @@ namespace clz::scene
 		// Save camera and entities
 		saveCameras(sceneFile);
 		saveEntities(sceneFile);
+		saveBackAudioBuffers(sceneFile["data"]["audio_buffers"]);
 
 		// Write back
 		std::ofstream out("config/scene.json");

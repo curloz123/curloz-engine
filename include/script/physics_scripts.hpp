@@ -4,6 +4,7 @@
  * @brief This file introduces all physics side functions that would be triggered
  * by the physics system. Each trigger introduces an event
  */
+#include <sol/forward.hpp>
 #include <sol/sol.hpp>
 #include "entity/entitymanager.hpp"
 #include "core/logs.hpp"
@@ -37,8 +38,12 @@ namespace clz::script
 		 */
 		void callInitFunction() const
 		{
-			if (onInitSolFunction.valid())
-				onInitSolFunction();
+			sol::protected_function_result result = onInitSolFunction();
+			if (!result.valid())
+			{
+			    sol::error err = result;
+			    clz::log::error(std::string("onInit runtime error: ") + err.what());
+			}
 		}
 
 		/**
@@ -89,7 +94,8 @@ namespace clz::script
 				return false;
 
 			}
-			sol::protected_function_result result = s_SolHandle.script_file(scriptPath);
+			sol::protected_function script = loadResult;
+			sol::protected_function_result result = script();
 			if (!result.valid())
 			{
 				sol::error err = result;

@@ -29,6 +29,9 @@ namespace clz::script
 		/// --- Initialize entity related functions --- ///
 		registerEntityFunctions();
 
+		/// --- Initialize audio related interface --- ///
+		registerAudioInterface();
+
 		return true;
 	}
 

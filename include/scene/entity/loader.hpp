@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include "audio/audio_components.hpp"
 #include "entity/corecomponents.hpp"
 #include "entity/entitymanager.hpp"
 #include "physics/physicscomponent.hpp"
@@ -130,6 +131,25 @@ namespace clz::scene
 	void saveSensorScriptComponent(
 		const script::SensorScriptComponent& sensorScriptComponent,
 		nlohmann::json& sensorScriptTable
+	);
+
+
+	/// @brief Loads buffer_player component
+	/// stored in "buffer_player" field
+	/// @param bufferPlayerTable JSON's buffer_player field
+	/// @param e Entity for which we are creating this component
+	/// @return Created BufferPlayerComponent
+	audio::AudioBufferPlayerComponent retrieveBufferPlayerComponent(
+		const nlohmann::json& bufferPlayerTable,
+		ecs::entity e
+	);
+
+	/// @brief Saves buffer player component for an entity
+	/// @param bufferPlayerComponent buffer player component of entity
+	/// @param buferPlayerTable JSON's table where data'd be stored
+	void saveBufferPlayerComponent(
+		const audio::AudioBufferPlayerComponent& bufferPlayerComponent,
+		nlohmann::json& bufferPlayerTable
 	);
 
 } // namespace clz::scene

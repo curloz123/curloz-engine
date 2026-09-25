@@ -5,9 +5,15 @@
  */
 
 #include "script/functions.hpp"
+#include "audio/audio_components.hpp"
 #include "core/logs.hpp"
+#include "entity/componentmanager.hpp"
 #include "script/native.hpp"
 #include "entity/entitymanager.hpp"
+#include "audio/buffer_manager.hpp"
+#include "audio/buffer_player.hpp"
+#include <sol/raii.hpp>
+#include <type_traits>
 
 namespace clz::script
 {
@@ -47,8 +53,9 @@ namespace clz::script
 	/// @copydoc registerEntityFunctions
 	void registerEntityFunctions()
 	{
-		/// --- get entity by name --- ///
 		sol::table entt = s_SolHandle.create_table();
+
+		/// --- get entity by name --- ///
 		entt.set_function(
 			"getEntityByName",
 			[](const std::string& name){
@@ -64,7 +71,122 @@ namespace clz::script
 				return ecs::NULL_ENTITY;
 			}
 		);
-		s_SolHandle["entity"] = entt;
+		s_SolHandle["ecs"] = entt;
+	}
 
+	/// @copydoc registerAudioInterface
+	void registerAudioInterface()
+	{
+		/// --- general audio namespace --- ///
+		sol::table audio = s_SolHandle.create_table();	
+
+		/// --- Buffer related things --- ///
+		audio.new_usertype<audio::BufferId>(
+			"BufferId",
+			sol::constructors<audio::BufferId(), audio::BufferId(std::uint32_t)>(),
+			"isNull", &audio::BufferId::isNull,
+			"getId", &audio::BufferId::getId
+		);
+		audio.set_function(
+			"getBufferId",
+			[](const std::string& audioFile){
+				auto bufferId = audio::getBufferIdByFileName(audioFile);	
+				if (!bufferId.isNull()) [[likely]]
+				{
+					return bufferId;
+				}
+				clz::log::warn(
+					"Could not retrieve buffer: " + 
+					audioFile + 
+					", it is queried by script"
+				);
+				/// --- return null buffer id --- ///
+				return bufferId;
+			}
+		);
+
+		/// --- Buffer Player related things --- ///
+		audio.set_function(
+			"playAudio",
+			[](const ecs::entity entt, const audio::BufferId bufferId){
+				clz::log::debug("Script tried to play an audio");
+				if (ecs::hasComponent<
+					audio::AudioBufferPlayerComponent>(
+						entt)) [[likely]]
+				{
+					auto bufferPlayerId = 
+						ecs::getComponent<
+							audio::AudioBufferPlayerComponent>(
+								entt
+							).bufferPlayerId;
+					audio::bufferPlayerPlay(bufferPlayerId, bufferId);
+				}
+				else
+				{
+					clz::log::warn(
+						"Script tried to play buffer using an entity"
+						", that does not have 'AudioBufferPlayerComponent'"
+						" attached to it"
+					);
+				}
+			}
+		);
+		auto registerBufferPlayerFunc = [&audio]<typename... Args>(
+			const std::string& funcName,
+			auto (*func)(const audio::BufferPlayerId bufferPlayerId, Args...)
+		)
+		{
+			audio.set_function(
+				funcName,
+				[func](const ecs::entity entt, Args... args){
+					if (ecs::hasComponent<
+						audio::AudioBufferPlayerComponent>(
+							entt)) [[likely]]
+					{
+						auto bufferPlayerId = 
+							ecs::getComponent<
+								audio::AudioBufferPlayerComponent>(
+									entt
+								).bufferPlayerId;
+						return (*func)(bufferPlayerId, args...);
+					}
+					clz::log::warn(
+						"Tried to perform a buffer player function"
+						", over an entity that doesn't has buffer player component"
+					);
+					using returnType = std::invoke_result_t<
+								decltype(func), 
+								audio::BufferPlayerId, Args...>;
+					if (!std::is_void<returnType>())
+						return returnType{};
+				}
+			);
+		};
+		registerBufferPlayerFunc(
+			"setGain",
+			&audio::bufferPlayerSetGain
+		);
+		registerBufferPlayerFunc(
+			"getGain",
+			&audio::bufferPlayerGetGain
+		);
+		registerBufferPlayerFunc(
+			"setPitch",
+			&audio::bufferPlayerSetPitch
+		);
+		registerBufferPlayerFunc(
+			"getPitch",
+			&audio::bufferPlayerGetPitch
+		);
+		registerBufferPlayerFunc(
+			"setLooping",
+			&audio::bufferPlayerSetLooping
+		);
+		registerBufferPlayerFunc(
+			"getLooping",
+			&audio::bufferPlayerGetLooping
+		);
+
+		s_SolHandle["audio"] = audio;
 	}
 }
