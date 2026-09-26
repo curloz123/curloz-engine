@@ -48,6 +48,14 @@ namespace clz::script
 		);
 
 		s_SolHandle["log"] = log;
+
+		/// --- math interface --- ///
+		sol::table math = s_SolHandle.create_table();
+		math.new_usertype<math::vec3>(
+			"vec3"
+		);
+		s_SolHandle["math"] = math;
+
 	}
 
 	/// @copydoc registerEntityFunctions
@@ -107,9 +115,12 @@ namespace clz::script
 
 		/// --- Buffer Player related things --- ///
 		audio.set_function(
-			"playAudio",
-			[](const ecs::entity entt, const audio::BufferId bufferId){
-				clz::log::debug("Script tried to play an audio");
+			"playBgAudio",
+			[](
+				const ecs::entity entt, 
+				const audio::BufferId bufferId
+			)
+			{
 				if (ecs::hasComponent<
 					audio::AudioBufferPlayerComponent>(
 						entt)) [[likely]]
@@ -119,7 +130,42 @@ namespace clz::script
 							audio::AudioBufferPlayerComponent>(
 								entt
 							).bufferPlayerId;
-					audio::bufferPlayerPlay(bufferPlayerId, bufferId);
+					audio::bufferPlayerPlayBg(
+							bufferPlayerId, 
+							bufferId);
+				}
+				else
+				{
+					clz::log::warn(
+						"Script tried to play buffer using an entity"
+						", that does not have 'AudioBufferPlayerComponent'"
+						" attached to it"
+					);
+				}
+			}
+		);
+
+		audio.set_function(
+			"playPosAudio",
+			[](
+				const ecs::entity entt, 
+				const audio::BufferId bufferId,
+				const math::vec3 position
+			)
+			{
+				if (ecs::hasComponent<
+					audio::AudioBufferPlayerComponent>(
+						entt)) [[likely]]
+				{
+					auto bufferPlayerId = 
+						ecs::getComponent<
+							audio::AudioBufferPlayerComponent>(
+								entt
+							).bufferPlayerId;
+					audio::bufferPlayerPlayPos(
+							bufferPlayerId, 
+							bufferId,
+							position);
 				}
 				else
 				{

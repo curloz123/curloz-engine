@@ -16,10 +16,7 @@
 #include "physics/physics_types.hpp"
 #include "physics/physicscomponent.hpp"
 #include "physics/math.hpp"
-#include "physics/sensor_events.hpp"
-
-#ifdef CLZ_ENABLE_EDITOR
-#endif
+#include "physics/events.hpp"
 
 namespace clz::physics
 {
@@ -79,7 +76,8 @@ namespace clz::physics
 
 			///< Process sensor events
 			processSensorEvents();
-
+			///< Process collision events
+			processCollisionEvents();
 		}
 		const float alpha = p_accumulator / p_timeStep;
 

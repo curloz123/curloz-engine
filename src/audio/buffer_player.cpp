@@ -33,24 +33,38 @@ namespace clz::audio
 
 		/// --- push back null source id initially --- ///
 		au_associatedSources.push_back(SourceId());
+
 		au_associatedEntities.push_back(bufferPlayerDef.entt);
 		au_bufferPlayerGain.push_back(bufferPlayerDef.gain);
 		au_bufferPlayerPitch.push_back(bufferPlayerDef.pitch);
 		au_bufferPlayerLooping.push_back(bufferPlayerDef.looping);
+		au_bufferPlayerType.push_back(bufferPlayerDef.playerType);
 
 		return bufferPlayerId;
 	}
 
-	/// @copydoc bufferPlayerPlay
-	void bufferPlayerPlay(
+	/// @copydoc bufferPlayerPlayPos
+	void bufferPlayerPlayPos(
 		const BufferPlayerId bufferPlayerId, 
-		const BufferId bufferId
+		const BufferId bufferId,
+		const math::vec3& position,
+		const math::vec3& velocity
 	)
 	{
-		clz::log::debug("Playing buffer: " + std::to_string(bufferId.getId()));
+#ifdef CLZ_ENABLE_CHECKS
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to player positional audio"
+					", through of buffer player of bg type");
+			return;
+		}
+#endif
+
 		SourceId& associatedSourceId = 
 			au_associatedSources[bufferPlayerId.getId()];
 
+#ifdef CLZ_ENABLE_CHECKS
 		/// if associated source id is not null, then
 		/// most probably this buffer player is already playing
 		/// or either is paused or something like that
@@ -76,6 +90,7 @@ namespace clz::audio
 			au_activeBufferPlayers.push_back(bufferPlayerId);
 
 		}
+#endif
 
 		sourceSetGain(
 			associatedSourceId, 
@@ -89,47 +104,87 @@ namespace clz::audio
 			associatedSourceId,
 			au_bufferPlayerLooping[bufferPlayerId.getId()]
 		);
+		sourceSetListenerRelative(
+			associatedSourceId,
+			false
+		);
+		sourceSetPosition(
+			associatedSourceId, 
+			position
+		);
+		sourceSetVelocity(
+			associatedSourceId,
+			velocity
+		);
 
-		updateBufferPlayerData(bufferPlayerId);
 		sourcePlay(associatedSourceId, bufferId);
 	}
 
-	/// @copydoc updateBufferPlayerData
-	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId)
+	/// @copydoc bufferPlayerPlayBg
+	void bufferPlayerPlayBg(
+		const BufferPlayerId bufferPlayerId, 
+		const BufferId bufferId
+	)
 	{
-		SourceId& associatedSourceId = 
-			au_associatedSources[bufferPlayerId.getId()];
-		if (associatedSourceId.isNull()) [[unlikely]]
+#ifdef CLZ_ENABLE_CHECKS
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::BACKGROUND) [[unlikely]]
 		{
-			clz::log::warn(
-				"Tried to update a buffer player"
-				" which is not active right now");
+			clz::log::warn("Tried to player backgroundal audio"
+					", through of buffer player of pos type");
 			return;
 		}
+#endif
 
-		const auto& associatedEntity = bufferPlayerGetAssociatedEntity(bufferPlayerId);
-		const auto& transform = ecs::getComponent<ecs::TransformComponent>(
-						associatedEntity);
-		sourceSetPosition(
-			associatedSourceId, 
-			transform.position
-		);
-		if (ecs::hasComponent<physics::RigidBodyComponent>(
-			associatedEntity
-		))
+		SourceId& associatedSourceId = 
+			au_associatedSources[bufferPlayerId.getId()];
+
+#ifdef CLZ_ENABLE_CHECKS
+		/// if associated source id is not null, then
+		/// most probably this buffer player is already playing
+		/// or either is paused or something like that
+		/// this means it is present in active buffer players array
+		if (associatedSourceId.isNull())
 		{
-			const auto velocity = 
-				physics::getBodyVelocity(
-					ecs::getComponent<physics::RigidBodyComponent>(
-						associatedEntity
-					).rigidBodyId
+			associatedSourceId = getFreeSourceId();
+			/// --- check if id is null still or not --- ///
+			if (associatedSourceId.isNull())
+			{
+				clz::log::warn(
+					"Null source id passed"
+					", when tried to retrieve a free source"
+					", not playing bufferId: " + 
+					std::to_string(bufferId.getId())
 				);
+				return;
+			}
 
-			sourceSetVelocity(
-				associatedSourceId,
-				velocity
-			);
+			/// in this block id IS null so push it there
+			/// --- push back to dense array --- ///
+			au_activeBufferPlayers.push_back(bufferPlayerId);
+
 		}
+#endif
+
+		sourceSetGain(
+			associatedSourceId, 
+			au_bufferPlayerGain[bufferPlayerId.getId()]
+		);
+		sourceSetPitch(
+			associatedSourceId,
+			au_bufferPlayerPitch[bufferPlayerId.getId()]
+		);
+		sourceSetLooping(
+			associatedSourceId,
+			au_bufferPlayerLooping[bufferPlayerId.getId()]
+		);
+		sourceSetListenerRelative(
+			associatedSourceId,
+			true
+		);
+
+		sourcePlay(associatedSourceId, bufferId);
+
 	}
 
 	/// @copydoc bufferPlayerStop
@@ -137,7 +192,7 @@ namespace clz::audio
 		const BufferPlayerId bufferPlayerId
 	)
 	{
-#ifdef CLZ_DEBUG
+#ifdef CLZ_ENABLE_CHECKS
 		if (bufferPlayerId.isNull())
 		{
 			clz::log::warn("Tried to stop a null buffer player");
@@ -164,6 +219,49 @@ namespace clz::audio
 						bPlayerId.getId();
 			}
 		);
+	}
+
+	/// @copydoc updateBufferPlayerData
+	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId)
+	{
+		if (bufferPlayerGetType(bufferPlayerId) != PlayerType::POSITIONAL)
+			return;
+
+		SourceId& associatedSourceId =
+			au_associatedSources[bufferPlayerId.getId()];
+#ifdef CLZ_ENABLE_CHECKS
+		if (associatedSourceId.isNull()) [[unlikely]]
+		{
+			clz::log::warn(
+				"Tried to update a buffer player"
+				" which is not active right now");
+			return;
+		}
+#endif
+
+		const auto& associatedEntity = bufferPlayerGetAssociatedEntity(bufferPlayerId);
+		const auto& transform = ecs::getComponent<ecs::TransformComponent>(
+						associatedEntity);
+		sourceSetPosition(
+			associatedSourceId,
+			transform.position
+		);
+		if (ecs::hasComponent<physics::RigidBodyComponent>(
+			associatedEntity
+		))
+		{
+			const auto velocity =
+				physics::getBodyVelocity(
+					ecs::getComponent<physics::RigidBodyComponent>(
+						associatedEntity
+					).rigidBodyId
+				);
+
+			sourceSetVelocity(
+				associatedSourceId,
+				velocity
+			);
+		}
 	}
 
 

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "al.h"
 #include "core/id_interface.hpp"
 #include "native.hpp"
 #include "core/logs.hpp"
@@ -237,6 +238,21 @@ namespace clz::audio
 		alSourcei(
 			au_sourcesLUT[sourceId.getId()], 
 			AL_LOOPING, value ? AL_TRUE : AL_FALSE
+		);
+	}
+
+	/// @brief Sets whether to make source relative to listener or not
+	/// @param sourceId Source Id in question
+	/// @param relative Bool to set
+	inline void sourceSetListenerRelative(
+		const SourceId sourceId,
+		const bool relative
+	)
+	{
+		alSourcei(
+			au_sourcesLUT[sourceId.getId()],
+			AL_SOURCE_RELATIVE,
+			(relative) ? AL_TRUE : AL_FALSE
 		);
 	}
 }

@@ -151,6 +151,15 @@ namespace clz::scene
 						entityData["sensor_scripts"])
 				);
 			}
+			// Attach collision script component, if present
+			if (entityData.contains("collision_scripts"))
+			{
+				ecs::addComponent<script::CollisionScriptComponent>(
+					e, 
+					retrieveCollisionScriptComponent(
+						entityData["collision_scripts"])
+				);
+			}
 			
 			// Attach buffer player component, if present
 			if (entityData.contains("buffer_player"))
@@ -241,8 +250,17 @@ namespace clz::scene
 					entityJson["sensor_scripts"]
 				);
 			}
+			/// --- 4. Sensor script components --- ///
+			if (ecs::hasComponent<script::CollisionScriptComponent>(entity))
+			{
+				saveCollisionScriptComponent(
+					ecs::getComponent<script::CollisionScriptComponent>(entity),
+					entityJson["collision_scripts"]
+				);
+			}
 
-			/// --- 5. Buffer player components --- ///
+
+			/// --- 6. Buffer player components --- ///
 			if (ecs::hasComponent<audio::AudioBufferPlayerComponent>(entity))
 			{
 				saveBufferPlayerComponent(

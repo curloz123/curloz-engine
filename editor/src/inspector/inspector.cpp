@@ -110,6 +110,11 @@ namespace clz::editor
 		{
 			showSensorScriptComponent();
 		}
+		if (ecs::hasComponent<script::CollisionScriptComponent>(currentSelectedEntity.value()))
+		{
+			showCollisionScriptComponent();
+		}
+
 
 		ImGui::End();
 

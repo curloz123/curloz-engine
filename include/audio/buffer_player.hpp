@@ -41,8 +41,19 @@ namespace clz::audio
 	inline std::vector<float> au_bufferPlayerGain;
 	///< @brief Global audio source pitch LUT.
 	inline std::vector<float> au_bufferPlayerPitch;
-	///< @brieg Global audio source looping LUT.
+	///< @brief Global audio source looping LUT.
 	inline std::vector<bool> au_bufferPlayerLooping;
+
+	///< @brief Defines type of buffer player
+	///< Background states buffer player will play a background music
+	///< POSITIONL states buffer will play a positional audio
+	enum class PlayerType
+	{
+		BACKGROUND,
+		POSITIONAL
+	};
+	///< @brief Global buffer player types LUT.
+	inline std::vector<PlayerType> au_bufferPlayerType;
 
 
 	///< @brief Defines Buffer player creation data.
@@ -51,6 +62,7 @@ namespace clz::audio
 		bool looping = false;
 		float gain = 1.0f;
 		float pitch = 1.0f;
+		PlayerType playerType = PlayerType::POSITIONAL;
 		ecs::entity entt = ecs::NULL_ENTITY;
 	};
 
@@ -62,7 +74,31 @@ namespace clz::audio
 	/// @note Always check whether id is null or not after creation.
 	BufferPlayerId createBufferPlayer(BufferPlayerDef& bufferPlayerDef);
 
-	/// @brief Plays a buffer through a bufferPlayer
+	/// Precisely position and velocity
+	/// @param bufferPlayerId Id of buffer player to update
+	/// @note To be called only for buffer players who are active right now.
+	/// Aka Those who has a source attached to them.
+	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId);
+
+	/// @brief Plays a positional buffer through a bufferPlayer
+	/// @param bufferPlayerId Id of buffer player.
+	/// @param bufferId Id of buffer to play
+	/// @param position Position of buffer player
+	/// @param velocity Velocity of buffer player(0 by default)
+	/// else default param will be used)
+	/// @note In the main audio update function you have to update
+	/// the position and velocity of sources each frame via bufferPlayerUpdateData
+	/// For those who still didnt understand how'd we get position and vel,
+	/// check au_components.hpp
+	/// @note Will do nothing if buffer player is bg type
+	void bufferPlayerPlayPos(
+		const BufferPlayerId bufferPlayerId, 
+		const BufferId bufferId,
+		const math::vec3& position,
+		const math::vec3& velocity = math::vec3(0.0f)
+	);
+
+	/// @brief Plays a backgroundal buffer through a bufferPlayer
 	/// @param bufferPlayerId Id of buffer player.
 	/// @param bufferId Id of buffer to play
 	/// else default param will be used)
@@ -70,10 +106,11 @@ namespace clz::audio
 	/// the position and velocity of sources each frame via bufferPlayerUpdateData
 	/// For those who still didnt understand how'd we get position and vel,
 	/// check au_components.hpp
-	void bufferPlayerPlay(
+	void bufferPlayerPlayBg(
 		const BufferPlayerId bufferPlayerId, 
 		const BufferId bufferId
 	);
+
 
 	/// @brief Stops a buffer player
 	/// Also frees the associated source too
@@ -84,14 +121,6 @@ namespace clz::audio
 		const BufferPlayerId bufferPlayerId
 	);
 
-	/// @brief Updates the buffer player's data
-	/// Precisely position and velocity
-	/// @param bufferPlayerId Id of buffer player to update
-	/// @note To be called only for buffer players who are active right now.
-	/// Aka Those who has a source attached to them.
-	void updateBufferPlayerData(
-		const BufferPlayerId bufferPlayerId
-	);
 
 	/// @brief Gets the gain (volume) value for the given audio source.
 	/// @param id The BufferPlayerId whose gain to retrieve.
@@ -172,11 +201,43 @@ namespace clz::audio
 
 	}
 
+	/// @brief Retrieves buffer player type.
+	/// @param bufferPlayerId The Id of BufferPlayer.
+	/// @return PlayerType
+	inline PlayerType bufferPlayerGetType(
+		const BufferPlayerId bufferPlayerId
+	)
+	{
+		return au_bufferPlayerType[bufferPlayerId.getId()];
+	}
+
+	/// @brief Sets buffer player type/
+	/// @param bufferPlayerId The Id of bufferPlayer.
+	/// @param playerType New PlayerType
+	inline void bufferPlayerSetType(
+		const BufferPlayerId bufferPlayerId,
+		const PlayerType playerType
+	)
+	{
+		au_bufferPlayerType[bufferPlayerId.getId()] = playerType;
+	}
+
+	/// @brief sets buffer player position
+	/// @param bufferPlayerId
+	/// @param position position to set
+	/// @note does nothing if player type is background
 	inline void bufferPlayerSetPosition(
 		const BufferPlayerId bufferPlayerId,
 		const math::vec3& position
 	)
 	{
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to set position of buffer player of bg type");
+			return;
+		}
+
 		if (au_associatedSources[
 			bufferPlayerId.getId()].isNull()) [[unlikely]]
 		{
@@ -190,11 +251,23 @@ namespace clz::audio
 			position
 		);
 	}
+
+	/// @brief sets buffer player velocity
+	/// @param bufferPlayerId
+	/// @param velocity velocity to set
+	/// @note does nothing if player type is background
 	inline void bufferPlayerSetVelocity(
 		const BufferPlayerId bufferPlayerId,
 		const math::vec3& velocity
 	)
 	{
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to set velocity of buffer player of bg type");
+			return;
+		}
+
 		if (au_associatedSources[
 			bufferPlayerId.getId()].isNull()) [[unlikely]]
 		{

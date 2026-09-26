@@ -4,11 +4,15 @@
  * @brief This file introduces all physics side functions that would be triggered
  * by the physics system. Each trigger introduces an event
  */
+
+#pragma once
+
 #include <sol/forward.hpp>
 #include <sol/sol.hpp>
 #include "entity/entitymanager.hpp"
 #include "core/logs.hpp"
 #include "native.hpp"
+#include "math/vec3.hpp"
 
 namespace clz::script
 {
@@ -206,11 +210,19 @@ namespace clz::script
 		/**
 		 * @brief Calls the script's `onCollision` function.
 		 * @param otherEntity The entity involved in the collision.
+		 * @param position Point of contact.
 		 */
-		void triggerCollision(ecs::entity otherEntity)
+		void triggerCollision(
+			ecs::entity otherEntity,
+			const math::vec3& position) const
 		{
 			if (onCollisionSolFunction.valid()) [[likely]]
-			onCollisionSolFunction(otherEntity);
+			{
+				onCollisionSolFunction(
+					otherEntity,
+					position
+				);
+			}
 		}
 
 		/**
@@ -235,17 +247,18 @@ namespace clz::script
 			{
 				sol::error err = loadResult;
 				clz::log::error(
-					"SYNTAX error in sensor sript: " +
+					"SYNTAX error in collision sript: " +
 					scriptPath.string() + ": " + 
 					err.what());
 				return false;
 
 			}
-			sol::protected_function_result result = s_SolHandle.script_file(scriptPath);
+			sol::protected_function script = loadResult;
+			sol::protected_function_result result = script();
 			if (!result.valid())
 			{
 				sol::error err = result;
-				clz::log::error("RUNTIME error in sensor sript: " +
+				clz::log::error("RUNTIME error in collision sript: " +
 						scriptPath.string() + " " + 
 						err.what());
 				return false;
@@ -260,21 +273,7 @@ namespace clz::script
 			}
 
 			sol::table returnedTable = returned;
-			sol::object collisionFunc = returnedTable["onCollision"];
-			if (!collisionFunc.valid())
-			{
-				clz::log::error("Collision Script: " + scriptPath.string() + 
-						" does not have 'onCollision' function");
-				return false;
-			}
-			if (collisionFunc.get_type() != sol::type::function)
-			{
-				clz::log::error("Collision Script: " + scriptPath.string() + 
-						" has 'onCollision' but its not a function wtf!!??");
-				return false;
-			}
-
-			onCollisionSolFunction = collisionFunc;
+			onCollisionSolFunction = returnedTable["onCollision"];
 
 			/// --- call the onInit function, if it exists --- ///
 			sol::object initObj = returnedTable["onInit"];
@@ -284,7 +283,7 @@ namespace clz::script
 			}
 			else
 			{
-				clz::log::warn("Sensor script: " + 
+				clz::log::warn("Collision script: " + 
 						scriptPath.string() + 
 						" has no 'onInit function'");
 			}

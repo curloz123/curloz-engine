@@ -1,7 +1,7 @@
 /**
- * @file sensor_events.hpp
+ * @file events.hpp
  * @author curl0z
- * @brief Manages all sensor events in physics system
+ * @brief Manages all events in physics system
  */
 
 namespace clz::physics
@@ -16,4 +16,11 @@ namespace clz::physics
 	 * @note To be ONLY called once per physics step
 	 */
 	void processSensorEvents();
+
+	/**
+	 * @brief Poll and processes all collision events.
+	 * And calls relavant script functions too 
+	 * if appropriate component is attached
+	 */
+	void processCollisionEvents();
 }

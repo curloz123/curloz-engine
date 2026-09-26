@@ -13,9 +13,9 @@ end
 function sensor.onSensorEnter(otherEntity)
 	if otherEntity == Helmet then
 		log.info("Helmet Sensor begin")
-		audio.playAudio(Helmet, coll)	
 	end
 end
+
 function sensor.onSensorExit(otherEntity)
 	if otherEntity == Helmet then
 		log.info("Helmet Sensor end")

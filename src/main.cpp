@@ -11,6 +11,7 @@
  */
 
 #include "audio/audio_components.hpp"
+#include "audio/buffer_player.hpp"
 #include "core/core.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
@@ -88,6 +89,7 @@ int main()
 		        .looping = true,
 		        .gain = 1.0f,
 		        .pitch = 1.0f,
+			.playerType = PlayerType::BACKGROUND,
 		        .entt = e,
 		};
 		const BufferPlayerId id = createBufferPlayer(
@@ -96,7 +98,8 @@ int main()
 		const BufferId bufferId = loadBuffer(
 		       	 "assets/audio/hl2.ogg");
 		bufferPlayerSetLooping(id, true);
-		// bufferPlayerPlay(id, bufferId);
+		bufferPlayerPlayBg(id, bufferId);
+		bufferPlayerSetGain(id, 0.1);
 
 		clz::log::debug("Associated gain: " +
 				 std::to_string(bufferPlayerGetGain(id)));
