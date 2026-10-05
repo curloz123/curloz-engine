@@ -42,12 +42,20 @@ namespace clz::script
 		 */
 		void callInitFunction() const
 		{
-			sol::protected_function_result result = onInitSolFunction();
-			if (!result.valid())
+			if (onInitSolFunction.valid())
 			{
-			    sol::error err = result;
-			    clz::log::error(std::string("onInit runtime error: ") + err.what());
+				sol::protected_function_result result = onInitSolFunction();
+
+#ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
+				if (!result.valid())
+				{
+				    sol::error err = result;
+				    clz::log::error(std::string("onInit runtime error: ") + err.what());
+				}
+#endif /*****************************************************************************************/
+
 			}
+
 		}
 
 		/**
@@ -57,7 +65,21 @@ namespace clz::script
 		void triggerOnSensorEnter(const ecs::entity otherEntity) const
 		{
 			if (onEnterSolFunction.valid()) [[likely]]
-				onEnterSolFunction(otherEntity);
+			{
+				auto result = onEnterSolFunction(otherEntity);
+
+#ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
+				if (!result.valid())
+				{
+					sol::error err = result;
+			    		clz::log::error(
+						std::string("onSensorEnter runtime error: ") + 
+						err.what()
+					);
+				}
+#endif /*****************************************************************************************/
+
+			}
 		}
 
 		/**
@@ -67,7 +89,22 @@ namespace clz::script
 		void triggerOnSensorExit(const ecs::entity otherEntity) const
 		{
 			if (onExitSolFunction.valid()) [[likely]]
-				onExitSolFunction(otherEntity);
+			{
+				auto result = onEnterSolFunction(otherEntity);
+				
+#ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
+				if (!result.valid())
+				{
+					sol::error err = result;
+			    		clz::log::error(
+						std::string("onSensorEnter runtime error: ") + 
+						err.what()
+					);
+				}
+#endif /*****************************************************************************************/
+
+			}
+
 		}
 
 		/**
@@ -203,8 +240,21 @@ namespace clz::script
 		 */
 		void callInitFunction() const
 		{
-			if (onInitSolFunction.valid())
-				onInitSolFunction();
+			if (onInitSolFunction.valid()) [[likely]]
+			{
+				auto result = onInitSolFunction();
+
+#ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
+				if (!result.valid())
+				{
+				    sol::error err = result;
+				    clz::log::error(
+					 std::string(" collision onInit runtime error: ") + 
+					 err.what());
+				}
+#endif /*****************************************************************************************/
+
+			}
 		}
 
 		/**
@@ -218,10 +268,20 @@ namespace clz::script
 		{
 			if (onCollisionSolFunction.valid()) [[likely]]
 			{
-				onCollisionSolFunction(
+				auto result = onCollisionSolFunction(
 					otherEntity,
 					position
 				);
+#ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
+				if (!result.valid())
+				{
+				    sol::error err = result;
+				    clz::log::error(
+					 std::string(" collision onCollision runtime error: ") + 
+					 err.what());
+				}
+#endif /*****************************************************************************************/
+
 			}
 		}
 
@@ -293,4 +353,4 @@ namespace clz::script
 	};
 
 
-}
+} // namespace clz::script

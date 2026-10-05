@@ -15,12 +15,14 @@
 #include "core/core.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
+#include "core/time.hpp"
 #include "entity/entity.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
 #include "script/script.hpp"
+#include <string>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "../editor/include/editor.hpp"
@@ -81,33 +83,12 @@ int main()
 	if (!clz::scene::loadScene()) [[unlikely]]
 		return 1;
 
-         {
-		using namespace clz::audio;
-		clz::audio::setDistanceModel(clz::audio::DistanceModel::INVERSE);
-		clz::ecs::entity e = clz::ecs::getEntityByName("Sponza").value();
-		BufferPlayerDef bufferPlayerData{
-		        .looping = true,
-		        .gain = 1.0f,
-		        .pitch = 1.0f,
-			.playerType = PlayerType::BACKGROUND,
-		        .entt = e,
-		};
-		const BufferPlayerId id = createBufferPlayer(
-		       	 bufferPlayerData
-		);
-		const BufferId bufferId = loadBuffer(
-		       	 "assets/audio/hl2.ogg");
-		bufferPlayerSetLooping(id, true);
-		bufferPlayerPlayBg(id, bufferId);
-		bufferPlayerSetGain(id, 0.1);
-
-		clz::log::debug("Associated gain: " +
-				 std::to_string(bufferPlayerGetGain(id)));
-	 }
-
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
+		static double frameTime = 0.0;
+		static double counter = 0.0;
+
 		/// --- Update core system first!!! --- ///
 		clz::updateCoreSystems();
 
@@ -122,6 +103,14 @@ int main()
 
 		/// --- Update audio system --- ///
 		clz::audio::update();
+
+		frameTime = clz::time::getDeltaTime();
+		counter += frameTime;
+		if (counter > 5.0)
+		{
+			clz::log::debug("Frame time: " + std::to_string(frameTime));
+			counter = 0.0;
+		}
 	}
 
 	// Shut down

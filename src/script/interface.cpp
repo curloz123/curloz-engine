@@ -1,10 +1,10 @@
 /**
- * @file functions.cpp
+ * @file interface.cpp
  * @author curl0z
- * @brief Introduces C++ side functions to LUA
+ * @brief Introduces C++ side interface to LUA
  */
 
-#include "script/functions.hpp"
+#include "script/interface.hpp"
 #include "audio/audio_components.hpp"
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
@@ -17,8 +17,8 @@
 
 namespace clz::script
 {
-	/// @copydoc registerCoreFunctions
-	void registerCoreFunctions()
+	/// @copydoc registerCoreInterface
+	void registerCoreInterface()
 	{
 		/// --- Log functions --- ///
 		sol::table log = s_SolHandle.create_table();
@@ -58,10 +58,13 @@ namespace clz::script
 
 	}
 
-	/// @copydoc registerEntityFunctions
-	void registerEntityFunctions()
+	/// @copydoc registerEntityInterface
+	void registerEntityInterface()
 	{
 		sol::table entt = s_SolHandle.create_table();
+		entt.new_usertype<ecs::entity>(
+			"entity"
+		);
 
 		/// --- get entity by name --- ///
 		entt.set_function(
@@ -79,6 +82,15 @@ namespace clz::script
 				return ecs::NULL_ENTITY;
 			}
 		);
+
+		/// --- Is entity null?? --- ///
+		entt.set_function(
+			"isEntityNull",
+			[](const ecs::entity entt){
+				return entt == ecs::NULL_ENTITY;
+			}
+		);
+
 		s_SolHandle["ecs"] = entt;
 	}
 
@@ -203,11 +215,11 @@ namespace clz::script
 					using returnType = std::invoke_result_t<
 								decltype(func), 
 								audio::BufferPlayerId, Args...>;
-					if (!std::is_void<returnType>())
-						return returnType{};
+					return returnType();
 				}
 			);
 		};
+
 		registerBufferPlayerFunc(
 			"setGain",
 			&audio::bufferPlayerSetGain

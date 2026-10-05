@@ -6,7 +6,7 @@
 
 #include "script/script.hpp"
 #include "script/native.hpp"
-#include "script/functions.hpp"
+#include "script/interface.hpp"
 #include "core/logs.hpp"
 
 namespace clz::script
@@ -23,11 +23,11 @@ namespace clz::script
 
 		}
 		
-		/// --- Initialize core functions --- ///
-		registerCoreFunctions();
+		/// --- Initialize core interface --- ///
+		registerCoreInterface();
 
-		/// --- Initialize entity related functions --- ///
-		registerEntityFunctions();
+		/// --- Initialize entity related interface --- ///
+		registerEntityInterface();
 
 		/// --- Initialize audio related interface --- ///
 		registerAudioInterface();

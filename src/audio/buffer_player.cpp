@@ -35,8 +35,10 @@ namespace clz::audio
 		au_associatedSources.push_back(SourceId());
 
 		au_associatedEntities.push_back(bufferPlayerDef.entt);
-		au_bufferPlayerGain.push_back(bufferPlayerDef.gain);
-		au_bufferPlayerPitch.push_back(bufferPlayerDef.pitch);
+		au_bufferPlayerGain.push_back(
+			std::make_pair(bufferPlayerDef.gain, 1.0f));
+		au_bufferPlayerPitch.push_back(
+			std::make_pair(bufferPlayerDef.pitch, 1.0f));
 		au_bufferPlayerLooping.push_back(bufferPlayerDef.looping);
 		au_bufferPlayerType.push_back(bufferPlayerDef.playerType);
 
@@ -64,7 +66,6 @@ namespace clz::audio
 		SourceId& associatedSourceId = 
 			au_associatedSources[bufferPlayerId.getId()];
 
-#ifdef CLZ_ENABLE_CHECKS
 		/// if associated source id is not null, then
 		/// most probably this buffer player is already playing
 		/// or either is paused or something like that
@@ -73,6 +74,8 @@ namespace clz::audio
 		{
 
 			associatedSourceId = getFreeSourceId();
+
+#ifdef CLZ_ENABLE_CHECKS /*******************************************************/
 			/// --- check if id is null still or not --- ///
 			if (associatedSourceId.isNull())
 			{
@@ -84,21 +87,23 @@ namespace clz::audio
 				);
 				return;
 			}
+#endif /*************************************************************************/
 
 			/// in this block id IS null so push it there
 			/// --- push back to dense array --- ///
 			au_activeBufferPlayers.push_back(bufferPlayerId);
 
 		}
-#endif
 
+		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetGain(
 			associatedSourceId, 
-			au_bufferPlayerGain[bufferPlayerId.getId()]
+			gain.first * gain.second
 		);
+		const auto& pitch = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetPitch(
 			associatedSourceId,
-			au_bufferPlayerPitch[bufferPlayerId.getId()]
+			pitch.first * pitch.second
 		);
 		sourceSetLooping(
 			associatedSourceId,
@@ -139,7 +144,6 @@ namespace clz::audio
 		SourceId& associatedSourceId = 
 			au_associatedSources[bufferPlayerId.getId()];
 
-#ifdef CLZ_ENABLE_CHECKS
 		/// if associated source id is not null, then
 		/// most probably this buffer player is already playing
 		/// or either is paused or something like that
@@ -147,6 +151,8 @@ namespace clz::audio
 		if (associatedSourceId.isNull())
 		{
 			associatedSourceId = getFreeSourceId();
+
+#ifdef CLZ_ENABLE_CHECKS /*******************************************************/
 			/// --- check if id is null still or not --- ///
 			if (associatedSourceId.isNull())
 			{
@@ -158,21 +164,23 @@ namespace clz::audio
 				);
 				return;
 			}
+#endif /*************************************************************************/
 
 			/// in this block id IS null so push it there
 			/// --- push back to dense array --- ///
 			au_activeBufferPlayers.push_back(bufferPlayerId);
 
 		}
-#endif
 
+		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetGain(
 			associatedSourceId, 
-			au_bufferPlayerGain[bufferPlayerId.getId()]
+			gain.first * gain.second
 		);
+		const auto& pitch = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetPitch(
 			associatedSourceId,
-			au_bufferPlayerPitch[bufferPlayerId.getId()]
+			pitch.first * pitch.second
 		);
 		sourceSetLooping(
 			associatedSourceId,

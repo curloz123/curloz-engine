@@ -38,9 +38,17 @@ namespace clz::audio
 
 
 	///< @brief Global audio source gain LUT.
-	inline std::vector<float> au_bufferPlayerGain;
+	///< The first index is the actual gain.
+	///< The second index is the multiplier part. Used to 
+	///< edit during the gameplay time.
+	///< When playing, the actual gain is calculated via product of both.
+	inline std::vector<std::pair<float, float>> au_bufferPlayerGain;
 	///< @brief Global audio source pitch LUT.
-	inline std::vector<float> au_bufferPlayerPitch;
+	///< The first index is the actual gain.
+	///< The second index is the multiplier part. Used to 
+	///< edit during the gameplay time.
+	///< When playing, the actual pitch is calculated via product of both.
+	inline std::vector<std::pair<float, float>> au_bufferPlayerPitch;
 	///< @brief Global audio source looping LUT.
 	inline std::vector<bool> au_bufferPlayerLooping;
 
@@ -74,6 +82,7 @@ namespace clz::audio
 	/// @note Always check whether id is null or not after creation.
 	BufferPlayerId createBufferPlayer(BufferPlayerDef& bufferPlayerDef);
 
+	/// @brief Updates buffer player data(only for positional buffer players)
 	/// Precisely position and velocity
 	/// @param bufferPlayerId Id of buffer player to update
 	/// @note To be called only for buffer players who are active right now.
@@ -101,11 +110,6 @@ namespace clz::audio
 	/// @brief Plays a backgroundal buffer through a bufferPlayer
 	/// @param bufferPlayerId Id of buffer player.
 	/// @param bufferId Id of buffer to play
-	/// else default param will be used)
-	/// @note In the main audio update function you have to update
-	/// the position and velocity of sources each frame via bufferPlayerUpdateData
-	/// For those who still didnt understand how'd we get position and vel,
-	/// check au_components.hpp
 	void bufferPlayerPlayBg(
 		const BufferPlayerId bufferPlayerId, 
 		const BufferId bufferId
@@ -127,10 +131,12 @@ namespace clz::audio
 	/// @return The current gain value.
 	inline float bufferPlayerGetGain(const BufferPlayerId id)
 	{
-		return au_bufferPlayerGain[id.getId()];
+		return au_bufferPlayerGain[id.getId()].first;
 	}
 
 	/// @brief Sets the gain (volume) value for the given audio source.
+	/// As of now, only sets the mul part of gain. Not the real part.
+	/// But if buffer player is currently active, gain = product of both.
 	/// @param bufferPlayerId The SourceId whose gain to set.
 	/// @param value The new gain value.
 	inline void bufferPlayerSetGain(
@@ -138,22 +144,26 @@ namespace clz::audio
 		const float value
 	)
 	{
-		au_bufferPlayerGain[bufferPlayerId.getId()] = value;
+		auto& gainPair = au_bufferPlayerGain[bufferPlayerId.getId()];
+		gainPair.second = value;
+
 		if (!au_associatedSources[bufferPlayerId.getId()].isNull())
 		{
 			sourceSetGain(
 				au_associatedSources[bufferPlayerId.getId()],
-				value
+				gainPair.first * gainPair.second
 			);
 		}
 	}
 
 	/// @brief Gets the pitch value for the given audio source.
+	/// As of now, only sets the mul part of pitch. Not the real part.
+	/// But if buffer player is currently active, pitch = product of both.
 	/// @param id The BufferPlayerId whose pitch to retrieve.
 	/// @return The current pitch value.
 	inline float bufferPlayerGetPitch(const BufferPlayerId id)
 	{
-		return au_bufferPlayerPitch[id.getId()];
+		return au_bufferPlayerPitch[id.getId()].first;
 	}
 
 	/// @brief Sets the pitch value for the given audio source.
@@ -163,12 +173,14 @@ namespace clz::audio
 		const BufferPlayerId bufferPlayerId, 
 		const float value)
 	{
-		au_bufferPlayerPitch[bufferPlayerId.getId()] = value;
+		auto& pitchPair = au_bufferPlayerPitch[bufferPlayerId.getId()];
+		pitchPair.second = value;
+
 		if (!au_associatedSources[bufferPlayerId.getId()].isNull())
 		{
 			sourceSetPitch(
 				au_associatedSources[bufferPlayerId.getId()],
-				value
+				pitchPair.first * pitchPair.second
 			);
 		}
 

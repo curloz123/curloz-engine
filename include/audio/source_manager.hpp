@@ -219,6 +219,7 @@ namespace clz::audio
 	/// @param value The new gain value.
 	inline void sourceSetGain(const SourceId sourceId, const float value)
 	{
+		clz::log::debug("trying to set gain: " + std::to_string(value));
 	    	alSourcef(au_sourcesLUT[sourceId.getId()], AL_GAIN, value);
 	}
 
@@ -227,6 +228,7 @@ namespace clz::audio
 	/// @param value The new pitch value.
 	inline void sourceSetPitch(const SourceId sourceId, const float value)
 	{
+		clz::log::debug("trying to set pitch: " + std::to_string(value));
 	    	alSourcef(au_sourcesLUT[sourceId.getId()], AL_PITCH, value);
 	}
 

@@ -27,6 +27,8 @@ namespace clz::audio
 		/// --- generate all sources and related data --- ///
 		generateAllSources();
 		
+		/// --- set general distance model  for now --- ///
+		clz::audio::setDistanceModel(clz::audio::DistanceModel::INVERSE);
 
 		clz::log::info("Initialized audio system");
 		return true;
@@ -60,6 +62,7 @@ namespace clz::audio
 				return false;
 			}
 		);
+
 		/// --- Update all 'Active' buffer players --- ///
 		for (const auto& bufferPlayerId : au_activeBufferPlayers)
 		{

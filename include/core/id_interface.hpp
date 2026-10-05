@@ -17,7 +17,7 @@ namespace clz
 	{
 	private:
 		///< @brief NULL ID
-		inline static T s_NULL_ID = std::numeric_limits<T>::max();
+		inline static constexpr T s_NULL_ID = std::numeric_limits<T>::max();
 
 		///< @brief The actual ID
 		T m_Id;
@@ -27,7 +27,7 @@ namespace clz
 		IdInterface(const T Id) : m_Id(Id) {}
 
 		/// @brief returns the ID
-		std::uint32_t getId() const
+		T getId() const
 		{
 			return m_Id;
 		}

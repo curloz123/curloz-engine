@@ -42,6 +42,22 @@ namespace clz::scene
 		else
 			playerDef.looping = false;
 
+		if (bufferPlayerTable.contains("type"))
+		{
+			if (bufferPlayerTable["type"] == "positional")
+				playerDef.playerType = audio::PlayerType::POSITIONAL;
+			else if (bufferPlayerTable["type"] == "background")
+				playerDef.playerType = audio::PlayerType::BACKGROUND;
+			else
+			{
+				clz::log::error("Unknown buffer player type, assigning positional");
+				playerDef.playerType = audio::PlayerType::POSITIONAL;
+			}
+		}
+		else
+			playerDef.playerType = audio::PlayerType::POSITIONAL;
+
+
 		playerDef.entt = e;
 		return audio::createAudioBufferPlayerComponentForEntity(playerDef);
 	}
@@ -60,6 +76,16 @@ namespace clz::scene
 			audio::bufferPlayerGetPitch(playerId);
 		bufferPlayerTable["looping"] = 
 			audio::bufferPlayerGetLooping(playerId);
+		switch(audio::bufferPlayerGetType(playerId))
+		{
+		case audio::PlayerType::BACKGROUND:
+			bufferPlayerTable["type"] = "background";
+			break;
+		case audio::PlayerType::POSITIONAL:
+			bufferPlayerTable["type"] = "positional";
+			break;
+		}
+
 	}
 
 }
