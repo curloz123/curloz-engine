@@ -1,8 +1,10 @@
 # Curloz Engine
 
-A Vulkan 1.3 game engine written in C++23, built from scratch with a data-oriented design philosophy.
+<p align="center">
+    	<img src="assets/logo/zolkin_studio.png" width="400">
+</p>
 
-Curloz Engine is the foundation for zolkin games. It's under active solo development.
+Curloz Engine is **Zolkin Studios's** in-house high performance game engine written in C++23 and Vulkan, built from scratch with a data-oriented design philosophy.
 
 
 ---
@@ -14,13 +16,14 @@ Curloz Engine is the foundation for zolkin games. It's under active solo develop
 | ------------- | -------------- | ------------- |
 | Renderer      | Vulkan 1.3     | Implemented   |
 | Windowing     | GLFW           | Implemented   |
-| Entity        | clz::ecs       | Implemented (self-authored) |
-| Math          | clz::math      | Implemented (self-authored) |
+| Entity        | clz::ecs       | Implemented   |
+| Math          | clz::math      | Implemented   |
 | Model Loading | fastgltf       | Implemented   |
 | Physics       | Box3D          | Implemented   |
-| Audio         | OpenAL Soft    | Planned       |
+| Audio         | OpenAL Soft    | Implemented   |
+| Script	| Lua 		 | In work(check scripting branch) |
 | Animation     | ozz-animation  | Planned       |
-| Build System  | CMake + (Ninja / Visual Studio) | |
+| Build System  | CMake + (Ninja / Visual Studio) | Implemented|
 
 ---
 
@@ -51,13 +54,13 @@ sudo apt install cmake ninja-build clang-format vulkan-tools libvulkan-dev
 * CMake 3.25+
 * Ninja
 * Vulkan SDK from [lunarg.com](https://vulkan.lunarg.com)
-* MSVC 19.38+ (Visual Studio 2022 17.8+) or MinGW using GCC 13+
+* MSVC 19.38+ (Visual Studio 2022 17.8+) or MinGW using GCC 14+
 
 ---
 
 ## Building
 
-The project uses [CMake Presets](CMakePresets.json) to configure builds, so you don't need to pass generator/architecture flags manually — the right preset picks those up for your platform.
+The project uses [CMake Presets](CMakePresets.json) to configure builds, so you don't need to pass generator/architecture flags manually, the right preset picks those up for your platform.
 
 ```bash
 # Clone with submodules
@@ -78,7 +81,7 @@ cmake --preset "Windows x64"            # Windows
 cmake --build --preset "Linux EngineDebug"
 ```
 
-Available configure presets: `Windows x64` (Windows) and `Linux EngineDebug` / `Linux EngineRelease` / `Linux GameDebug` / `Linux GameRelease` (Linux). Build presets mirror these, with `Windows EngineDebug` / `Windows EngineRelease` / `Windows GameDebug` / `Windows GameRelease` selecting the configuration under the Windows configure preset.
+Available configure presets are: `Windows x64` (Windows) and `Linux EngineDebug` / `Linux EngineRelease` / `Linux GameDebug` / `Linux GameRelease` (Linux). Build presets mirror these, with `Windows EngineDebug` / `Windows EngineRelease` / `Windows GameDebug` / `Windows GameRelease` selecting the configuration under the Windows configure preset.
 
 - **Engine** builds target engine development; **Game** builds target the shipped game itself.
 - Linux binaries land at `build/linux/<preset-name>/`; Windows binaries land at `build/win/Windows x64/<configuration>/`.
@@ -95,12 +98,15 @@ curloz-engine/
 ├── assets/             # Models, textures, audio
 ├── external/           # Git submodules (do not modify manually)
 ├── core/               # Utility functions, basically helpers used in entire engine
-├── docs/               # Additional documentation (build troubleshooting, images, etc.)
+├── docs/               # Additional doxxygen generated documentation
 ├── .clang-format       # clang-format configuration
 ├── .editorconfig       # editorconfig configuration
 ├── CMakeLists.txt      # CMake build configuration
 ├── CMakePresets.json   # Platform/config build presets
-└── LICENSE             # License file
+├── LICENSE             # License file
+├── gallery             # Engine's cool screenshots
+├── CONTRIBUTING.md     # Contributer's guide
+└── README.md           
 ```
 
 ---
@@ -116,12 +122,12 @@ curloz-engine/
 * [ ] ozz-animation skeletal animation support
 * [ ] Editor UI improvements
 
-<!-- Add/reorder items as priorities shift — a single-item to-do reads as stale, so keep this list populated. -->
-
 ---
 
 ## Gallery
 
+![Editor](gallery/editor_ss.png)
+Engine's editor screenshot.
 ![Revolver](gallery/gun.png)
 [Revolver Black Rose](https://sketchfab.com/3d-models/revolver-black-rose-44448687a44d45afb67ed5882edde3b4) by [@SGTIncogniTO](https://sketchfab.com/SGTIncogniTO).
 
@@ -149,4 +155,6 @@ For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Curloz Engine is licensed under the [MIT](LICENSE) license. Take it, learn from it, build something cool with it, we don't care. Just keep the copyright notice and we're good.
