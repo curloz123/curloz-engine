@@ -117,8 +117,6 @@ curloz-engine/
 * [ ] Add a per material data ssbo
 * [ ] Fix light entity's not disabling bug
 * [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector
-* [ ] Box3D physics integration
-* [ ] OpenAL Soft audio system
 * [ ] ozz-animation skeletal animation support
 * [ ] Editor UI improvements
 
