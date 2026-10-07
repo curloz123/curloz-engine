@@ -53,10 +53,21 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	set(CLZ_SIMD_FLAGS /arch:AVX2)
 endif()
 
+# Linker settings
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	find_program(CLZ_MOLD_EXECUTABLE mold)
+	if(CLZ_MOLD_EXECUTABLE)
+		add_link_options(-fuse-ld=mold)
+		message(STATUS "mold was found. Using the mold as the default linker")
+	endif()
+endif()
+
+
 target_compile_options(${PROJECT_NAME} PRIVATE
 	${CLZ_SIMD_FLAGS}
 	$<$<CONFIG:EngineDebug,GameDebug>:${CLZ_DEBUG_WARNINGS}>
 )
+
 
 ## External Libs, This should be the last section, everything below this is just linking third party libraries
 
