@@ -27,27 +27,42 @@ namespace clz::audio
 
 		/// --- Clamp all source def values first --- ///
 		bufferPlayerDef.gain = std::clamp(bufferPlayerDef.gain, 0.0f, 1.0f);
-		bufferPlayerDef.pitch = std::clamp(bufferPlayerDef.pitch, 0.01f, 4.0f);
+		bufferPlayerDef.pitch = std::clamp(bufferPlayerDef.pitch, 0.01f, 2.0f);
 
 		BufferPlayerId bufferPlayerId(au_bufferPlayerGain.size());
 
 		/// --- push back null source id initially --- ///
 		au_associatedSources.push_back(SourceId());
+
 		au_associatedEntities.push_back(bufferPlayerDef.entt);
-		au_bufferPlayerGain.push_back(bufferPlayerDef.gain);
-		au_bufferPlayerPitch.push_back(bufferPlayerDef.pitch);
+		au_bufferPlayerGain.push_back(
+			std::make_pair(bufferPlayerDef.gain, 1.0f));
+		au_bufferPlayerPitch.push_back(
+			std::make_pair(bufferPlayerDef.pitch, 1.0f));
 		au_bufferPlayerLooping.push_back(bufferPlayerDef.looping);
+		au_bufferPlayerType.push_back(bufferPlayerDef.playerType);
 
 		return bufferPlayerId;
 	}
 
-	/// @copydoc bufferPlayerPlay
-	void bufferPlayerPlay(
+	/// @copydoc bufferPlayerPlayPos
+	void bufferPlayerPlayPos(
 		const BufferPlayerId bufferPlayerId, 
-		const BufferId bufferId
+		const BufferId bufferId,
+		const math::vec3& position,
+		const math::vec3& velocity
 	)
 	{
-		clz::log::debug("Playing buffer: " + std::to_string(bufferId.getId()));
+#ifdef CLZ_ENABLE_CHECKS
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to player positional audio"
+					", through of buffer player of bg type");
+			return;
+		}
+#endif
+
 		SourceId& associatedSourceId = 
 			au_associatedSources[bufferPlayerId.getId()];
 
@@ -59,6 +74,8 @@ namespace clz::audio
 		{
 
 			associatedSourceId = getFreeSourceId();
+
+#ifdef CLZ_ENABLE_CHECKS /*******************************************************/
 			/// --- check if id is null still or not --- ///
 			if (associatedSourceId.isNull())
 			{
@@ -70,6 +87,7 @@ namespace clz::audio
 				);
 				return;
 			}
+#endif /*************************************************************************/
 
 			/// in this block id IS null so push it there
 			/// --- push back to dense array --- ///
@@ -77,28 +95,149 @@ namespace clz::audio
 
 		}
 
+		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetGain(
 			associatedSourceId, 
-			au_bufferPlayerGain[bufferPlayerId.getId()]
+			gain.first * gain.second
 		);
+		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
 		sourceSetPitch(
 			associatedSourceId,
-			au_bufferPlayerPitch[bufferPlayerId.getId()]
+			pitch.first * pitch.second
 		);
 		sourceSetLooping(
 			associatedSourceId,
 			au_bufferPlayerLooping[bufferPlayerId.getId()]
 		);
+		sourceSetListenerRelative(
+			associatedSourceId,
+			false
+		);
+		sourceSetPosition(
+			associatedSourceId, 
+			position
+		);
+		sourceSetVelocity(
+			associatedSourceId,
+			velocity
+		);
 
-		updateBufferPlayerData(bufferPlayerId);
 		sourcePlay(associatedSourceId, bufferId);
+	}
+
+	/// @copydoc bufferPlayerPlayBg
+	void bufferPlayerPlayBg(
+		const BufferPlayerId bufferPlayerId, 
+		const BufferId bufferId
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::BACKGROUND) [[unlikely]]
+		{
+			clz::log::warn("Tried to player backgroundal audio"
+					", through of buffer player of pos type");
+			return;
+		}
+#endif
+
+		SourceId& associatedSourceId = 
+			au_associatedSources[bufferPlayerId.getId()];
+
+		/// if associated source id is not null, then
+		/// most probably this buffer player is already playing
+		/// or either is paused or something like that
+		/// this means it is present in active buffer players array
+		if (associatedSourceId.isNull())
+		{
+			associatedSourceId = getFreeSourceId();
+
+#ifdef CLZ_ENABLE_CHECKS /*******************************************************/
+			/// --- check if id is null still or not --- ///
+			if (associatedSourceId.isNull())
+			{
+				clz::log::warn(
+					"Null source id passed"
+					", when tried to retrieve a free source"
+					", not playing bufferId: " + 
+					std::to_string(bufferId.getId())
+				);
+				return;
+			}
+#endif /*************************************************************************/
+
+			/// in this block id IS null so push it there
+			/// --- push back to dense array --- ///
+			au_activeBufferPlayers.push_back(bufferPlayerId);
+
+		}
+
+		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
+		sourceSetGain(
+			associatedSourceId, 
+			gain.first * gain.second
+		);
+		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
+		sourceSetPitch(
+			associatedSourceId,
+			pitch.first * pitch.second
+		);
+		sourceSetLooping(
+			associatedSourceId,
+			au_bufferPlayerLooping[bufferPlayerId.getId()]
+		);
+		sourceSetListenerRelative(
+			associatedSourceId,
+			true
+		);
+
+		sourcePlay(associatedSourceId, bufferId);
+
+	}
+
+	/// @copydoc bufferPlayerStop
+	void bufferPlayerStop(
+		const BufferPlayerId bufferPlayerId
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS
+		if (bufferPlayerId.isNull())
+		{
+			clz::log::warn("Tried to stop a null buffer player");
+			return;
+		}
+		if (au_associatedSources[bufferPlayerId.getId()].isNull())
+		{
+			clz::log::warn("Tried to stop a non-active buffer player");
+			return;
+		}
+#endif
+		
+		/// --- free source first --- ///
+		SourceId associatedSource = 
+			au_associatedSources[bufferPlayerId.getId()];
+		freeSource(associatedSource);
+
+		/// --- remove this player from busy list --- ///
+		std::erase_if(
+			au_activeBufferPlayers,
+			[bufferPlayerId](const BufferPlayerId bPlayerId)
+			{
+				return bufferPlayerId.getId() ==
+						bPlayerId.getId();
+			}
+		);
 	}
 
 	/// @copydoc updateBufferPlayerData
 	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId)
 	{
-		SourceId& associatedSourceId = 
+		if (bufferPlayerGetType(bufferPlayerId) != PlayerType::POSITIONAL)
+			return;
+
+		SourceId& associatedSourceId =
 			au_associatedSources[bufferPlayerId.getId()];
+#ifdef CLZ_ENABLE_CHECKS
 		if (associatedSourceId.isNull()) [[unlikely]]
 		{
 			clz::log::warn(
@@ -106,19 +245,20 @@ namespace clz::audio
 				" which is not active right now");
 			return;
 		}
+#endif
 
 		const auto& associatedEntity = bufferPlayerGetAssociatedEntity(bufferPlayerId);
 		const auto& transform = ecs::getComponent<ecs::TransformComponent>(
 						associatedEntity);
 		sourceSetPosition(
-			associatedSourceId, 
+			associatedSourceId,
 			transform.position
 		);
 		if (ecs::hasComponent<physics::RigidBodyComponent>(
 			associatedEntity
 		))
 		{
-			const auto velocity = 
+			const auto velocity =
 				physics::getBodyVelocity(
 					ecs::getComponent<physics::RigidBodyComponent>(
 						associatedEntity
@@ -131,5 +271,6 @@ namespace clz::audio
 			);
 		}
 	}
+
 
 }

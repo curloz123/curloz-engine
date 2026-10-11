@@ -1,9 +1,11 @@
-local sensor = {}
-local Gun
+local sensor= {}
+
+local collSound = audio.BufferId.new()
+local helmet
 
 function sensor.onInit()
-	Gun = entity.getEntityByName("Gun")
-	log.debug(tostring(Gun))
+	helmet = ecs.getEntityByName("Damaged Helmet")
+	collSound = audio.getBufferId("assets/audio/collide.wav")
 end
 
 function sensor.onSensorEnter(otherEntity)

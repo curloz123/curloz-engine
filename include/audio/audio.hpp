@@ -15,6 +15,7 @@ namespace clz::audio
 	bool init();
 
 	/// @brief Updates audio subsystem
+	/// @note Won't update if editor mode is enabled
 	void update();
 
 	/// @brief Shuts down audio system

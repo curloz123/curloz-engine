@@ -16,10 +16,12 @@
 #include "../../include/inspector/transformcomponent.hpp"
 #include "../../include/scenetable.hpp"
 #include "../../include/timemachine.hpp"
+#include "../../include/inspector/bufferplayer_component.hpp"
 #include "entity/componentmanager.hpp"
 #include "include/inspector/rigidbodycomponent.hpp"
 #include "physics/physicscomponent.hpp"
 #include "renderer/rendercomponent.hpp"
+#include "audio/audio_components.hpp"
 #include <imgui.h>
 #include "include/inspector/lightcomponent.hpp"
 #include "../../include/inspector/scripts_component.hpp"
@@ -109,6 +111,18 @@ namespace clz::editor
 		if (ecs::hasComponent<script::SensorScriptComponent>(currentSelectedEntity.value()))
 		{
 			showSensorScriptComponent();
+			ImGui::Separator();
+		}
+		if (ecs::hasComponent<script::CollisionScriptComponent>(currentSelectedEntity.value()))
+		{
+			showCollisionScriptComponent();
+			ImGui::Separator();
+		}
+
+		if (ecs::hasComponent<audio::AudioBufferPlayerComponent>(currentSelectedEntity.value()))
+		{
+			showBufferPlayerHeader();
+			ImGui::Separator();
 		}
 
 		ImGui::End();

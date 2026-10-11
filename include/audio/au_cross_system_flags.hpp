@@ -6,7 +6,9 @@
 
 #pragma once
 
-#include "listener.hpp"
+#include "listener_manager.hpp"
+#include "buffer_player.hpp"
+#include "core/enginestate.hpp"
 
 namespace clz::audio
 {
@@ -14,5 +16,21 @@ namespace clz::audio
 	inline void flagAudioSystemEntitiesLoaded()
 	{
 		updateListenerData();	
+	}
+
+	/// @brief Hints audio system system has changed.
+	/// Internally stops all playing buffers
+	/// @warn is not initiated right now
+	inline void hintAudioSystemStateChanged(
+		const state::EngineState oldState,
+		const state::EngineState newState
+	)
+	{
+		return;
+		if (newState == state::EngineState::Editor &&
+			oldState == state::EngineState::Game)
+		{
+			bufferPlayerStopAll();	
+		}
 	}
 }

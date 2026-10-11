@@ -38,11 +38,30 @@ namespace clz::audio
 
 
 	///< @brief Global audio source gain LUT.
-	inline std::vector<float> au_bufferPlayerGain;
+	///< The first index is the actual gain.
+	///< The second index is the multiplier part. Used to 
+	///< edit during the gameplay time.
+	///< When playing, the actual gain is calculated via product of both.
+	inline std::vector<std::pair<float, float>> au_bufferPlayerGain;
 	///< @brief Global audio source pitch LUT.
-	inline std::vector<float> au_bufferPlayerPitch;
-	///< @brieg Global audio source looping LUT.
+	///< The first index is the actual gain.
+	///< The second index is the multiplier part. Used to 
+	///< edit during the gameplay time.
+	///< When playing, the actual pitch is calculated via product of both.
+	inline std::vector<std::pair<float, float>> au_bufferPlayerPitch;
+	///< @brief Global audio source looping LUT.
 	inline std::vector<bool> au_bufferPlayerLooping;
+
+	///< @brief Defines type of buffer player
+	///< Background states buffer player will play a background music
+	///< POSITIONL states buffer will play a positional audio
+	enum class PlayerType
+	{
+		BACKGROUND,
+		POSITIONAL
+	};
+	///< @brief Global buffer player types LUT.
+	inline std::vector<PlayerType> au_bufferPlayerType;
 
 
 	///< @brief Defines Buffer player creation data.
@@ -51,6 +70,7 @@ namespace clz::audio
 		bool looping = false;
 		float gain = 1.0f;
 		float pitch = 1.0f;
+		PlayerType playerType = PlayerType::POSITIONAL;
 		ecs::entity entt = ecs::NULL_ENTITY;
 	};
 
@@ -62,72 +82,134 @@ namespace clz::audio
 	/// @note Always check whether id is null or not after creation.
 	BufferPlayerId createBufferPlayer(BufferPlayerDef& bufferPlayerDef);
 
-	/// @brief Plays a buffer through a bufferPlayer
-	/// @param bufferPlayerId Id of buffer player.
-	/// @param bufferId Id of buffer to play
-	/// else default param will be used)
-	/// @note In the main audio update function you have to update
-	/// the position and velocity of sources each frame via bufferPlayerUpdateData
-	/// For those who still didnt understand how'd we get position and vel,
-	/// check au_components.hpp
-	void bufferPlayerPlay(
-		const BufferPlayerId bufferPlayerId, 
-		const BufferId bufferId
-	);
-
-	/// @brief Updates the buffer player's data
+	/// @brief Updates buffer player data(only for positional buffer players)
 	/// Precisely position and velocity
 	/// @param bufferPlayerId Id of buffer player to update
 	/// @note To be called only for buffer players who are active right now.
 	/// Aka Those who has a source attached to them.
 	void updateBufferPlayerData(const BufferPlayerId bufferPlayerId);
 
+	/// @brief Plays a positional buffer through a bufferPlayer
+	/// @param bufferPlayerId Id of buffer player.
+	/// @param bufferId Id of buffer to play
+	/// @param position Position of buffer player
+	/// @param velocity Velocity of buffer player(0 by default)
+	/// else default param will be used)
+	/// @note In the main audio update function you have to update
+	/// the position and velocity of sources each frame via bufferPlayerUpdateData
+	/// For those who still didnt understand how'd we get position and vel,
+	/// check au_components.hpp
+	/// @note Will do nothing if buffer player is bg type
+	void bufferPlayerPlayPos(
+		const BufferPlayerId bufferPlayerId, 
+		const BufferId bufferId,
+		const math::vec3& position,
+		const math::vec3& velocity = math::vec3(0.0f)
+	);
+
+	/// @brief 
+	struct BgBufferPlayerData
+	{
+
+	};
+	/// @brief Plays a backgroundal buffer through a bufferPlayer
+	/// @param bufferPlayerId Id of buffer player.
+	/// @param bufferId Id of buffer to play
+	void bufferPlayerPlayBg(
+		const BufferPlayerId bufferPlayerId, 
+		const BufferId bufferId
+	);
+
+
+	/// @brief Stops a buffer player
+	/// Also frees the associated source too
+	/// @param bufferPlayerId Id of buffer player
+	/// @note Is technically an O(n) function, 
+	/// so don't go gung-ho and use this each frame
+	void bufferPlayerStop(
+		const BufferPlayerId bufferPlayerId
+	);
+
+
 	/// @brief Gets the gain (volume) value for the given audio source.
 	/// @param id The BufferPlayerId whose gain to retrieve.
 	/// @return The current gain value.
 	inline float bufferPlayerGetGain(const BufferPlayerId id)
 	{
-		return au_bufferPlayerGain[id.getId()];
+		return au_bufferPlayerGain[id.getId()].first;
 	}
 
-	/// @brief Sets the gain (volume) value for the given audio source.
+	/// @brief Sets the real part of gain (volume) value for the given audio source.
 	/// @param bufferPlayerId The SourceId whose gain to set.
 	/// @param value The new gain value.
 	inline void bufferPlayerSetGain(
 		const BufferPlayerId bufferPlayerId, 
-		const float value)
+		const float value
+	)
 	{
-		au_bufferPlayerGain[bufferPlayerId.getId()] = value;
+		auto& gainPair = au_bufferPlayerGain[bufferPlayerId.getId()];
+		gainPair.first = value;
+	}
+
+	/// @brief Sets the multiplier part of gain (volume) value for the given audio source.
+	/// If buffer player is currently active, gain = product of both.
+	/// Mostly would be used by scripts.
+	/// @param bufferPlayerId The SourceId whose gain to set.
+	/// @param value The new gain value.
+	inline void bufferPlayerSetGainMul(
+		const BufferPlayerId bufferPlayerId, 
+		const float value
+	)
+	{
+		auto& gainPair = au_bufferPlayerGain[bufferPlayerId.getId()];
+		gainPair.second = value;
+
 		if (!au_associatedSources[bufferPlayerId.getId()].isNull())
 		{
 			sourceSetGain(
 				au_associatedSources[bufferPlayerId.getId()],
-				value
+				gainPair.first * gainPair.second
 			);
 		}
 	}
 
 	/// @brief Gets the pitch value for the given audio source.
+	/// As of now, only sets the mul part of pitch. Not the real part.
+	/// But if buffer player is currently active, pitch = product of both.
 	/// @param id The BufferPlayerId whose pitch to retrieve.
 	/// @return The current pitch value.
 	inline float bufferPlayerGetPitch(const BufferPlayerId id)
 	{
-		return au_bufferPlayerPitch[id.getId()];
+		return au_bufferPlayerPitch[id.getId()].first;
 	}
 
-	/// @brief Sets the pitch value for the given audio source.
+	/// @brief Sets the value of pitch for the given audio source.
 	/// @param bufferPlayerId The Id of BufferPlayer whose pitch to set.
 	/// @param value The new pitch value.
 	inline void bufferPlayerSetPitch(
 		const BufferPlayerId bufferPlayerId, 
 		const float value)
 	{
-		au_bufferPlayerPitch[bufferPlayerId.getId()] = value;
+		auto& pitchPair = au_bufferPlayerPitch[bufferPlayerId.getId()];
+		pitchPair.first = value;
+	}
+
+	/// @brief Sets the mul value of pitch for the given audio source.
+	/// Mostly would be used by scripts.
+	/// @param bufferPlayerId The Id of BufferPlayer whose pitch to set.
+	/// @param value The new pitch value.
+	inline void bufferPlayerSetPitchMul(
+		const BufferPlayerId bufferPlayerId, 
+		const float value)
+	{
+		auto& pitchPair = au_bufferPlayerPitch[bufferPlayerId.getId()];
+		pitchPair.second = value;
+
 		if (!au_associatedSources[bufferPlayerId.getId()].isNull())
 		{
 			sourceSetPitch(
 				au_associatedSources[bufferPlayerId.getId()],
-				value
+				pitchPair.first * pitchPair.second
 			);
 		}
 
@@ -160,11 +242,43 @@ namespace clz::audio
 
 	}
 
+	/// @brief Retrieves buffer player type.
+	/// @param bufferPlayerId The Id of BufferPlayer.
+	/// @return PlayerType
+	inline PlayerType bufferPlayerGetType(
+		const BufferPlayerId bufferPlayerId
+	)
+	{
+		return au_bufferPlayerType[bufferPlayerId.getId()];
+	}
+
+	/// @brief Sets buffer player type/
+	/// @param bufferPlayerId The Id of bufferPlayer.
+	/// @param playerType New PlayerType
+	inline void bufferPlayerSetType(
+		const BufferPlayerId bufferPlayerId,
+		const PlayerType playerType
+	)
+	{
+		au_bufferPlayerType[bufferPlayerId.getId()] = playerType;
+	}
+
+	/// @brief sets buffer player position
+	/// @param bufferPlayerId
+	/// @param position position to set
+	/// @note does nothing if player type is background
 	inline void bufferPlayerSetPosition(
 		const BufferPlayerId bufferPlayerId,
 		const math::vec3& position
 	)
 	{
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to set position of buffer player of bg type");
+			return;
+		}
+
 		if (au_associatedSources[
 			bufferPlayerId.getId()].isNull()) [[unlikely]]
 		{
@@ -178,11 +292,23 @@ namespace clz::audio
 			position
 		);
 	}
+
+	/// @brief sets buffer player velocity
+	/// @param bufferPlayerId
+	/// @param velocity velocity to set
+	/// @note does nothing if player type is background
 	inline void bufferPlayerSetVelocity(
 		const BufferPlayerId bufferPlayerId,
 		const math::vec3& velocity
 	)
 	{
+		if (au_bufferPlayerType[bufferPlayerId.getId()]
+				!= PlayerType::POSITIONAL) [[unlikely]]
+		{
+			clz::log::warn("Tried to set velocity of buffer player of bg type");
+			return;
+		}
+
 		if (au_associatedSources[
 			bufferPlayerId.getId()].isNull()) [[unlikely]]
 		{
@@ -197,5 +323,19 @@ namespace clz::audio
 		);
 	}
 
+	/// @brief Stops all active buffers
+	inline void bufferPlayerStopAll()
+	{
+		std::erase_if(
+			au_activeBufferPlayers,
+			[](const BufferPlayerId bufferPlayerId)
+			{
+				auto associatedSource = 
+					au_associatedSources[bufferPlayerId.getId()];
+				freeSource(associatedSource);
+				return true;
+			}
+		);
+	}
 
 }

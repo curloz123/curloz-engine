@@ -8,6 +8,7 @@
 
 #include <sol/sol.hpp>
 #include "physics_scripts.hpp"
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -124,7 +125,7 @@ namespace clz::script
 		template<typename... Args>
 		void callFunctionInAllScripts(
 			void (T::*fn)(Args...) const, 
-			const Args... args) const
+			std::type_identity_t<Args>... args) const
 		{
 			for (uint32_t Id : m_scriptIds)
 			{

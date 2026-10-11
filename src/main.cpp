@@ -11,15 +11,18 @@
  */
 
 #include "audio/audio_components.hpp"
+#include "audio/buffer_player.hpp"
 #include "core/core.hpp"
 #include "audio/audio.hpp"
 #include "config/config.hpp"
+#include "core/time.hpp"
 #include "entity/entity.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene.hpp"
 #include "window/window.hpp"
 #include "script/script.hpp"
+#include <string>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "../editor/include/editor.hpp"
@@ -83,6 +86,9 @@ int main()
 	// Main loop. Runs until g_engineState is set to EngineState::Shutdown
 	while (clz::state::g_engineState != clz::state::EngineState::Shutdown)
 	{
+		static double frameTime = 0.0;
+		static double counter = 0.0;
+
 		/// --- Update core system first!!! --- ///
 		clz::updateCoreSystems();
 
@@ -97,6 +103,14 @@ int main()
 
 		/// --- Update audio system --- ///
 		clz::audio::update();
+
+		frameTime = clz::time::getDeltaTime();
+		counter += frameTime;
+		if (counter > 5.0)
+		{
+			clz::log::debug("Frame time: " + std::to_string(frameTime));
+			counter = 0.0;
+		}
 	}
 
 	// Shut down

@@ -15,21 +15,20 @@
 
 namespace clz::editor
 {
-/// @brief Displays read-only Model component info, if the entity has one.
-void showModelComponentHeader()
-{
-	if (!ImGui::CollapsingHeader("󰐫 Model"))
-		return;
+	/// @brief Displays read-only Model component info, if the entity has one.
+	void showModelComponentHeader()
+	{
+		if (!ImGui::CollapsingHeader("󰐫 Model"))
+			return;
 
-	const renderer::ModelId id =
-		ecs::getComponent<renderer::ModelComponent>(currentSelectedEntity.value())
-			.modelId;
-	const auto name = renderer::getModelPath(id);
+		const renderer::ModelId id =
+			ecs::getComponent<renderer::ModelComponent>(currentSelectedEntity.value())
+				.modelId;
+		const auto name = renderer::getModelPath(id);
 
-	ImGui::PushFont(fontMono);
-	ImGui::Text("Model Path: %s", name.c_str());
-	ImGui::Separator();
-	ImGui::PopFont();
-}
+		ImGui::PushFont(fontMono);
+		ImGui::Text("Model Path: %s", name.c_str());
+		ImGui::PopFont();
+	}
 
 } // namespace clz::editor

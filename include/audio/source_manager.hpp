@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "al.h"
 #include "core/id_interface.hpp"
 #include "native.hpp"
 #include "core/logs.hpp"
@@ -218,6 +219,7 @@ namespace clz::audio
 	/// @param value The new gain value.
 	inline void sourceSetGain(const SourceId sourceId, const float value)
 	{
+		clz::log::debug("trying to set gain: " + std::to_string(value));
 	    	alSourcef(au_sourcesLUT[sourceId.getId()], AL_GAIN, value);
 	}
 
@@ -226,6 +228,7 @@ namespace clz::audio
 	/// @param value The new pitch value.
 	inline void sourceSetPitch(const SourceId sourceId, const float value)
 	{
+		clz::log::debug("trying to set pitch: " + std::to_string(value));
 	    	alSourcef(au_sourcesLUT[sourceId.getId()], AL_PITCH, value);
 	}
 
@@ -237,6 +240,21 @@ namespace clz::audio
 		alSourcei(
 			au_sourcesLUT[sourceId.getId()], 
 			AL_LOOPING, value ? AL_TRUE : AL_FALSE
+		);
+	}
+
+	/// @brief Sets whether to make source relative to listener or not
+	/// @param sourceId Source Id in question
+	/// @param relative Bool to set
+	inline void sourceSetListenerRelative(
+		const SourceId sourceId,
+		const bool relative
+	)
+	{
+		alSourcei(
+			au_sourcesLUT[sourceId.getId()],
+			AL_SOURCE_RELATIVE,
+			(relative) ? AL_TRUE : AL_FALSE
 		);
 	}
 }
