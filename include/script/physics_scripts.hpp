@@ -261,16 +261,19 @@ namespace clz::script
 		 * @brief Calls the script's `onCollision` function.
 		 * @param otherEntity The entity involved in the collision.
 		 * @param position Point of contact.
+		 * @param approachSpeed Approach speed between both bodies
 		 */
 		void triggerCollision(
 			ecs::entity otherEntity,
-			const math::vec3& position) const
+			const math::vec3& position,
+			const float approachSpeed) const
 		{
 			if (onCollisionSolFunction.valid()) [[likely]]
 			{
 				auto result = onCollisionSolFunction(
 					otherEntity,
-					position
+					position,
+					approachSpeed
 				);
 #ifdef CLZ_ENABLE_CHECKS /**********************************************************************/
 				if (!result.valid())

@@ -177,7 +177,8 @@ namespace clz::script
 					audio::bufferPlayerPlayPos(
 							bufferPlayerId, 
 							bufferId,
-							position);
+							position
+					);
 				}
 				else
 				{
@@ -222,7 +223,7 @@ namespace clz::script
 
 		registerBufferPlayerFunc(
 			"setGain",
-			&audio::bufferPlayerSetGain
+			&audio::bufferPlayerSetGainMul
 		);
 		registerBufferPlayerFunc(
 			"getGain",
@@ -230,7 +231,7 @@ namespace clz::script
 		);
 		registerBufferPlayerFunc(
 			"setPitch",
-			&audio::bufferPlayerSetPitch
+			&audio::bufferPlayerSetPitchMul
 		);
 		registerBufferPlayerFunc(
 			"getPitch",

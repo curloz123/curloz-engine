@@ -107,6 +107,11 @@ namespace clz::audio
 		const math::vec3& velocity = math::vec3(0.0f)
 	);
 
+	/// @brief 
+	struct BgBufferPlayerData
+	{
+
+	};
 	/// @brief Plays a backgroundal buffer through a bufferPlayer
 	/// @param bufferPlayerId Id of buffer player.
 	/// @param bufferId Id of buffer to play
@@ -120,7 +125,7 @@ namespace clz::audio
 	/// Also frees the associated source too
 	/// @param bufferPlayerId Id of buffer player
 	/// @note Is technically an O(n) function, 
-	/// so don't go gunh-ho and use this each frame
+	/// so don't go gung-ho and use this each frame
 	void bufferPlayerStop(
 		const BufferPlayerId bufferPlayerId
 	);
@@ -134,12 +139,24 @@ namespace clz::audio
 		return au_bufferPlayerGain[id.getId()].first;
 	}
 
-	/// @brief Sets the gain (volume) value for the given audio source.
-	/// As of now, only sets the mul part of gain. Not the real part.
-	/// But if buffer player is currently active, gain = product of both.
+	/// @brief Sets the real part of gain (volume) value for the given audio source.
 	/// @param bufferPlayerId The SourceId whose gain to set.
 	/// @param value The new gain value.
 	inline void bufferPlayerSetGain(
+		const BufferPlayerId bufferPlayerId, 
+		const float value
+	)
+	{
+		auto& gainPair = au_bufferPlayerGain[bufferPlayerId.getId()];
+		gainPair.first = value;
+	}
+
+	/// @brief Sets the multiplier part of gain (volume) value for the given audio source.
+	/// If buffer player is currently active, gain = product of both.
+	/// Mostly would be used by scripts.
+	/// @param bufferPlayerId The SourceId whose gain to set.
+	/// @param value The new gain value.
+	inline void bufferPlayerSetGainMul(
 		const BufferPlayerId bufferPlayerId, 
 		const float value
 	)
@@ -166,10 +183,22 @@ namespace clz::audio
 		return au_bufferPlayerPitch[id.getId()].first;
 	}
 
-	/// @brief Sets the pitch value for the given audio source.
+	/// @brief Sets the value of pitch for the given audio source.
 	/// @param bufferPlayerId The Id of BufferPlayer whose pitch to set.
 	/// @param value The new pitch value.
 	inline void bufferPlayerSetPitch(
+		const BufferPlayerId bufferPlayerId, 
+		const float value)
+	{
+		auto& pitchPair = au_bufferPlayerPitch[bufferPlayerId.getId()];
+		pitchPair.first = value;
+	}
+
+	/// @brief Sets the mul value of pitch for the given audio source.
+	/// Mostly would be used by scripts.
+	/// @param bufferPlayerId The Id of BufferPlayer whose pitch to set.
+	/// @param value The new pitch value.
+	inline void bufferPlayerSetPitchMul(
 		const BufferPlayerId bufferPlayerId, 
 		const float value)
 	{

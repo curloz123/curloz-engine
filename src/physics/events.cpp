@@ -7,6 +7,7 @@
 #include "physics/events.hpp"
 #include "box3d/box3d.h"
 #include "box3d/math_functions.h"
+#include "math/vec3.hpp"
 #include "box3d/types.h"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
@@ -74,64 +75,75 @@ namespace clz::physics
 		}
 	}
 
-	/// @copydoc processCollisionEvents
-	void processCollisionEvents()
+	/// @copydoc processHitEvents
+	void processHitEvents()
 	{
 		b3ContactEvents contactEvents = b3World_GetContactEvents(p_world);
 
 		/// OPTIMIZE THIS PART
-		for (int i = 0; i < contactEvents.beginCount; ++i)
+		static 	std::vector<
+				std::pair<
+					std::pair<ecs::entity, ecs::entity>,
+					std::pair<math::vec3, float>
+				>
+			> entt_contact_detes;
+		entt_contact_detes.reserve(contactEvents.hitCount);
+
+		for (int i = 0; i < contactEvents.hitCount; ++i)
 		{
-			b3ContactBeginTouchEvent* beginEvent = contactEvents.beginEvents + i;
+			b3ContactHitEvent* hitEvent = contactEvents.hitEvents + i;
 
-			b3ShapeId sensorShapeA = beginEvent->shapeIdA;
+			b3ShapeId sensorShapeA = hitEvent->shapeIdA;
+			b3ShapeId sensorShapeB = hitEvent->shapeIdB;
 			b3BodyId sensorBodyA = b3Shape_GetBody(sensorShapeA);
-
-			b3ShapeId sensorShapeB = beginEvent->shapeIdB;
 			b3BodyId sensorBodyB = b3Shape_GetBody(sensorShapeB);
-			
 			ecs::entity entityA = getAttachedEntity(sensorBodyA);
 			ecs::entity entityB = getAttachedEntity(sensorBodyB);
 			
-			math::vec3 posA;
-			math::vec3 posB;
-			if (!b3Shape_AreHitEventsEnabled(sensorShapeA) && 
-				b3Shape_AreHitEventsEnabled(sensorShapeB))
-			{
-				posA = ecs::getComponent<ecs::TransformComponent>(entityA).position;
-				posB = ecs::getComponent<ecs::TransformComponent>(entityB).position;
-			}
-			else
-			{
-				for (int j = 0; j < contactEvents.hitCount; ++j)
-				{
-					b3ContactHitEvent* hitEvent = contactEvents.hitEvents + j;
-					posA = fromVec3((b3Vec3)hitEvent->point);
-					posB = fromVec3((b3Vec3)hitEvent->point);
-				}
-			}
-
-			if (ecs::hasComponent<script::CollisionScriptComponent>(entityA))
-			{
-				auto& collScriptComp = 
-					ecs::getComponent<script::CollisionScriptComponent>(entityA);
-				collScriptComp.callFunctionInAllScripts(
-					&script::CollisionScript::triggerCollision,
-					entityB,
-					posA
-				);
-			}
-			if (ecs::hasComponent<script::CollisionScriptComponent>(entityB))
-			{
-				auto& collScriptComp = 
-					ecs::getComponent<script::CollisionScriptComponent>(entityB);
-				collScriptComp.callFunctionInAllScripts(
-					&script::CollisionScript::triggerCollision,
-					entityA,
-					posB
-				);
-			}
-
+			entt_contact_detes.emplace_back(
+				std::make_pair(
+					std::make_pair(
+						entityA, 
+						entityB
+					),
+					std::make_pair(
+						fromVec3(hitEvent->point), 
+						hitEvent->approachSpeed
+					)
+				)
+			);
+			
 		}
+
+		for (const auto& contact_dete : entt_contact_detes)
+		{
+			const auto& entt_pair = contact_dete.first;
+			const auto& contact_detes = contact_dete.second;
+
+			if (ecs::hasComponent<script::CollisionScriptComponent>(entt_pair.first))
+			{
+				const auto& collScriptComp = 
+					ecs::getComponent<script::CollisionScriptComponent>(entt_pair.first);
+				collScriptComp.callFunctionInAllScripts(
+					&script::CollisionScript::triggerCollision,
+					entt_pair.second,
+					contact_detes.first,
+					contact_detes.second
+				);
+			}
+			if (ecs::hasComponent<script::CollisionScriptComponent>(entt_pair.second))
+			{
+				const auto& collScriptComp = 
+					ecs::getComponent<script::CollisionScriptComponent>(entt_pair.second);
+				collScriptComp.callFunctionInAllScripts(
+					&script::CollisionScript::triggerCollision,
+					entt_pair.first,
+					contact_detes.first,
+					contact_detes.second
+				);
+			}
+		}
+
+		entt_contact_detes.clear();
 	}
 }

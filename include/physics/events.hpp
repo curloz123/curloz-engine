@@ -18,9 +18,9 @@ namespace clz::physics
 	void processSensorEvents();
 
 	/**
-	 * @brief Poll and processes all collision events.
+	 * @brief Poll and processes all hit events.
 	 * And calls relavant script functions too 
 	 * if appropriate component is attached
 	 */
-	void processCollisionEvents();
+	void processHitEvents();
 }

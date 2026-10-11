@@ -47,8 +47,8 @@ namespace clz::physics
 	/// @brief Update's the physics engine
 	/// @note in editor mode, we don't iterate physics engine at all
 	/// @note Also we use fixed time step with
-	/// that remainder accumulator method Uses slerp and lerp for smooth transition of
-	/// transform
+	/// that remainder accumulator method Uses slerp and lerp for 
+	/// smooth transition of transform
 	void update()
 	{
 		if (state::g_engineState != state::EngineState::Game)
@@ -77,7 +77,7 @@ namespace clz::physics
 			///< Process sensor events
 			processSensorEvents();
 			///< Process collision events
-			processCollisionEvents();
+			processHitEvents();
 		}
 		const float alpha = p_accumulator / p_timeStep;
 

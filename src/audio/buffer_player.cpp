@@ -27,7 +27,7 @@ namespace clz::audio
 
 		/// --- Clamp all source def values first --- ///
 		bufferPlayerDef.gain = std::clamp(bufferPlayerDef.gain, 0.0f, 1.0f);
-		bufferPlayerDef.pitch = std::clamp(bufferPlayerDef.pitch, 0.01f, 4.0f);
+		bufferPlayerDef.pitch = std::clamp(bufferPlayerDef.pitch, 0.01f, 2.0f);
 
 		BufferPlayerId bufferPlayerId(au_bufferPlayerGain.size());
 
@@ -100,7 +100,7 @@ namespace clz::audio
 			associatedSourceId, 
 			gain.first * gain.second
 		);
-		const auto& pitch = au_bufferPlayerGain[bufferPlayerId.getId()];
+		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
 		sourceSetPitch(
 			associatedSourceId,
 			pitch.first * pitch.second
@@ -177,7 +177,7 @@ namespace clz::audio
 			associatedSourceId, 
 			gain.first * gain.second
 		);
-		const auto& pitch = au_bufferPlayerGain[bufferPlayerId.getId()];
+		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
 		sourceSetPitch(
 			associatedSourceId,
 			pitch.first * pitch.second

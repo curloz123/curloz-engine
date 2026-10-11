@@ -2,7 +2,7 @@ local sensor = {}
 local Gun
 
 function sensor.onInit()
-	Gun = entity.getEntityByName("Gun")
+	Gun = ecs.getEntityByName("Gun")
 	log.debug(tostring(Gun))
 end
 
