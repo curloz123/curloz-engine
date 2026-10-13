@@ -66,17 +66,19 @@ namespace clz::log
 	/**
 	 * @brief Logs an error message and sets hadError to true.
 	 * @param error The error
+	 * @param fatal Indicates whether error is fatal enough to stop program.
 	 * @param loc Retrieves location of caller, don't pass this yourself
 	 */
-	inline void
-	error(std::string_view error,
+	inline void error(std::string_view error, bool fatal = false,
 	      const std::source_location loc = std::source_location::current())
 	{
-		hadError = true;
-
 		std::println("{}[ERROR]{} {}", color::red, color::reset, error);
-
 		std::println("LOCATION: {} Line:{}", loc.file_name(), loc.line());
+
+		if (fatal)
+		{
+			hadError = true;
+		}
 	}
 
 	/**
