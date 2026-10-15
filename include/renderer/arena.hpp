@@ -21,20 +21,20 @@ namespace clz::renderer
 	typedef struct VkArenaDef
 	{
 		///< @brief Vertex buffer's memory size.
-		VkDeviceSize vertexBufferMemSize = 200 * 1024 * 1024;
+		VkDeviceSize vertexBufferArenaSize = 200 * 1024 * 1024;
 		///< @brief Index buffer's memory size.
-		VkDeviceSize indexBufferMemSize = 100 * 1024 * 1024;
+		VkDeviceSize indexBufferArenaSize = 100 * 1024 * 1024;
 	
 		///< Memory to be allocated for UBO's.
-		VkDeviceSize UBO = 100 * 1024 * 1024;
+		VkDeviceSize UBOArenaSize = 100 * 1024 * 1024;
 
 		///< Memory to be allocated for SSBO's.
 		VkDeviceSize SSBO = 100 * 1024 * 1024;
 
 		///< Memory to be allocated for textures.
-		VkDeviceSize AssetTexturesMemSize = 1024 * 1024 * 1024;
+		VkDeviceSize AssetTexturesArenaize = 1024 * 1024 * 1024;
 		///< Memory to be allocated for internal image handles.
-		VkDeviceSize ImagesMemSize = 500 * 1024 * 1024;
+		VkDeviceSize ImagesArenaSize = 500 * 1024 * 1024;
 
 	} VkArenaDef;
 
@@ -50,8 +50,104 @@ namespace clz::renderer
 	 * @brief Destroy's all arena's memory
 	 */
 	void destroyVkArenaMemory();
+
+
+	///< @brief Every arena's main memory handle.
+	///< Each memory handle needs to simply publicly inherit this.
+	class ArenaMemoryHandle
+	{
+	private:
+		///< @brief This is the offset, 
+		///< or the index in main arena's memory from which
+		///< this handle's memory starts. Ofc in bytes.
+		VkDeviceSize memoryOffset = std::numeric_limits<VkDeviceSize>::max();
+		///< @brief This is the total size of allocated 
+		///< to this memory handle, in bytes.
+		VkDeviceSize size = 0;
+
+	public:
+		ArenaMemoryHandle() = default;
+		ArenaMemoryHandle(
+			const VkDeviceSize memoryOffset, 
+			const VkDeviceSize size
+		) : 
+			memoryOffset(memoryOffset),
+			size(size)
+		{
+		}
+
+		/// @brief Offset in bytes into the arena's memory.
+		[[nodiscard]] VkDeviceSize getMemoryOffset() const
+		{
+			return memoryOffset;
+		}
+		/// @brief Size in bytes of the allocation.
+		[[nodiscard]] VkDeviceSize getSize() const
+		{
+			return size;
+		}
+		/// @brief One past the last byte (offset + size).
+		/// Handy for the adjacency checks in free.
+		/// @warn Never to be called outside any arena function.
+		[[nodiscard]] VkDeviceSize getEnd() const
+		{
+			return memoryOffset + size;
+		}
+
+		/**
+		 * @brief Sets new offset for this handle.
+		 * @param newOffset New offset of this handle.
+		 * @warn Never to be called outside any arena function.
+		 */
+		void setMemoryOffset(const VkDeviceSize newOffset)
+		{
+			memoryOffset = newOffset;
+		}
+		/**
+		 * @brief Sets new size for this handle.
+		 * @param newSize New size if this handle.
+		 * @warn Never to be called outside any arena function.
+		 */
+		void setSize(const VkDeviceSize newSize)
+		{
+			size = newSize;
+		}
+		/**
+		 * @brief Sets new offset and size for this handle.
+		 * @param newOffset New offset of this handle.
+		 * @param newSize New size if this handle.
+		 * @warn Never to be called outside any arena function.
+		 */
+		void set(const VkDeviceSize newOffset, const VkDeviceSize newSize)
+		{
+			memoryOffset = newOffset;
+			size = newSize;
+		}
+
+		/**
+		 * @brief Queries whether this handle is null or not
+		 */
+		[[nodiscard]] bool isNull() const
+		{
+			return memoryOffset == std::numeric_limits<VkDeviceSize>::max() &&
+				size == 0;
+		}
+		/**
+		 * @brief Makes this handle null.
+		 * @warn Never to be called outside any arena function.
+		 */
+		void makeNull()
+		{
+			memoryOffset = std::numeric_limits<VkDeviceSize>::max();
+			size = 0;
+		}
+
+	};
 	
 
+	/******************************************************/
+	/********* 0. VERTEX BUFFER AND INDEX BUFFER **********/
+	/******************************************************/
 
 	///< @brief Main Vertex buffer memory handle.
 	inline VkDeviceMemory VertexBufferMemory;
@@ -61,14 +157,10 @@ namespace clz::renderer
 	inline VkBuffer VertexBuffer;
 	///< @brief Main index buffer handle.
 	inline VkBuffer IndexBuffer;
-	///< @brief Vertex buffer total memory size.
-	inline VkDeviceSize VertexBufferSize;
+	///< @brief Vertex arena total memory size.
+	inline VkDeviceSize VertexArenaTotalSize;
 	///< @brief Index buffer total memory size.
-	inline VkDeviceSize IndexBufferSize;
-	///< @brief Memory offset of vertex buffer in memory.
-	inline VkDeviceSize VertexBufferMemoryOffset;
-	///< @brief Memory offset of index buffer in memory.
-	inline VkDeviceSize IndexBufferMemoryOffset;
+	inline VkDeviceSize IndexArenaTotalSize;
 	///< @brief Vertex buffer alloc offset.
 	///< Basically offset in memory from where
 	///< we can allocate new stuff.
@@ -80,13 +172,13 @@ namespace clz::renderer
 
 	/**
 	 * @brief Allocates buffer memory
-	 * @param vertexBufferSize Size of vertex buffer in bytes.
-	 * @param indexBufferSize Size of index buffer in bytes.
+	 * @param vertexBufferArenaSize Size of vertex buffer arena in bytes.
+	 * @param indexBufferArenaSize Size of index buffer arena in bytes.
 	 * @return bool indicating completion status
 	 */
 	bool allocateBufferArena(
-		const VkDeviceSize vertexBufferSize,
-		const VkDeviceSize indexBufferSize);
+		const VkDeviceSize vertexBufferArenaSize,
+		const VkDeviceSize indexBufferArenaSize);
 	/*
 	 * @brief Destroys main buffer
 	 */
@@ -184,7 +276,7 @@ namespace clz::renderer
 		clzVertexBuffer* pVertexBuffer
 	);
 	/**
-	 * @brief Allocates index from main memory.
+	 * @brief Allocates index buffer from main memory.
 	 * @param pAllocInfo Pointer to index buffer allocation info.
 	 * @param pIndexBuffer pointer to engine's internal i buffer handle.
 	 * @return true on success, false otherwise.
@@ -210,8 +302,69 @@ namespace clz::renderer
 	 * through all gaps to check for adjacent memories.
 	 */
 	void freeIndexBuffer(
-		clzVertexBuffer* pIndexBuffer
+		clzIndexBuffer* pIndexBuffer
 	);
 
+
+
+	/**************************/
+	/********* 1. UBO *********/
+	/**************************/
+
+	///< @brief Main UBO memory handle.
+	inline VkDeviceMemory UBOArenaMemory;
+	///< @brief UBO memory total size.
+	inline VkDeviceSize UBOArenaTotalSize;
+	///< @brief UBOMemoryNewStartIndex.
+	inline VkDeviceSize UBOMemoryNewStartIndex;
+
+	/**
+	 * @brief Allocates UBO arena memory.
+	 * @param uboArenaSize Size to allocate for UBO's arena.
+	 * @return bool indicating completion status.
+	 */
+	bool allocateUBOArenaMemory(
+		const VkDeviceSize uboArenaSize
+	);
+	/**
+	 * @brief Destroys ubo's main memory
+	 */
+	void destroyUBOArenaMemory();
+
+	///< @brief UBO Memory allocation info
+	typedef struct UBOMemoryAllocInfo
+	{
+		///< @brief Total size to allocate.
+		VkDeviceSize size = 0;
+		///< @brief Alignment in memory.
+		VkDeviceSize alignment = 0;
+	} UBOMemoryAllocInfo;
+	///< @brief engine's internal ubo memory handle.
+	class clzUBOMemory : public ArenaMemoryHandle{};
+	///< @brief Stores all gaps in main UBO's arena memory.
+	///< @note this vector is always sorted by size, not offset.
+	inline std::vector<clzUBOMemory> UBOArenaGaps;
+
+	/**
+	 * @brief Carves Allocates UBO memory from arena.
+	 * @param rAllocInfo const reference to ubo memory allocation info.
+	 * @param rUBOMemoryHandle reference to handle which will hold this memory.
+	 * @note The size that this handle owns might be greater than mentioned in rAllocInfo.size,
+	 * because of alignment constraints.
+	 * @return true on success, false otherwise.
+	 */
+	bool carveUBOMemory(
+		const UBOMemoryAllocInfo& rAllocInfo,
+		clzUBOMemory& rUBOMemoryHandle
+	);
+	/**
+	 * @brief Frees UBO memory of a handle.
+	 * @param rUBOMemoryHandle reference to ubo memory handle.
+	 * @note Passed handle is null after calling this function, 
+	 * so make sure to not use it after this.
+	 */
+	void freeUBOMemory(
+		clzUBOMemory& rUBOMemoryHandle
+	);
 
 }

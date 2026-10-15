@@ -21,11 +21,19 @@ namespace clz::renderer
 	bool allocateVkArenaMemory(const VkArenaDef& arenaDef)
 	{
 		if (!allocateBufferArena(
-				arenaDef.vertexBufferMemSize,
-				arenaDef.indexBufferMemSize
+				arenaDef.vertexBufferArenaSize,
+				arenaDef.indexBufferArenaSize
 		))
 		{
-			clz::log::error("Unable to allocate vertex buffer memory");
+			clz::log::error("Unable to allocate vertex buffer arena memory", true);
+			return false;
+		}
+
+		if (!allocateUBOArenaMemory(
+				arenaDef.UBOArenaSize
+		))
+		{
+			clz::log::error("Unable to allocate UBO arena memory", true);
 			return false;
 		}
 
@@ -35,6 +43,7 @@ namespace clz::renderer
 	/// @copydoc destroyVkArenaMemory
 	void destroyVkArenaMemory()
 	{
+		destroyUBOArenaMemory();
 		destroyBufferArena();
 	}
 
@@ -43,11 +52,11 @@ namespace clz::renderer
 
 	/// @copydoc allocateBufferArena
 	bool allocateBufferArena(
-		const VkDeviceSize vertexBufferSize,
-		const VkDeviceSize indexBufferSize)
+		const VkDeviceSize vertexBufferArenaSize,
+		const VkDeviceSize indexBufferArenaSize)
 	{
 		CLZ_ASSERT(
-			(vertexBufferSize != 0 || IndexBufferSize != 0),
+			(vertexBufferArenaSize != 0 && indexBufferArenaSize != 0),
 			"dude why tf u allocating 0 buffer size"
 		);
 			  
@@ -57,7 +66,7 @@ namespace clz::renderer
 			.sType 		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.pNext 		= nullptr,
 			.flags 		= 0,
-			.size  		= vertexBufferSize,
+			.size  		= vertexBufferArenaSize,
 			.usage 		= VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 						VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			.sharingMode 	= VK_SHARING_MODE_EXCLUSIVE,
@@ -81,7 +90,7 @@ namespace clz::renderer
 			.sType 		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.pNext 		= nullptr,
 			.flags 		= 0,
-			.size  		= indexBufferSize,
+			.size  		= indexBufferArenaSize,
 			.usage 		= VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 						VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			.sharingMode 	= VK_SHARING_MODE_EXCLUSIVE,
@@ -104,13 +113,13 @@ namespace clz::renderer
 		VkMemoryRequirements iMemRequirements;
 		vkGetBufferMemoryRequirements(device, VertexBuffer, &vMemRequirements);
 		vkGetBufferMemoryRequirements(device, IndexBuffer, &iMemRequirements);
-		VertexBufferSize = vMemRequirements.size;
-		IndexBufferSize  = iMemRequirements.size;
+		VertexArenaTotalSize = vMemRequirements.size;
+		IndexArenaTotalSize   = iMemRequirements.size;
 	
 		const VkMemoryAllocateInfo vMemAllocInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.pNext = nullptr,
-			.allocationSize = VertexBufferSize,
+			.allocationSize = VertexArenaTotalSize,
 			.memoryTypeIndex = findMemoryType(
 				vMemRequirements.memoryTypeBits,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
@@ -119,7 +128,7 @@ namespace clz::renderer
 		const VkMemoryAllocateInfo iMemAllocInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.pNext = nullptr,
-			.allocationSize = IndexBufferSize,
+			.allocationSize = IndexArenaTotalSize,
 			.memoryTypeIndex = findMemoryType(
 				iMemRequirements.memoryTypeBits,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
@@ -250,7 +259,7 @@ namespace clz::renderer
 			return true;
 		}
 
-		if ((VertexBufferSize - VertexBufferNewStartIndex) < 
+		if ((VertexArenaTotalSize - VertexBufferNewStartIndex) < 
 			(pAllocInfo->size)) [[unlikely]]
 		{
 			clz::log::error("Vertex buffer memory is full, "
@@ -258,7 +267,7 @@ namespace clz::renderer
 			return false;
 		}
 
-		pVertexBuffer->memoryOffset = VertexBufferMemoryOffset;
+		pVertexBuffer->memoryOffset = VertexBufferNewStartIndex;
 		pVertexBuffer->size = pAllocInfo->size;
 
 		VertexBufferNewStartIndex += pAllocInfo->size;
@@ -335,7 +344,7 @@ namespace clz::renderer
 			return true;
 		}
 
-		if ((IndexBufferSize - IndexBufferNewStartIndex) < 
+		if ((IndexArenaTotalSize - IndexBufferNewStartIndex) < 
 			(pAllocInfo->size)) [[unlikely]]
 		{
 			clz::log::error("Index buffer memory is full, "
@@ -343,7 +352,7 @@ namespace clz::renderer
 			return false;
 		}
 
-		pIndexBuffer->memoryOffset = IndexBufferMemoryOffset + IndexBufferNewStartIndex;
+		pIndexBuffer->memoryOffset = IndexBufferNewStartIndex;
 		pIndexBuffer->size  = pAllocInfo->size;
 
 		IndexBufferNewStartIndex += pAllocInfo->size;
@@ -491,5 +500,262 @@ namespace clz::renderer
 		pIndexBuffer->memoryOffset = std::numeric_limits<VkDeviceSize>::max();
 		pIndexBuffer->size = 0;
 	}
+
+
+	/// @copydoc allocateUBOMemory
+	bool allocateUBOArenaMemory(
+		const VkDeviceSize uboArenaSize
+	)
+	{
+		CLZ_ASSERT(
+			uboArenaSize != 0, 
+			"UBO Arena size is passed to be 0. But it should not be 0 at all"
+		);
+
+		const VkDevice& device = r_deviceContext.device;
+
+		const VkBufferCreateInfo bufferCI{
+			.sType 		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			.pNext 		= nullptr,
+			.flags 		= 0,
+			.size  		= uboArenaSize,
+			.usage 		= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			.sharingMode 	= VK_SHARING_MODE_EXCLUSIVE,
+			.queueFamilyIndexCount = 0,
+			.pQueueFamilyIndices   = nullptr
+		};
+		const VkDeviceBufferMemoryRequirements bufferMemReq{
+			.sType = VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS,
+			.pNext = nullptr,
+			.pCreateInfo = &bufferCI
+		};
+
+		VkMemoryRequirements2 memRequirements{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
+			.pNext = nullptr
+		};
+		vkGetDeviceBufferMemoryRequirements(
+			device,
+			&bufferMemReq,
+			&memRequirements
+		);
+
+		const VkMemoryAllocateInfo memAllocInfo{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+			.pNext = nullptr,
+			.allocationSize = uboArenaSize,
+			.memoryTypeIndex = findMemoryType(
+				memRequirements.memoryRequirements.memoryTypeBits,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+					VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		};
+
+		if (vkAllocateMemory(
+				device,
+				&memAllocInfo,
+				nullptr,
+				&UBOArenaMemory
+		) != VK_SUCCESS)
+		{
+			clz::log::error(
+				"Vulkan could not allocate ubo arena memory", 
+				true
+			);
+			return false;
+		}
+
+		setHandleName(
+			reinterpret_cast<uint64_t>(UBOArenaMemory),
+			VK_OBJECT_TYPE_DEVICE_MEMORY,
+			"UBO arena memory"
+		);
+
+		UBOArenaTotalSize = uboArenaSize;
+		UBOMemoryNewStartIndex = 0;
+
+		return true;
+	}
+
+	/// @copydoc destroyUBOArenaMemory
+	void destroyUBOArenaMemory()
+	{
+		vkFreeMemory(
+			r_deviceContext.device,
+			UBOArenaMemory,
+			nullptr
+		);
+	}
+
+	/// @copydoc carveUBOMemory
+	bool carveUBOMemory(
+		const UBOMemoryAllocInfo& rAllocInfo,
+		clzUBOMemory& rUBOMemoryHandle
+	)
+	{
+		CLZ_ASSERT(
+			rAllocInfo.size != 0 && rAllocInfo.alignment != 0,
+			"Can't allocate a ubo memory of size 0 or alignment 0"
+		);
+
+		static const auto UBOAlignmentSize = [&](){
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(r_deviceContext.physicalDevice, &properties);
+			return properties.limits.minUniformBufferOffsetAlignment;
+		};
+
+		auto getNearestOffset = [alignment = rAllocInfo.alignment](
+						VkDeviceSize prvOffset
+					){
+						return (alignment + prvOffset - 1) & 
+							~(alignment - 1);
+					};
+
+		VkDeviceSize memToAllocate = getNearestOffset(rAllocInfo.size);
+
+		if (!UBOArenaGaps.empty() &&
+			UBOArenaGaps.back().getSize() >= memToAllocate)
+		{
+			auto it = std::lower_bound(
+					UBOArenaGaps.begin(),
+					UBOArenaGaps.end(),
+					memToAllocate,
+					[](const clzUBOMemory& uboMemory, VkDeviceSize size){
+						return uboMemory.getSize() < size;
+					}
+			);
+
+			CLZ_ASSERT(
+				it != UBOArenaGaps.end(),
+				"how is it == UBOArenaGaps.end()!!??"
+			);
+
+			////////////////////////////////////////////////////
+			/// HANDLE THE BELOW PART WELL
+
+			/// handle the case where gap found has aligned offset
+			if ((it->getMemoryOffset() & rAllocInfo.alignment) == 0)
+			{
+				rUBOMemoryHandle.set(it->getMemoryOffset(), memToAllocate);
+
+				/// was this gap literally equal to ubo's requirements
+				if (memToAllocate == it->getSize())
+				{
+					UBOArenaGaps.erase(it);
+					return true;
+				}
+
+				/// if no, then js reset the index and re-sort the buffer.
+				it->setMemoryOffset(it->getMemoryOffset() + memToAllocate);
+				it->setSize(it->getSize() - memToAllocate);
+				auto newPos = std::lower_bound(
+						UBOArenaGaps.begin(),
+						it,
+						it->getSize(),
+						[](const clzUBOMemory& uboMemory, VkDeviceSize size){
+							return uboMemory.getSize() < size;
+						}
+				);
+				std::reverse(newPos, it);
+				std::reverse(newPos, it + 1);
+				return true;
+			}
+
+			/// ok too bad memory ain't aligned.
+			/// let's just increment the operator until aligned memory is found.
+			for (auto g = it + 1; g != UBOArenaGaps.end(); ++g)
+			{
+			}
+
+			////////////////////////////////////////////////////
+
+
+
+
+
+			rUBOMemoryHandle.set(pOldPos->getMemoryOffset(), memToAllocate);
+			pOldPos->setMemoryOffset(
+				pOldPos->getMemoryOffset() + memToAllocate
+			);
+			pOldPos->setSize(
+				pOldPos->getSize() - memToAllocate
+			);
+
+			/// if new size is 0 now, remove it
+			if (pOldPos->getSize() == 0)
+			{
+				UBOArenaGaps.erase(pOldPos);
+				return true;
+			}
+
+			/// Sort the array again as per size.
+			auto pNewPos = std::lower_bound(
+						UBOArenaGaps.begin(),
+						pOldPos,
+						pOldPos->getSize(),
+						[](const clzUBOMemory& uboMemory, VkDeviceSize size){
+							return uboMemory.getSize() < size;
+						}
+					);
+
+			/// if it turned out to be same position, bail out.
+			if (pOldPos == pNewPos)
+			{
+				return true;
+			}
+
+			/// finally sort the array
+			std::reverse(pNewPos, pOldPos);
+			std::reverse(pNewPos, pOldPos + 1);
+			return true;
+		}
+
+		/// It is always made sure that every ubo respects ubo alignments.
+		/// for that reasons it might store more memory than it needs to.
+		/// This is done so that any new allocations can be started easily.
+		if ((UBOArenaTotalSize - UBOMemoryNewStartIndex) < 
+			(memToAllocate)) [[unlikely]]
+		{
+			clz::log::error("ubo memory is full, "
+					"could not allocate more memory");
+			return false;
+		}
+
+		/// handle the case where current pointer index is not aligned as per buffer's requirements.
+		if (UBOMemoryNewStartIndex % rAllocInfo.alignment != 0)
+		{
+			const auto newStartIndex = (rAllocInfo.alignment + UBOMemoryNewStartIndex - 1) & 
+							~(rAllocInfo.alignment - 1);
+			rUBOMemoryHandle.set(newStartIndex, memToAllocate);
+			clzUBOMemory gap;
+			gap.set(UBOMemoryNewStartIndex, newStartIndex - UBOMemoryNewStartIndex);
+			auto it = std::lower_bound(
+					UBOArenaGaps.begin(),
+					UBOArenaGaps.end(),
+					gap.getSize(),
+					[](const clzUBOMemory& uboMemory, VkDeviceSize size){
+						return uboMemory.getSize() < size;
+					}
+			);
+			UBOArenaGaps.insert(it, gap);
+			UBOMemoryNewStartIndex = newStartIndex;
+
+			return true;
+		}
+
+		rUBOMemoryHandle.set(UBOMemoryNewStartIndex, memToAllocate);
+		UBOMemoryNewStartIndex += memToAllocate;
+
+		return true;
+	}
+
+	/// @copydoc freeUBOMemory
+	void freeUBOMemory(
+		clzUBOMemory& uboMemoryHandle
+	)
+	{
+		auto rightIt
+	}
+	
+
 
 }
