@@ -17,11 +17,11 @@ triple_buffering = true
 
     [renderer.post_process]
     bloom_filter_radius = 0.004999999888241291
-    bloom_strength = 0.21400000154972076
-    ca_edgefade_far = 0.67699998617172241
-    ca_edgefade_near = 0.39599999785423279
+    bloom_strength = 0.1120000034570694
+    ca_edgefade_far = 0.69900000095367432
+    ca_edgefade_near = 0.55400002002716064
     chromatic_aberration = 0.0
-    exposure = 1.0
+    exposure = 1.5
     vignette_far = 2.0
     vignette_near = 0.34299999475479126
 

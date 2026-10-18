@@ -12,21 +12,7 @@
 
 namespace clz::renderer
 {
-	inline std::optional<VkDeviceSize> UBOOffsetAlignment;
 	inline std::optional<VkDeviceSize> SSBOOffsetAlignment;
-
-	inline VkDeviceSize getNextUBOOffsetAlignment(const VkDeviceSize prvOffset)
-	{
-		if (!UBOOffsetAlignment.has_value())
-		{
-			VkPhysicalDeviceProperties properties;
-			vkGetPhysicalDeviceProperties(r_deviceContext.physicalDevice, &properties);
-			UBOOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
-		}
-
-		return (UBOOffsetAlignment.value() + prvOffset - 1) &
-		       ~(UBOOffsetAlignment.value() - 1);
-	}
 	inline VkDeviceSize getNextSSBOOffsetAlignment(const VkDeviceSize prvOffset)
 	{
 		if (!SSBOOffsetAlignment.has_value())

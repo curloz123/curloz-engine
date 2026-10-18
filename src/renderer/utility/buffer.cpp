@@ -11,6 +11,7 @@
 #include "core/logs.hpp"
 #include "renderer/utility/memory.hpp"
 #include "renderer/vk_types.hpp"
+#include "renderer/utility/namer.hpp"
 
 namespace clz::renderer
 {
@@ -54,6 +55,7 @@ namespace clz::renderer
 		}
 
 		vkBindBufferMemory(device, buffer, bufferMemory, 0);
+
 		return true;
 	}
 
