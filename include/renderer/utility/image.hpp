@@ -9,6 +9,7 @@
 #include <vulkan/vulkan.h>
 #include <expected>
 #include <span>
+#include "../arena.hpp"
 
 namespace clz::renderer
 {
@@ -56,6 +57,7 @@ namespace clz::renderer
 	 * @brief Creates an image
 	 *
 	 * @param rImage Reference of image to create
+	 * @param imageType Type of image it is.
 	 * @param name Name of the image, required for debugging purposes
 	 * @param width Extent.width of image
 	 * @param height Extent.height of image
@@ -63,7 +65,8 @@ namespace clz::renderer
 	 * @param tiling Optimal or linear??
 	 * @param usage Usage flags
 	 * @param flags which flags are these again??
-	 * @param Number of mipmaps to generate. If you are passing a value more than 1, be sure to add TRANSFER_SRC_BIT usage flag to flags parameter.
+	 * @param Number of mipmaps to generate. If you are passing a value more than 1,
+	 * be sure to add TRANSFER_SRC_BIT usage flag to flags parameter.
 	 * @param sampleCountFlagBits MSAA level of this image. By default set to 1x.
 	 * @return True if successful, false if not
 	 */

@@ -21,6 +21,7 @@
 #include "renderer/postprocess/post_process.hpp"
 #include "window/window.hpp"
 #include <vector>
+#include <renderer/arena.hpp>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/editor.hpp"
@@ -41,6 +42,9 @@ namespace clz::renderer
 
 		/// --- Parse config data --- ///
 		parseConfigData();
+
+		/// --- Initialize memory arena --- ///
+		allocateVkArenaMemory(VkArenaDef());
 
 		/// --- Rest context's --- ///
 		if (!initCommandContext())
@@ -166,7 +170,10 @@ namespace clz::renderer
 		destroyCommandContext();
 		destroyDeviceContext();
 
-		/// --- write back config data
+		/// --- Close memory arena --- ///
+		destroyVkArenaMemory();
+
+		/// --- write back config data --- ///
 		writeBackConfigData();
 
 		clz::log::info("renderer shutdown completed");
