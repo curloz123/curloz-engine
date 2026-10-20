@@ -17,67 +17,59 @@
 
 namespace clz::renderer
 {
-
-	/**
-	 * @brief Raw Vulkan handles backing a UBO.
-	 *
-	 * Kept separate from UBO itself so the handle/memory lifetime can be
-	 * managed independently of the logical per-frame offset bookkeeping.
-	 */
-	struct UBOMemory
+	///< @brief Uniform buffer creation info.
+	typedef struct uboCreateInfo
 	{
-		VkBuffer buffer = VK_NULL_HANDLE;	 ///< Single buffer covering all frames-in-flight regions.
-		VkDeviceMemory memory = VK_NULL_HANDLE; ///< Backing device memory for @c buffer.
-		void* mappedMemory = nullptr;		 ///< Persistently mapped pointer to the whole buffer.
-		VkDeviceSize memorySize = 0;		 ///< Total size of @c buffer, across all frame regions.
+		///< Size in bytes of a single frame's worth of data.
+		VkDeviceSize size;
 
-		UBOMemory() = default;
-	};
+		///< Descriptor binding point this UBO is bound to.
+		std::uint32_t bindPoint;
+	} UniformBufferCreateInfo;
 
-	/**
-	 * @brief Logical view over a UBOMemory — per-frame offsets and
-	 * mapped-pointer shortcuts.
-	 */
+
+	/// @brief Engine's internal Uniform buffer handle.
 	struct UBO
 	{
-		VkDeviceSize uboSize;		  ///< Size in bytes of a single frame's worth of data.
-		uint32_t uboBindingPoint;	  ///< Descriptor binding point this UBO is bound to.
-		std::vector<VkDeviceSize> offsets; ///< Byte offset of each frame's region within the buffer.
-		std::vector<void*> mapped;	  ///< mapped[i] = base mappedMemory + offsets[i], one per frame in flight.
+		///< mapped[i] = base mappedMemory + offsets[i].
+		std::vector<void*> mapped;	  
 
-		/**
-		 * @brief Constructs a UBO descriptor (does not allocate GPU memory).
-		 * @param uboSize Size in bytes needed per frame's copy of the data.
-		 * @param uboBindingPoint Descriptor set binding index for this UBO.
-		 * @note Call createUniformBuffer afterward to actually allocate and
-		 * map the backing buffer.
-		 */
-		explicit UBO(const VkDeviceSize uboSize, const uint32_t uboBindingPoint)
-		    : uboSize(uboSize), uboBindingPoint(uboBindingPoint), offsets({}), mapped({})
-		{
-		}
+		///< offsets of each frame's data in memory.
+		std::vector<VkDeviceSize> offsets;
+
+		///< Size of a single frame's data.
+		VkDeviceSize uboSize;
+
+		///< Descriptor binding point this UBO is bound to.
+		uint32_t uboBindingPoint;
+
+		///< Single buffer covering all frames-in-flight regions.
+		VkBuffer buffer = VK_NULL_HANDLE;
+
+		///< UBO memory
+		clzUBOMemory memory;
 	};
 
 	/**
-	 * @brief Allocates, maps, and names the Vulkan buffer backing @p rUBO.
-	 *
-	 * Computes per-frame offsets (respecting UBO alignment requirements),
-	 * allocates a single host-visible/coherent buffer sized to hold all
-	 * r_FRAMES_IN_FLIGHT regions, and persistently maps it.
-	 *
-	 * @param rUBO Logical UBO descriptor; its offsets/mapped are populated.
-	 * @param rUBOMemory Output — receives the created buffer/memory handles.
+	 * @brief Creates a uniform buffer.
+	 * @param uboCreateInfo Uniform buffer creation info struct.
+	 * @param rUBO reference to the 'to be created' ubo.
 	 * @param bufferName Debug name applied to the Vulkan objects.
 	 * @return true on success, false if buffer creation failed.
 	 */
-	bool createUniformBuffer(UBO& rUBO, UBOMemory& rUBOMemory, const std::string& bufferName);
+	bool createUniformBuffer(
+		const UniformBufferCreateInfo& uboCreateInfo,
+		UBO& rUBO,
+		const std::string& bufferName
+	);
 
 	/**
-	 * @brief Destroys the buffer/memory backing @p rUBOMemory and clears
-	 * @p rUBO's per-frame bookkeeping.
-	 * @param rUBO UBO whose offsets/mapped vectors get cleared.
-	 * @param rUBOMemory Buffer/memory to destroy and free.
+	 * @brief Destroys a uniform buffer
+	 * @param rUBO Reference of ubo to destroy.
+	 * @param explicitDestroy Flag which specifies whether to destroy
+	 * all ubo resources on the spot. Is kind of slow, so false by default.
+	 * Dw will be destroyed automatically.
 	 */
-	void destroyUniformBuffer(UBO& rUBO, UBOMemory& rUBOMemory);
+	void destroyUniformBuffer(UBO& rUBO, const bool explicitDestroy = false);
 
 } // namespace clz::renderer

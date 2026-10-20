@@ -14,8 +14,13 @@ namespace clz::renderer
 {
 	bool initCameraDescriptor()
 	{
+		UniformBufferCreateInfo uboCI
+		{
+			.size = sizeof(CameraShaderUBO),
+			.bindPoint = CAMERA_BIND_POINT,
+		};
 		/// Creating UBO
-		if (!createUniformBuffer(cameraUBO, cameraUBOMemory, "camera uniform buffer"))
+		if (!createUniformBuffer(uboCI, cameraUBO, "camera uniform buffer"))
 		{
 			clz::log::error("Could not create camera uniform buffers!");
 		}
@@ -51,7 +56,7 @@ namespace clz::renderer
 	void destroyCameraDescriptor()
 	{
 		destroyDescriptorSetLayout(cameraDescriptorLayout);
-		destroyUniformBuffer(cameraUBO, cameraUBOMemory);
+		destroyUniformBuffer(cameraUBO);
 	}
 
 } // namespace clz::renderer

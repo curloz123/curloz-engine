@@ -14,6 +14,8 @@
 #include <vector>
 #include <array>
 #include <string>
+#include "core/assert.hpp"
+#include "renderer/vk_types.hpp"
 
 namespace clz::renderer
 {
@@ -30,8 +32,6 @@ namespace clz::renderer
 		///< Memory to be allocated for SSBO's.
 		VkDeviceSize SSBOArenaSize = 20 * 1024 * 1024;
 
-		///< Memory to be allocated for swapchain images
-		VkDeviceSize SwapchainImagesArenaSize = 100 * 1024 * 1024;
 		///< Memory to be allocated for canvas images.
 		VkDeviceSize CanvasImagesArenaSize = 150 * 1024 * 1024;
 		///< Memory to be allocated for depth images.
@@ -319,7 +319,7 @@ namespace clz::renderer
 	///< @brief Main UBO memory handle.
 	inline VkDeviceMemory UBOArenaMemory = 0;
 	///< @brief Mapped pointer to UBO arena memory.
-	inline void* UBOArenaMapped = nullptr;
+	inline std::byte* UBOArenaMapped = nullptr;
 	///< @brief UBO memory total size.
 	inline VkDeviceSize UBOArenaTotalSize = 0;
 	///< @brief UBOMemoryNewStartIndex.
@@ -375,6 +375,16 @@ namespace clz::renderer
 		clzUBOMemory& rUBOMemoryHandle
 	);
 
+	/**
+	 * @brief Retrieves vulkan's mapped pointer to a uniform buffer object.
+	 * @param rUBOMemoryHandle Const reference to UBO memory handle.
+	 * @retrurn std::byte* pointing towards memory.
+	 */
+	inline std::byte* getUBOMappedPointer(const clzUBOMemory& rUBOMemoryHandle)
+	{
+		return UBOArenaMapped + rUBOMemoryHandle.getMemoryOffset();
+	}
+
 	/***************************/
 	/********* 2. SSBO *********/
 	/***************************/
@@ -382,7 +392,7 @@ namespace clz::renderer
 	///< @brief Main SSBO memory handle.
 	inline VkDeviceMemory SSBOArenaMemory = VK_NULL_HANDLE;
 	///< @brief Mapped pointer to the whole SSBO arena.
-	inline void* SSBOArenaMapped = nullptr;
+	inline std::byte* SSBOArenaMapped = nullptr;
 	///< @brief SSBO arena total size in bytes.
 	inline VkDeviceSize SSBOArenaTotalSize = 0;
 	///< @brief Offset from which fresh (never used) memory can be carved.
@@ -433,6 +443,16 @@ namespace clz::renderer
 	 */
 	void freeSSBOMemory(clzSSBOMemory& rSSBOMemoryHandle);
 
+	/**
+	 * @brief Retrieves vulkan's mapped pointer to a storage buffer object.
+	 * @param rSSBOMemoryHandle Const reference to SSBO memory handle.
+	 * @retrurn std::byte* pointing towards memory.
+	 */
+	inline std::byte* getSSBOMappedPointer(const clzSSBOMemory& rSSBOMemoryHandle)
+	{
+		return SSBOArenaMapped + rSSBOMemoryHandle.getMemoryOffset();
+	}
+
 
 
 	/*****************************/
@@ -446,16 +466,15 @@ namespace clz::renderer
 	 * has been made, each tending the needs of a
 	 * particular type of images.
 	 * As of now, this supports:
-	 * 1. Swapchain
-	 * 2. Canvas images (post process images,
+	 * 1. Canvas images (post process images,
 	 *			render target,
 	 *			editor images, etc.)
 	 *	Basically anything which is to be used
 	 *	by shaders, maybe to draw on or read etc..
 	 *	MSAA images don't come under this.
-	 * 3. Depth images
-	 * 4. MSAA images
-	 * 5. Textures of assets
+	 * 2. Depth images
+	 * 3. MSAA images
+	 * 4. Textures of assets
 	 *
 	 * And there is one global (hard-coded sized) array
 	 * which holds all arenas and is indexed by ImageType enum.
@@ -466,11 +485,10 @@ namespace clz::renderer
 	///< These also indicate the index of image type in array.
 	enum class ImageType : std::uint8_t
 	{
-		SWAPCHAIN	= 0,
-		CANVAS		= 1,
-		DEPTH		= 2,
-		MULTISAMPLED	= 3,
-		TEXTURE		= 4,
+		CANVAS		= 0,
+		DEPTH		= 1,
+		MULTISAMPLED	= 2,
+		TEXTURE		= 3,
 	};
 
 	///< @brief Engine's internal image memory handle.
@@ -576,6 +594,12 @@ namespace clz::renderer
 		 * @note The handle passed will be null after passing to this func.
 		 */
 		void freeMemory(clzImageMemory& rImageMemory);
+
+		/// @brief Retrieves the raw handle to memory.
+		const VkDeviceMemory& getRawMemoryHandle() const
+		{
+			return m_arenaMemory;
+		}
 	};
 
 	///< @brief Global array holding all the image memory arenas.
@@ -587,14 +611,14 @@ namespace clz::renderer
 
 
 	/**
-	 * @brief Carves memory from the arena.
+	 * @brief Carves image memory from the arena.
 	 * @param imageType The type of image we're trynna create.
 	 * @param rAllocInfo const reference to
 	 * image memory allocation info struct.
 	 * @param rImageMemory handle which will hold this memory.
 	 * @return true on success, false otherwise.
 	 */
-	inline bool carveMemory(
+	inline bool carveImageMemory(
 		const ImageMemoryAllocInfo& rAllocInfo,
 		clzImageMemory& rImageMemory
 	)
@@ -608,25 +632,54 @@ namespace clz::renderer
 	}
 
 	/**
-	 * @brief Frees memory in arena.
+	 * @brief Frees image memory in arena.
 	 * Is not a cheap process, so don't go gung-ho
 	 * and free every frame.
 	 * @param imageType The type of image we're trynna create.
 	 * @param Reference to memory handle.
 	 * @note The handle passed will be null after passing to this func.
 	 */
-	inline void freeMemory(clzImageMemory& rImageMemory)
+	inline void freeImageMemory(clzImageMemory& rImageMemory)
 	{
-#ifdef CLZ_ENABLE_CHECKS
+
+#ifdef CLZ_ENABLE_CHECKS /*****************************************/
 		CLZ_ASSERT(
 			!rImageMemory.isNull(),
 			"Cannot free a null image memory handle"
 		);
-#endif
+#endif /***********************************************************/
+
 		ImageMemoryArenas[static_cast<size_t>(
 			rImageMemory.m_imageType)].freeMemory(
 				rImageMemory
 			);
+	}
+
+	/**
+	 * @brief Helper function that binds memory to any image from arena.
+	 * @param rImage Reference to vulkan image handle.
+	 * @param rImageMemory Reference to image memory handle.
+	 */
+	inline void bindImageMemory(
+		VkImage& rImage,
+		const clzImageMemory& rImageMemory
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS /***************************************************/
+		CLZ_ASSERT(
+			!rImageMemory.isNull(),
+			"Attempt to bind null memory handle to an image"
+		);
+#endif /*********************************************************************/
+
+		const auto& imageArena =
+			ImageMemoryArenas[static_cast<size_t>(rImageMemory.m_imageType)];
+		vkBindImageMemory(
+			r_deviceContext.device,
+			rImage,
+			imageArena.getRawMemoryHandle(),
+			rImageMemory.getMemoryOffset()
+		);
 	}
 
 }

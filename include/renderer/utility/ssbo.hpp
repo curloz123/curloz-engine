@@ -13,66 +13,62 @@
 #include <string_view>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "../arena.hpp"
 
 namespace clz::renderer
 {
-
-	/**
-	 * @brief Raw Vulkan handles backing an SSBO.
-	 * @see UBOMemory — same role, storage-buffer variant.
-	 */
-	struct SSBOMemory
+	///< @brief Storage buffer creation info.
+	typedef struct ssboCreateInfo
 	{
-		VkBuffer buffer = VK_NULL_HANDLE;	 ///< Single buffer covering all frames-in-flight regions.
-		VkDeviceMemory memory = VK_NULL_HANDLE; ///< Backing device memory for @c buffer.
-		void* mappedMemory = nullptr;		 ///< Persistently mapped pointer to the whole buffer.
-		VkDeviceSize memorySize = 0;		 ///< Total size of @c buffer, across all frame regions.
+		///< Size in bytes of a single frame's worth of data.
+		VkDeviceSize size;
 
-		SSBOMemory() = default;
-	};
+		///< Descriptor binding point this SSBO is bound to.
+		uint32_t bindPoint;
+	} StorageBufferCreateInfo;
 
-	/**
-	 * @brief Logical view over an SSBOMemory — per-frame offsets and
-	 * mapped-pointer shortcuts.
-	 * @see UBO — same role, storage-buffer variant.
-	 */
+
+	/// @brief Engine's internal Storage buffer handle.
 	struct SSBO
 	{
-		VkDeviceSize ssboSize;		    ///< Size in bytes of a single frame's worth of data.
-		uint32_t ssboBindingPoint;	    ///< Descriptor binding point this SSBO is bound to.
-		std::vector<VkDeviceSize> offsets; ///< Byte offset of each frame's region within the buffer.
-		std::vector<void*> mapped;	    ///< mapped[i] = base mappedMemory + offsets[i], one per frame in flight.
+		///< mapped[i] = base mappedMemory + offsets[i].
+		std::vector<void*> mapped;	  
 
-		/**
-		 * @brief Constructs an SSBO descriptor (does not allocate GPU memory).
-		 * @param ssboSize Size in bytes needed per frame's copy of the data.
-		 * @param ssboBindingPoint Descriptor set binding index for this SSBO.
-		 * @note Call createStorageBuffer afterward to actually allocate and
-		 * map the backing buffer.
-		 */
-		explicit SSBO(const VkDeviceSize ssboSize, const uint32_t ssboBindingPoint)
-		    : ssboSize(ssboSize), ssboBindingPoint(ssboBindingPoint), offsets({}),
-		      mapped({})
-		{
-		}
+		///< offsets of each frame's data in memory.
+		std::vector<VkDeviceSize> offsets;
+
+		///< Size of a single frame's data.
+		VkDeviceSize ssboSize;
+
+		///< Descriptor binding point this UBO is bound to.
+		uint32_t ssboBindingPoint;
+
+		///< Single buffer covering all frames-in-flight regions.
+		VkBuffer buffer = VK_NULL_HANDLE;
+
+		///< SSBO memory
+		clzSSBOMemory memory;
 	};
 
 	/**
-	 * @brief Allocates, maps, and names the Vulkan buffer backing @p rSSBO.
-	 * @see createUniformBuffer — identical behaviour, storage-buffer variant.
-	 * @param rSSBO Logical SSBO descriptor; its offsets/mapped are populated.
-	 * @param rSSBOMemory Output — receives the created buffer/memory handles.
+	 * @brief Creates a storage buffer.
+	 * @param ssboCreateInfo Storage buffer creation info struct.
+	 * @param rSSBO reference to the 'to be created' ssbo.
 	 * @param bufferName Debug name applied to the Vulkan objects.
 	 * @return true on success, false if buffer creation failed.
 	 */
-	bool createStorageBuffer(SSBO& rSSBO, SSBOMemory& rSSBOMemory, std::string_view bufferName);
+	bool createStorageBuffer(
+		const StorageBufferCreateInfo& ssboCreateInfo,
+		SSBO& rSSBO,
+		const std::string& bufferName
+	);
 
 	/**
-	 * @brief Destroys the buffer/memory backing @p rSSBOMemory and clears
-	 * @p rSSBO's per-frame bookkeeping.
-	 * @param rSSBO SSBO whose offsets/mapped vectors get cleared.
-	 * @param rSSBOMemory Buffer/memory to destroy and free.
+	 * @brief Destroys a storage buffer
+	 * @param rSSBO Reference of ssbo to destroy.
+	 * @param explicitDestroy Flag which specifies whether to destroy
+	 * all ubo resources on the spot. Is kind of slow, so false by default.
+	 * Dw will be destroyed automatically.
 	 */
-	void destroyStorageBuffer(SSBO& rSSBO, SSBOMemory& rSSBOMemory);
-
+	void destroyStorageBuffer(SSBO& rSSBO, const bool explicitDestroy = false);
 } // namespace clz::renderer

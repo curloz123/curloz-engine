@@ -8,6 +8,7 @@
 #include "math/mat4x4.hpp"
 #include "math/vec4.hpp"
 #include "renderer/utility/ubo.hpp"
+#include "../arena.hpp"
 
 namespace clz::renderer
 {
@@ -15,8 +16,6 @@ namespace clz::renderer
 	inline constexpr uint8_t CAMERA_SET_POINT = 0;
 	/// @brief Camera bind point in main shader
 	inline constexpr uint8_t CAMERA_BIND_POINT = 0;
-	/// @brief Camera's UBO memory
-	inline UBOMemory cameraUBOMemory{};
 	/// @brief Camera's descriptor set layout
 	inline VkDescriptorSetLayout cameraDescriptorLayout = VK_NULL_HANDLE;
 	/// @struct CameraShaderUBO
@@ -28,7 +27,7 @@ namespace clz::renderer
 		math::vec4 cameraPos;
 	};
 	/// @brief Camera's UBO handle
-	inline UBO cameraUBO(sizeof(CameraShaderUBO), CAMERA_BIND_POINT);
+	inline UBO cameraUBO;
 
 } // namespace clz::renderer
 

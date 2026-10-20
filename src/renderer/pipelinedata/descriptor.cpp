@@ -199,7 +199,7 @@ namespace clz::renderer
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
 			VkDescriptorBufferInfo cameraInfo = {};
-			cameraInfo.buffer = cameraUBOMemory.buffer;
+			cameraInfo.buffer = cameraUBO.buffer;
 			cameraInfo.offset = cameraUBO.offsets[i];
 			cameraInfo.range = cameraUBO.uboSize;
 
@@ -225,7 +225,7 @@ namespace clz::renderer
 
 			// light data
 			VkDescriptorBufferInfo dataInfo = {};
-			dataInfo.buffer = lightDataUBOMemory.buffer;
+			dataInfo.buffer = lightDataUBO.buffer;
 			dataInfo.offset = lightDataUBO.offsets[i];
 			dataInfo.range = lightDataUBO.uboSize;
 
@@ -238,10 +238,10 @@ namespace clz::renderer
 			lightDataWrite.descriptorCount = 1;
 			lightDataWrite.pBufferInfo = &dataInfo;
 
-			lightWrites.push_back(lightDataWrite);
+			lightWrites.emplace_back(lightDataWrite);
 			/// directional light
 			VkDescriptorBufferInfo lightInfo = {};
-			lightInfo.buffer = dirUBOMemory.buffer;
+			lightInfo.buffer = dirUBO.buffer;
 			lightInfo.offset = dirUBO.offsets[i];
 			lightInfo.range = dirUBO.uboSize;
 
@@ -254,11 +254,11 @@ namespace clz::renderer
 			lightWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			lightWrite.pBufferInfo = &lightInfo;
 
-			lightWrites.push_back(lightWrite);
+			lightWrites.emplace_back(lightWrite);
 
 			/// point light
 			VkDescriptorBufferInfo pointLightInfo = {};
-			pointLightInfo.buffer = pointSSBOMemory.buffer;
+			pointLightInfo.buffer = pointSSBO.buffer;
 			pointLightInfo.offset = pointSSBO.offsets[i];
 			pointLightInfo.range = pointSSBO.ssboSize;
 
@@ -271,8 +271,7 @@ namespace clz::renderer
 			pointLightWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			pointLightWrite.pBufferInfo = &pointLightInfo;
 
-			lightWrites.push_back(pointLightWrite);
-
+			lightWrites.emplace_back(pointLightWrite);
 
 			vkUpdateDescriptorSets(
 				r_deviceContext.device,

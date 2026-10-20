@@ -35,29 +35,17 @@ namespace clz::renderer
 		uint32_t numSpotLights;
 	};
 
-	/// @brief Light's descriptor UBO's memory
-	inline UBOMemory lightDataUBOMemory{};
-	/// @brief Light data UBO Bind point
 	inline constexpr uint8_t LIGHT_DATA_BIND_POINT = 0;
 	/// @brief Light Data shader UBO
-	inline UBO lightDataUBO(sizeof(ShaderLightData), LIGHT_DATA_BIND_POINT);
+	inline UBO lightDataUBO;
 
-	/// @brief Directional light UBO Memory
-	inline UBOMemory dirUBOMemory{};
-	/// @brief Directional light's bind point
 	inline constexpr uint8_t DIR_LIGHT_BIND_POINT = 1;
 	/// @brief Directional light's UBO
-	inline UBO dirUBO(sizeof(DirectionalLight), DIR_LIGHT_BIND_POINT);
+	inline UBO dirUBO;
 
-	/// @brief Point light's SSBO memory
-	inline SSBOMemory pointSSBOMemory;
-	/// @brief Point light's SSBO bind point
 	inline constexpr uint8_t POINT_LIGHT_BIND_POINT = 2;
 	/// @brief Actual Point light's SSBO
-	inline SSBO pointSSBO(
-		sizeof(PointLight) * MAX_POINT_LIGHTS,
-		POINT_LIGHT_BIND_POINT
-	);
+	inline SSBO pointSSBO;
 
 } // namespace clz::renderer
 

@@ -15,10 +15,17 @@ namespace clz::renderer::post_process
 	/// @param width New width of post_process images
 	/// @param height New height of post_process images
 	/// @return True on success, false otherwise
-	bool initializePostProcesses(std::uint32_t width, std::uint32_t height);
+	bool initializePostProcesses(
+		std::uint32_t width,
+		std::uint32_t height
+	);
 
 	/// @brief Destroy's post processes resources
-	void destroyPostProcesses();
+	/// @param isRecreating Flag which hints whether resources are being recreated,
+	/// or simply init and dest. False by default.
+	void destroyPostProcesses(
+		const bool isRecreating = false
+	);
 
 	/// @brief Recreates post processes resources
 	/// @param width New width of post_process images

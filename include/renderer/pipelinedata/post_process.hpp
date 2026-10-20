@@ -55,10 +55,6 @@ namespace clz::renderer
 	/// @warning To be called only called after Post process system has been initialized
 	void updatePostProcessDescriptorSets();
 
-	/// @brief Hint's post process system that engine's state has changed
-	/// mainly used to update the descriptor sets about everything
-	void hintPostProcessStateChange();
-
 	/// @brief Destroy's all post process descriptor sets
 	void destroyPostProcessDescriptor();
 }

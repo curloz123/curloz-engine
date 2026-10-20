@@ -11,6 +11,7 @@
 
 #include <vulkan/vulkan.h>
 #include <cstdint>
+#include "../arena.hpp"
 
 namespace clz::renderer::post_process
 {
@@ -33,7 +34,7 @@ namespace clz::renderer::post_process
         inline VkSampler tonemapSampler;
 
         /// @brief The device memory allocated for the tonemap image.
-        inline VkDeviceMemory tonemapMemory;
+        inline clzImageMemory tonemapMemory;
 
         /**
          * @brief Initializes and allocates all Vulkan resources required for the tonemap pass.
@@ -45,8 +46,10 @@ namespace clz::renderer::post_process
 
         /**
          * @brief Destroys and frees all Vulkan resources associated with the tonemap pass.
+	 * @param isRecreating Denotes whether resources are being recreated on just poof, deleted.
+	 * Is false by default.
          */
-        void destroyTonemapProcess();
+        void destroyTonemapProcess(const bool isRecreating = false);
 
         /**
          * @brief Records the Vulkan commands to execute the tonemap pass.

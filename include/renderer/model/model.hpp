@@ -83,7 +83,6 @@ namespace clz::renderer
 		size_t normalColorTextureIndex;
 		/// @brief normal color sampler
 		SamplerData normalSampelerData;
-		
 	};
 
 	/**

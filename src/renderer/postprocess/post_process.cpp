@@ -18,12 +18,6 @@ namespace clz::renderer::post_process
 	/// @copydoc initializePostProcesses
 	bool initializePostProcesses(const std::uint32_t width, const std::uint32_t height)
 	{
-		if (!createBloomSampleProcess(width, height))
-		{
-			clz::log::error("failed to create bloom sample process");
-			return false;
-		}
-		
 		if (!createBloomProcess(width, height))
 		{
 			clz::log::error("failed to create bloom process");
@@ -48,12 +42,11 @@ namespace clz::renderer::post_process
 	}
 
 	/// @copydoc destroyPostProcesses
-	void destroyPostProcesses()
+	void destroyPostProcesses(const bool isRecreating)
 	{
-		destroyPostTonemapProcess();
-		destroyTonemapProcess();
-		destroyBloomProcess();
-		destroyBloomSampleProcess();
+		destroyPostTonemapProcess(isRecreating);
+		destroyTonemapProcess(isRecreating);
+		destroyBloomProcess(isRecreating);
 	}
 
 	/// @copydoc recreatePostProcesses
@@ -61,7 +54,8 @@ namespace clz::renderer::post_process
 	{
 		vkDeviceWaitIdle(r_deviceContext.device);
 
-		destroyPostProcesses();
+		const bool isRecreating = true;
+		destroyPostProcesses(isRecreating);
 
 		if (!initializePostProcesses(width, height))
 		{

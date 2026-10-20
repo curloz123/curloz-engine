@@ -59,9 +59,3 @@ namespace clz::renderer
 	/// @brief Per-camera flag to avoid a mouse-delta snap on first use.
 	inline std::vector<bool> FirstTime;
 } // namespace clz::renderer
-
-/// --- helper functions
-namespace clz::renderer
-{
-
-}

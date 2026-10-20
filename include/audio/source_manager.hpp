@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include "al.h"
 #include "core/id_interface.hpp"
 #include "native.hpp"
 #include "core/logs.hpp"
 #include <cstdint>
 #include <vector>
+#include <array>
 #include "math/vec3.hpp"
 #include "buffer_manager.hpp"
 
@@ -172,7 +172,7 @@ namespace clz::audio
 			return;
 		}
 
-		const ALuint source = au_sourcesLUT[sourceId.getId()];
+		ALuint source = au_sourcesLUT[sourceId.getId()];
 		alSourceStop(source);
 		alSourcei(source, AL_BUFFER, au_bufferLUT[bufferId.getId()]);
 		alSourcePlay(source);

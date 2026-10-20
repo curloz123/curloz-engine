@@ -43,22 +43,6 @@ namespace clz::renderer
 		}
 
 		if (!ImageMemoryArenas[static_cast<size_t>(
-			ImageType::SWAPCHAIN)].initialize(
-				"Swapchain",
-				arenaDef.SwapchainImagesArenaSize,
-				VK_FORMAT_B8G8R8A8_SRGB,
-				1,
-				VK_SAMPLE_COUNT_1_BIT,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-					VK_IMAGE_USAGE_TRANSFER_DST_BIT
-			)
-		)
-		{
-			clz::log::error("Unable to allocate image memory arena for swapchain", true);
-			return false;
-		}
-		if (!ImageMemoryArenas[static_cast<size_t>(
 			ImageType::CANVAS)].initialize(
 				"Canvas",
 				arenaDef.CanvasImagesArenaSize,
@@ -715,7 +699,7 @@ namespace clz::renderer
 			0,
 			VK_WHOLE_SIZE,
 			0,
-			&UBOArenaMapped
+			reinterpret_cast<void**>(&UBOArenaMapped)
 		) != VK_SUCCESS)
 		{
 			log::error(
@@ -1058,7 +1042,7 @@ namespace clz::renderer
 			    0,
 			    VK_WHOLE_SIZE,
 			    0,
-			    &SSBOArenaMapped
+			    reinterpret_cast<void**>(&SSBOArenaMapped)
 		) != VK_SUCCESS)
 		{
 			clz::log::error("Could not map ssbo arena memory", true);

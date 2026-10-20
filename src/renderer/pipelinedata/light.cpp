@@ -19,19 +19,31 @@ namespace clz::renderer
 	{
 		/// --- 1. Creating storages ---
 
-		if (!createUniformBuffer(lightDataUBO, lightDataUBOMemory, "light data ubo"))
+		UniformBufferCreateInfo lightDataCI{
+			.size = sizeof(ShaderLightData),
+			.bindPoint = LIGHT_DATA_BIND_POINT
+		};
+		if (!createUniformBuffer(lightDataCI, lightDataUBO, "light data ubo"))
 		{
 			clz::log::error("could not create light data ubo buffer");
 			return false;
 		}
 
-		if (!createUniformBuffer(dirUBO, dirUBOMemory, "directional light ubo"))
+		UniformBufferCreateInfo dirLightCI{
+			.size = sizeof(DirectionalLight),
+			.bindPoint = DIR_LIGHT_BIND_POINT
+		};
+		if (!createUniformBuffer(dirLightCI, dirUBO, "directional light ubo"))
 		{
 			clz::log::error("could not create directional light uniform buffer");
 			return false;
 		}
 
-		if (!createStorageBuffer(pointSSBO, pointSSBOMemory, "point light ssbo"))
+		StorageBufferCreateInfo pointLightCI{
+			.size = sizeof(PointLight),
+			.bindPoint = POINT_LIGHT_BIND_POINT
+		};
+		if (!createStorageBuffer(pointLightCI, pointSSBO, "point light ssbo"))
 		{
 			clz::log::error("could not create point light ssbo buffer");
 			return false;
@@ -112,8 +124,8 @@ namespace clz::renderer
 	void destroyLightDescriptor()
 	{
 		destroyDescriptorSetLayout(lightDescriptorLayout);
-		destroyStorageBuffer(pointSSBO, pointSSBOMemory);
-		destroyUniformBuffer(dirUBO, dirUBOMemory);
-		destroyUniformBuffer(lightDataUBO, lightDataUBOMemory);
+		destroyStorageBuffer(pointSSBO);
+		destroyUniformBuffer(dirUBO);
+		destroyUniformBuffer(lightDataUBO);
 	}
 } // namespace clz::renderer

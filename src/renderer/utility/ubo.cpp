@@ -15,76 +15,89 @@ namespace clz::renderer
 {
 
 	/// @copydoc createUniformBuffer
-	bool createUniformBuffer(UBO& rUBO, UBOMemory& rUBOMemory, const std::string& bufferName)
+	bool createUniformBuffer(
+		const UniformBufferCreateInfo& uboCreateInfo,
+		UBO& rUBO,
+		const std::string& bufferName
+	)
 	{
-		// Lay out one region per frame-in-flight, respecting the device's
-		// minimum UBO offset alignment between regions.
+		static const auto MinUBOAlignmentSize = [&]() {
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(r_deviceContext.physicalDevice, &properties);
+			return properties.limits.minUniformBufferOffsetAlignment;
+		}();
+		auto getNearestOffset = [alignment = MinUBOAlignmentSize](VkDeviceSize prvOffset) {
+			return (alignment + prvOffset - 1) & ~(alignment - 1);
+		};
+
 		VkDeviceSize totalUBOMemory = 0;
 		rUBO.offsets.resize(r_FRAMES_IN_FLIGHT);
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; i++)
 		{
 			rUBO.offsets[i] = totalUBOMemory;
-			totalUBOMemory = getNextUBOOffsetAlignment(totalUBOMemory + rUBO.uboSize);
+			totalUBOMemory = getNearestOffset(totalUBOMemory + uboCreateInfo.size);
 		}
-		rUBOMemory.memorySize = totalUBOMemory;
 
-		// Single host-visible/coherent buffer big enough for every frame's
-		// region — coherent means no explicit flush is needed after memcpy.
-		if (!createBuffer(
-			    rUBOMemory.buffer,
-			    rUBOMemory.memory,
-			    bufferName,
-			    totalUBOMemory,
-			    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-				    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		    ))
+		const auto& device = clz::renderer::r_deviceContext.device;
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = totalUBOMemory;
+		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(
+			device,
+			&bufferInfo,
+			nullptr,
+			&rUBO.buffer
+		) != VK_SUCCESS)
 		{
-			clz::log::error("Could not create uniform buffers: " + bufferName);
-			return false;
+			clz::log::error(
+				"vulkan failed to create uniform buffer: " + bufferName,
+				true
+			);
 		}
-		// Persistently mapped for the buffer's whole lifetime — avoids
-		// re-mapping every frame just to write new data in.
-		vkMapMemory(
-			r_deviceContext.device,
-			rUBOMemory.memory,
-			0,
-			totalUBOMemory,
-			0,
-			&rUBOMemory.mappedMemory
-		);
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device, rUBO.buffer, &memRequirements);
+		UBOMemoryAllocInfo memAllocInfo{
+			.size = memRequirements.size,
+			.alignment = memRequirements.alignment
+		};
+		if (!carveUBOMemory(memAllocInfo, rUBO.memory))
+		{
+			clz::log::error(
+				"could not carve memory for ubo: " + bufferName,
+				true
+			);
+		}
+
 		setHandleName(
-			reinterpret_cast<uint64_t>(rUBOMemory.buffer),
+			reinterpret_cast<uint64_t>(rUBO.buffer),
 			VK_OBJECT_TYPE_BUFFER,
 			bufferName.c_str()
 		);
-		setHandleName(
-			reinterpret_cast<uint64_t>(rUBOMemory.memory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			(bufferName + " memory").c_str()
-		);
 
-		// Cache a ready-to-memcpy pointer per frame so callers never need
-		// to do the offset arithmetic themselves.
+		std::byte* mapped = getUBOMappedPointer(rUBO.memory);
+
 		rUBO.mapped.resize(r_FRAMES_IN_FLIGHT);
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
-			rUBO.mapped[i] =
-				static_cast<std::byte*>(rUBOMemory.mappedMemory) + rUBO.offsets[i];
+			rUBO.mapped[i] = reinterpret_cast<void*>(mapped + rUBO.offsets[i]);
 		}
+
+		rUBO.uboSize = uboCreateInfo.size;
 
 		return true;
 	}
 
 	/// @copydoc destroyUniformBuffer
-	void destroyUniformBuffer(UBO& rUBO, UBOMemory& rUBOMemory)
+	void destroyUniformBuffer(UBO& rUBO, const bool explicitDestroy)
 	{
-		vkDestroyBuffer(r_deviceContext.device, rUBOMemory.buffer, nullptr);
-		vkFreeMemory(r_deviceContext.device, rUBOMemory.memory, nullptr);
-		rUBOMemory.mappedMemory = nullptr;
-
-		rUBO.offsets.clear();
 		rUBO.mapped.clear();
+		vkDestroyBuffer(r_deviceContext.device, rUBO.buffer, nullptr);
+		if (explicitDestroy)
+			freeUBOMemory(rUBO.memory);
 	}
 
 } // namespace clz::renderer

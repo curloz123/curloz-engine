@@ -6,15 +6,15 @@
  * This file contains globally accessible renderer state used across
  * different subsystems such as swapchain, pipeline, and frame management.
  *
- * @note These are defined as inline globals to allow header-only access.
+ * @note These are defined as inline globals to allow header only access.
  * All contexts are initialized during renderer setup and destroyed
  * during shutdown.
  */
 
 #pragma once
 
-#include "camera/camera.hpp"
 #include "context/context.hpp"
+#include "camera/camera.hpp"
 
 namespace clz::renderer
 {

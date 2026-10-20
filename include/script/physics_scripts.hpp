@@ -124,7 +124,7 @@ namespace clz::script
 		 */
 		bool loadScript(const std::filesystem::path& scriptPath)
 		{
-			sol::load_result loadResult = s_SolHandle.load_file(scriptPath);
+			sol::load_result loadResult = s_SolHandle.load_file(scriptPath.string());
 			if (!loadResult.valid())
 			{
 				sol::error err = loadResult;
@@ -305,7 +305,7 @@ namespace clz::script
 		 */
 		bool loadScript(const std::filesystem::path& scriptPath)
 		{
-			sol::load_result loadResult = s_SolHandle.load_file(scriptPath);
+			sol::load_result loadResult = s_SolHandle.load_file(scriptPath.string());
 			if (!loadResult.valid())
 			{
 				sol::error err = loadResult;

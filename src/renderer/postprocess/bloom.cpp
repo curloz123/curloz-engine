@@ -47,34 +47,13 @@ namespace clz::renderer::post_process
 				rBloomImage.image,
 				&memReq
 			);
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memReq.size;
-			allocInfo.memoryTypeIndex = renderer::findMemoryType(
-				memReq.memoryTypeBits,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
-			if (vkAllocateMemory(
-				    renderer::r_deviceContext.device,
-				    &allocInfo,
-				    nullptr,
-				    &rBloomImage.memory
-			    ) != VK_SUCCESS)
-			{
-				clz::log::error("failed to allocate bloom memory");
-				return false;
-			}
-			vkBindImageMemory(
-				r_deviceContext.device,
-				rBloomImage.image,
-				rBloomImage.memory,
-				0
-			);
-			setHandleName(
-				reinterpret_cast<uint64_t>(rBloomImage.memory),
-				VK_OBJECT_TYPE_DEVICE_MEMORY,
-				"bloom memory"
-			);
+			ImageMemoryAllocInfo allocInfo{
+				.imageType = ImageType::CANVAS,
+				.alignment = memReq.alignment,
+				.size = memReq.size
+			};
+			carveImageMemory(allocInfo, rBloomImage.memory);
+			bindImageMemory(rBloomImage.image, rBloomImage.memory);
 			
 			if (!createImageView(
 					rBloomImage.imageView,
@@ -140,14 +119,15 @@ namespace clz::renderer::post_process
 	}
 
 	/// @copydoc destroyBloomProcess
-	void destroyBloomProcess()
+	void destroyBloomProcess(const bool isRecreating)
 	{
 		vkDestroySampler(r_deviceContext.device, bloomSampler, nullptr);
 		for (int i = 0; i < NUM_BLOOM_MIPS; ++i)
 		{
 			vkDestroyImageView(r_deviceContext.device, bloomMips[i].imageView, nullptr);
 			vkDestroyImage(r_deviceContext.device, bloomMips[i].image, nullptr);
-			vkFreeMemory(r_deviceContext.device, bloomMips[i].memory, nullptr);
+			if (isRecreating)
+				freeImageMemory(bloomMips[i].memory);
 		}
 	}
 

@@ -9,14 +9,13 @@
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/image.hpp"
-#include "renderer/utility/memory.hpp"
 #include "renderer/utility/singletimecommand.hpp"
 #include <vulkan/vulkan.h>
 #include <string>
 #include <span>
 #include <expected>
 #include <array>
-#include <vulkan/vulkan_core.h>
+#include "renderer/arena.hpp"
 
 namespace clz::renderer
 {
@@ -26,15 +25,18 @@ namespace clz::renderer
 	/// @return True on succesful, false otherwise
 	static bool createRenderTarget(uint32_t width, uint32_t height);
 
-	/// @brief Destroy's render target's images
-	static void destroyRenderTarget();
+	/// @brief Destroy's render target's images.
+	/// @param isRecreating Flag indicating whether resource is being recreated.
+	/// false by default.
+	static void destroyRenderTarget(const bool isRecreating = false);
 
 	/// @brief Create's render target context's depth resources
 	/// @return True on succesful, false otherwise
 	static bool createDepthResources();
 
 	/// @brief Destroy's render target context's depth resources
-	static void destroyDepthResources();
+	/// @param isRecreating Flag indicating whether resource is being recreated.
+	static void destroyDepthResources(const bool isRecreating = false);
 
 }
 
@@ -64,20 +66,17 @@ namespace clz::renderer
 	}
 
 	/// @copydoc destroyRenderTargetContext
-	void destroyRenderTargetContext()
+	void destroyRenderTargetContext(const bool isRecreating)
 	{
-		destroyDepthResources();
-		destroyRenderTarget();
+		destroyDepthResources(isRecreating);
+		destroyRenderTarget(isRecreating);
 	}
 	
 	/// @copydoc recreateRenderTargetContext
 	bool recreateRenderTargetContext(const uint32_t width, const uint32_t height)
 	{
-		clz::log::debug("recreating render target with: "
-				"width: " + std::to_string(width) + " "
-				"height: " + std::to_string(height));
-		vkDeviceWaitIdle(r_deviceContext.device);
-		destroyRenderTargetContext();
+		const bool isRecreating = true;
+		destroyRenderTargetContext(isRecreating);
 		if (!initRenderTargetContext(width, height))
 		{
 			clz::log::error("failed to re-create render target context");
@@ -132,65 +131,43 @@ namespace clz::renderer
 		}
 
 		VkMemoryRequirements memRequirements;
+		VkMemoryRequirements msaaMemRequirements;
+
 		vkGetImageMemoryRequirements(
 			r_deviceContext.device,
 			r_renderTargetContext.image,
 			&memRequirements
 		);
-		VkMemoryAllocateInfo memAllocInfo = {};
-		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		memAllocInfo.allocationSize = memRequirements.size;
-		memAllocInfo.memoryTypeIndex =
-			findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-		if (vkAllocateMemory(
-			r_deviceContext.device,
-			&memAllocInfo,
-			nullptr,
-			&r_renderTargetContext.imageMemory) != VK_SUCCESS)
-		{
-			clz::log::error("vulkan failed to allocate render target image memory");
-			return false;
-		}
-
 		vkGetImageMemoryRequirements(
 			r_deviceContext.device,
 			r_renderTargetContext.msaaImage,
-			&memRequirements);
-		memAllocInfo.allocationSize = memRequirements.size;
-		memAllocInfo.memoryTypeIndex = 
-			findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		if (vkAllocateMemory(
-			r_deviceContext.device,
-			&memAllocInfo,
-			nullptr,
-			&r_renderTargetContext.msaaImageMemory) != VK_SUCCESS)
-		{
-			clz::log::error("vulkan failed to allocate render target msaa image memory");
-			return false;
-		}
+			&msaaMemRequirements
+		);
 
-		vkBindImageMemory(
-			r_deviceContext.device,
+		ImageMemoryAllocInfo allocInfo{
+			.imageType = ImageType::CANVAS,
+			.alignment = memRequirements.alignment,
+			.size = memRequirements.size
+		};
+		ImageMemoryAllocInfo msaaAllocInfo{
+			.imageType = ImageType::MULTISAMPLED,
+			.alignment = msaaMemRequirements.alignment,
+			.size = msaaMemRequirements.size
+		};
+
+		if (!carveImageMemory(allocInfo, r_renderTargetContext.imageMemory))
+			clz::log::error("Could not carve memory for render target context", true);
+		if (!carveImageMemory(msaaAllocInfo, r_renderTargetContext.msaaImageMemory))
+			clz::log::error("Could not carve memory for render target context", true);
+
+		bindImageMemory(
 			r_renderTargetContext.image,
-			r_renderTargetContext.imageMemory,
-			0
+			r_renderTargetContext.imageMemory
 		);
-		vkBindImageMemory(
-			r_deviceContext.device,
+		bindImageMemory(
 			r_renderTargetContext.msaaImage,
-			r_renderTargetContext.msaaImageMemory,
-			0
+			r_renderTargetContext.msaaImageMemory
 		);
-
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_renderTargetContext.imageMemory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			"render target image memory");
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_renderTargetContext.msaaImageMemory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			"render target msaa image memory");
 
 		if (!createImageView(
 			r_renderTargetContext.imageView,
@@ -250,7 +227,7 @@ namespace clz::renderer
 	}
 
 	/// @copydoc destroyRenderTarget
-	void destroyRenderTarget()
+	static void destroyRenderTarget(const bool isRecreating)
 	{
 		vkDestroySampler(r_deviceContext.device, r_renderTargetContext.imageSampler, nullptr);
 		vkDestroySampler(r_deviceContext.device, r_renderTargetContext.msaaImageSampler, nullptr);
@@ -258,25 +235,18 @@ namespace clz::renderer
 		vkDestroyImageView(r_deviceContext.device, r_renderTargetContext.msaaImageView, nullptr);
 		vkDestroyImage(r_deviceContext.device, r_renderTargetContext.image, nullptr);
 		vkDestroyImage(r_deviceContext.device, r_renderTargetContext.msaaImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.imageMemory, nullptr);
-		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.msaaImageMemory, nullptr);
+
+		if (isRecreating)
+		{
+			freeImageMemory(r_renderTargetContext.imageMemory);
+			freeImageMemory(r_renderTargetContext.msaaImageMemory);
+		}
 	}
 
 	/// @copydoc createDepthResources
 	bool createDepthResources()
 	{
-		std::array<VkFormat, 1> formatCandidates = {VK_FORMAT_D32_SFLOAT};
-		const auto depthResult = findSupportedFormat(
-			formatCandidates,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-		);
-		if (!depthResult)
-		{
-			clz::log::error(depthResult.error());
-			return false;
-		}
-		r_renderTargetContext.depthFormat = depthResult.value();
+		r_renderTargetContext.depthFormat = VK_FORMAT_D32_SFLOAT;
 
 		if (!createImage(
 			    r_renderTargetContext.depthImage,
@@ -301,36 +271,15 @@ namespace clz::renderer
 			r_renderTargetContext.depthImage,
 			&memRequirements
 		);
-
-		VkMemoryAllocateInfo memAllocInfo = {};
-		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		memAllocInfo.allocationSize = memRequirements.size;
-		memAllocInfo.memoryTypeIndex = findMemoryType(
-			memRequirements.memoryTypeBits,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		if (vkAllocateMemory(
-			    clz::renderer::r_deviceContext.device,
-			    &memAllocInfo,
-			    nullptr,
-			    &r_renderTargetContext.depthImageMemory
-		    ) != VK_SUCCESS)
-		{
-			clz::log::error("vulkan could not create render target depth memory");
-			return false;
-		}
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_renderTargetContext.depthImageMemory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			"render target depth memory"
-		);
-
-		vkBindImageMemory(
-			clz::renderer::r_deviceContext.device,
+		ImageMemoryAllocInfo memAllocInfo{
+			.imageType = ImageType::DEPTH,
+			.alignment = memRequirements.alignment,
+			.size = memRequirements.size
+		};
+		carveImageMemory(memAllocInfo, r_renderTargetContext.depthImageMemory);
+		bindImageMemory(
 			r_renderTargetContext.depthImage,
-			r_renderTargetContext.depthImageMemory,
-			0
+			r_renderTargetContext.depthImageMemory
 		);
 
 		if (!createImageView(
@@ -379,10 +328,19 @@ namespace clz::renderer
 	}
 
 	/// @copydoc destroyDepthResources
-	void destroyDepthResources()
+	static void destroyDepthResources(const bool isRecreating)
 	{
-		vkDestroyImageView(r_deviceContext.device, r_renderTargetContext.depthImageView, nullptr);
-		vkDestroyImage(r_deviceContext.device, r_renderTargetContext.depthImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, r_renderTargetContext.depthImageMemory, nullptr);
+		vkDestroyImageView(
+			r_deviceContext.device,
+			r_renderTargetContext.depthImageView,
+			nullptr
+		);
+		vkDestroyImage(
+			r_deviceContext.device,
+			r_renderTargetContext.depthImage,
+			nullptr
+		);
+		if (isRecreating)
+			freeImageMemory(r_renderTargetContext.depthImageMemory);
 	}
 }

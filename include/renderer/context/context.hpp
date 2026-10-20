@@ -17,38 +17,42 @@
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
+#include "../arena.hpp"
 
 namespace clz::renderer
 {
 	/**
 	 * @struct DeviceContext
-	 * @brief Stores Vulkan device-level resources.
+	 * @brief Stores Vulkan device level resources.
 	 *
 	 * Contains:
-	 * - Vulkan instance
-	 * - Selected physical device (GPU)
-	 * - Logical device
-	 * - Rendering surface
-	 * - Graphics and present queues
-	 * - Queue family indices
+	 * 1. Vulkan instance
+	 * 2. Selected physical device
+	 * 3. Logical device
+	 * 4. Rendering surface
+	 * 5. Graphics and present queues
+	 * 6. Queue family indices
 	 */
 	struct DeviceContext
 	{
-		VkInstance instance = VK_NULL_HANDLE;			  ///< Vulkan instance
-		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE; ///< Debug messenger
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; ///< Selected physical device
-		VkDevice device = VK_NULL_HANDLE;		  ///< Logical device
+		///< Vulkan instance
+		VkInstance instance = VK_NULL_HANDLE;
+		///< Debug messenger
+		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+		///< Selected physical device
+		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+		///< Logical device
+		VkDevice device = VK_NULL_HANDLE;
 		VkSurfaceKHR surface = VK_NULL_HANDLE;		  ///< Window surface
 		VkQueue graphicsQueue = VK_NULL_HANDLE;		  ///< Graphics queue
 		VkQueue presentQueue = VK_NULL_HANDLE;		  ///< Presentation queue
-		std::optional<uint32_t> graphicsFamily = {};	  ///< Graphics queue family index
-		std::optional<uint32_t> presentFamily = {};	  ///< Present queue family index
+		std::optional<uint32_t> graphicsFamily{};	  ///< Graphics queue family index
+		std::optional<uint32_t> presentFamily{};	  ///< Present queue family index
 	};
 
 
 	/// @brief Command context of vulkan application
-	/// Consists of pool and a command buffer as of version 0.7.0
+	/// Consists of pool and a command buffers as of version 0.7.0
 	struct CommandContext
 	{
 		VkCommandPool commandPool = VK_NULL_HANDLE;	 ///< Command pool
@@ -91,13 +95,13 @@ namespace clz::renderer
 		VkImage image = VK_NULL_HANDLE;
 		VkImageView imageView = VK_NULL_HANDLE;
 		VkSampler imageSampler = VK_NULL_HANDLE;
-		VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+		clzImageMemory imageMemory;
 
 		VkSampleCountFlagBits msaaFlagBits = VK_SAMPLE_COUNT_1_BIT;
 		VkImage msaaImage = VK_NULL_HANDLE;
 		VkImageView msaaImageView = VK_NULL_HANDLE;
 		VkSampler msaaImageSampler = VK_NULL_HANDLE;
-		VkDeviceMemory msaaImageMemory = VK_NULL_HANDLE;
+		clzImageMemory msaaImageMemory;
 
 		VkFormat imageFormat = VK_FORMAT_UNDEFINED;
 		VkExtent2D imageExtent;
@@ -105,17 +109,12 @@ namespace clz::renderer
 		VkImage depthImage = VK_NULL_HANDLE;
 		VkImageView depthImageView = VK_NULL_HANDLE;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
-		VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
+		clzImageMemory depthImageMemory;
 	};
 
 	/**
 	 * @struct PipelineContext
 	 * @brief Stores graphics pipeline resources.
-	 *
-	 * Contains:
-	 * - Graphics pipeline
-	 * - Pipeline layout
-	 * - Shader modules
 	 */
 	struct PipelineContext
 	{
@@ -131,23 +130,16 @@ namespace clz::renderer
 
 	/**
 	 * @struct FrameContext
-	 * @brief Stores per-frame resources.
-	 *
-	 * Contains:
-	 * - Command pool and command buffers
-	 * - Synchronization primitives:
-	 *   - Image-available semaphores
-	 *   - Render-finished semaphores
-	 *   - In-flight fences
-	 *
-	 * Notes:
-	 * - Sized according to frames-in-flight or swapchain image count.
+	 * @brief Stores per frame resources.
+	 * @note Sized according to frames in flight or swapchain image count.
 	 */
 	struct FrameContext
 	{
-		std::vector<VkSemaphore> renderReadySemaphores = {}; ///< Signals image acquisition
-		std::vector<VkSemaphore> presentReadySemaphores =
-			{};				  ///< Signals rendering completion
-		std::vector<VkFence> inFlightFences = {}; ///< CPU-GPU synchronization fences
+		///< Signals image acquisition
+		std::vector<VkSemaphore> renderReadySemaphores{};
+		///< Signals rendering completion
+		std::vector<VkSemaphore> presentReadySemaphores{}; 
+		///< CPU-GPU synchronization fences
+		std::vector<VkFence> inFlightFences{};		   
 	};
 } // namespace clz::renderer

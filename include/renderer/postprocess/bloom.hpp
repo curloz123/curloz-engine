@@ -13,6 +13,7 @@
 #include <vulkan/vulkan.h>
 #include <array>
 #include <cstdint>
+#include "renderer/arena.hpp"
 
 namespace clz::renderer::post_process
 {
@@ -36,10 +37,14 @@ namespace clz::renderer::post_process
          */
         struct bloomImage
         {
-                VkImage image;         ///< The Vulkan image object.
-                VkImageView imageView; ///< The view of the image for rendering/sampling.
-                VkDeviceMemory memory; ///< The device memory allocated for the image.
-                VkExtent2D extent;     ///< The dimensions (width and height) of the image.
+		///< The Vulkan image object.
+                VkImage image;
+		 ///< The view of the image for rendering/sampling.
+                VkImageView imageView;
+		///< The device memory allocated for the image.
+                clzImageMemory memory;
+		///< The dimensions (width and height) of the image.
+                VkExtent2D extent;
         };
 
         /// @brief The pixel format used for bloom images (HDR RGBA 16-bit float).
@@ -78,8 +83,10 @@ namespace clz::renderer::post_process
 
         /**
          * @brief Destroys and frees all Vulkan resources associated with the bloom post-process.
+	 * @param isRecreating Flag that denotes whether this destruction is part of recreation.
+	 * False by default.
 	 */
-        void destroyBloomProcess();
+        void destroyBloomProcess(const bool isRecreating = false);
 
         /**
          * @brief Records the Vulkan commands to execute the bloom post-process passes.

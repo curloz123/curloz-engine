@@ -38,29 +38,13 @@ namespace clz::renderer::post_process
 			tonemapImage,
 			&memReq
 		);
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memReq.size;
-		allocInfo.memoryTypeIndex = findMemoryType(
-			memReq.memoryTypeBits,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-		if (vkAllocateMemory(
-			    r_deviceContext.device,
-			    &allocInfo,
-			    nullptr,
-			    &tonemapMemory
-		    ) != VK_SUCCESS)
-		{
-			clz::log::error("failed to allocate tonemap image");
-			return false;
-		}
-		vkBindImageMemory(
-			r_deviceContext.device,
-			tonemapImage,
-			tonemapMemory,
-			0
-		);
+		ImageMemoryAllocInfo allocInfo{
+			.imageType = ImageType::CANVAS,
+			.alignment = memReq.alignment,
+			.size = memReq.size
+		};
+		carveImageMemory(allocInfo, tonemapMemory);
+		bindImageMemory(tonemapImage, tonemapMemory);
 
 		if (!createImageView(
 			tonemapImageView,
@@ -123,12 +107,13 @@ namespace clz::renderer::post_process
 	}
 
 	/// @copydoc destroyTonemapProcess
-	void destroyTonemapProcess()
+	void destroyTonemapProcess(const bool isRecreating)
 	{
 		vkDestroySampler(r_deviceContext.device, tonemapSampler, nullptr);
 		vkDestroyImageView(r_deviceContext.device, tonemapImageView, nullptr);
 		vkDestroyImage(r_deviceContext.device, tonemapImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, tonemapMemory, nullptr);
+		if (isRecreating)
+			freeImageMemory(tonemapMemory);
 	}
 
 	/// @copydoc applyTonemapProcess

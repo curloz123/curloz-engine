@@ -6,84 +6,100 @@
 
 #include "renderer/utility/ssbo.hpp"
 #include "core/logs.hpp"
-#include "renderer/utility/buffer.hpp"
 #include "renderer/utility/namer.hpp"
-#include "renderer/utility/offsetalignment.hpp"
 #include "renderer/vk_types.hpp"
 
 namespace clz::renderer
 {
-
-	/// @copydoc createStorageBuffer
-	bool
-	createStorageBuffer(SSBO& rSSBO, SSBOMemory& rSSBOMemory, const std::string_view bufferName)
+	/// @copydoc createUniformBuffer
+	bool createStorageBuffer(
+		const StorageBufferCreateInfo& ssboCreateInfo,
+		SSBO& rSSBO,
+		const std::string& bufferName
+	)
 	{
-		// Same per-frame region layout strategy as createUniformBuffer,
-		// but aligned to storage-buffer offset requirements instead of UBO.
+		static const auto MinSSBOAlignmentSize = [&]() {
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(
+				r_deviceContext.physicalDevice,
+				&properties
+			);
+			return properties.limits.minStorageBufferOffsetAlignment;
+		}();
+		auto getNearestOffset = [alignment = MinSSBOAlignmentSize](
+			VkDeviceSize prvOffset)
+			{
+				return (alignment + prvOffset - 1) &
+					~(alignment - 1);
+			};
+
 		VkDeviceSize totalSSBOMemory = 0;
 		rSSBO.offsets.resize(r_FRAMES_IN_FLIGHT);
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; i++)
 		{
 			rSSBO.offsets[i] = totalSSBOMemory;
-			totalSSBOMemory =
-				getNextSSBOOffsetAlignment(totalSSBOMemory + rSSBO.ssboSize);
+			totalSSBOMemory = getNearestOffset(totalSSBOMemory + ssboCreateInfo.size);
 		}
-		rSSBOMemory.memorySize = totalSSBOMemory;
 
-		if (!createBuffer(
-			    rSSBOMemory.buffer,
-			    rSSBOMemory.memory,
-			    std::string(bufferName),
-			    totalSSBOMemory,
-			    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-			    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-				    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		    ))
+		const auto& device = clz::renderer::r_deviceContext.device;
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = totalSSBOMemory;
+		bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(
+			device,
+			&bufferInfo,
+			nullptr,
+			&rSSBO.buffer
+		) != VK_SUCCESS)
 		{
 			clz::log::error(
-				"Could not create storage buffer: " + std::string(bufferName)
+				"vulkan failed to create storage buffer: " + bufferName,
+				true
 			);
-			return false;
 		}
-		// Persistently mapped, same rationale as the UBO path.
-		vkMapMemory(
-			r_deviceContext.device,
-			rSSBOMemory.memory,
-			0,
-			totalSSBOMemory,
-			0,
-			&rSSBOMemory.mappedMemory
-		);
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device, rSSBO.buffer, &memRequirements);
+		SSBOMemoryAllocInfo memAllocInfo{
+			.size = memRequirements.size,
+			.alignment = memRequirements.alignment
+		};
+		if (!carveSSBOMemory(memAllocInfo, rSSBO.memory))
+		{
+			clz::log::error(
+				"could not carve memory for ubo: " + bufferName,
+				true
+			);
+		}
+
 		setHandleName(
-			reinterpret_cast<uint64_t>(rSSBOMemory.buffer),
+			reinterpret_cast<uint64_t>(rSSBO.buffer),
 			VK_OBJECT_TYPE_BUFFER,
-			bufferName.data()
+			bufferName.c_str()
 		);
-		setHandleName(
-			reinterpret_cast<uint64_t>(rSSBOMemory.memory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			(std::string(bufferName) + " memory").c_str()
-		);
+
+		std::byte* mapped = getSSBOMappedPointer(rSSBO.memory);
 
 		rSSBO.mapped.resize(r_FRAMES_IN_FLIGHT);
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
-			rSSBO.mapped[i] = static_cast<std::byte*>(rSSBOMemory.mappedMemory) +
-					  rSSBO.offsets[i];
+			rSSBO.mapped[i] = reinterpret_cast<void*>(mapped + rSSBO.offsets[i]);
 		}
+
+		rSSBO.ssboSize = ssboCreateInfo.size;
 
 		return true;
 	}
 
 	/// @copydoc destroyStorageBuffer
-	void destroyStorageBuffer(SSBO& rSSBO, SSBOMemory& rSSBOMemory)
+	void destroyStorageBuffer(SSBO& rSSBO, const bool explicitDestroy)
 	{
-		vkDestroyBuffer(r_deviceContext.device, rSSBOMemory.buffer, nullptr);
-		vkFreeMemory(r_deviceContext.device, rSSBOMemory.memory, nullptr);
-		rSSBOMemory.mappedMemory = nullptr;
-
-		rSSBO.offsets.clear();
 		rSSBO.mapped.clear();
+		vkDestroyBuffer(r_deviceContext.device, rSSBO.buffer, nullptr);
+		if (explicitDestroy)
+			freeSSBOMemory(rSSBO.memory);
 	}
-
 } // namespace clz::renderer

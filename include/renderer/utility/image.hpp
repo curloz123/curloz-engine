@@ -9,7 +9,6 @@
 #include <vulkan/vulkan.h>
 #include <expected>
 #include <span>
-#include "../arena.hpp"
 
 namespace clz::renderer
 {
