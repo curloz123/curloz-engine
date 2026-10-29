@@ -32,7 +32,7 @@ namespace clz::renderer
 	struct SSBO
 	{
 		///< mapped[i] = base mappedMemory + offsets[i].
-		std::vector<void*> mapped;	  
+		std::vector<std::byte*> mapped;
 
 		///< offsets of each frame's data in memory.
 		std::vector<VkDeviceSize> offsets;
@@ -61,6 +61,13 @@ namespace clz::renderer
 		const StorageBufferCreateInfo& ssboCreateInfo,
 		SSBO& rSSBO,
 		const std::string& bufferName
+	);
+
+	void copyDataToSSBO(
+		SSBO& rSSBO,
+		const void* srcData,
+		const size_t size,
+		const size_t offset
 	);
 
 	/**

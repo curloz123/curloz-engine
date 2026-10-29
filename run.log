@@ -1,0 +1,409 @@
+[32m[INFO][0m Config loaded
+[32m[INFO][0m Welcome to Curloz Engine
+[32m[INFO][0m Version: 0.7.7
+[32m[INFO][0m target dt: 0.008333
+[32m[INFO][0m Initialized window system
+[32m[INFO][0m Created physics world
+[34m[DEBUG][0m All required instance extensions present
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:139
+[34m[DEBUG][0m All requested layers present
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:178
+[32m[INFO][0m Validation layers are enabled
+Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7
+vkCreateInstance(): Both GPU Assisted Validation and Normal Core Check Validation are enabled, this is not recommend as it  will be very slow. Once all errors in Core Check are solved, please disable, then only use GPU-AV for best performance.
+
+[32m[INFO][0m renderer: created instance
+[32m[INFO][0m renderer: Created Debug Messenger
+[32m[INFO][0m Created window surface
+[32m[INFO][0m VULKAN VALIDATION LAYERS: linux_read_sorted_physical_devices:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Original order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Sorted order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)  
+[32m[INFO][0m VULKAN VALIDATION LAYERS: linux_read_sorted_physical_devices:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Original order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Sorted order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)  
+[32m[INFO][0m VULKAN VALIDATION LAYERS: linux_read_sorted_physical_devices:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Original order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Sorted order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)  
+[32m[INFO][0m VULKAN VALIDATION LAYERS: linux_read_sorted_physical_devices:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Original order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      Sorted order:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            [0] AMD Radeon RX 7600 (RADV NAVI33)  
+[32m[INFO][0m Using GPU: AMD Radeon RX 7600 (RADV NAVI33)
+[32m[INFO][0m All device extensions present
+[32m[INFO][0m VULKAN VALIDATION LAYERS: Inserted device layer "VK_LAYER_KHRONOS_validation" (/usr/lib64/libVkLayer_khronos_validation.so)
+[32m[INFO][0m VULKAN VALIDATION LAYERS: Failed to find vkGetDeviceProcAddr in layer "/usr/lib64/libVkLayer_MESA_device_select.so"
+[32m[INFO][0m VULKAN VALIDATION LAYERS: vkCreateDevice layer callstack setup to:
+[32m[INFO][0m VULKAN VALIDATION LAYERS:    <Application>
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      ||
+[32m[INFO][0m VULKAN VALIDATION LAYERS:    <Loader>
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      ||
+[32m[INFO][0m VULKAN VALIDATION LAYERS:    VK_LAYER_KHRONOS_validation
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            Type: Explicit
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            Enabled By: By the Application
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            Manifest: /usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[32m[INFO][0m VULKAN VALIDATION LAYERS:            Library:  /usr/lib64/libVkLayer_khronos_validation.so
+[32m[INFO][0m VULKAN VALIDATION LAYERS:      ||
+[32m[INFO][0m VULKAN VALIDATION LAYERS:    <Device>
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCreateDevice(): Warning that validation is adjusting settings:
+	Forcing fragmentStoresAndAtomics to VK_TRUE
+	Forcing vertexPipelineStoresAndAtomics to VK_TRUE
+	Forcing shaderInt64 to VK_TRUE
+	Forcing shaderInt16 to VK_TRUE
+	Adding a VkPhysicalDeviceTimelineSemaphoreFeatures to pNext with timelineSemaphore set to VK_TRUE
+	Adding a VkPhysicalDeviceVulkanMemoryModelFeatures to pNext with vulkanMemoryModel and vulkanMemoryModelDeviceScope set to VK_TRUE
+	Adding a VkPhysicalDeviceBufferDeviceAddressFeatures to pNext with bufferDeviceAddress set to VK_TRUE
+	Adding a VkPhysicalDeviceScalarBlockLayoutFeatures to pNext with scalarBlockLayout set to VK_TRUE
+	Adding a VkPhysicalDevice8BitStorageFeatures to pNext with storageBuffer8BitAccess set to VK_TRUE
+	Adding a VkPhysicalDeviceShaderFloat16Int8Features to pNext with shaderInt8 set to VK_TRUE
+	Adding a VkPhysicalDevice16BitStorageFeatures to pNext with storageBuffer16BitAccess set to VK_TRUE
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[32m[INFO][0m VULKAN VALIDATION LAYERS:        Using "AMD Radeon RX 7600 (RADV NAVI33)" with driver: "/usr/lib64/libvulkan_radeon.so"
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCreateDevice(): Warning that validation is adjusting settings:
+	Ray Tracing validation option was enabled, but neither the rayTracingPipeline nor the rayQuery feature are supported. [Disabling gpuav_validate_trace_ray]
+	Mesh Shading validation option was enabled, but the meshShader feature is not supported. [Disabling gpuav_mesh_shading]
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[32m[INFO][0m created vulkan logical device
+[32m[INFO][0m created logical device
+[32m[INFO][0m renderer: initialized device context successfully
+[32m[INFO][0m created command pool
+[32m[INFO][0m created command buffers
+[32m[INFO][0m Initialized command context
+[34m[DEBUG][0m Swapchain new extents: 800, 600
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/swapchaincontext.cpp Line:136
+[34m[DEBUG][0m max image count: 5
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/swapchaincontext.cpp Line:143
+[32m[INFO][0m renderer: created swapchain
+[32m[INFO][0m Initialized swapchain context
+[32m[INFO][0m Created render depth resources
+[32m[INFO][0m Initialized render target context
+[32m[INFO][0m created shader modules: shaders/mainpipeline.vert.spirv and shaders/mainpipeline.frag.spirv
+[32m[INFO][0m created main pipeline
+[32m[INFO][0m created shader modules: shaders/shapes.vert.spirv and shaders/shapes.frag.spirv
+[32m[INFO][0m created shape pipeline
+[32m[INFO][0m created shader modules: shaders/post_process.vert.spirv and shaders/bloom.frag.spirv
+[32m[INFO][0m created bloom pipeline
+[32m[INFO][0m created shader modules: shaders/post_process.vert.spirv and shaders/bloom_sample.frag.spirv
+[32m[INFO][0m created pre tonemap pipeline
+[32m[INFO][0m created shader modules: shaders/post_process.vert.spirv and shaders/tonemap.frag.spirv
+[32m[INFO][0m created tonemap pipeline
+[32m[INFO][0m created shader modules: shaders/post_process.vert.spirv and shaders/post_tonemap.frag.spirv
+[32m[INFO][0m created post tonemap pipeline
+[32m[INFO][0m created pipeline context
+[32m[INFO][0m created All semaphores and fences
+[32m[INFO][0m Created pre-tonemap post process resources
+[32m[INFO][0m Created bloom post-process
+[32m[INFO][0m Created tonemap process resources
+[32m[INFO][0m Created post-tonemap post process resources
+[32m[INFO][0m Initialized post process resources
+[32m[INFO][0m Created entity data in renderer
+[32m[INFO][0m initialized all renderer context's
+[32m[INFO][0m Initialized renderer
+[32m[INFO][0m created shader modules: shaders/editor.vert.spirv and shaders/editor.frag.spirv
+[32m[INFO][0m created editor's pipeline
+[32m[INFO][0m Initialized editor's backend
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] image is VkImage 0x2b900000002b9[editor Depth Image] and accessMask is VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT|VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, but for layout VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL expected accessMask are VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT|VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[34m[DEBUG][0m created offscreen target in editor
+LOCATION: /home/curl0z/dev/git/curloz-engine/editor/src/offscreen/offscreentarget.cpp Line:393
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] image is VkImage 0x2c700000002c7[editor Depth Image] and accessMask is VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT|VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, but for layout VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL expected accessMask are VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT|VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[34m[DEBUG][0m created offscreen target in editor
+LOCATION: /home/curl0z/dev/git/curloz-engine/editor/src/offscreen/offscreentarget.cpp Line:393
+[32m[INFO][0m Initialized editor
+[32m[INFO][0m Initialized audio system
+[32m[INFO][0m loaded game camera
+[32m[INFO][0m Loaded cameras
+[34m[DEBUG][0m mono
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/audio/native.cpp Line:75
+[34m[DEBUG][0m mono
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/audio/native.cpp Line:75
+[34m[DEBUG][0m mono
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/audio/native.cpp Line:75
+[32m[INFO][0m Hello, from test2.lua
+[34m[DEBUG][0m loaded script: assets/scripts/test2.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 1
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[34m[DEBUG][0m loaded script: assets/scripts/foo.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 2
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[34m[DEBUG][0m loaded script: assets/scripts/test.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 3
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x2cf00000002cf to a memory block which is fully consumed by the buffer. The required size of the allocation is 964320, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2d400000002d4[assets/models/metro/train_1.jpeg], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdCopyBuffer(): WRITE_AFTER_WRITE hazard detected. vkCmdCopyBuffer writes to VkBuffer 0x2920000000292, which was previously written by another vkCmdCopyBuffer command. 
+No sufficient synchronization is present to ensure that a write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_COPY_BIT does not conflict with a prior write of the same type at the same stage.
+Buffer copy region 0: {
+  offset = 0,
+  size = 23808
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[32m[INFO][0m updated texture descriptor sets
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2dc00000002dc[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2de00000002de[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2e000000002e0[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2e200000002e2[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2e400000002e4[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2e600000002e6[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2e800000002e8[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): WRITE_AFTER_WRITE hazard detected. vkCmdPipelineBarrier2 performs image layout transition on the VkImage 0x2ea00000002ea[assets/models/sword/thanos_sword.glbtexture], which was previously written by vkCmdBlitImage. 
+No sufficient synchronization is present to ensure that a layout transition does not conflict with a prior write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_BLIT_BIT.
+Hint: Ensure that srcStageMask includes VK_PIPELINE_STAGE_2_BLIT_BIT and srcAccessMask includes VK_ACCESS_2_TRANSFER_WRITE_BIT. The source side of the barrier protects layout transition writes from previous accesses, and the destination side cannot introduce this specific hazard.
+pImageMemoryBarriers[0]: {
+  srcStageMask = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT,
+  srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+  dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+  dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+}
+
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[33m[WARN][0m VULKAN VALIDATION LAYERS: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0] VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the contents may be discarded, but the newLayout is VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, which is read only.
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[32m[INFO][0m updated texture descriptor sets
+[32m[INFO][0m updated texture descriptor sets
+[32m[INFO][0m updated texture descriptor sets
+[34m[DEBUG][0m loaded script: assets/scripts/coll.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 1
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[32m[INFO][0m updated texture descriptor sets
+[34m[DEBUG][0m loaded script: assets/scripts/coll_2.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 1
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[32m[INFO][0m updated texture descriptor sets
+[32m[INFO][0m updated texture descriptor sets
+[34m[DEBUG][0m loaded script: assets/scripts/coll_gun.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:97
+[34m[DEBUG][0m vec size: 1
+LOCATION: /home/curl0z/dev/git/curloz-engine/include/script/script_components.hpp Line:108
+[33m[WARN][0m Script tried retrieve entity with name: 'Gun' But that entity doesn't exist
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:78
+[34m[DEBUG][0m 4294967295
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:40
+[34m[DEBUG][0m Hello there, from foo.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:40
+[34m[DEBUG][0m 9
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:40
+[34m[DEBUG][0m 0
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:40
+[34m[DEBUG][0m Hello from coll.lua
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/script/interface.cpp Line:40
+[32m[INFO][0m Loaded entities
+[32m[INFO][0m Loaded scene
+[34m[DEBUG][0m Updated projection matrix
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/camera/camera.cpp Line:210
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkBindImageMemory(): Trying to bind VkImage 0x4910000000491 to a memory block which is fully consumed by the image. The required size of the allocation is 262144, but smaller images like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4950000000495 to a memory block which is fully consumed by the buffer. The required size of the allocation is 262144, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4970000000497 to a memory block which is fully consumed by the buffer. The required size of the allocation is 1280, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[33m[WARN][0m VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4990000000499 to a memory block which is fully consumed by the buffer. The required size of the allocation is 256, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[34m[DEBUG][0m Frame time: 5.465896
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/main.cpp Line:111
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (706.5, 420.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (704.5, 422.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (704.5, 423.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (705.5, 423.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (706.5, 423.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (707.5, 423.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 80
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (2.5, 50.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 82
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (3.5, 50.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 82
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (2.5, 51.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 82
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[31m[ERROR][0m VULKAN VALIDATION LAYERS: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdDrawIndexed(): (set = 2, binding = 2, index 0)  access out of bounds. The descriptor buffer (VkBuffer 0x23b000000023b[point light ssbo]) size is 144 bytes, 48 bytes were bound, and the highest out of bounds access was at [191] bytes
+Stage = Fragment.  Fragment coord (x,y) = (3.5, 51.5). 
+Command buffer (0x557cb6910050)
+	Draw Index 82
+Shader Module (0x24e000000024e) (internal ID 2)
+SPIR-V Instruction: %293 = OpLoad %285 %292
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess

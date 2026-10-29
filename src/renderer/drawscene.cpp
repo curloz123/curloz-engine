@@ -10,11 +10,10 @@
 #include "core/enginestate.hpp"
 #include "renderer/model/model.hpp"
 #include "renderer/pipelinedata/camera.hpp"
-#include "renderer/pipelinedata/descriptor.hpp"
 #include "renderer/pipelinedata/lights.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/pipelinedata/texture.hpp"
 #include "renderer/vk_types.hpp"
-#include <array>
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/offscreen/offscreentarget.hpp"
@@ -75,25 +74,13 @@ namespace clz::renderer
 
 		// Descriptor sets
 
-		updateCameraDescriptor(cameraShaderUBO);
-		updateLightDescriptor();
-		std::array<VkDescriptorSet, 3> descriptorSets = {};
-		descriptorSets[CAMERA_SET_POINT] = cameraDescriptorSets[r_currentFrame];
-		descriptorSets[TEXTURE_SET_POINT] = textureDescriptorSets[r_currentFrame];
-		descriptorSets[LIGHT_SET_POINT] = lightDescriptorSets[r_currentFrame];
+		CameraDescriptor.update(cameraShaderUBO);
+		LightDescriptor.update();
+		CameraDescriptor.bindDescriptor(commandBuffer);
+		TextureDescriptor.bindDescriptor(commandBuffer);
+		LightDescriptor.bindDescriptor(commandBuffer);
 
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			r_pipelineContext.layout,
-			0,
-			descriptorSets.size(),
-			descriptorSets.data(),
-			0,
-			nullptr
-		);
-
-		drawAllModels(commandBuffer);
+		ModelManager.drawAll(commandBuffer);
 	}
 
 } // namespace clz::renderer

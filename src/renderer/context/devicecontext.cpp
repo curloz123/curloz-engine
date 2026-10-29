@@ -29,13 +29,20 @@ namespace clz::renderer
 
 	// Extensions
 	constexpr auto r_debugExtensionName = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+
 	constexpr std::array r_validationLayers = {
 		"VK_LAYER_KHRONOS_validation"
 	};
+	constexpr std::array<VkValidationFeatureEnableEXT, 4> r_validationFeatures = {
+		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+		VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+	};
+
 	constexpr std::array r_requiredDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
-
 } // namespace clz::renderer
 
 namespace clz::renderer
@@ -113,7 +120,7 @@ namespace clz::renderer
 			const bool found = std::ranges::any_of(
 				availableExtensions.begin(),
 				availableExtensions.end(),
-				[requiredExtension](const auto& availableExtension) 
+				[requiredExtension](const auto& availableExtension)
 				{
 					return std::strcmp(
 							availableExtension.extensionName,
@@ -161,6 +168,12 @@ namespace clz::renderer
 				return false;
 			}
 		}
+
+		rValidationLayers.insert(
+			rValidationLayers.end(),
+			r_validationLayers.begin(),
+			r_validationLayers.end()
+		);
 
 		clz::log::debug("All requested layers present");
 		return true;
@@ -210,6 +223,11 @@ namespace clz::renderer
 
 		// Enable layers
 		std::vector<const char*> layers;
+		VkValidationFeaturesEXT validationFeaturesInfo{};
+		validationFeaturesInfo.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		validationFeaturesInfo.enabledValidationFeatureCount = static_cast<uint32_t>(r_validationFeatures.size());
+		validationFeaturesInfo.pEnabledValidationFeatures = r_validationFeatures.data();
+
 		if (r_enableValidationLayers)
 		{
 			if (!getValidationLayers(layers))
@@ -217,11 +235,21 @@ namespace clz::renderer
 				clz::log::error("Validation layers not present");
 				return false;
 			}
+			clz::log::info("Validation layers are enabled");
+			instanceInfo.pNext = &validationFeaturesInfo;
 			instanceInfo.enabledLayerCount = layers.size();
 			instanceInfo.ppEnabledLayerNames = layers.data();
+			if (layers.empty())
+			{
+				clz::log::warn(
+					"Validation layers are enabled, "
+					"but enabled count is empty"
+				);
+			}
 		}
 		else
 		{
+			instanceInfo.pNext = nullptr;
 			instanceInfo.enabledLayerCount = 0;
 			instanceInfo.ppEnabledLayerNames = nullptr;
 		}
@@ -541,7 +569,9 @@ namespace clz::renderer
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
 		descriptorIndexingFeatures.pNext = nullptr;
 		descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+		descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
 		descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+		descriptorIndexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
 
 		// Vulkan 1.3 device Features — enable dynamic rendering
 		VkPhysicalDeviceVulkan13Features features13 = {};
@@ -549,6 +579,7 @@ namespace clz::renderer
 		features13.pNext = &descriptorIndexingFeatures;
 		features13.dynamicRendering = VK_TRUE;
 		features13.synchronization2 = VK_TRUE;
+		features13.maintenance4     = VK_TRUE;
 
 		// Normal device features
 		VkPhysicalDeviceFeatures2 deviceFeatures2 = {};

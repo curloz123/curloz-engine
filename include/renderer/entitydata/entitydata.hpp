@@ -7,33 +7,26 @@
 #pragma once
 
 #include "core/logs.hpp"
-#include "renderer/entitydata/entitydata.hpp"
-#include "renderer/entitydata/indexbuffer.hpp"
 #include "renderer/entitydata/texture.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
+#include "buffer.hpp"
 
 namespace clz::renderer
 {
 	/// @brief Prepares all entity data (vertices, indices, UV, textures etc...)
 	inline bool prepareEntityData()
 	{
-		if (!createVertexBuffer())
+		if (!StaticBufferManager.initialize(190 * 1024 * 1024))
 		{
 			clz::log::error("Failed to create vertex buffer");
 			return false;
 		}
-		if (!createIndexBuffer())
+		if (!StaticIndexManager.initialize(140 * 1024 * 1024))
 		{
 			clz::log::error("Failed to create index buffer");
 			return false;
 		}
-		clz::log::debug("starting");
-		if (!createTextures())
-		{
-			clz::log::error("Failed to create textures");
-			return false;
-		}
-		clz::log::debug("end");
+
+		TextureManager.initialize();
 
 		clz::log::info("Created entity data in renderer");
 		return true;
@@ -42,9 +35,10 @@ namespace clz::renderer
 	/// @brief Destroys all stored entity data in memory
 	inline void destroyEntityData()
 	{
-		destroyTextures();
-		destroyIndexBuffer();
-		destroyVertexBuffer();
+		TextureManager.destroyAllTextureSamplers();
+		TextureManager.destroyAllTextures();
+		StaticIndexManager.destroy();
+		StaticBufferManager.destroy();
 
 		clz::log::info("Destroyed entity data");
 	}

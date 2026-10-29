@@ -1,7 +1,7 @@
 #version 460
 
 layout(location = 0) in vec2 inUV;
-layout(binding = 3) uniform sampler2D bloomedImage; // horizontal bloom image
+layout(set = 3, binding = 3) uniform sampler2D bloomedImage; // horizontal bloom image
 layout(push_constant) uniform PushConstants
 {
 	float exposure;

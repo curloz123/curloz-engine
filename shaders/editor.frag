@@ -2,25 +2,51 @@
 
 // In's
 layout(location = 0) in vec2 inUV;
-layout(location = 1) flat in uint inTextureIndex;
+
+struct Material
+{
+	/// @brief Base color factor
+	vec4 baseFactor;
+	/// @brief ID of the bound base color texture
+	uint  baseTextureId;
+	uint baseSamplerId;
+
+	/// @brief ID of metallic texture
+	uint metallicRoughnessTextureId;
+	uint metallicRoughnessSamplerId;
+	/// @brief metallic color factor
+	float metallicFactor;
+	/// @brief roughness color factor
+	float roughnessFactor;
+
+	/// @brief ID of emissive texture
+	uint emissiveTextureId;
+	/// @brief emissive color strength
+	float emissiveStrength;
+	/// @brief emissive factor
+	vec3 emissiveFactor;
+	uint emissiveSamplerId;
+
+	/// @brief ID of normal texture
+	uint normalTextureId;
+	uint normalSamplerId;
+
+	vec2 _pad;
+};
 
 // Uniform's
 #define NULL_TEXTURE uint(-1)
-layout(set = 1, binding = 0) uniform sampler2D textures[256];
+layout(set = 1, binding = 0) uniform texture2D textures[1024];
+layout(set = 1, binding = 1) uniform sampler samplers[1024];
+layout(std430, set = 1, binding = 2) readonly buffer Materials
+{
+	Material materials[];
+} s_Materials;
 
 layout(push_constant) uniform PushConstants
 {
 	mat4 model;
-
-	vec4 baseColorFactor;
-	uint baseTextureIndex;
-	float metallicFactor;
-	float roughnessFactor;
-	uint metallic_roughnessTextureIndex;
-	vec3 emissiveFactor;
-	uint emissiveTextureIndex;
-	float emissiveStrength;
-	uint normalTextureIndex;
+	uint materialIndex;
 } PC;
 
 
@@ -30,25 +56,38 @@ layout(location = 0) out vec4 outColor;
 void main()
 {
 	vec4 base;
-	if (PC.baseTextureIndex == NULL_TEXTURE)
+	Material material = s_Materials.materials[PC.materialIndex];
+
+	if (material.baseTextureId == NULL_TEXTURE)
 	{
-		base = PC.baseColorFactor;
+		base = material.baseFactor;
 	}
 	else
 	{
-		base = texture(textures[PC.baseTextureIndex], inUV) * 
-			PC.baseColorFactor;
+		base = texture(
+				sampler2D(
+					textures[material.baseTextureId],
+					samplers[material.baseSamplerId]
+				),
+				inUV
+			) * material.baseFactor;
 	}
 
 	vec3 emissiveColor = vec3(0.0);
-	if (PC.emissiveTextureIndex != NULL_TEXTURE)
+	if (material.emissiveTextureId != NULL_TEXTURE)
 	{
-		emissiveColor = texture(textures[PC.emissiveTextureIndex], inUV).rgb * 
-				PC.emissiveFactor * PC.emissiveStrength;	
+
+		emissiveColor = texture(
+					sampler2D(
+						textures[material.emissiveTextureId],
+						samplers[material.emissiveSamplerId]
+					),
+					inUV
+				).rgb * material.emissiveFactor * material.emissiveStrength;
 	}
 	else
 	{
-		emissiveColor = PC.emissiveFactor * PC.emissiveStrength;
+		emissiveColor = material.emissiveFactor * material.emissiveStrength;
 	}
 
 	outColor = vec4(base.rgb + emissiveColor, 1.0);

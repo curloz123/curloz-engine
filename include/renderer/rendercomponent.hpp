@@ -8,10 +8,11 @@
 #pragma once
 
 #include "core/logs.hpp"
+#include "entity/entitymanager.hpp"
 #include "lighting/lighting.hpp"
 #include "model/model.hpp"
 #include "renderer/entitydata/entitydata.hpp"
-#include "renderer/pipelinedata/pipelinedata.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include <filesystem>
 
 namespace clz::renderer
@@ -27,9 +28,6 @@ namespace clz::renderer
 	 */
 	inline void flagRenderComponentsLoaded()
 	{
-		prepareEntityData();
-		updatePipelineData();
-		log::info("Updated pipeline input, after entities have loaded");
 	}
 
 	/**
@@ -38,9 +36,12 @@ namespace clz::renderer
 	 */
 	struct ModelComponent
 	{
-		ModelId modelId = NULL_MODEL;
+		ModelId modelId;
 		ModelComponent() = default;
-		explicit ModelComponent(const ModelId modelId) : modelId(modelId)
+		explicit ModelComponent(
+			const ModelId modelId
+		) : 
+			modelId(modelId)
 		{
 		}
 	};
@@ -67,15 +68,21 @@ namespace clz::renderer
 	 *
 	 * @return ecs::ModelComponent which internally references a model
 	 */
-	inline ModelComponent createModelComponent(const std::filesystem::path& path)
+	inline ModelComponent createModelComponent(
+		const ecs::entity entt,
+		const uint32_t modelIndex
+	)
 	{
-		if (const auto result = loadModel(path))
+		if (!ModelManager.attachModelToEntity(entt, modelIndex))
 		{
-			return ModelComponent(result.value());
+			clz::log::error(
+				"could not retrieve model Id for entity: " + 
+				ecs::getEntityName(entt)
+			);
+			return ModelComponent(ModelId());
 		}
 
-		log::warn("Could not load model, exiting");
-		return ModelComponent(NULL_MODEL);
+		return ModelComponent(ModelId(modelIndex));
 	}
 
 } // namespace clz::renderer

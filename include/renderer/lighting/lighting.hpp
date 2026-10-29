@@ -139,6 +139,8 @@ namespace clz::renderer
 		float outerCutoffAngle
 	);
 
+	void updateLights();
+
 	/// @brief Gets the direction of a directional light.
 	/// @param id Handle returned by registerDirectionalLight.
 	/// @return Normalized direction vector.

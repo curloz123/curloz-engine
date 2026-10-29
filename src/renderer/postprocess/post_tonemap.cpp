@@ -7,16 +7,11 @@
 
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "core/logs.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/utility/image.hpp"
-#include "renderer/utility/memory.hpp"
-#include "renderer/utility/namer.hpp"
-
-#ifdef CLZ_ENABLE_EDITOR
-#include "include/sceneview.hpp"
-#endif
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer::post_process
 {
@@ -105,10 +100,10 @@ namespace clz::renderer::post_process
 			postTonemapImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			0,
-			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
-			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR,
-			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+			VK_ACCESS_2_TRANSFER_READ_BIT,
+			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_2_BLIT_BIT,
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			commandBuffer
 		);
@@ -155,7 +150,7 @@ namespace clz::renderer::post_process
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			r_postTonemapPipelineContext.pipeline);
-		
+
 		uint32_t postProcessBits = 0;
 		// if (enableVignette)
 			postProcessBits |= PostTonemapEffects::Vignette;
@@ -192,15 +187,9 @@ namespace clz::renderer::post_process
 			sizeof(Post_TonemapPC),
 			&pushConstant
 		);
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			r_postTonemapPipelineContext.layout,
-			0, 1,
-			&post_processDescriptorSets[r_currentFrame],
-			0,
-			nullptr
-		);
+
+		PostProcessDescriptor.bindDescriptor(commandBuffer, r_postTonemapPipelineContext);
+
 
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 		vkCmdEndRendering(commandBuffer);
@@ -217,7 +206,7 @@ namespace clz::renderer::post_process
 			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
 			VK_ACCESS_2_TRANSFER_READ_BIT_KHR,
 			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
-			VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+			VK_PIPELINE_STAGE_2_BLIT_BIT,
 			VK_IMAGE_ASPECT_COLOR_BIT,
 			commandBuffer
 		);

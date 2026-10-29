@@ -113,12 +113,13 @@ curloz-engine/
 
 ## Roadmap
 
-* [ ] Fix Aspect ratio correction to post processing effects
-* [ ] Add a per material data ssbo
-* [ ] Fix light entity's not disabling bug
-* [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector
-* [ ] ozz-animation skeletal animation support
-* [ ] Editor UI improvements
+* [ ] Add anisotropy level menu in config file.
+* [ ] Fix Aspect ratio correction to post processing effects.
+* [ ] Add a per material data ssbo.
+* [ ] Fix light entity's not disabling bug.
+* [ ] Display model component's Node → Mesh → Primitives hierarchy in editor's inspector.
+* [ ] ozz-animation skeletal animation support.
+* [ ] Editor UI improvements.
 
 ---
 

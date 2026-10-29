@@ -8,6 +8,7 @@
 #include "core/logs.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/namer.hpp"
+#include <cfloat>
 #include <cstdint>
 #include <string>
 #include <vulkan/vulkan_core.h>
@@ -295,7 +296,7 @@ namespace clz::renderer
 
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = maxLod;
+		samplerInfo.maxLod = (maxLod == FLT_MAX) ? VK_LOD_CLAMP_NONE : maxLod;
 
 		samplerInfo.anisotropyEnable = enableAnisotropy ? VK_TRUE : VK_FALSE;
 		samplerInfo.maxAnisotropy = anisotropy;
@@ -413,7 +414,7 @@ namespace clz::renderer
 	}
 
 	/// @copydoc generateMipmaps
-	void generateMipmaps(VkCommandBuffer commandBuffer, VkImage& rImage, const int32_t imageWidth, const int32_t imageHeight, const uint32_t mipLevels)
+	VkImageLayout generateMipmaps(VkCommandBuffer commandBuffer, VkImage& rImage, const int32_t imageWidth, const int32_t imageHeight, const uint32_t mipLevels)
 	{
 		auto mipWidth = imageWidth;
 		auto mipHeight = imageHeight;
@@ -444,8 +445,8 @@ namespace clz::renderer
 
 			blit.dstOffsets[0] = {0, 0, 0};
 			blit.dstOffsets[1] = {
-				(mipWidth > 1) ? mipWidth / 2 : 1, 
-				(mipHeight > 1) ? mipHeight / 2 : 1, 
+				(mipWidth > 1) ? mipWidth / 2 : 1,
+				(mipHeight > 1) ? mipHeight / 2 : 1,
 				1
 			};
 			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -459,7 +460,7 @@ namespace clz::renderer
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				rImage,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1, 
+				1,
 				&blit,
 				VK_FILTER_LINEAR
 			);
@@ -467,6 +468,22 @@ namespace clz::renderer
 			mipWidth  /= 2;
 			mipHeight /= 2;
 		}
-		
+
+		transition_image_layout(
+			rImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_ACCESS_2_TRANSFER_WRITE_BIT,
+			VK_ACCESS_2_TRANSFER_READ_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer,
+			mipLevels -1,
+			1
+		);
+
+		return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
 	}
 } // namespace clz::renderer

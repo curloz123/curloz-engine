@@ -16,32 +16,8 @@ namespace clz::renderer
 	/// @brief Push constant whenever you need to draw a model
 	struct ModelDataPC
 	{
-		/// @brief Model matrix of model
-		math::mat4 modelMatrix;
-
-		/// @brief Base color factor
-		math::vec4 baseColorFactor;
-
-		/// @brief base texture id value
-		uint32_t baseTextureIndex;
-
-		/// @brief metallic factor
-		float metallicFactor;
-		/// @brief roughness factor
-		float roughnessFactor;
-		/// @brief metallic-roughness texture id value
-		uint32_t metallic_roughnessTextureIndex;
-
-		/// @brief Emissive factor
-		math::vec3 emissiveFactor;
-		/// @brief emissive texture ID
-		uint32_t emissiveTextureIndex;
-		/// @brief emissive strength values
-		float emissiveStrength;
-
-
-		/// @brief normal texture id
-		uint32_t normalTextureIndex;
+		uint32_t matrixIndex;
+		uint32_t materialIndex;
 	};
 
 	/// @brief Bloom pipeline's push constant
@@ -82,7 +58,7 @@ namespace clz::renderer
 	{
 		/// @brief bits determining which processes to enable
 		uint32_t postProcessBits;
-		
+
 		/// @brief aspect ratio of render target
 		float aspectRatio;
 

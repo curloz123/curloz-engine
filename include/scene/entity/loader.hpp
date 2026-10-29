@@ -23,8 +23,9 @@ namespace clz::scene
 	/// @param entityName Entity's name
 	/// @return TransformComponent of given entity
 	ecs::TransformComponent retrieveTransformComponent(
-			const nlohmann::json& componentData, 
-			std::string_view entityName);
+		const nlohmann::json& componentData, 
+		std::string_view entityName
+	);
 
 	/**
 	 * @brief Saves transform component of any entity.
@@ -33,19 +34,21 @@ namespace clz::scene
 	 * @param entityName Entity's name
 	 */
 	void saveTransformComponent(
-			const ecs::TransformComponent& tc, 
-			nlohmann::json& componentData,
-			std::string_view entityName);
+		const ecs::TransformComponent& tc, 
+		nlohmann::json& componentData,
+		std::string_view entityName
+	);
 
 	/**
 	 * @brief Retrieves Model component of any entity.
-	 * @param path of entity's model
-	 * @param entityName Entity's name
+	 * @param modelCompEntry Model component entry in json
+	 * @param entt The entity to which component is being attached.
 	 * @return ModelComponent of given entity
 	 */
 	renderer::ModelComponent retrieveModelComponent(
-			const std::filesystem::path& path, 
-			std::string_view entityName);
+		const nlohmann::json& modelCompEntry, 
+		const ecs::entity entt
+	);
 	/**
 	 * @brief Saves model component of any entity.
 	 * @param mc modelComponent of given entity
@@ -53,9 +56,9 @@ namespace clz::scene
 	 * @param entityName Entity's name
 	 */
 	void saveModelComponent(
-			const renderer::ModelComponent& mc, 
-			nlohmann::json& componentData,
-			std::string_view entityName);
+		const renderer::ModelComponent& mc, 
+		nlohmann::json& componentData
+	);
 
 	/// @brief Retrieves directional light component
 	/// @param componentData Component field in JSON(simply pass the

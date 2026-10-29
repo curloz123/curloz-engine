@@ -6,6 +6,7 @@
 
 #include "renderer/utility/ubo.hpp"
 #include "core/logs.hpp"
+#include "renderer/arena.hpp"
 #include "renderer/utility/buffer.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/offsetalignment.hpp"
@@ -71,6 +72,7 @@ namespace clz::renderer
 				true
 			);
 		}
+		bindUniformBufferToMemory(rUBO.buffer, rUBO.memory);
 
 		setHandleName(
 			reinterpret_cast<uint64_t>(rUBO.buffer),

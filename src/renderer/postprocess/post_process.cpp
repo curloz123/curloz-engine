@@ -6,7 +6,7 @@
  * @note assumes swapchain context has been initialized
  */
 
-#include "renderer/pipelinedata/post_process.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "core/logs.hpp"
 #include "renderer/postprocess/bloom.hpp"
 #include "renderer/postprocess/bloom_sample.hpp"
@@ -18,6 +18,11 @@ namespace clz::renderer::post_process
 	/// @copydoc initializePostProcesses
 	bool initializePostProcesses(const std::uint32_t width, const std::uint32_t height)
 	{
+		if (!createBloomSampleProcess(width, height))
+		{
+			clz::log::error("failed to create bloom process");
+			return false;
+		}
 		if (!createBloomProcess(width, height))
 		{
 			clz::log::error("failed to create bloom process");
@@ -36,7 +41,8 @@ namespace clz::renderer::post_process
 			return false;
 		}
 
-		updatePostProcessDescriptorSets();		
+		PostProcessDescriptor.updateDescriptorSets();
+
 		clz::log::info("Initialized post process resources");
 		return true;
 	}
@@ -47,6 +53,7 @@ namespace clz::renderer::post_process
 		destroyPostTonemapProcess(isRecreating);
 		destroyTonemapProcess(isRecreating);
 		destroyBloomProcess(isRecreating);
+		destroyBloomSampleProcess(isRecreating);
 	}
 
 	/// @copydoc recreatePostProcesses
@@ -63,7 +70,7 @@ namespace clz::renderer::post_process
 			return false;
 		}
 
-		updatePostProcessDescriptorSets();
+		PostProcessDescriptor.updateDescriptorSets();
 
 		return true;
 	}
@@ -75,12 +82,6 @@ namespace clz::renderer::post_process
 		applyBloomProcess(commandBuffer);
 		applyTonemapProcess(commandBuffer);
 		applyPostTonemapProcess(commandBuffer);
-	}
-
-	/// @copydoc hintPostProcessStateChange
-	void hintPostProcessStateChange()
-	{
-		updatePostProcessDescriptorSets();
 	}
 
 }

@@ -30,7 +30,7 @@ namespace clz::renderer
 	 * @param rDescriptorCounts Array size (descriptorCount) for each binding.
 	 * @param rShaderStages Shader stages each binding is visible to.
 	 * @param layoutName Debug name applied to the created layout.
-	 * @param isTextureLayout When true, marks the layout with
+	 * @param updateAfterBindFlag When true, marks the layout with
 	 * VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT plus
 	 * partially-bound/update-after-bind binding flags — required for the
 	 * bindless texture array (set 1) so textures can be registered
@@ -44,7 +44,7 @@ namespace clz::renderer
 		std::span<const uint32_t> rDescriptorCounts,
 		std::span<const VkShaderStageFlags> rShaderStages,
 		const std::string& layoutName,
-		bool isTextureLayout = false
+		bool updateAfterBindFlag = false
 	);
 
 	/**

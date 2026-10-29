@@ -5,6 +5,8 @@
  */
 
 #include "core/logs.hpp"
+#include "entity/entitymanager.hpp"
+#include "renderer/model/model.hpp"
 #include "renderer/rendercomponent.hpp"
 #include "scene/entity/loader.hpp"
 
@@ -12,29 +14,38 @@ namespace clz::scene
 {
 	/// @copydoc retrieveModelComponent
 	renderer::ModelComponent retrieveModelComponent(
-			const std::filesystem::path& path,
-			std::string_view entityName)
+		const nlohmann::json& modelCompEntry, 
+		const ecs::entity entt
+	)
 	{
-		const renderer::ModelComponent modelComponent =
-			renderer::createModelComponent(path);
-		if (modelComponent.modelId == renderer::NULL_MODEL)
+		const auto name = ecs::getEntityName(entt);
+		if (!modelCompEntry.contains("index") || 
+			modelCompEntry["index"].is_null()
+		)
 		{
-			clz::log::error(
-				"Could not load model component for entity: " + 
-				std::string(entityName)
+			clz::log::warn(
+				name +
+				"'s model entry (does not have)/(has null)"
+				" index field, attaching null component"
 			);
+			return renderer::ModelComponent(renderer::ModelId());
 		}
 
-		return modelComponent;
+		return renderer::createModelComponent(
+				entt,
+				modelCompEntry["index"]
+			);
 	}
 
 	/// @copydoc saveModelComponent
 	void saveModelComponent(
-			const renderer::ModelComponent& mc,
-			nlohmann::json& componentData,
-			std::string_view entityName)
+		const renderer::ModelComponent& mc,
+		nlohmann::json& componentData
+	)
 	{
-		componentData["path"] = renderer::getModelPath(mc.modelId);
-		clz::log::info("Saved model component for entity: " + std::string(entityName));
+		if (mc.modelId.isNull())
+			componentData["index"] = nlohmann::json(nullptr);
+		else
+			componentData["index"] = mc.modelId.getId();
 	}
 } // namespace clz::scene

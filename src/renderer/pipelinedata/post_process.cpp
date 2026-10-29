@@ -1,29 +1,23 @@
 /**
  * @file post_process.cpp
  * @author curl0z
- * @brief post processes pipeline data implementation file
+ * @brief Implementation of the post-process descriptor interface.
  */
 #include "renderer/pipelinedata/post_process.hpp"
 #include "core/logs.hpp"
 #include "renderer/postprocess/bloom.hpp"
-#include "renderer/vk_types.hpp"
 #include "renderer/postprocess/bloom_sample.hpp"
 #include "renderer/postprocess/tonemap.hpp"
 #include "renderer/postprocess/post_tonemap.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/utility/descriptor.hpp"
+#include "renderer/vk_types.hpp"
 #include <cstdint>
 #include <array>
-#include <vulkan/vulkan_core.h>
-
-#ifdef CLZ_ENABLE_EDITOR
-#include "include/sceneview.hpp"
-#endif
 
 namespace clz::renderer
 {
-	/// @copydoc createPostProcessDescriptor
-	bool createPostProcessDescriptor()
+	bool PostProcessDescriptorInterface::initialize()
 	{
 		constexpr uint8_t count = 6;
 
@@ -43,7 +37,9 @@ namespace clz::renderer
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		};
-		constexpr std::array<uint32_t, count> descriptorCounts = {1, 1, post_process::NUM_BLOOM_MIPS, 1, 1, 1};
+		constexpr std::array<uint32_t, count> descriptorCounts = {
+			1, 1, post_process::NUM_BLOOM_MIPS, 1, 1, 1
+		};
 		constexpr std::array<VkShaderStageFlags, count> shaderStages = {
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -53,13 +49,14 @@ namespace clz::renderer
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 		};
 		if (!createDescriptorLayout(
-			post_processDescriptorLayout,
-			bindPoints,
-			descriptorTypes,
-			descriptorCounts,
-			shaderStages,
-			"post-process descriptor layout",
-			true))
+			    m_descriptorLayout,
+			    bindPoints,
+			    descriptorTypes,
+			    descriptorCounts,
+			    shaderStages,
+			    "post-process descriptor layout",
+			    true
+		))
 		{
 			clz::log::error("unable to create post-process descriptor layout");
 			return false;
@@ -68,30 +65,23 @@ namespace clz::renderer
 		return true;
 	}
 
-	/// @copydoc getPostProcessDescriptorPoolSizes
-	std::vector<VkDescriptorPoolSize> getPostProcessDescriptorPoolSizes()
+	void PostProcessDescriptorInterface::destroy()
 	{
-		std::vector<VkDescriptorPoolSize> poolSizes;
+		destroyDescriptorSetLayout(m_descriptorLayout);
+	}
 
-		VkDescriptorPoolSize poolSize = {};
-		poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		/**
-		 * One for render target
-		 * One for Bloom sample
-		 * 5 for bloom mips
-		 * One for Bloomed
-		 * One for tonemap
-		 * One for post_tonemap
-		 */
-		poolSize.descriptorCount = r_FRAMES_IN_FLIGHT * 10;
-		poolSizes.push_back(poolSize);
+	std::vector<VkDescriptorPoolSize> PostProcessDescriptorInterface::getRequiredPoolSizes()
+	{
+		std::vector<VkDescriptorPoolSize> poolSizes(1);
+
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[0].descriptorCount =
+			r_FRAMES_IN_FLIGHT * (5 + post_process::NUM_BLOOM_MIPS);
 
 		return poolSizes;
 	}
 
-	/// @copydoc allocatePostProcessDescriptorSets
-	bool allocatePostProcessDescriptorSets(
-		const VkDescriptorPool& descriptorPool)
+	bool PostProcessDescriptorInterface::allocateDescriptorSets(VkDescriptorPool descriptorPool)
 	{
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -99,14 +89,14 @@ namespace clz::renderer
 		allocInfo.descriptorSetCount = r_FRAMES_IN_FLIGHT;
 		const std::vector<VkDescriptorSetLayout> layouts(
 			r_FRAMES_IN_FLIGHT,
-			post_processDescriptorLayout
+			m_descriptorLayout
 		);
 		allocInfo.pSetLayouts = layouts.data();
 
 		if (vkAllocateDescriptorSets(
 			    r_deviceContext.device,
 			    &allocInfo,
-			    post_processDescriptorSets.data()
+			    m_descriptorSets.data()
 		    ) != VK_SUCCESS)
 		{
 			clz::log::error("vulkan could not allocate post-process descriptor sets");
@@ -116,7 +106,7 @@ namespace clz::renderer
 		for (uint32_t j = 0; j < r_FRAMES_IN_FLIGHT; ++j)
 		{
 			setHandleName(
-				reinterpret_cast<uint64_t>(post_processDescriptorSets[j]),
+				reinterpret_cast<uint64_t>(m_descriptorSets[j]),
 				VK_OBJECT_TYPE_DESCRIPTOR_SET,
 				("post-process descriptor [frame " + std::to_string(j) + "]").c_str()
 			);
@@ -125,15 +115,14 @@ namespace clz::renderer
 		return true;
 	}
 
-	/// @copydoc updatePostProcessDescriptorSets
-	void updatePostProcessDescriptorSets()
+	void PostProcessDescriptorInterface::updateDescriptorSets()
 	{
-		VkDescriptorImageInfo renderTargetInfo = {};
+		VkDescriptorImageInfo renderTargetInfo{};
 		renderTargetInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		renderTargetInfo.imageView = r_renderTargetContext.imageView;
 		renderTargetInfo.sampler = r_renderTargetContext.imageSampler;
 
-		VkDescriptorImageInfo bloomSampleInfo = {};
+		VkDescriptorImageInfo bloomSampleInfo{};
 		bloomSampleInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		bloomSampleInfo.imageView = post_process::bloomSampleImageView;
 		bloomSampleInfo.sampler = post_process::bloomSampleSampler;
@@ -146,17 +135,17 @@ namespace clz::renderer
 			bloomMipInfos[i].sampler = post_process::bloomSampler;
 		}
 
-		VkDescriptorImageInfo bloomBlendInfo = {};
+		VkDescriptorImageInfo bloomBlendInfo{};
 		bloomBlendInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		bloomBlendInfo.imageView = post_process::bloomedImage.imageView;
 		bloomBlendInfo.sampler = post_process::bloomSampler;
 
-		VkDescriptorImageInfo tonemapInfo = {};
+		VkDescriptorImageInfo tonemapInfo{};
 		tonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		tonemapInfo.imageView = post_process::tonemapImageView;
 		tonemapInfo.sampler = post_process::tonemapSampler;
 
-		VkDescriptorImageInfo postTonemapInfo = {};
+		VkDescriptorImageInfo postTonemapInfo{};
 		postTonemapInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		postTonemapInfo.imageView = post_process::postTonemapImageView;
 		postTonemapInfo.sampler = post_process::postTonemapSampler;
@@ -165,7 +154,7 @@ namespace clz::renderer
 		{
 			VkWriteDescriptorSet renderTargetWrite{};
 			renderTargetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			renderTargetWrite.dstSet = post_processDescriptorSets[j];
+			renderTargetWrite.dstSet = m_descriptorSets[j];
 			renderTargetWrite.dstBinding = RENDER_TARGET_IMAGE_BIND_POINT;
 			renderTargetWrite.dstArrayElement = 0;
 			renderTargetWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -174,7 +163,7 @@ namespace clz::renderer
 
 			VkWriteDescriptorSet bloomSampleWrite{};
 			bloomSampleWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			bloomSampleWrite.dstSet = post_processDescriptorSets[j];
+			bloomSampleWrite.dstSet = m_descriptorSets[j];
 			bloomSampleWrite.dstBinding = BLOOM_SAMPLE_IMAGE_BIND_POINT;
 			bloomSampleWrite.dstArrayElement = 0;
 			bloomSampleWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -183,16 +172,16 @@ namespace clz::renderer
 
 			VkWriteDescriptorSet bloomMipWrite{};
 			bloomMipWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			bloomMipWrite.dstSet = post_processDescriptorSets[j];
+			bloomMipWrite.dstSet = m_descriptorSets[j];
 			bloomMipWrite.dstBinding = BLOOM_MIP_IMAGES_BIND_POINT;
 			bloomMipWrite.dstArrayElement = 0;
 			bloomMipWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			bloomMipWrite.descriptorCount = post_process::NUM_BLOOM_MIPS;
 			bloomMipWrite.pImageInfo = bloomMipInfos.data();
 
-			VkWriteDescriptorSet bloomWrite = {};
+			VkWriteDescriptorSet bloomWrite{};
 			bloomWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			bloomWrite.dstSet = post_processDescriptorSets[j];
+			bloomWrite.dstSet = m_descriptorSets[j];
 			bloomWrite.dstArrayElement = 0;
 			bloomWrite.dstBinding = BLOOMED_IMAGE_BIND_POINT;
 			bloomWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -201,7 +190,7 @@ namespace clz::renderer
 
 			VkWriteDescriptorSet tonemapWrite{};
 			tonemapWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			tonemapWrite.dstSet = post_processDescriptorSets[j];
+			tonemapWrite.dstSet = m_descriptorSets[j];
 			tonemapWrite.dstBinding = TONEMAP_IMAGE_BIND_POINT;
 			tonemapWrite.dstArrayElement = 0;
 			tonemapWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -210,7 +199,7 @@ namespace clz::renderer
 
 			VkWriteDescriptorSet postTonemapWrite{};
 			postTonemapWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			postTonemapWrite.dstSet = post_processDescriptorSets[j];
+			postTonemapWrite.dstSet = m_descriptorSets[j];
 			postTonemapWrite.dstBinding = POST_TONEMAP_IMAGE_BIND_POINT;
 			postTonemapWrite.dstArrayElement = 0;
 			postTonemapWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -222,7 +211,7 @@ namespace clz::renderer
 				bloomSampleWrite,
 				bloomMipWrite,
 				bloomWrite,
-				tonemapWrite, 
+				tonemapWrite,
 				postTonemapWrite
 			};
 
@@ -235,14 +224,4 @@ namespace clz::renderer
 			);
 		}
 	}
-
-	/// @copydoc destroyPostProcessDescriptor
-	void destroyPostProcessDescriptor()
-	{
-		vkDestroyDescriptorSetLayout(
-			r_deviceContext.device,
-			post_processDescriptorLayout,
-			nullptr);
-	}
-
-}
+} // namespace clz::renderer

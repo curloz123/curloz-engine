@@ -22,9 +22,10 @@ namespace clz::editor
 			return;
 
 		const renderer::ModelId id =
-			ecs::getComponent<renderer::ModelComponent>(currentSelectedEntity.value())
-				.modelId;
-		const auto name = renderer::getModelPath(id);
+			ecs::getComponent<renderer::ModelComponent>(
+				currentSelectedEntity.value()
+			).modelId;
+		const auto name = renderer::ModelManager.getModelPath(id);
 
 		ImGui::PushFont(fontMono);
 		ImGui::Text("Model Path: %s", name.c_str());

@@ -21,7 +21,7 @@ namespace clz::renderer
 		const std::span<const uint32_t> rDescriptorCounts,
 		const std::span<const VkShaderStageFlags> rShaderStages,
 		const std::string& layoutName,
-		const bool isTextureLayout
+		const bool updateAfterBindFlag
 	)
 	{
 		// All parallel arrays must describe the same set of bindings.
@@ -57,10 +57,6 @@ namespace clz::renderer
 		layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
 		layoutInfo.pBindings = layoutBindings.data();
 
-		// Bindless-texture-array support: lets slots be written after the
-		// descriptor set is bound (UPDATE_AFTER_BIND) and lets unused slots
-		// stay unwritten (PARTIALLY_BOUND) — needed since textures are
-		// registered incrementally as models load, not all at once.
 		const std::vector<VkDescriptorBindingFlags> bindingFlags(
 			rBindPoints.size(),
 			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
@@ -72,7 +68,7 @@ namespace clz::renderer
 		bindingFlagsInfo.bindingCount = bindingFlags.size();
 		bindingFlagsInfo.pBindingFlags = bindingFlags.data();
 
-		if (isTextureLayout)
+		if (updateAfterBindFlag)
 		{
 			layoutInfo.flags =
 				VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;

@@ -156,7 +156,7 @@ namespace clz::renderer
 			(vertexBufferArenaSize != 0 && indexBufferArenaSize != 0),
 			"Attempt to allocate arena buffer of size 0"
 		);
-			  
+
 		const auto& device = r_deviceContext.device;
 
 		const VkBufferCreateInfo vBufferCI{
@@ -172,16 +172,20 @@ namespace clz::renderer
 			.pQueueFamilyIndices   = nullptr
 		};
 
-		if (vkCreateBuffer(
+		const VkDeviceBufferMemoryRequirements vBufferMemReq{
+			.sType = VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS,
+			.pNext = nullptr,
+			.pCreateInfo = &vBufferCI
+		};
+		VkMemoryRequirements2 vMemRequirements{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
+			.pNext = nullptr
+		};
+		vkGetDeviceBufferMemoryRequirements(
 			device,
-			&vBufferCI,
-			nullptr,
-			&VertexBuffer
-		) != VK_SUCCESS)
-		{
-			clz::log::error("Could not create vertex buffer", true);
-			return false;
-		}
+			&vBufferMemReq,
+			&vMemRequirements
+		);
 
 		const VkBufferCreateInfo iBufferCI{
 			.sType 		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -195,30 +199,31 @@ namespace clz::renderer
 			.queueFamilyIndexCount = 0,
 			.pQueueFamilyIndices   = nullptr
 		};
-		if (vkCreateBuffer(
-			device,
-			&iBufferCI,
-			nullptr,
-			&IndexBuffer
-		) != VK_SUCCESS)
-		{
-			clz::log::error("Could not create index buffer", true);
-			return false;
-		}
 
-		VkMemoryRequirements vMemRequirements;
-		VkMemoryRequirements iMemRequirements;
-		vkGetBufferMemoryRequirements(device, VertexBuffer, &vMemRequirements);
-		vkGetBufferMemoryRequirements(device, IndexBuffer, &iMemRequirements);
-		VertexArenaTotalSize = vMemRequirements.size;
-		IndexArenaTotalSize   = iMemRequirements.size;
-	
+		const VkDeviceBufferMemoryRequirements iBufferMemReq{
+			.sType = VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS,
+			.pNext = nullptr,
+			.pCreateInfo = &iBufferCI
+		};
+		VkMemoryRequirements2 iMemRequirements{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
+			.pNext = nullptr
+		};
+		vkGetDeviceBufferMemoryRequirements(
+			device,
+			&iBufferMemReq,
+			&iMemRequirements
+		);
+
+		VertexArenaTotalSize = vMemRequirements.memoryRequirements.size;
+		IndexArenaTotalSize   = iMemRequirements.memoryRequirements.size;
+
 		const VkMemoryAllocateInfo vMemAllocInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.pNext = nullptr,
 			.allocationSize = VertexArenaTotalSize,
 			.memoryTypeIndex = findMemoryType(
-				vMemRequirements.memoryTypeBits,
+				vMemRequirements.memoryRequirements.memoryTypeBits,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			),
 		};
@@ -227,7 +232,7 @@ namespace clz::renderer
 			.pNext = nullptr,
 			.allocationSize = IndexArenaTotalSize,
 			.memoryTypeIndex = findMemoryType(
-				iMemRequirements.memoryTypeBits,
+				iMemRequirements.memoryRequirements.memoryTypeBits,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			),
 		};
@@ -254,7 +259,7 @@ namespace clz::renderer
 			return false;
 		}
 
-		
+
 		setHandleName(
 			reinterpret_cast<uint64_t>(VertexBufferMemory),
 			VK_OBJECT_TYPE_DEVICE_MEMORY,
@@ -267,9 +272,6 @@ namespace clz::renderer
 		);
 
 
-		vkBindBufferMemory(device, VertexBuffer, VertexBufferMemory, 0);
-		vkBindBufferMemory(device, IndexBuffer, IndexBufferMemory, 0);
-
 		VertexBufferNewStartIndex = 0;
 		IndexBufferNewStartIndex  = 0;
 
@@ -281,323 +283,418 @@ namespace clz::renderer
 	{
 		const auto& device = r_deviceContext.device;
 
-		vkDestroyBuffer(device, VertexBuffer, nullptr);
-		vkDestroyBuffer(device, IndexBuffer, nullptr);
 		vkFreeMemory(device, VertexBufferMemory, nullptr);
 		vkFreeMemory(device, IndexBufferMemory, nullptr);
 	}
 
-	/// @copydoc allocateVertexBuffer
-	bool allocateVertexBuffer(
-		const VertexBufferAllocInfo* pAllocInfo,
-		clzVertexBuffer* pVertexBuffer
+
+
+	/// Inserts a gap keeping VertexArenaGaps sorted by size. Skips empty gaps.
+	static inline void insertVertexGap(
+		const VkDeviceSize offset, 
+		const VkDeviceSize size
 	)
 	{
-		CLZ_ASSERT(
-			pAllocInfo->size != 0,
-			"Why are you tring to allocate 0 sized vertex buffer??"
-		);
+		if (size == 0)
+			return;
 
-		/// Check if there is any free memory in gaps
-		if (!VertexBufferGaps.empty() && 
-			VertexBufferGaps.back().size >= pAllocInfo->size)
+		if (offset + size == VertexBufferNewStartIndex)
 		{
-			auto pOldPos = std::lower_bound(
-					VertexBufferGaps.begin(),
-					VertexBufferGaps.end(),
-					pAllocInfo->size,
-					[](const clzVertexBuffer& vBuffer, VkDeviceSize size){
-						return vBuffer.size < size;
-					}
-			);
-			/// (it) must not be VertexBufferGaps.end right. RIGHT!!!
-			CLZ_ASSERT(
-				pOldPos != VertexBufferGaps.end(), 
-				"how is it == VertexBufferGaps.end()!!??"
-			);
-
-			pVertexBuffer->memoryOffset = pOldPos->memoryOffset;
-			pVertexBuffer->size = pAllocInfo->size;
-			pOldPos->memoryOffset += pAllocInfo->size;
-			pOldPos->size -= pAllocInfo->size;
-
-			/// if new size in pOldPos became 0, remove it.
-			if (pOldPos->size == 0)
-			{
-				VertexBufferGaps.erase(pOldPos);
-				/// no need to sort array below. lets bail out.
-				return true;
-			}
-
-
-			/// Sort the array again.
-			/// Rather than simply using std::sort, use the reverse method.
-
-			/// if this is the first element, simply return, no need to sort.
-			if (pOldPos == VertexBufferGaps.begin())
-				return true;
-
-			auto pNewPos = std::lower_bound(
-					VertexBufferGaps.begin(),
-					pOldPos,
-					pOldPos->size,
-					[](const clzVertexBuffer& vBuffer, VkDeviceSize size){
-						return vBuffer.size < size;			
-					}
-			);
-
-			/// If it turned out to be same position, bail out
-			if (pOldPos == pNewPos)
-				return true;
-
-			/// finally sort the array
-			std::reverse(pNewPos, pOldPos);
-			std::reverse(pNewPos, pOldPos + 1);
-			return true;
+			VertexBufferNewStartIndex = offset;
+			return;
 		}
 
-		if ((VertexArenaTotalSize - VertexBufferNewStartIndex) < 
-			(pAllocInfo->size)) [[unlikely]]
+		clzVertexBufferMemory gap;
+		gap.set(offset, size);
+
+		const auto pos = std::lower_bound(
+			VertexArenaGaps.begin(),
+			VertexArenaGaps.end(),
+			size,
+			[](const clzVertexBufferMemory& m, const VkDeviceSize s) {
+				return m.getSize() < s;
+			}
+		);
+		VertexArenaGaps.insert(pos, gap);
+	}
+
+	/// Inserts a gap keeping IndexArenaGaps sorted by size. Skips empty gaps.
+	static inline void insertIndexGap(
+		const VkDeviceSize offset,
+		const VkDeviceSize size
+	)
+	{
+		if (size == 0)
+			return;
+
+		if (offset + size == IndexBufferNewStartIndex)
 		{
-			clz::log::error("Vertex buffer memory is full, "
-					"could not allocate more memory");
+			IndexBufferNewStartIndex = offset;
+			return;
+		}
+
+		clzIndexBufferMemory gap;
+		gap.set(offset, size);
+
+		const auto pos = std::lower_bound(
+			IndexArenaGaps.begin(),
+			IndexArenaGaps.end(),
+			size,
+			[](const clzIndexBufferMemory& m, const VkDeviceSize s) {
+				return m.getSize() < s;
+			}
+		);
+		IndexArenaGaps.insert(pos, gap);
+	}
+
+	/// @copydoc allocateVertexBufferMemory
+	bool allocateVertexBufferMemory(
+		const VertexBufferMemoryAllocationInfo& rAllocInfo,
+		clzVertexBufferMemory& rBufferMemory
+	)
+	{
+	#ifdef CLZ_ENABLE_CHECKS
+		CLZ_ASSERT(
+			VertexBufferMemory != VK_NULL_HANDLE,
+			"Vertex buffer arena memory is not initialized, "
+			"but attempt was made to carve memory from it."
+		);
+		CLZ_ASSERT(
+			rAllocInfo.size != 0 && rAllocInfo.alignment != 0,
+			"vertex buffer size must be non-zero and alignment a power of two"
+		);
+		CLZ_ASSERT(
+			rBufferMemory.isNull(),
+			"vertex buffer handle already owns memory, free it first"
+		);
+	#endif
+
+		const auto getNearestOffset = [alignment = rAllocInfo.alignment](
+							const VkDeviceSize v
+						)
+						{
+							return (v + alignment - 1) &
+								~(alignment - 1);
+						};
+
+		const VkDeviceSize memToAllocate = getNearestOffset(rAllocInfo.size);
+
+		if (!VertexArenaGaps.empty() &&
+			VertexArenaGaps.back().getSize() >= memToAllocate)
+		{
+			const auto it = std::lower_bound(
+				VertexArenaGaps.begin(),
+				VertexArenaGaps.end(),
+				memToAllocate,
+				[](const clzVertexBufferMemory& vBufferMemory, const VkDeviceSize size) {
+					return vBufferMemory.getSize() < size;
+				}
+			);
+
+			for (auto cand = it; cand != VertexArenaGaps.end(); ++cand)
+			{
+				const auto nextOffset =
+					getNearestOffset(cand->getMemoryOffset());
+
+				/// if after aligning memory is less, continue to next iteration
+				if (cand->getEnd() < (nextOffset + memToAllocate))
+					continue;
+
+				rBufferMemory.set(nextOffset, memToAllocate);
+
+				/// handle left and right gap.
+				clzVertexBufferMemory leftGap;
+				clzVertexBufferMemory rightGap;
+
+				if (nextOffset - cand->getMemoryOffset() != 0)
+				{
+					leftGap.set(
+						cand->getMemoryOffset(),
+						nextOffset - cand->getMemoryOffset()
+					);
+				}
+				if (cand->getEnd() > rBufferMemory.getEnd())
+				{
+					rightGap.set(
+						rBufferMemory.getEnd(),
+						cand->getEnd() - rBufferMemory.getEnd()
+					);
+				}
+
+				/// erase the current gap
+				VertexArenaGaps.erase(cand);
+
+				/// insert the new gaps, sorted by their own size
+				if (!leftGap.isNull())
+					insertVertexGap(leftGap.getMemoryOffset(), leftGap.getSize());
+				if (!rightGap.isNull())
+					insertVertexGap(rightGap.getMemoryOffset(), rightGap.getSize());
+
+				return true;
+			}
+		}
+
+		/// 2. Bump allocate from fresh memory.
+		const VkDeviceSize newOffset = getNearestOffset(VertexBufferNewStartIndex);
+		if (newOffset + memToAllocate > VertexArenaTotalSize) [[unlikely]]
+		{
+			clz::log::error(
+				"vertex buffer memory is full, "
+				"could not allocate more memory"
+			);
 			return false;
 		}
 
-		pVertexBuffer->memoryOffset = VertexBufferNewStartIndex;
-		pVertexBuffer->size = pAllocInfo->size;
+		insertVertexGap(VertexBufferNewStartIndex, newOffset - VertexBufferNewStartIndex);
 
-		VertexBufferNewStartIndex += pAllocInfo->size;
+		rBufferMemory.set(newOffset, memToAllocate);
+		VertexBufferNewStartIndex = newOffset + memToAllocate;
 
 		return true;
 	}
 
-	/// @copydoc allocateIndexBuffer
-	bool allocateIndexBuffer(
-		const IndexBufferAllocInfo* pAllocInfo,
-		clzIndexBuffer* pIndexBuffer
+	/// @copydoc allocateIndexBufferMemory
+	bool allocateIndexBufferMemory(
+		const IndexBufferMemoryAllocationInfo& rAllocInfo,
+		clzIndexBufferMemory& rBufferMemory
 	)
 	{
+	#ifdef CLZ_ENABLE_CHECKS
 		CLZ_ASSERT(
-			pAllocInfo->size != 0,
-			"Why are you tring to allocate 0 sized index buffer??"
+			IndexBufferMemory != VK_NULL_HANDLE,
+			"Index buffer arena memory is not initialized, "
+			"but attempt was made to carve memory from it."
 		);
+		CLZ_ASSERT(
+			rAllocInfo.size != 0 && rAllocInfo.alignment != 0,
+			"index buffer size must be non-zero and alignment a power of two"
+		);
+		CLZ_ASSERT(
+			rBufferMemory.isNull(),
+			"index buffer handle already owns memory, free it first"
+		);
+	#endif
 
-		/// Check if there is any free memory in gaps
-		if (!IndexBufferGaps.empty() && 
-			IndexBufferGaps.back().size > pAllocInfo->size)
+		const auto getNearestOffset = [alignment = rAllocInfo.alignment](
+							const VkDeviceSize v
+						)
+						{
+							return (v + alignment - 1) &
+								~(alignment - 1);
+						};
+
+		const VkDeviceSize memToAllocate = getNearestOffset(rAllocInfo.size);
+
+		if (!IndexArenaGaps.empty() &&
+			IndexArenaGaps.back().getSize() >= memToAllocate)
 		{
-			auto pOldPos = std::lower_bound(
-					IndexBufferGaps.begin(),
-					IndexBufferGaps.end(),
-					pAllocInfo->size,
-					[](const clzIndexBuffer& iBuffer, VkDeviceSize size){
-						return iBuffer.size < size;
-					}
-			);
-			/// (it) must not be IndexBufferGaps.end right. RIGHT!!!
-			CLZ_ASSERT(
-				pOldPos != IndexBufferGaps.end(), 
-				"how is it == IndexBufferGaps.end()!!??"
+			const auto it = std::lower_bound(
+				IndexArenaGaps.begin(),
+				IndexArenaGaps.end(),
+				memToAllocate,
+				[](const clzIndexBufferMemory& iBufferMemory, const VkDeviceSize size) {
+					return iBufferMemory.getSize() < size;
+				}
 			);
 
-			pIndexBuffer->memoryOffset = pOldPos->memoryOffset;
-			pIndexBuffer->size = pAllocInfo->size;
-			pOldPos->memoryOffset += pAllocInfo->size;
-			pOldPos->size -= pAllocInfo->size;
-
-			/// if new size in pOldPos became 0, remove it.
-			if (pOldPos->size == 0)
+			for (auto cand = it; cand != IndexArenaGaps.end(); ++cand)
 			{
-				IndexBufferGaps.erase(pOldPos);
-				/// no need to sort array below. lets bail out.
+				const auto nextOffset =
+					getNearestOffset(cand->getMemoryOffset());
+
+				if (cand->getEnd() < (nextOffset + memToAllocate))
+					continue;
+
+				rBufferMemory.set(nextOffset, memToAllocate);
+
+				clzIndexBufferMemory leftGap;
+				clzIndexBufferMemory rightGap;
+
+				if (nextOffset - cand->getMemoryOffset() != 0)
+				{
+					leftGap.set(
+						cand->getMemoryOffset(),
+						nextOffset - cand->getMemoryOffset()
+					);
+				}
+				if (cand->getEnd() > rBufferMemory.getEnd())
+				{
+					rightGap.set(
+						rBufferMemory.getEnd(),
+						cand->getEnd() - rBufferMemory.getEnd()
+					);
+				}
+
+				IndexArenaGaps.erase(cand);
+
+				if (!leftGap.isNull())
+					insertIndexGap(leftGap.getMemoryOffset(), leftGap.getSize());
+				if (!rightGap.isNull())
+					insertIndexGap(rightGap.getMemoryOffset(), rightGap.getSize());
+
 				return true;
 			}
-
-
-			/// Sort the array again.
-			/// Rather than simply using std::sort, use the reverse method.
-
-			/// if this is the first element, simply return, no need to sort.
-			if (pOldPos == IndexBufferGaps.begin())
-				return true;
-
-			auto pNewPos = std::lower_bound(
-					IndexBufferGaps.begin(),
-					pOldPos,
-					pOldPos->size,
-					[](const clzIndexBuffer& iBuffer, VkDeviceSize size){
-						return iBuffer.size < size;			
-					}
-			);
-
-			/// If it turned out to be same position, bail out
-			if (pOldPos == pNewPos)
-				return true;
-
-			/// finally sort the array
-			std::reverse(pNewPos, pOldPos);
-			std::reverse(pNewPos, pOldPos + 1);
-			return true;
 		}
 
-		if ((IndexArenaTotalSize - IndexBufferNewStartIndex) < 
-			(pAllocInfo->size)) [[unlikely]]
+		const VkDeviceSize newOffset = getNearestOffset(IndexBufferNewStartIndex);
+		if (newOffset + memToAllocate > IndexArenaTotalSize) [[unlikely]]
 		{
-			clz::log::error("Index buffer memory is full, "
-					"could not allocate more memory", false);
+			clz::log::error(
+				"index buffer memory is full, "
+				"could not allocate more memory"
+			);
 			return false;
 		}
 
-		pIndexBuffer->memoryOffset = IndexBufferNewStartIndex;
-		pIndexBuffer->size  = pAllocInfo->size;
+		insertIndexGap(IndexBufferNewStartIndex, newOffset - IndexBufferNewStartIndex);
 
-		IndexBufferNewStartIndex += pAllocInfo->size;
+		rBufferMemory.set(newOffset, memToAllocate);
+		IndexBufferNewStartIndex = newOffset + memToAllocate;
 
 		return true;
 	}
-
-	/// @copydoc freeVertexBuffer
-	void freeVertexBuffer(
-		clzVertexBuffer* pVertexBuffer
-	)
+	/// @copydoc freeVertexBufferMemory
+	void freeVertexBufferMemory(clzVertexBufferMemory& rBufferMemory)
 	{
-		/// first check if there is any adjacent memory	to the right side
-		/// if there is, remove that from and add to the @p handle
-		auto rightIt = std::ranges::find_if(
-			VertexBufferGaps,
-			[rightEnd = (pVertexBuffer->memoryOffset + pVertexBuffer->size)](
-				const clzVertexBuffer& vBuffer
-			){
-				return vBuffer.memoryOffset == rightEnd;	
-			}	
+	#ifdef CLZ_ENABLE_CHECKS
+		CLZ_ASSERT(
+			VertexBufferMemory != VK_NULL_HANDLE,
+			"Vertex buffer arena memory is not initialized, "
+			"but attempt was made to free memory from it."
 		);
-		if (rightIt != VertexBufferGaps.end())
-		{
-			pVertexBuffer->size += rightIt->size;
-			VertexBufferGaps.erase(rightIt);
-		}
+		CLZ_ASSERT(
+			!rBufferMemory.isNull(),
+			"freeing a null vertex buffer handle"
+		);
+	#endif
 
-		/// then check for left side. 
-		/// If there is, add that to @p handle.
-		auto leftIt = std::ranges::find_if(
-			VertexBufferGaps,
-			[leftEnd = pVertexBuffer->memoryOffset](
-				const clzVertexBuffer& vBuffer
+		/// Merge with a gap that starts exactly where this block ends.
+		const auto rightIt = std::ranges::find_if(
+			VertexArenaGaps,
+			[rightEnd = rBufferMemory.getEnd()](
+				const clzVertexBufferMemory& vBufferMemoryGap
 			){
-				return vBuffer.memoryOffset + vBuffer.size == leftEnd;
+				return vBufferMemoryGap.getMemoryOffset() == rightEnd;
 			}
 		);
-		if (leftIt != VertexBufferGaps.end())
+		if (rightIt != VertexArenaGaps.end())
 		{
-			pVertexBuffer->memoryOffset = leftIt->memoryOffset;
-			pVertexBuffer->size += leftIt->size;
-			VertexBufferGaps.erase(leftIt);
-		}
-
-		auto pNewPos = std::lower_bound(
-				VertexBufferGaps.begin(),
-				VertexBufferGaps.end(),
-				pVertexBuffer->size,
-				[](const clzVertexBuffer& vBuffer, VkDeviceSize size){
-					return vBuffer.size < size;			
-				}
-		);
-		if (pNewPos == VertexBufferGaps.end())
-		{
-			VertexBufferGaps.push_back(
-				clzVertexBuffer{
-					.memoryOffset = pVertexBuffer->memoryOffset,
-					.size = pVertexBuffer->size
-				}
+			rBufferMemory.setSize(
+				rBufferMemory.getSize() + rightIt->getSize()
 			);
-		}
-		else
-		{
-			VertexBufferGaps.insert(
-				pNewPos, 
-				clzVertexBuffer{
-					.memoryOffset = pVertexBuffer->memoryOffset,
-					.size = pVertexBuffer->size
-				}
-			);
+			VertexArenaGaps.erase(rightIt);
 		}
 
-		/// at the end, make handle null
-		pVertexBuffer->memoryOffset = std::numeric_limits<VkDeviceSize>::max();
-		pVertexBuffer->size = 0;
-	}
-	/// @copydoc freeVertexBuffer
-	void freeIndexBuffer(
-		clzIndexBuffer* pIndexBuffer
-	)
-	{
-		/// first check if there is any adjacent memory	to the right side
-		/// if there is, remove that from and add to the @p handle
-		auto rightIt = std::ranges::find_if(
-			IndexBufferGaps,
-			[rightEnd = (pIndexBuffer->memoryOffset + pIndexBuffer->size)](
-				const clzIndexBuffer& iBuffer
+		/// Merge with a gap that ends exactly where this block starts.
+		const auto leftIt = std::ranges::find_if(
+			VertexArenaGaps,
+			[leftEnd = rBufferMemory.getMemoryOffset()](
+				const clzVertexBufferMemory& vBufferMemoryGap
 			){
-				return iBuffer.memoryOffset == rightEnd;	
-			}	
-		);
-		if (rightIt != IndexBufferGaps.end())
-		{
-			pIndexBuffer->size += rightIt->size;
-			IndexBufferGaps.erase(rightIt);
-		}
-
-		/// then check for left side. 
-		/// If there is, add that to @p handle.
-		auto leftIt = std::ranges::find_if(
-			IndexBufferGaps,
-			[leftEnd = pIndexBuffer->memoryOffset](
-				const clzIndexBuffer& iBuffer
-			){
-				return iBuffer.memoryOffset + iBuffer.size == leftEnd;
+				return vBufferMemoryGap.getEnd() == leftEnd;
 			}
 		);
-		if (leftIt != IndexBufferGaps.end())
+		if (leftIt != VertexArenaGaps.end())
 		{
-			pIndexBuffer->memoryOffset = leftIt->memoryOffset;
-			pIndexBuffer->size += leftIt->size;
-			IndexBufferGaps.erase(leftIt);
+			rBufferMemory.set(
+				leftIt->getMemoryOffset(),
+				rBufferMemory.getSize() + leftIt->getSize()
+			);
+			VertexArenaGaps.erase(leftIt);
 		}
 
-		auto pNewPos = std::lower_bound(
-				IndexBufferGaps.begin(),
-				IndexBufferGaps.end(),
-				pIndexBuffer->size,
-				[](const clzIndexBuffer& iBuffer, VkDeviceSize size){
-					return iBuffer.size < size;			
-				}
+		insertVertexGap(
+			rBufferMemory.getMemoryOffset(),
+			rBufferMemory.getSize()
 		);
-		if (pNewPos == IndexBufferGaps.end())
-		{
-			IndexBufferGaps.push_back(
-				clzIndexBuffer{
-					.memoryOffset = pIndexBuffer->memoryOffset,
-					.size = pIndexBuffer->size
-				}
-			);
-		}
-		else
-		{
-			IndexBufferGaps.insert(
-				pNewPos, 
-				clzIndexBuffer{
-					.memoryOffset = pIndexBuffer->memoryOffset,
-					.size = pIndexBuffer->size
-				}
-			);
-		}
 
-		/// at the end, make handle null
-		pIndexBuffer->memoryOffset = std::numeric_limits<VkDeviceSize>::max();
-		pIndexBuffer->size = 0;
+		rBufferMemory.makeNull();
 	}
 
+	/// @copydoc freeIndexBufferMemory
+	void freeIndexBufferMemory(clzIndexBufferMemory& rBufferMemory)
+	{
+	#ifdef CLZ_ENABLE_CHECKS
+		CLZ_ASSERT(
+			IndexBufferMemory != VK_NULL_HANDLE,
+			"Index buffer arena memory is not initialized, "
+			"but attempt was made to free memory from it."
+		);
+		CLZ_ASSERT(
+			!rBufferMemory.isNull(),
+			"freeing a null index buffer handle"
+		);
+	#endif
+
+		/// Merge with a gap that starts exactly where this block ends.
+		const auto rightIt = std::ranges::find_if(
+			IndexArenaGaps,
+			[rightEnd = rBufferMemory.getEnd()](
+				const clzIndexBufferMemory& iBufferMemoryGap
+			){
+				return iBufferMemoryGap.getMemoryOffset() == rightEnd;
+			}
+		);
+		if (rightIt != IndexArenaGaps.end())
+		{
+			rBufferMemory.setSize(
+				rBufferMemory.getSize() + rightIt->getSize()
+			);
+			IndexArenaGaps.erase(rightIt);
+		}
+
+		/// Merge with a gap that ends exactly where this block starts.
+		const auto leftIt = std::ranges::find_if(
+			IndexArenaGaps,
+			[leftEnd = rBufferMemory.getMemoryOffset()](
+				const clzIndexBufferMemory& iBufferMemoryGap
+			){
+				return iBufferMemoryGap.getEnd() == leftEnd;
+			}
+		);
+		if (leftIt != IndexArenaGaps.end())
+		{
+			rBufferMemory.set(
+				leftIt->getMemoryOffset(),
+				rBufferMemory.getSize() + leftIt->getSize()
+			);
+			IndexArenaGaps.erase(leftIt);
+		}
+
+		insertIndexGap(
+			rBufferMemory.getMemoryOffset(),
+			rBufferMemory.getSize()
+		);
+
+		rBufferMemory.makeNull();
+	}
+
+	/// @copydoc bindVertexBufferToMemory
+	void bindVertexBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzVertexBufferMemory& rBufferMemory
+	)
+	{
+		vkBindBufferMemory(
+			r_deviceContext.device,
+			rBuffer,
+			VertexBufferMemory,
+			rBufferMemory.getMemoryOffset()
+		);
+	}
+	/// @copydoc bindIndexBufferToMemory
+	void bindIndexBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzIndexBufferMemory& rBufferMemory
+	)
+	{
+		vkBindBufferMemory(
+			r_deviceContext.device,
+			rBuffer,
+			IndexBufferMemory,
+			rBufferMemory.getMemoryOffset()
+		);
+	}
 
 	/// @copydoc allocateUBOMemory
 	bool allocateUBOArenaMemory(
@@ -605,7 +702,7 @@ namespace clz::renderer
 	)
 	{
 		CLZ_ASSERT(
-			uboArenaSize != 0, 
+			uboArenaSize != 0,
 			"UBO Arena size is passed to be 0. But it should not be 0 at all"
 		);
 
@@ -619,7 +716,7 @@ namespace clz::renderer
 		}();
 
 		auto TotalMemToAllocate = [&](){
-			return (MinUBOAlignmentSize + uboArenaSize - 1) & 
+			return (MinUBOAlignmentSize + uboArenaSize - 1) &
 				~(MinUBOAlignmentSize - 1);
 		}();
 
@@ -679,7 +776,7 @@ namespace clz::renderer
 				device,
 				&memAllocInfo,
 				nullptr,
-				&SSBOArenaMemory
+				&UBOArenaMemory
 			) == VK_SUCCESS)
 			{
 				allocated = true;
@@ -755,7 +852,7 @@ namespace clz::renderer
 			"Can't allocate a ubo memory of size 0 or alignment 0"
 		);
 		CLZ_ASSERT(
-			!rUBOMemoryHandle.isNull(),
+			rUBOMemoryHandle.isNull(),
 			"Attempt to carve ubo memory for a non null handle"
 		);
 #endif
@@ -763,7 +860,7 @@ namespace clz::renderer
 		auto getNearestOffset = [alignment = rAllocInfo.alignment](
 						VkDeviceSize prvOffset
 					){
-						return (alignment + prvOffset - 1) & 
+						return (alignment + prvOffset - 1) &
 							~(alignment - 1);
 					};
 
@@ -846,7 +943,7 @@ namespace clz::renderer
 
 
 
-		const auto newStartIndex = (rAllocInfo.alignment + UBOMemoryNewStartIndex - 1) & 
+		const auto newStartIndex = (rAllocInfo.alignment + UBOMemoryNewStartIndex - 1) &
 						~(rAllocInfo.alignment - 1);
 		if ((UBOArenaTotalSize) < (newStartIndex + memToAllocate)) [[unlikely]]
 		{
@@ -875,6 +972,19 @@ namespace clz::renderer
 		UBOMemoryNewStartIndex = newStartIndex + memToAllocate;
 
 		return true;
+	}
+
+	void bindUniformBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzUBOMemory& rUBOMemoryHandle
+	)
+	{
+		vkBindBufferMemory(
+			r_deviceContext.device,
+			rBuffer,
+			UBOArenaMemory,
+			rUBOMemoryHandle.getMemoryOffset()
+		);
 	}
 
 	/// @copydoc freeUBOMemory
@@ -942,7 +1052,7 @@ namespace clz::renderer
 
 		rUboMemoryHandle.makeNull();
 	}
-	
+
 
 
 	/// @copydoc allocateSSBOArenaMemory
@@ -955,7 +1065,7 @@ namespace clz::renderer
 		const auto MinSSBOAlignmentSize = [&]() {
 			VkPhysicalDeviceProperties properties;
 			vkGetPhysicalDeviceProperties(r_deviceContext.physicalDevice, &properties);
-			return properties.limits.minUniformBufferOffsetAlignment;
+			return properties.limits.minStorageBufferOffsetAlignment;
 		}();
 
 		auto TotalMemToAllocate = [&]() {
@@ -1114,7 +1224,7 @@ namespace clz::renderer
 		);
 		CLZ_ASSERT(
 			rAllocInfo.size != 0 && rAllocInfo.alignment != 0,
-			"ssbo size must be non-zero and alignment a power of two"
+			"ssbo size must be non-zero"
 		);
 		CLZ_ASSERT(
 			rSSBOMemoryHandle.isNull(),
@@ -1227,6 +1337,20 @@ namespace clz::renderer
 		return true;
 	}
 
+	void bindStorageBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzSSBOMemory& rSSBOMemoryHandle
+	)
+	{
+		vkBindBufferMemory(
+			r_deviceContext.device,
+			rBuffer,
+			SSBOArenaMemory,
+			rSSBOMemoryHandle.getMemoryOffset()
+		);
+	}
+
+
 	/// @copydoc freeSSBOMemory
 	void freeSSBOMemory(clzSSBOMemory& rSSBOMemoryHandle)
 	{
@@ -1286,6 +1410,74 @@ namespace clz::renderer
 	}
 
 
+	/// @copydoc carveImageMemory
+	bool carveImageMemory(
+		const ImageMemoryAllocInfo& rAllocInfo,
+		clzImageMemory& rImageMemory
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS /*****************************************/
+		CLZ_ASSERT(
+			rImageMemory.isNull(),
+			"Attempt to carve memory to a non-null handle"
+		);
+#endif /***********************************************************/
+
+		rImageMemory.m_imageType = rAllocInfo.imageType;
+		auto& arena = 	ImageMemoryArenas[
+					static_cast<size_t>(
+						rAllocInfo.imageType
+					)
+				];
+
+		if (!arena.carveMemory(rAllocInfo, rImageMemory))
+			return false;
+
+		return true;
+	}
+
+	/// @copydoc freeImageMemory
+	void freeImageMemory(clzImageMemory& rImageMemory)
+	{
+
+#ifdef CLZ_ENABLE_CHECKS /*****************************************/
+		CLZ_ASSERT(
+			!rImageMemory.isNull(),
+			"Cannot free a null image memory handle"
+		);
+#endif /***********************************************************/
+
+		ImageMemoryArenas[static_cast<size_t>(
+			rImageMemory.m_imageType)].freeMemory(
+				rImageMemory
+			);
+	}
+
+
+	/// @copydoc bindImageMemory
+	void bindImageMemory(
+		VkImage& rImage,
+		const clzImageMemory& rImageMemory
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS /***************************************************/
+		CLZ_ASSERT(
+			!rImageMemory.isNull(),
+			"Attempt to bind null memory handle to an image"
+		);
+#endif /*********************************************************************/
+
+		const auto& imageArena =
+			ImageMemoryArenas[static_cast<size_t>(rImageMemory.m_imageType)];
+		vkBindImageMemory(
+			r_deviceContext.device,
+			rImage,
+			imageArena.getRawMemoryHandle(),
+			rImageMemory.getMemoryOffset()
+		);
+	}
+
+
 	/// @copydoc ImageMemoryArena::initialize
 	bool ImageMemoryArena::initialize(
 		const std::string& arenaName,
@@ -1302,7 +1494,7 @@ namespace clz::renderer
 			"Attempt to create image arena with memory size is 0"
 			". Memory must be >= 0"
 		);
-	
+
 		const auto& device = r_deviceContext.device;
 
 		const VkImageCreateInfo imageCI{
@@ -1331,7 +1523,8 @@ namespace clz::renderer
 		};
 
 		VkMemoryRequirements2 memRequirements{
-			.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2
+			.sType = VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2,
+			.pNext = nullptr
 		};
 		vkGetDeviceImageMemoryRequirements(device, &imageMemReq, &memRequirements);
 
@@ -1395,6 +1588,11 @@ namespace clz::renderer
 	/// @copydoc ImageMemoryArena::insertGap
 	void ImageMemoryArena::insertGap(const clzImageMemory& rGap)
 	{
+		if (rGap.getEnd() == m_newStartIndex)
+		{
+			m_newStartIndex = rGap.getMemoryOffset();
+			return;
+		}
 		const auto pos = std::lower_bound(
 			m_gaps.begin(),
 			m_gaps.end(),
@@ -1496,7 +1694,7 @@ namespace clz::renderer
 
 		const auto newStartIndex =
 			getNearestOffset(m_newStartIndex);
-		if (m_totalMemory < (m_newStartIndex + memToAllocate))
+		if (m_totalMemory < (newStartIndex + memToAllocate))
 		{
 			clz::log::error(
 				m_arenaName + "arena is full, "

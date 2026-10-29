@@ -8,165 +8,138 @@
 
 #include "renderer/utility/image.hpp"
 #include <filesystem>
-#include <limits>
 #include <stb_image.h>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "renderer/arena.hpp"
+#include "core/id_interface.hpp"
+#include <expected>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer
 {
-	/**
-	 * @struct Texture
-	 * @brief Holds the cpu-side texture data of all entities (models)
-	 */
-	struct Texture
+	class TextureId : public IdInterface<uint32_t>{};
+	class SamplerId : public IdInterface<uint32_t>{};
+
+	constexpr inline uint16_t MAX_TEXTURE_COUNT = 1024;
+	constexpr inline uint16_t MAX_SAMPLER_COUNT = 1024;
+
+	struct TexureData
 	{
-		std::vector<VkImage> image;
-		std::vector<VkImageView> imageView;
-		std::vector<VkDeviceSize> imageSize;
-		std::vector<VkFormat> imageFormat;
-		std::vector<VkDeviceSize> offset;
-		
-		std::vector<uint32_t> imageMipCount;
-		std::vector<SamplerFilter> minFilter;
-		std::vector<SamplerFilter> magFilter;
-		std::vector<MipmapMode> imageMipmapMode;
-		std::vector<SamplerAddressMode> imageAddressModeU;
-		std::vector<SamplerAddressMode> imageAddressModeV;
-		std::vector<SamplerAddressMode> imageAddressModeW;
-		std::vector<VkSampler> imageSampler;
+		std::string textureName;
 
-		std::vector<int32_t> width;
-		std::vector<int32_t> height;
-		std::vector<int32_t> numChannels;
+		uint32_t width;
+		uint32_t height;
 
-		std::vector<stbi_uc*> raw_data;
-	};
-} // namespace clz::renderer
-
-namespace clz::renderer
-{
-	/// @brief Maximum texture count overall
-	constexpr uint32_t r_MAX_TEXTURE_COUNT = 1024;
-	/// @brief null texture ID
-	/// @note should be same in shaders too
-	constexpr uint32_t r_NULL_TEXTURE = std::numeric_limits<uint32_t>::max();
-
-	/**
-	 * @struct TextureID
-	 * @brief Id of any texture
-	 */
-	struct TextureID
-	{
-		uint32_t value = r_NULL_TEXTURE;
-
-		TextureID() = default;
-		void operator=(const uint32_t Id)
-		{
-			value = Id;
-		}
-
-		[[nodiscard]] bool operator==(const TextureID& textureId) const
-		{
-			return value == textureId.value;
-		}
-		[[nodiscard]] bool operator==(const uint32_t Id) const
-		{
-			return value == Id;
-		}
-
-		[[nodiscard]] bool operator!=(const TextureID& textureId) const
-		{
-			return value != textureId.value;
-		}
-		[[nodiscard]] bool operator!=(const uint32_t Id) const
-		{
-			return value != Id;
-		}
+		VkFormat imageFormat;
+		uint32_t mipCount;
 	};
 
-	inline Texture r_textures;
-	inline uint32_t r_numRegisteredTextures = 0;
-	inline VkDeviceMemory r_textureDeviceMemory;
-	inline VkSampler r_sampler;
+	struct SamplerData
+	{
+		SamplerFilter magFilter;
+		SamplerFilter minFilter;
+		MipmapMode mipmapMode;
+		SamplerAddressMode addressModeU;
+		SamplerAddressMode addressModeV;
+		SamplerAddressMode addressModeW;
+	};
 
-	/**
-	 * @brief Initializes texture subsystem state.
-	 * @note Right now we create only a single global texture sampler.
-	 *
-	 * @return True on success.
-	 */
-	bool initTextureEngine();
+	struct TextureCPUData
+	{
+		TextureId stagingId;
+		uint64_t textureSize = 0;
+		VkDeviceSize memoryOffset = 0;
+		stbi_uc* cpuData = nullptr;
+		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+	};
+	/// Global texture manager class
+	class TextureManagerClass
+	{
+		/// These three are indexed by TextureId
+		std::vector<VkImage> m_images;
+		std::vector<VkImageView> m_imageViews;
+		std::vector<clzImageMemory> m_memories;
+		std::vector<TexureData> m_textureDatas;
 
-	/**
-	 * @brief Registers a texture for later GPU upload.
-	 *
-	 * Loads image data from disk and creates a Vulkan image handle.
-	 * Actual GPU upload occurs during createTextures().
-	 *
-	 * @param filePath Path to texture file.
-	 * @param imageFormat Format in which image will be created
-	 * @return Registered texture identifier.
-	 */
-	TextureID registerTexture(
-		const std::filesystem::path& filePath,
-		VkFormat imageFormat,
-		SamplerFilter minFilter,
-		SamplerFilter magFilter,
-		MipmapMode mipmapMode,
-		SamplerAddressMode addressModeU,
-		SamplerAddressMode addressModeV,
-		SamplerAddressMode addressModeW
-	);
+		/// This is indexed by SamplerId
+		std::vector<VkSampler> m_samplers;
+		std::vector<SamplerData> m_samplerDatas;
+		SamplerId m_defaultSamplerId;
 
-	/**
-	 * @brief Same as normal register texture function,
-	 * but instead of loading them, this one takes image data
-	 * as raw bytes. Aka already loaded in memory
-	 *
-	 * @param data Raw data, majorly used when loading GLB models
-	 * @param size Size of the raw data. So that we don't go out of bounds
-	 * @param textureName Name of this texture
-	 * @param imageFormat Format in which image will be created
-	 * @return Registered texture identifier
-	 */
-	TextureID registerTexture(
-		const std::byte* data,
-		size_t size,
-		std::string_view textureName,
-		VkFormat imageFormat,
-		SamplerFilter minFilter,
-		SamplerFilter magFilter,
-		MipmapMode mipmapMode,
-		SamplerAddressMode addressModeU,
-		SamplerAddressMode addressModeV,
-		SamplerAddressMode addressModeW
-	);
+		std::vector<TextureId> m_textureGaps;
+		std::vector<SamplerId> m_samplerGaps;
 
+		uint32_t m_newTextureStartIndex = 0;
+		uint32_t m_newSamplerStartIndex = 0;
 
-	/**
-	 * @brief Uploads all registered textures to GPU memory.
-	 *
-	 * Creates staging buffers, allocates image memory, creates image views
-	 * and performs transfer operations.
-	 *
-	 * @return True on success.
-	 */
-	bool createTextures();
+		bool addTextureRegistry(
+			TextureCPUData& cpuData,
+			const std::string& textureName,
+			stbi_uc* imageData,
+			const uint32_t width,
+			const uint32_t height
+		);
 
-	/**
-	 * @brief Destroys all uploaded textures.
-	 */
-	void destroyTextures();
+	public:
 
-	/**
-	 * @brief Creates the global texture sampler.
-	 * @return True on success.
-	 */
-	bool createSampler();
+		void initialize();
 
-	/**
-	 * @brief Destroys the global texture sampler.
-	 */
-	void destroySampler();
+		std::expected<TextureCPUData, std::string> registerTexture(
+			const std::filesystem::path& filePath
+		);
+		/**
+		 * @brief Same as normal register texture function,
+		 * but instead of loading them, this one takes image data
+		 * as raw bytes. Aka already loaded in memory
+		 *
+		 * @param data Raw data, majorly used when loading GLB models
+		 * @param size Size of the raw data. So that we don't go out of bounds
+		 * @param textureName Name of this texture
+		 * @param imageFormat Format in which image will be created
+		 * @return Registered texture identifier
+		 */
+		std::expected<TextureCPUData, std::string> registerTexture(
+			const std::byte* data,
+			const size_t size,
+			const std::string& textureName
+		);
+
+		SamplerId createTextureSampler(
+			const SamplerData& samplerData,
+			const std::string& samplerName
+		);
+
+		SamplerId getDefaultSamplerId();
+
+		void destroyTexture(
+			const TextureId textureId,
+			const bool immediateDestroy = false
+		);
+
+		void destroyTextureSampler(
+			const SamplerId samplerId
+		);
+
+		void destroyAllTextures();
+
+		void destroyAllTextureSamplers();
+
+		bool recordSubmitTextureDataToGPUCommands(
+			TextureCPUData& cpuData,
+			VkCommandBuffer commandBuffer,
+			VkBuffer stagingBuffer,
+			VkDeviceMemory stagingBufferMemory,
+			const VkDeviceSize memoryOffset,
+			const VkDeviceSize bufferOffset
+		);
+
+		uint32_t getTextureArrayLimit();
+		uint32_t getSamplerArrayLimit();
+		VkSampler getSampler(const SamplerId samplerId);
+		VkImageView getImageView(const TextureId textureId);
+
+	};
+
+	inline TextureManagerClass TextureManager;
 } // namespace clz::renderer

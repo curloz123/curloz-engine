@@ -4,7 +4,7 @@
  * @brief Bloom post process implementation file
  */
 #include "renderer/postprocess/bloom.hpp"
-#include "renderer/pipelinedata/post_process.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
 #include <array>
@@ -12,9 +12,6 @@
 #include <vulkan/vulkan_core.h>
 #include "renderer/utility/image.hpp"
 #include "core/logs.hpp"
-#include "renderer/utility/memory.hpp"
-#include "renderer/utility/namer.hpp"
-#include "renderer/config.hpp"
 
 namespace clz::renderer::post_process
 {
@@ -32,7 +29,7 @@ namespace clz::renderer::post_process
 				extent.height,
 				BLOOM_IMAGE_FORMAT,
 				VK_IMAGE_TILING_OPTIMAL,
-			    	VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
+			    	VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
 			    		VK_IMAGE_USAGE_SAMPLED_BIT,
 				0
 			))
@@ -54,7 +51,7 @@ namespace clz::renderer::post_process
 			};
 			carveImageMemory(allocInfo, rBloomImage.memory);
 			bindImageMemory(rBloomImage.image, rBloomImage.memory);
-			
+
 			if (!createImageView(
 					rBloomImage.imageView,
 					"bloom image view",
@@ -66,7 +63,7 @@ namespace clz::renderer::post_process
 				clz::log::error("failed to create bloom image view: " + std::to_string(index));
 				return false;
 			}
-			
+
 			return true;
 		};
 		for (int i = 0; i < NUM_BLOOM_MIPS; ++i)
@@ -77,7 +74,7 @@ namespace clz::renderer::post_process
 				.width = w,
 				.height = h
 			};
-			
+
 			if (!createBloomImage(
 				bloomMips[i],
 				extent,
@@ -129,16 +126,21 @@ namespace clz::renderer::post_process
 			if (isRecreating)
 				freeImageMemory(bloomMips[i].memory);
 		}
+		vkDestroyImageView(r_deviceContext.device, bloomedImage.imageView, nullptr);
+		vkDestroyImage(r_deviceContext.device, bloomedImage.image, nullptr);
+		if (isRecreating)
+			freeImageMemory(bloomedImage.memory);
+
 	}
 
 	/// @copydoc applyBloomProcess
 	void applyBloomProcess(VkCommandBuffer commandBuffer)
 	{
-		auto performBloom = 
+		auto performBloom =
 			[commandBuffer](
-				VkImage& rImage, 
-				VkImageView& rImageView, 
-				const VkExtent2D extent, 
+				VkImage& rImage,
+				VkImageView& rImageView,
+				const VkExtent2D extent,
 				BloomPC* pPushConstant)
 		{
 			transition_image_layout(
@@ -203,16 +205,7 @@ namespace clz::renderer::post_process
 				pPushConstant
 			);
 
-			vkCmdBindDescriptorSets(
-				commandBuffer,
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				r_bloomPipelineContext.layout,
-				0, 
-				1,
-				&post_processDescriptorSets[r_currentFrame],
-				0,
-				nullptr
-			);
+			PostProcessDescriptor.bindDescriptor(commandBuffer, r_bloomPipelineContext);
 
 			vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 			vkCmdEndRendering(commandBuffer);

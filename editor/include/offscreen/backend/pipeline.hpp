@@ -9,13 +9,18 @@
 
 namespace clz::editor::backend
 {
-inline renderer::PipelineContext editorPipelineContext{};
+	inline renderer::PipelineContext editorPipelineContext{};
 
+	struct EditorPushConstant
+	{
+		math::mat4 model;
+		uint32_t materialIndex;
+	};
 }
 
 namespace clz::editor::backend
 {
-bool initializeEditorPipeline();
-void destroyEditorPipeline();
-void updateTextureBufferObject();
+	bool initializeEditorPipeline();
+	void destroyEditorPipeline();
+	void updateTextureBufferObject();
 } // namespace clz::editor::backend

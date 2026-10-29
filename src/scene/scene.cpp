@@ -16,7 +16,8 @@
 #include "scene/entity/entity.hpp"
 #include "scene/scene.hpp"
 #include <fstream>
-#include "scene/data/audio.hpp"
+#include "scene/assets/audio.hpp"
+#include "scene/assets/models.hpp"
 
 namespace clz::scene
 {
@@ -54,18 +55,28 @@ namespace clz::scene
 			return false;
 		}
 
-		/// Load data
-		if (sceneFile.contains("data"))
+		/// Load assets
+		if (sceneFile.contains("assets"))
 		{
-			auto& dataEntry = sceneFile["data"];
-			if (dataEntry.contains("audio_buffers"))
+			auto& assetEntry = sceneFile["assets"];
+			if (assetEntry.contains("audio_buffers"))
 			{
-				loadAudioBuffers(dataEntry["audio_buffers"]);
+				loadAudioBuffers(assetEntry["audio_buffers"]);
 			}
 			else
 			{
 				clz::log::warn("Scene file does not has "
-						" data->audio_buffers entry");
+						" assets->audio_buffers entry");
+			}
+
+			if (assetEntry.contains("models"))
+			{
+				loadAllModels(assetEntry["models"]);
+			}
+			else
+			{
+				clz::log::warn("Scene file does not has "
+						" assets->models entry");
 			}
 		}
 
@@ -94,7 +105,8 @@ namespace clz::scene
 		// Save camera and entities
 		saveCameras(sceneFile);
 		saveEntities(sceneFile);
-		saveBackAudioBuffers(sceneFile["data"]["audio_buffers"]);
+		saveBackAudioBuffers(sceneFile["assets"]["audio_buffers"]);
+		saveBackModelPaths(sceneFile["assets"]["models"]);
 
 		// Write back
 		std::ofstream out("config/scene.json");

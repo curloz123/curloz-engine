@@ -5,6 +5,7 @@
  * @note For buffers, this file provides clzVertexBuffer and clzIndexBuffer that
  * are full on handles, not just memory handles. Everything else is simply
  * a memory handle. So externally there needs be some other work too for them.
+ * @warn Don't include vk_types.hpp
  */
 
 #pragma once
@@ -15,18 +16,17 @@
 #include <array>
 #include <string>
 #include "core/assert.hpp"
-#include "renderer/vk_types.hpp"
 
 namespace clz::renderer
 {
-	///< @brief Defines memory creation data	
+	///< @brief Defines memory creation data
 	typedef struct VkArenaDef
 	{
 		///< @brief Vertex buffer's memory size.
 		VkDeviceSize vertexBufferArenaSize = 200 * 1024 * 1024;
 		///< @brief Index buffer's memory size.
-		VkDeviceSize indexBufferArenaSize = 100 * 1024 * 1024;
-	
+		VkDeviceSize indexBufferArenaSize = 150 * 1024 * 1024;
+
 		///< Memory to be allocated for UBO's.
 		VkDeviceSize UBOArenaSize = 10 * 1024 * 1024;
 		///< Memory to be allocated for SSBO's.
@@ -51,7 +51,7 @@ namespace clz::renderer
 	 * @note Device context must've been initialized before calling this.
 	 */
 	bool allocateVkArenaMemory(const VkArenaDef& arenaDef);
-	
+
 	/**
 	 * @brief Destroy's all arena's memory
 	 */
@@ -63,19 +63,19 @@ namespace clz::renderer
 	class ArenaMemoryHandle
 	{
 	public:
-		///< @brief This is the offset, 
+		///< @brief This is the offset,
 		///< or the index in main arena's memory from which
 		///< this handle's memory starts. Ofc in bytes.
 		VkDeviceSize memoryOffset = std::numeric_limits<VkDeviceSize>::max();
-		///< @brief This is the total size of allocated 
+		///< @brief This is the total size of allocated
 		///< to this memory handle, in bytes.
 		VkDeviceSize size = 0;
 
 		ArenaMemoryHandle() = default;
 		ArenaMemoryHandle(
-			const VkDeviceSize memoryOffset, 
+			const VkDeviceSize memoryOffset,
 			const VkDeviceSize size
-		) : 
+		) :
 			memoryOffset(memoryOffset),
 			size(size)
 		{
@@ -148,7 +148,7 @@ namespace clz::renderer
 		}
 
 	};
-	
+
 
 	/******************************************************/
 	/********* 0. VERTEX BUFFER AND INDEX BUFFER **********/
@@ -158,10 +158,6 @@ namespace clz::renderer
 	inline VkDeviceMemory VertexBufferMemory;
 	///< @brief Main Index buffer memory handle.
 	inline VkDeviceMemory IndexBufferMemory;
-	///< @brief Main vertex buffer handle.
-	inline VkBuffer VertexBuffer;
-	///< @brief Main index buffer handle.
-	inline VkBuffer IndexBuffer;
 	///< @brief Vertex arena total memory size.
 	inline VkDeviceSize VertexArenaTotalSize;
 	///< @brief Index buffer total memory size.
@@ -183,134 +179,106 @@ namespace clz::renderer
 	 */
 	bool allocateBufferArena(
 		const VkDeviceSize vertexBufferArenaSize,
-		const VkDeviceSize indexBufferArenaSize);
+		const VkDeviceSize indexBufferArenaSize
+	);
+
 	/*
 	 * @brief Destroys main buffer
 	 */
 	void destroyBufferArena();
-	
-	/**
-	 * @brief Binds main vertex buffer at main draw call once.
-	 * @note Only needs to be called once before main drawing
-	 * @param commandBuffer Active command buffer while recording.
-	 */
-	inline void bindGlobalVertexBuffer(
-		const VkCommandBuffer commandBuffer
-	)
-	{
-		constexpr VkDeviceSize offsets[1] = {0};
-		const VkBuffer buffers[1] = {VertexBuffer};
 
-		vkCmdBindVertexBuffers(
-			commandBuffer,
-			0,
-			1,
-			buffers,
-			offsets
-		);
-	}
-	/**
-	 * @brief Binds Index buffer at main draw call once.
-	 * @note Needs be called only once during main call.
-	 * @param commmandBuffer Active command buffer during recording.
-	 */
-	inline void bindGlobalIndexBuffer(
-		const VkCommandBuffer commandBuffer
-	)
-	{
-		vkCmdBindIndexBuffer(
-			commandBuffer, 
-			IndexBuffer, 
-			0, 
-			VK_INDEX_TYPE_UINT32
-		);
-	}
 
 	///< @brief CLZ engine's main vertex buffer handle.
-	typedef struct clzVertexBuffer
-	{
-		///< @brief This is the offset, 
-		///< or the index in main buffer memory from which
-		///< this buffer starts. Ofc in bytes.
-		VkDeviceSize memoryOffset = std::numeric_limits<VkDeviceSize>::max();
-		///< @brief This is the total size of this 
-		///< vertex buffer, in bytes.
-		VkDeviceSize size = 0;
-	} clzVertexBuffer;
+	class clzVertexBufferMemory : public ArenaMemoryHandle{};
 	///< @brief CLZ engine's main index buffer handle
-	typedef struct clzIndexBuffer
-	{
-		///< @brief Memory index from where this index buffer starts.
-		VkDeviceSize memoryOffset = std::numeric_limits<VkDeviceSize>::max();
-		///< @brief Number of indices this buffer holds.
-		VkDeviceSize size = 0;
-	} clzIndexBuffer;
+	class clzIndexBufferMemory : public ArenaMemoryHandle{};
 
 	///< @brief Vertex buffer allocation info.
-	typedef struct VertexBufferAllocInfo
+	typedef struct VertexBufferMemoryAllocationInfo
 	{
 		///< @brief Total size to allocate.
 		VkDeviceSize size = 0;
-	} VertexBufferAllocInfo;
+		///< @brief Alignment in memory.
+		VkDeviceSize alignment = 0;
+	} VBufferMemAllocInfo;
 	///< @brief Index Buffer allocation info.
-	typedef struct IndexBufferAllocInfo
+	typedef struct IndexBufferMemoryAllocationInfo
 	{
 		///< @brief Total size to allocate.
 		VkDeviceSize size = 0;
-	} IndexBufferAllocInfo;
+		///< @brief Alignment in memory.
+		VkDeviceSize alignment = 0;
+	} IBufferMemAllocInfo;
 
-	///< @brief Stores all gaps in vertex buffer.
+	///< @brief Stores all gaps in vertex arena memory.
 	///< Basically when we free from in between,
 	///< and we do any new allocation, we won't miss the gaps in bw
 	///< @note This vector should always be in ascended sorted,
 	///< ordered by size.
-	inline std::vector<clzVertexBuffer> VertexBufferGaps;
-	///< @brief Stores all gaps in index buffer.
+	inline std::vector<clzVertexBufferMemory> VertexArenaGaps;
+	///< @brief Stores all gaps in index arena memory.
 	///< @note This vector should always be in ascended sorted,
 	///< ordered by size.
-	inline std::vector<clzIndexBuffer> IndexBufferGaps;
+	inline std::vector<clzIndexBufferMemory> IndexArenaGaps;
 
 	/**
 	 * @brief Allocates vertex buffer from main memory.
-	 * @param pAllocInfo Pointer to vertex buffer allocation info.
-	 * @param pVertexBuffer pointer to engine's internal v buffer handle.
+	 * @param rAllocInfo Const reference to vertex buffer memory allocation info.
+	 * @param rBufferMemory reference to engine's internal v buffer memory handle.
 	 * @return true on success, false otherwise.
 	 */
-	bool allocateVertexBuffer(
-		const VertexBufferAllocInfo* pAllocInfo,
-		clzVertexBuffer* pVertexBuffer
+	bool allocateVertexBufferMemory(
+		const VertexBufferMemoryAllocationInfo& rAllocInfo,
+		clzVertexBufferMemory& rBufferMemory
 	);
 	/**
 	 * @brief Allocates index buffer from main memory.
-	 * @param pAllocInfo Pointer to index buffer allocation info.
-	 * @param pIndexBuffer pointer to engine's internal i buffer handle.
+	 * @param rAllocInfo Const reference to index buffer allocation info.
+	 * @param rBufferMemory Reference to engine's internal i buffer handle.
 	 * @return true on success, false otherwise.
 	 */
-	bool allocateIndexBuffer(
-		const IndexBufferAllocInfo* pAllocInfo,
-		clzIndexBuffer* pIndexBuffer
+	bool allocateIndexBufferMemory(
+		const IndexBufferMemoryAllocationInfo& rAllocInfo,
+		clzIndexBufferMemory& rBufferMemory
 	);
 
 	/**
 	 * @brief Frees memory from main vertex buffer memory
-	 * @param pVertexBuffer pointer to vertex buffer handle
-	 * @note Is not a cheap process tbh. Internally linear searches 
+	 * @param rVertexBuffer Reference to vertex buffer handle
+	 * @note Is not a cheap process tbh. Internally linear searches
 	 * through all gaps to check for adjacent memories.
 	 */
-	void freeVertexBuffer(
-		clzVertexBuffer* pVertexBuffer
+	void freeVertexBufferMemory(
+		clzVertexBufferMemory& rVertexBuffer
 	);
 	/**
 	 * @brief Frees memory from main index buffer memory
-	 * @param pIndexBuffer pointer to index buffer handle
-	 * @note Is not a cheap process tbh. Internally linear searches 
+	 * @param rIndexBuffer Reference to index buffer handle
+	 * @note Is not a cheap process tbh. Internally linear searches
 	 * through all gaps to check for adjacent memories.
 	 */
-	void freeIndexBuffer(
-		clzIndexBuffer* pIndexBuffer
+	void freeIndexBufferMemory(
+		clzIndexBufferMemory& rIndexBuffer
 	);
 
-
+	/**
+	 * @brief Binds vertex buffer to memory allocated to it.
+	 * @param rBuffer Reference to VkBuffer handle.
+	 * @param rBufferMemory Memory to which buffer is to be binded.
+	 */
+	void bindVertexBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzVertexBufferMemory& rBufferMemory
+	);
+	/**
+	 * @brief Binds index buffer to memory allocated to it.
+	 * @param rBuffer Reference to VkBuffer handle.
+	 * @param rBufferMemory Memory to which buffer is to be binded.
+	 */
+	void bindIndexBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzIndexBufferMemory& rBufferMemory
+	);
 
 	/**************************/
 	/********* 1. UBO *********/
@@ -365,10 +333,16 @@ namespace clz::renderer
 		const UBOMemoryAllocInfo& rAllocInfo,
 		clzUBOMemory& rUBOMemoryHandle
 	);
+
+	void bindUniformBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzUBOMemory& rUBOMemoryHandle
+	);
+
 	/**
 	 * @brief Frees UBO memory of a handle.
 	 * @param rUBOMemoryHandle reference to ubo memory handle.
-	 * @note Passed handle is null after calling this function, 
+	 * @note Passed handle is null after calling this function,
 	 * so make sure to not use it after this.
 	 */
 	void freeUBOMemory(
@@ -435,6 +409,12 @@ namespace clz::renderer
 		const SSBOMemoryAllocInfo& rAllocInfo,
 		clzSSBOMemory& rSSBOMemoryHandle
 	);
+
+	void bindStorageBufferToMemory(
+		VkBuffer& rBuffer,
+		const clzSSBOMemory& rUBOMemoryHandle
+	);
+
 	/**
 	 * @brief Returns an SSBO block to the arena.
 	 * @param rSSBOMemoryHandle Handle to free.
@@ -479,6 +459,8 @@ namespace clz::renderer
 	 * And there is one global (hard-coded sized) array
 	 * which holds all arenas and is indexed by ImageType enum.
 	 * Rest all allocation n stuff are pretty much same.
+	 *
+	 * All functions that actually allocate stuff are js below.
 	 */
 
 	///< @brief Types of images.
@@ -515,6 +497,38 @@ namespace clz::renderer
 		VkDeviceSize size;
 	} ImageMemoryAllocInfo;
 
+	/**
+	 * @brief Carves image memory from the arena.
+	 * @param imageType The type of image we're trynna create.
+	 * @param rAllocInfo const reference to
+	 * image memory allocation info struct.
+	 * @param rImageMemory handle which will hold this memory.
+	 * @return true on success, false otherwise.
+	 */
+	bool carveImageMemory(
+		const ImageMemoryAllocInfo& rAllocInfo,
+		clzImageMemory& rImageMemory
+	);
+	/**
+	 * @brief Frees image memory in arena.
+	 * Is not a cheap process, so don't go gung-ho
+	 * and free every frame.
+	 * @param imageType The type of image we're trynna create.
+	 * @param Reference to memory handle.
+	 * @note The handle passed will be null after passing to this func.
+	 */
+	void freeImageMemory(clzImageMemory& rImageMemory);
+	/**
+	 * @brief Helper function that binds memory to any image from arena.
+	 * @param rImage Reference to vulkan image handle.
+	 * @param rImageMemory Reference to image memory handle.
+	 */
+	void bindImageMemory(
+		VkImage& rImage,
+		const clzImageMemory& rImageMemory
+	);
+
+
 	///< @brief Main generic image memory arena class
 	class ImageMemoryArena
 	{
@@ -523,7 +537,7 @@ namespace clz::renderer
 		std::string m_arenaName;
 
 		///< @brief Actual arena memory handle.
-		VkDeviceMemory m_arenaMemory = VK_NULL_HANDLE;		
+		VkDeviceMemory m_arenaMemory = VK_NULL_HANDLE;
 
 		///< @brief Total memory the arena holds.
 		VkDeviceSize m_totalMemory = 0;
@@ -604,82 +618,5 @@ namespace clz::renderer
 
 	///< @brief Global array holding all the image memory arenas.
 	inline std::array<ImageMemoryArena, 5> ImageMemoryArenas;
-
-
-	/// All below functions are just helper functions,
-	/// so that we don't index the arena array everytime.
-
-
-	/**
-	 * @brief Carves image memory from the arena.
-	 * @param imageType The type of image we're trynna create.
-	 * @param rAllocInfo const reference to
-	 * image memory allocation info struct.
-	 * @param rImageMemory handle which will hold this memory.
-	 * @return true on success, false otherwise.
-	 */
-	inline bool carveImageMemory(
-		const ImageMemoryAllocInfo& rAllocInfo,
-		clzImageMemory& rImageMemory
-	)
-	{
-		rImageMemory.m_imageType = rAllocInfo.imageType;
-		ImageMemoryArenas[static_cast<size_t>(
-			rAllocInfo.imageType)].carveMemory(
-				rAllocInfo,
-				rImageMemory
-			);
-	}
-
-	/**
-	 * @brief Frees image memory in arena.
-	 * Is not a cheap process, so don't go gung-ho
-	 * and free every frame.
-	 * @param imageType The type of image we're trynna create.
-	 * @param Reference to memory handle.
-	 * @note The handle passed will be null after passing to this func.
-	 */
-	inline void freeImageMemory(clzImageMemory& rImageMemory)
-	{
-
-#ifdef CLZ_ENABLE_CHECKS /*****************************************/
-		CLZ_ASSERT(
-			!rImageMemory.isNull(),
-			"Cannot free a null image memory handle"
-		);
-#endif /***********************************************************/
-
-		ImageMemoryArenas[static_cast<size_t>(
-			rImageMemory.m_imageType)].freeMemory(
-				rImageMemory
-			);
-	}
-
-	/**
-	 * @brief Helper function that binds memory to any image from arena.
-	 * @param rImage Reference to vulkan image handle.
-	 * @param rImageMemory Reference to image memory handle.
-	 */
-	inline void bindImageMemory(
-		VkImage& rImage,
-		const clzImageMemory& rImageMemory
-	)
-	{
-#ifdef CLZ_ENABLE_CHECKS /***************************************************/
-		CLZ_ASSERT(
-			!rImageMemory.isNull(),
-			"Attempt to bind null memory handle to an image"
-		);
-#endif /*********************************************************************/
-
-		const auto& imageArena =
-			ImageMemoryArenas[static_cast<size_t>(rImageMemory.m_imageType)];
-		vkBindImageMemory(
-			r_deviceContext.device,
-			rImage,
-			imageArena.getRawMemoryHandle(),
-			rImageMemory.getMemoryOffset()
-		);
-	}
 
 }

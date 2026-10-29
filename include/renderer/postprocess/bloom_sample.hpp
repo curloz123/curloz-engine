@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "../arena.hpp"
 
 namespace clz::renderer::post_process
 {
@@ -8,7 +9,7 @@ namespace clz::renderer::post_process
 	inline VkImage bloomSampleImage;
 	inline VkImageView bloomSampleImageView;
 	inline VkSampler bloomSampleSampler;
-	inline VkDeviceMemory bloomSampleImageMemory;
+	inline clzImageMemory bloomSampleImageMemory;
 
 	/**
 	 * @brief Creates bloom sample process
@@ -16,7 +17,7 @@ namespace clz::renderer::post_process
 	 * @param height New height of post_process images
 	 * @return True on success, false otherwise
 	 */
-	bool createBloomSampleProcess(std::uint32_t width, std::uint32_t height);
-	void destroyBloomSampleProcess();
+	bool createBloomSampleProcess(uint32_t width, uint32_t height);
+	void destroyBloomSampleProcess(const bool isRecreating = false);
 	void applyBloomSampleProcess(VkCommandBuffer commandBuffer);
 }

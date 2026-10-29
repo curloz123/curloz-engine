@@ -1,13 +1,10 @@
-#include "../../../include/renderer/entitydata/texture.hpp"
-#include "core/assert.hpp"
+#include "renderer/entitydata/texture.hpp"
 #include "core/logs.hpp"
-#include "renderer/utility/buffer.hpp"
+#include "renderer/arena.hpp"
 #include "renderer/utility/image.hpp"
-#include "renderer/utility/memory.hpp"
-#include "renderer/utility/namer.hpp"
-#include "renderer/utility/offsetalignment.hpp"
-#include "renderer/utility/singletimecommand.hpp"
 #include "renderer/vk_types.hpp"
+#include <cfloat>
+#include <expected>
 #include <filesystem>
 #include <memory.h>
 #include <stb_image.h>
@@ -15,441 +12,478 @@
 
 namespace clz::renderer
 {
-	bool initTextureEngine()
+	void TextureManagerClass::initialize()
 	{
+		m_images.clear();
+		m_imageViews.clear();
+		m_memories.clear();
+		m_textureDatas.clear();
+
+		m_samplers.clear();
+		m_samplerDatas.clear();
+
+		/// Create a default sampler
+		m_defaultSamplerId = SamplerId(0);
+		m_samplers.resize(1);
+		m_samplerDatas.resize(1);
+		m_samplerDatas[0] = {
+			.magFilter = SamplerFilter::Linear,
+			.minFilter = SamplerFilter::Linear,
+			.mipmapMode = MipmapMode::Linear,
+			.addressModeU = SamplerAddressMode::REPEAT,
+			.addressModeV = SamplerAddressMode::REPEAT,
+			.addressModeW = SamplerAddressMode::REPEAT
+		};
+		if (!createSampler(
+			m_samplers[0],
+			"textures default sampler",
+			SamplerFilter::Linear,
+			SamplerFilter::Linear,
+			MipmapMode::Linear,
+			SamplerAddressMode::REPEAT,
+			SamplerAddressMode::REPEAT,
+			SamplerAddressMode::REPEAT,
+			FLT_MAX,
+			true,
+			16.0
+		))
+		{
+			clz::log::error("Could not create default sampler", true);
+		}
+
+		m_textureGaps.clear();
+		m_samplerGaps.clear();
+
+		m_newTextureStartIndex = 0;
+		m_newSamplerStartIndex = 1;
+	}
+
+	bool TextureManagerClass::addTextureRegistry(
+		TextureCPUData& cpuData,
+		const std::string& textureName,
+		stbi_uc* imageData,
+		const uint32_t width,
+		const uint32_t height
+	)
+	{
+		auto getTextureId = [&](){
+			if (!m_textureGaps.empty())
+			{
+				TextureId newId = m_textureGaps.back();
+				m_textureGaps.pop_back();
+				return newId;
+			}
+
+			if (m_newTextureStartIndex >= MAX_TEXTURE_COUNT)
+			{
+				clz::log::error("Max texture limit reached");
+				return TextureId();
+			}
+
+			TextureId newId(m_newTextureStartIndex);
+			++m_newTextureStartIndex;
+			m_images.resize(m_newTextureStartIndex);
+			m_imageViews.resize(m_newTextureStartIndex);
+			m_memories.resize(m_newTextureStartIndex);
+			m_textureDatas.resize(m_newTextureStartIndex);
+
+			return newId;
+		};
+
+		const auto textureId = getTextureId();
+		if (textureId.isNull())
+			return false;
+
+		m_textureDatas[textureId.getId()] = {
+			.textureName = textureName,
+			.width = width,
+			.height = height,
+			/// Format is left blank
+			.mipCount = calculateMipLevels(width, height)
+		};
+
+		cpuData = TextureCPUData{
+			.stagingId = textureId,
+			.textureSize = width * height * STBI_rgb_alpha,
+			.cpuData = imageData,
+		};
+
 		return true;
 	}
-	TextureID registerTexture(
-		const std::filesystem::path& filePath, 
-		const VkFormat imageFormat,
-		const SamplerFilter minFilter,
-		const SamplerFilter magFilter,
-		const MipmapMode mipmapMode,
-		const SamplerAddressMode addressModeU,
-		const SamplerAddressMode addressModeV,
-		const SamplerAddressMode addressModeW
+	std::expected<TextureCPUData, std::string> TextureManagerClass::registerTexture(
+		const std::filesystem::path& filePath
 	)
 	{
 		if (!std::filesystem::exists(filePath))
 		{
 			clz::log::warn(filePath.string() + " does not exist");
-			TextureID textureId;
-			textureId.value = r_NULL_TEXTURE;
-			return textureId;
+			return std::unexpected(filePath.string() + " doesn't exists");
 		}
 
-		const auto newSize = r_numRegisteredTextures + 1;
-		r_textures.image.resize(newSize);
-		r_textures.imageView.resize(newSize);
-		r_textures.imageSize.resize(newSize);
-		r_textures.imageFormat.push_back(imageFormat);
-		r_textures.offset.resize(r_textures.offset.size() + 1);
-
-		r_textures.imageMipCount.resize(r_textures.imageSize.size() + 1);
-		r_textures.minFilter.push_back(minFilter);
-		r_textures.magFilter.push_back(magFilter);
-		r_textures.imageAddressModeU.push_back(addressModeU);
-		r_textures.imageAddressModeV.push_back(addressModeV);
-		r_textures.imageAddressModeW.push_back(addressModeW);
-		r_textures.imageMipmapMode.push_back(mipmapMode);
-		r_textures.imageSampler.resize(newSize);
-		
-		r_textures.width.resize(r_textures.image.size() + 1);
-		r_textures.height.resize(r_textures.image.size() + 1);
-		r_textures.numChannels.resize(r_textures.image.size() + 1);
-		r_textures.raw_data.resize(r_textures.image.size() + 1);
-		const uint32_t index = r_numRegisteredTextures;
-
-		r_textures.raw_data[index] = nullptr;
-		r_textures.raw_data[index] = stbi_load(
-			filePath.string().c_str(),
-			&r_textures.width[index],
-			&r_textures.height[index],
-			&r_textures.numChannels[index],
-			STBI_rgb_alpha
-		);
-
-		if (!r_textures.raw_data[index])
+		int width, height, numChannels;
+		stbi_uc* rawData = stbi_load(
+					filePath.string().c_str(),
+					&width,
+					&height,
+					&numChannels,
+					STBI_rgb_alpha
+				);
+		if (!rawData)
 		{
-			clz::log::error("stb could not load texture: " + filePath.string());
-			TextureID textureId;
-			textureId.value = r_NULL_TEXTURE;
-			return textureId;
+			return std::unexpected("Error loading texture: " + filePath.string());
 		}
 
-		r_textures.imageSize[index] =
-			r_textures.width[index] * r_textures.height[index] * STBI_rgb_alpha;
-
-		const uint32_t numMips = calculateMipLevels(r_textures.width[index], r_textures.height[index]);
-		r_textures.imageMipCount[index] = numMips;
-		if (!createImage(
-			    r_textures.image[index],
-			    filePath.string(),
-			    r_textures.width[index],
-			    r_textures.height[index],
-			    r_textures.imageFormat[index],
-			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			    0,
-			    numMips
-		    ))
+		TextureCPUData cpuData;
+		if (!addTextureRegistry(
+			cpuData,
+			filePath.string(),
+			rawData,
+			static_cast<uint32_t>(width),
+			static_cast<uint32_t>(height)
+		))
 		{
-			clz::log::error("vulkan could not create texture image: " + filePath.string());
-			TextureID textureId;
-			textureId.value = r_NULL_TEXTURE;
-			return textureId;
+			stbi_image_free(rawData);
+			return std::unexpected("Error registering texure: " + filePath.string());
 		}
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_textures.image[index]),
-			VK_OBJECT_TYPE_IMAGE,
-			filePath.string().c_str()
-		);
 
-		createSampler(
-			r_textures.imageSampler[index], 
-			filePath.string() + " sampler", 
-			magFilter, 
-			minFilter,
-			mipmapMode, 
-			addressModeU, 
-			addressModeV, 
-			addressModeW, 
-			static_cast<float>(numMips),
-			true,
-			4.0f
-		);
-
-		uint32_t IdValue = r_numRegisteredTextures++;
-		TextureID textureId;
-		textureId.value = IdValue;
-		return textureId;
+		return cpuData;
 	}
-	TextureID registerTexture(
+
+	std::expected<TextureCPUData, std::string> TextureManagerClass::registerTexture(
 		const std::byte* data,
-		const size_t size,
-		const std::string_view textureName,
-		const VkFormat imageFormat,
-		const SamplerFilter minFilter,
-		const SamplerFilter magFilter,
-		const MipmapMode mipmapMode,
-		const SamplerAddressMode addressModeU,
-		const SamplerAddressMode addressModeV,
-		const SamplerAddressMode addressModeW
-		)
+		size_t size,
+		const std::string& textureName
+	)
 	{
-		CLZ_ASSERT(data, "texture data of: " + std::string(textureName) + " is corrupted/invalid");
-
-		r_textures.image.resize(r_textures.image.size() + 1);
-		r_textures.imageView.resize(r_textures.image.size() + 1);
-		r_textures.imageSize.resize(r_textures.imageSize.size() + 1);
-		r_textures.imageFormat.push_back(imageFormat);
-
-		r_textures.imageMipCount.resize(r_textures.imageMipCount.size() + 1);
-		r_textures.minFilter.push_back(minFilter);
-		r_textures.magFilter.push_back(magFilter);
-		r_textures.imageAddressModeU.push_back(addressModeU);
-		r_textures.imageAddressModeV.push_back(addressModeV);
-		r_textures.imageAddressModeW.push_back(addressModeW);
-		r_textures.imageMipmapMode.push_back(mipmapMode);
-		r_textures.imageSampler.resize(r_textures.imageSampler.size() + 1);
-
-		r_textures.offset.resize(r_textures.offset.size() + 1);
-		r_textures.width.resize(r_textures.image.size() + 1);
-		r_textures.height.resize(r_textures.image.size() + 1);
-		r_textures.numChannels.resize(r_textures.image.size() + 1);
-		r_textures.raw_data.resize(r_textures.image.size() + 1);
-
-		const uint32_t index = r_numRegisteredTextures;
-		r_textures.raw_data[index] = nullptr;
-		r_textures.raw_data[index] = stbi_load_from_memory(
+		int width, height, numChannels;
+		stbi_uc* rawData = stbi_load_from_memory(
 			reinterpret_cast<const stbi_uc*>(data),
 			static_cast<int>(size),
-			&r_textures.width[index],
-			&r_textures.height[index],
-			&r_textures.numChannels[index],
+			&width,
+			&height,
+			&numChannels,
 			STBI_rgb_alpha
 		);
-
-		if (!r_textures.raw_data[index])
+		if (!rawData)
 		{
-			clz::log::error("stb could not load texture: " + std::string(textureName));
-			TextureID textureId;
-			textureId.value = r_NULL_TEXTURE;
-			return textureId;
+			return std::unexpected("Error loading: " + textureName);
 		}
 
-
-		r_textures.imageSize[index] = static_cast<VkDeviceSize>(
-			r_textures.width[index] * r_textures.height[index] * STBI_rgb_alpha);
-
-		const uint32_t numMips = calculateMipLevels(r_textures.width[index], r_textures.height[index]);
-		r_textures.imageMipCount[index] = numMips;
-		if (!createImage(
-			    r_textures.image[index],
-			    std::string(textureName),
-			    r_textures.width[index],
-			    r_textures.height[index],
-			    r_textures.imageFormat[index],
-			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			    0,
-			    numMips
-		    ))
+		TextureCPUData cpuData;
+		if (!addTextureRegistry(
+			cpuData,
+			textureName,
+			rawData,
+			static_cast<uint32_t>(width),
+			static_cast<uint32_t>(height)
+		))
 		{
-			clz::log::error("stb could not load texture: " + std::string(textureName));
-			TextureID textureId;
-			textureId.value = r_NULL_TEXTURE;
-			return textureId;
+			stbi_image_free(rawData);
+			return std::unexpected("Error registering texure: " + textureName);
 		}
 
-		setHandleName(
-			reinterpret_cast<uint64_t>(r_textures.image[index]),
-			VK_OBJECT_TYPE_IMAGE,
-			std::string(textureName).c_str()
-		);
+		return cpuData;
+	}
+	SamplerId TextureManagerClass::createTextureSampler(
+		const SamplerData& samplerData,
+		const std::string& samplerName
+	)
+	{
+		auto getSamplerId = [&](){
+			if (!m_samplerGaps.empty())
+			{
+				SamplerId newId = m_samplerGaps.back();
+				m_samplerGaps.pop_back();
+				return newId;
+			}
 
-		createSampler(
-			r_textures.imageSampler[index], 
-			std::string(textureName) + "sampler", 
-			magFilter, 
-			minFilter,
-			mipmapMode, 
-			addressModeU, 
-			addressModeV, 
-			addressModeW, 
-			numMips,
+			SamplerId newId(m_newSamplerStartIndex);
+			++m_newSamplerStartIndex;
+			m_samplers.resize(m_newSamplerStartIndex);
+			m_samplerDatas.resize(m_newSamplerStartIndex);
+
+			return newId;
+		};
+
+		SamplerId newId = getSamplerId();
+		auto& sampler = m_samplers[newId.getId()];
+		/// Then sampler
+		if (!createSampler(
+			sampler,
+			samplerName,
+			samplerData.magFilter,
+			samplerData.minFilter,
+			samplerData.mipmapMode,
+			samplerData.addressModeU,
+			samplerData.addressModeV,
+			samplerData.addressModeW,
+			FLT_MAX,
 			true,
-			4.0f
-		);
+			16.0f
+		))
+		{
+			clz::log::error(
+				"Vulkan could not create sampler: " +
+				samplerName
+			);
+			return m_defaultSamplerId;
+		}
 
+		m_samplerDatas[newId.getId()] = samplerData;
 
-		const uint32_t IdValue = r_numRegisteredTextures++;
-		TextureID textureId;
-		textureId.value = IdValue;
-		return textureId;
+		return newId;
 	}
 
-	bool createTextures()
+	SamplerId TextureManagerClass::getDefaultSamplerId()
 	{
-		// Create staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		VkDeviceSize stagingBufferSize = 0;
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
+		return m_defaultSamplerId;
+	}
+
+	void TextureManagerClass::destroyTexture(
+		const TextureId textureId,
+		const bool immediateDestroy
+	)
+	{
+		const auto index = textureId.getId();
+		const auto& device = r_deviceContext.device;
+		vkDestroyImageView(
+
+			device,
+			m_imageViews[index],
+			nullptr
+		);
+		vkDestroyImage(
+			device,
+			m_images[index],
+			nullptr
+		);
+		if (immediateDestroy)
 		{
-			stagingBufferSize += r_textures.imageSize[i];
+			freeImageMemory(m_memories[index]);
+			m_textureGaps.push_back(textureId);
 		}
 
-		if (!createBuffer(
-			    stagingBuffer,
-			    stagingBufferMemory,
-			    "Texture staging buffer",
-			    stagingBufferSize,
-			    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-				    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		    ))
+		m_imageViews[index] = VK_NULL_HANDLE;
+		m_images[index] = VK_NULL_HANDLE;
+	}
+
+	void TextureManagerClass::destroyTextureSampler(
+		const SamplerId samplerId
+	)
+	{
+		vkDestroySampler(
+			r_deviceContext.device,
+			m_samplers[samplerId.getId()],
+			nullptr
+		);
+		m_samplers[samplerId.getId()] = VK_NULL_HANDLE;
+		m_samplerGaps.push_back(samplerId);
+	}
+
+	void TextureManagerClass::destroyAllTextures()
+	{
+		for (size_t i = 0; i < m_images.size(); ++i)
+			destroyTexture(TextureId(i));
+		m_textureDatas.clear();
+	}
+
+	void TextureManagerClass::destroyAllTextureSamplers()
+	{
+		for (uint32_t i = 0; i < m_samplers.size(); ++i)
+			destroyTextureSampler(SamplerId(i));
+		m_samplerDatas.clear();
+	}
+
+	bool TextureManagerClass::recordSubmitTextureDataToGPUCommands(
+		TextureCPUData& cpuData,
+		VkCommandBuffer commandBuffer,
+		VkBuffer stagingBuffer,
+		VkDeviceMemory stagingBufferMemory,
+		const VkDeviceSize memoryOffset,
+		const VkDeviceSize bufferOffset
+	)
+	{
+#ifdef CLZ_ENABLE_CHECKS /*****************************************************************/
+		CLZ_ASSERT(
+			cpuData.cpuData,
+			"Null texture data passed while submitting data to GPU"
+		);
+		CLZ_ASSERT(
+			!cpuData.stagingId.isNull(),
+			"Staging texture was'nt registered before submitting data to GPU"
+		);
+		CLZ_ASSERT(
+			stagingBuffer != VK_NULL_HANDLE,
+			"Null staging buffer passed while submit texture data to gpu"
+		);
+		CLZ_ASSERT(
+			stagingBufferMemory != VK_NULL_HANDLE,
+			"Null staging buffer passed while submit texture data to gpu"
+		);
+#endif /***********************************************************************************/
+
+		const auto& index = cpuData.stagingId.getId();
+		const auto& size = cpuData.textureSize;
+
+		const auto& device = r_deviceContext.device;
+		auto& textureData = m_textureDatas[index];
+		textureData.imageFormat = cpuData.imageFormat;
+
+		auto& image = m_images[index];
+		auto& imageView = m_imageViews[index];
+		auto& memory = m_memories[index];
+
+		/// first create vulkan image handle
+		if (!createImage(
+			image,
+			textureData.textureName,
+			textureData.width,
+			textureData.height,
+			textureData.imageFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+   			VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+      				VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+          			VK_IMAGE_USAGE_SAMPLED_BIT,
+             		0,
+               		textureData.mipCount
+		))
 		{
-			clz::log::error("could not create texture staging buffer");
+			clz::log::error(
+				"Vulkan could not create texture: " +
+					textureData.textureName
+			);
 			return false;
 		}
 
+		/// Now main thing, memory
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(device, image, &memRequirements);
+		const ImageMemoryAllocInfo memAllocInfo{
+			.imageType = ImageType::TEXTURE,
+			.alignment = memRequirements.alignment,
+			.size = memRequirements.size,
+		};
+		if (!carveImageMemory(memAllocInfo, memory))
+		{
+			clz::log::error(
+				"Error allocationg memory for texture: " +
+					textureData.textureName
+			);
+			return false;
+		}
+		bindImageMemory(image, memory);
+
+		/// create image view
+		if (!createImageView(
+			imageView,
+			textureData.textureName + " image view",
+			image,
+			textureData.imageFormat,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			textureData.mipCount
+		))
+		{
+			clz::log::error(
+				"Vulkan could not create image view for: " +
+					textureData.textureName
+			);
+			return false;
+		}
+
+		/// Now main thing, memory
 		void* data;
 		vkMapMemory(
-			r_deviceContext.device,
+			device,
 			stagingBufferMemory,
-			0,
-			stagingBufferSize,
+			memoryOffset,
+			size,
 			0,
 			&data
 		);
-		VkDeviceSize totalStagingBufferOffset = 0;
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
-		{
-			memcpy(static_cast<std::byte*>(data) + totalStagingBufferOffset,
-			       r_textures.raw_data[i],
-			       r_textures.imageSize[i]);
-			totalStagingBufferOffset += r_textures.imageSize[i];
-			stbi_image_free(r_textures.raw_data[i]);
-		}
-		vkUnmapMemory(r_deviceContext.device, stagingBufferMemory);
+		memcpy(data, cpuData.cpuData, size);
+		vkUnmapMemory(device, stagingBufferMemory);
+		stbi_image_free(cpuData.cpuData);
+		cpuData.cpuData = nullptr;
 
-		// Creating device local memory
-		uint32_t memoryTypeIndexBits = std::numeric_limits<uint32_t>::max();
-		VkDeviceSize totalDeviceLocalTextureMemoryRequired = 0;
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
-		{
-			VkMemoryRequirements memRequirements;
-			vkGetImageMemoryRequirements(
-				clz::renderer::r_deviceContext.device,
-				r_textures.image[i],
-				&memRequirements
-			);
+		transition_image_layout(
+			image,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_ACCESS_2_NONE,
+			VK_ACCESS_2_TRANSFER_WRITE_BIT,
+			VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer,
+			0,
+			textureData.mipCount
+		);
 
-			r_textures.offset[i] = nextImageOffset(
-				totalDeviceLocalTextureMemoryRequired,
-				memRequirements.alignment
-			);
-			totalDeviceLocalTextureMemoryRequired =
-				r_textures.offset[i] + memRequirements.size;
+		const VkBufferImageCopy copyRegion{
+			.bufferOffset = bufferOffset,
+			.bufferRowLength = 0,
+			.bufferImageHeight = 0,
+			.imageSubresource = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+			.imageOffset = {0, 0, 0},
+			.imageExtent = {textureData.width, textureData.height, 1}
+		};
 
-			memoryTypeIndexBits &= memRequirements.memoryTypeBits;
-		}
-		clz::CLZ_ASSERT(memoryTypeIndexBits, "Da fuq?? No common memory type index found");
+		vkCmdCopyBufferToImage(
+			commandBuffer,
+			stagingBuffer,
+			image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&copyRegion
+		);
 
-		VkMemoryAllocateInfo memAllocInfo = {};
-		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		memAllocInfo.allocationSize = totalDeviceLocalTextureMemoryRequired;
-		memAllocInfo.memoryTypeIndex =
-			findMemoryType(memoryTypeIndexBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		auto newLayout = generateMipmaps(
+			commandBuffer,
+			image,
+			textureData.width,
+			textureData.height,
+			textureData.mipCount
+		);
 
-		if (vkAllocateMemory(
-			    clz::renderer::r_deviceContext.device,
-			    &memAllocInfo,
-			    nullptr,
-			    &r_textureDeviceMemory
-		    ) != VK_SUCCESS)
-		{
-			clz::log::error("vulkan could not create texture memory");
-			return false;
-		}
-
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
-		{
-			vkBindImageMemory(
-				r_deviceContext.device,
-				r_textures.image[i],
-				r_textureDeviceMemory,
-				r_textures.offset[i]
-			);
-		}
-
-		// Finally create the image views now that memory has been allocated
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
-		{
-			if (!createImageView(
-				    r_textures.imageView[i],
-				    "entity texture Image view",
-				    r_textures.image[i],
-				    r_textures.imageFormat[i],
-				    VK_IMAGE_ASPECT_COLOR_BIT,
-				    r_textures.imageMipCount[i]
-			    ))
-			{
-				log::error("Could not create image view for textures");
-				CLZ_ASSERT(false, "could not initialize all textures");
-			}
-		}
-
-		VkCommandBuffer commandBuffer = startSingleTimeCommand();
-		VkDeviceSize totalDeviceLocalOffset = 0;
-		for (uint32_t i = 0; i < r_numRegisteredTextures; ++i)
-		{
-			// transition - 1
-			transition_image_layout(
-				r_textures.image[i],
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				VK_ACCESS_2_NONE,
-				VK_ACCESS_2_TRANSFER_WRITE_BIT,
-				VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer,
-				0,
-				r_textures.imageMipCount[i]
-			);
-
-			// Copying buffer to image
-			VkBufferImageCopy region = {};
-			if (i == 0)
-			{
-				region.bufferOffset = 0;
-				totalDeviceLocalOffset += r_textures.imageSize[i];
-			}
-			else
-			{
-				region.bufferOffset = totalDeviceLocalOffset;
-				totalDeviceLocalOffset += r_textures.imageSize[i];
-			}
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
-
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
-
-			region.imageOffset = {0, 0, 0};
-			region.imageExtent = {
-				static_cast<uint32_t>(r_textures.width[i]),
-				static_cast<uint32_t>(r_textures.height[i]),
-				1
-			};
-			vkCmdCopyBufferToImage(
-				commandBuffer,
-				stagingBuffer,
-				r_textures.image[i],
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1,
-				&region
-			);
-
-			// Transition - 2
-			generateMipmaps(
-				commandBuffer,
-				r_textures.image[i],
-				r_textures.width[i],
-				r_textures.height[i],
-				r_textures.imageMipCount[i]
-			);
-
-			// Transition - 3
-			transition_image_layout(
-				r_textures.image[i],
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_2_TRANSFER_READ_BIT,
-				VK_ACCESS_2_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer,
-				0,
-				r_textures.imageMipCount[i]
-			);
-		}
-
-		submitSingleTimeCommand(commandBuffer);
-
-		vkDestroyBuffer(r_deviceContext.device, stagingBuffer, nullptr);
-		vkFreeMemory(r_deviceContext.device, stagingBufferMemory, nullptr);
+		transition_image_layout(
+			image,
+			newLayout,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_2_TRANSFER_READ_BIT,
+			VK_ACCESS_2_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			commandBuffer,
+			0,
+			textureData.mipCount
+		);
 
 		return true;
 	}
 
-	void destroyTextures()
+	uint32_t TextureManagerClass::getTextureArrayLimit()
 	{
-		for (uint32_t i = 0; i < r_numRegisteredTextures; i++)
-		{
-			vkDestroySampler(
-				r_deviceContext.device,
-				r_textures.imageSampler[i],
-				nullptr
-			);
-			vkDestroyImageView(
-				r_deviceContext.device,
-				r_textures.imageView[i],
-				nullptr
-			);
-			vkDestroyImage(
-				r_deviceContext.device,
-				r_textures.image[i],
-				nullptr
-			);
-		}
-
-		vkFreeMemory(r_deviceContext.device, r_textureDeviceMemory, nullptr);
+		return m_newTextureStartIndex;
+	}
+	uint32_t TextureManagerClass::getSamplerArrayLimit()
+	{
+		return m_newSamplerStartIndex;
 	}
 
+	VkSampler TextureManagerClass::getSampler(const SamplerId samplerId)
+	{
+		const auto& sampler = m_samplers[samplerId.getId()];
+		return sampler;
+	}
+	VkImageView TextureManagerClass::getImageView(const TextureId textureId)
+	{
+		const auto& imageView = m_imageViews[textureId.getId()];
+		return imageView;
+	}
 } // namespace clz::renderer

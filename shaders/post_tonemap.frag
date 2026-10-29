@@ -5,12 +5,12 @@
 #define CONTRAST 2.0
 
 layout(location = 0) in vec2 inUV;
-layout(binding = 4) uniform sampler2D tonemappedImage;
+layout(set = 3, binding = 4) uniform sampler2D tonemappedImage;
 
 layout(push_constant) uniform PushConstants
 {
    	uint postProcessBits;
-	
+
 	float aspectRatio;
 
 	float vignetteStart;
@@ -19,7 +19,7 @@ layout(push_constant) uniform PushConstants
 	float chromaticAberrationStrength;
 	float edgeFadeNear;
 	float edgeFadeFar;
-	
+
 } PC;
 
 layout(location = 0) out vec4 outColor;

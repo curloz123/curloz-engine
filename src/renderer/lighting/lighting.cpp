@@ -122,4 +122,5 @@ namespace clz::renderer
 		return lightId;
 	}
 
+
 } // namespace clz::renderer

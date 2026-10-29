@@ -1,0 +1,1111 @@
+{
+    "camera": [
+        {
+            "acceleration": 15.0,
+            "far": 1000.0,
+            "fov": 58.0,
+            "localfront": [
+                -0.6300565004348755,
+                -0.7591761350631714,
+                -0.16259215772151947
+            ],
+            "maxvelocity": 5.0,
+            "name": "game",
+            "near": 0.10000000149011612,
+            "pitch": -49.3997802734375,
+            "position": [
+                0.8466290235519409,
+                0.9596608877182007,
+                0.17913757264614105
+            ],
+            "sensitivity": 0.4000000059604645,
+            "yaw": 4514.47021484375
+        }
+    ],
+    "data": {
+        "audio_buffers": [
+            "assets/audio/hl2.ogg",
+            "assets/audio/collide_2.wav",
+            "assets/audio/collide.wav",
+            "assets/audio/gun_drop.wav"
+        ]
+    },
+    "entities": [
+        {
+            "directionallight": {
+                "color": [
+                    1.0,
+                    0.9999393224716187,
+                    0.9998999834060669
+                ],
+                "direction": [
+                    -0.5550000071525574,
+                    -0.1860000044107437,
+                    -0.28200000524520874
+                ],
+                "intensity": 20.0
+            },
+            "name": "Directional light",
+            "transform": {
+                "position": [
+                    -3.540285110473633,
+                    27.688859939575195,
+                    -22.449934005737305
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "name": "Point Light - 0",
+            "pointlight": {
+                "attenuationlinear": 0.09000000357627869,
+                "attenuationquadratic": 0.03200000151991844,
+                "color": [
+                    0.5517527461051941,
+                    0.3724820911884308,
+                    0.3269279897212982
+                ],
+                "intensity": 10.0,
+                "position": [
+                    -30.5687255859375,
+                    3.0126872062683105,
+                    3.861685276031494
+                ],
+                "range": 100.0
+            },
+            "transform": {
+                "position": [
+                    -30.5687255859375,
+                    3.0126872062683105,
+                    3.861685276031494
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "name": "Point Light - 1",
+            "pointlight": {
+                "attenuationlinear": 0.09000000357627869,
+                "attenuationquadratic": 0.03200000151991844,
+                "color": [
+                    0.8435277342796326,
+                    0.1488058865070343,
+                    0.03886939957737923
+                ],
+                "intensity": 2.0,
+                "position": [
+                    -6.168119430541992,
+                    1.8007707595825195,
+                    -8.380091667175293
+                ],
+                "range": 100.0
+            },
+            "transform": {
+                "position": [
+                    -6.168119430541992,
+                    1.8007707595825195,
+                    -8.380091667175293
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "name": "Point Light - 2",
+            "pointlight": {
+                "attenuationlinear": 0.09000000357627869,
+                "attenuationquadratic": 0.03200000151991844,
+                "color": [
+                    0.961952805519104,
+                    0.31738099455833435,
+                    0.1750897914171219
+                ],
+                "intensity": 5.0,
+                "position": [
+                    -9.470881462097168,
+                    5.530941009521484,
+                    -0.1770838499069214
+                ],
+                "range": 100.0
+            },
+            "transform": {
+                "position": [
+                    -9.470881462097168,
+                    5.530941009521484,
+                    -0.1770838499069214
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "name": "Point Light",
+            "pointlight": {
+                "attenuationlinear": 0.09000000357627869,
+                "attenuationquadratic": 0.03200000151991844,
+                "color": [
+                    1.0,
+                    0.9998999834060669,
+                    0.9999032616615295
+                ],
+                "intensity": 0.0,
+                "position": [
+                    -2.082650899887085,
+                    1.4015405178070068,
+                    -11.515549659729004
+                ],
+                "range": 100.0
+            },
+            "transform": {
+                "position": [
+                    -2.082650899887085,
+                    1.4015405178070068,
+                    -11.515549659729004
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "name": "Sensor",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    true,
+                    true,
+                    true
+                ],
+                "enablesleep": true,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    true,
+                    true,
+                    true
+                ],
+                "shapes": [
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": true,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            5.0,
+                            0.10000001639127731,
+                            5.0
+                        ],
+                        "issensor": true,
+                        "position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "restitution": 0.10000000149011612,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "static"
+            },
+            "sensor_scripts": [
+                "assets/scripts/test2.lua",
+                "assets/scripts/foo.lua",
+                "assets/scripts/test.lua"
+            ],
+            "transform": {
+                "position": [
+                    0.0,
+                    0.001761317253112793,
+                    0.0
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/metro/Metro_9.gltf"
+            },
+            "name": "Usnik's Metro",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 80.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.8907451033592224,
+                            0.8529546856880188,
+                            4.9486541748046875
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            0.20555275678634644,
+                            0.0
+                        ],
+                        "restitution": 0.10000000149011612,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    4.473639965057373,
+                    7.918691158294678,
+                    -0.7870808839797974
+                ],
+                "rotation": [
+                    0.5341869592666626,
+                    -0.08957613259553909,
+                    0.8270936012268066,
+                    0.15012183785438538
+                ],
+                "scale": [
+                    0.25000011920928955,
+                    0.25000661611557007,
+                    0.2500010132789612
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/sword/thanos_sword.glb"
+            },
+            "name": "Thanos's sword",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 40.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            2.5110390186309814,
+                            0.04881361126899719,
+                            0.2932218611240387
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.17922621965408325,
+                            0.0,
+                            0.10439810156822205
+                        ],
+                        "restitution": 0.699999988079071,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    -1.6593527793884277,
+                    4.700212001800537,
+                    -2.6445538997650146
+                ],
+                "rotation": [
+                    0.93300861120224,
+                    -0.023063868284225464,
+                    0.35089269280433655,
+                    0.07640329003334045
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0000001192092896
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/test/emissive.glb"
+            },
+            "name": "Emissive Test",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.5,
+                            0.5,
+                            0.5
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "restitution": 0.10000000149011612,
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    17.431848526000977,
+                    1.477545142173767,
+                    2.5991125106811523
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    0.5,
+                    0.5,
+                    0.5
+                ]
+            }
+        },
+        {
+            "buffer_player": {
+                "gain": 1.0,
+                "looping": false,
+                "pitch": 1.024999976158142,
+                "type": "positional"
+            },
+            "collision_scripts": [
+                "assets/scripts/coll.lua"
+            ],
+            "model": {
+                "path": "assets/models/test/DamagedHelmet.glb"
+            },
+            "name": "Damaged Helmet",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": true,
+                "lineardamping": 0.0,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 5.0,
+                        "enablecontactevents": true,
+                        "enablehitevents": true,
+                        "enablesensorevents": true,
+                        "friction": 0.20000000298023224,
+                        "halfdimensions": [
+                            0.32223471999168396,
+                            0.29719462990760803,
+                            0.3960440754890442
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            0.05107438564300537,
+                            -0.13230016827583313
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    -6.495703220367432,
+                    5.336245536804199,
+                    -3.772218942642212
+                ],
+                "rotation": [
+                    -0.6608380675315857,
+                    -3.6476326386036817e-06,
+                    0.7505285143852234,
+                    -3.968390501540853e-06
+                ],
+                "scale": [
+                    0.499999463558197,
+                    0.49976080656051636,
+                    0.4997541308403015
+                ]
+            }
+        },
+        {
+            "buffer_player": {
+                "gain": 1.0,
+                "looping": false,
+                "pitch": 1.0,
+                "type": "positional"
+            },
+            "collision_scripts": [
+                "assets/scripts/coll_2.lua"
+            ],
+            "model": {
+                "path": "assets/models/backpack/Briefcase.glb"
+            },
+            "name": "Briefcase",
+            "rigidbody": {
+                "angulardamping": 0.20000000298023224,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.10000000149011612,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 40.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": true,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.22875463962554932,
+                            0.043697159737348557,
+                            0.17774628102779388
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.002123534679412842,
+                            0.0009005777537822723,
+                            0.000532791018486023
+                        ],
+                        "restitution": 0.20000000298023224,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    -0.6538018584251404,
+                    -6.372243404388428,
+                    -1.1679595708847046
+                ],
+                "rotation": [
+                    0.6879606246948242,
+                    -0.2840111553668976,
+                    -0.6653419137001038,
+                    0.05803470313549042
+                ],
+                "scale": [
+                    0.010000115260481834,
+                    0.010000018402934074,
+                    0.010000013746321201
+                ]
+            }
+        },
+        {
+            "buffer_player": {
+                "gain": 1.0,
+                "looping": false,
+                "pitch": 1.0,
+                "type": "background"
+            },
+            "model": {
+                "path": "assets/models/sponza/Sponza.gltf"
+            },
+            "name": "Sponza",
+            "rigidbody": {
+                "angulardamping": 0.20000000298023224,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.10000000149011612,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 10.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            14.0,
+                            0.4000000059604645,
+                            5.130189895629883
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            -0.4180000126361847,
+                            0.0
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 10.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            7.799999713897705,
+                            5.357258319854736,
+                            0.29352933168411255
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -0.12388026714324951,
+                            4.896047592163086,
+                            1.6205217838287354
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            7.799999713897705,
+                            5.35699987411499,
+                            0.2939999997615814
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -0.5519094467163086,
+                            4.540805816650391,
+                            -2.2396907806396484
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.2792431712150574,
+                            0.5118164420127869,
+                            2.2648282051086426
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -8.094036102294922,
+                            3.552791118621826,
+                            -0.23283663392066956
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.32408320903778076,
+                            0.5,
+                            2.308098077774048
+                        ],
+                        "issensor": false,
+                        "position": [
+                            7.023842811584473,
+                            3.5678775310516357,
+                            -0.37487971782684326
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.5,
+                            1.899999976158142,
+                            1.5939342975616455
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -8.431868553161621,
+                            8.479185104370117,
+                            -0.3236904740333557
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.5,
+                            1.899999976158142,
+                            1.593999981880188
+                        ],
+                        "issensor": false,
+                        "position": [
+                            7.430886268615723,
+                            8.479000091552734,
+                            -0.3240000009536743
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.20000000298023224,
+                        "halfdimensions": [
+                            14.4366455078125,
+                            0.10002904385328293,
+                            1.9861011505126953
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -0.004415467381477356,
+                            10.832834243774414,
+                            3.17927885055542
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            -14.820633888244629,
+                            -1.1195552297726952e-11,
+                            1.8076081687468104e-05
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.20000000298023224,
+                        "halfdimensions": [
+                            14.41961669921875,
+                            0.1000000610947609,
+                            2.0250444412231445
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            10.840217590332031,
+                            -3.806326150894165
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            14.72504997253418,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.20000000298023224,
+                        "halfdimensions": [
+                            2.283679962158203,
+                            0.09999994188547134,
+                            8.801933288574219
+                        ],
+                        "issensor": false,
+                        "position": [
+                            -10.050223350524902,
+                            10.936115264892578,
+                            0.0
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            -15.161726951599121
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 0.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.20000000298023224,
+                        "halfdimensions": [
+                            2.025599241256714,
+                            0.09999997168779373,
+                            7.954116344451904
+                        ],
+                        "issensor": false,
+                        "position": [
+                            8.773834228515625,
+                            10.849961280822754,
+                            0.0
+                        ],
+                        "restitution": 0.5,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            15.446560859680176
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "static"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    -7.7677788734436035,
+                    0.0
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "buffer_player": {
+                "gain": 1.0,
+                "looping": false,
+                "pitch": 1.0,
+                "type": "positional"
+            },
+            "collision_scripts": [
+                "assets/scripts/coll_gun.lua"
+            ],
+            "model": {
+                "path": "assets/models/gun/rose.glb"
+            },
+            "name": "Rose",
+            "rigidbody": {
+                "angulardamping": 0.20000000298023224,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": false,
+                "lineardamping": 0.10000000149011612,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 10.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": true,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.032569605857133865,
+                            0.08504422008991241,
+                            0.3660186231136322
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            -0.04439443349838257,
+                            0.14732766151428223
+                        ],
+                        "restitution": 0.10000000149011612,
+                        "rotation": [
+                            0.0,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    },
+                    {
+                        "density": 10.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": true,
+                        "enablesensorevents": false,
+                        "friction": 0.699999988079071,
+                        "halfdimensions": [
+                            0.042191680520772934,
+                            0.09810318797826767,
+                            0.03915613144636154
+                        ],
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            -0.17912687361240387,
+                            -0.19458302855491638
+                        ],
+                        "restitution": 0.10000000149011612,
+                        "rotation": [
+                            24.728748321533203,
+                            -0.0,
+                            0.0
+                        ],
+                        "type": "box"
+                    }
+                ],
+                "type": "dynamic"
+            },
+            "transform": {
+                "position": [
+                    4.368003845214844,
+                    3.273202419281006,
+                    0.4534706175327301
+                ],
+                "rotation": [
+                    0.5452373623847961,
+                    0.45895299315452576,
+                    0.45459315180778503,
+                    0.5342503190040588
+                ],
+                "scale": [
+                    0.0009999979520216584,
+                    0.0009999967878684402,
+                    0.0010000021429732442
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/test/subway.glb"
+            },
+            "name": "Subway",
+            "transform": {
+                "position": [
+                    -18.26939582824707,
+                    6.252004146575928,
+                    -12.949766159057617
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    0.25,
+                    0.25,
+                    0.25
+                ]
+            }
+        },
+        {
+            "model": {
+                "path": "assets/models/test/room.glb"
+            },
+            "name": "Room",
+            "transform": {
+                "position": [
+                    0.0,
+                    5.85772180557251,
+                    -5.759406089782715
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        }
+    ]
+}

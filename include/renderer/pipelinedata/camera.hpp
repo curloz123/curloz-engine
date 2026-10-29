@@ -8,41 +8,80 @@
 #include "math/mat4x4.hpp"
 #include "math/vec4.hpp"
 #include "renderer/utility/ubo.hpp"
-#include "../arena.hpp"
+#include <memory.h>
+#include <vulkan/vulkan_core.h>
+#include "../vk_types.hpp"
 
 namespace clz::renderer
 {
-	/// @brief Camera set point in main shader
-	inline constexpr uint8_t CAMERA_SET_POINT = 0;
-	/// @brief Camera bind point in main shader
-	inline constexpr uint8_t CAMERA_BIND_POINT = 0;
-	/// @brief Camera's descriptor set layout
-	inline VkDescriptorSetLayout cameraDescriptorLayout = VK_NULL_HANDLE;
-	/// @struct CameraShaderUBO
-	/// @brief Hold's shader's layout UBO, that will be passes every frame
 	struct CameraShaderUBO
 	{
 		math::mat4 projection;
 		math::mat4 view;
 		math::vec4 cameraPos;
 	};
-	/// @brief Camera's UBO handle
-	inline UBO cameraUBO;
 
-} // namespace clz::renderer
+	class CameraDescriptorInterface
+	{
+	private:
+		VkDescriptorSetLayout m_descriptorLayout = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> m_descriptorSets;
 
-/// --- 3. UBO functions ---
-namespace clz::renderer
-{
-	/// @brief Initializes camera descriptor resources
-	/// @return True on succesful creation, false otherwise
-	bool initCameraDescriptor();
+		UBO m_ubo;
 
-	/// @brief Update's camera descriptor every frame
-	/// @param cameraShaderUBO Shader's UBO data
-	void updateCameraDescriptor(const CameraShaderUBO& cameraShaderUBO);
+	public:
+		static inline constexpr uint32_t CAMERA_SET_POINT = 0;
+		static inline constexpr uint32_t CAMERA_BIND_POINT = 0;
+		static inline constexpr uint32_t MODEL_MATRIX_BIND_POINT = 1;
 
-	/// @brief Destroy's camera descriptor resources
-	void destroyCameraDescriptor();
+		bool initialize();
 
+		void destroy();
+
+		std::vector<VkDescriptorPoolSize> getRequiredPoolSize();
+
+		bool allocateDescriptorSets(VkDescriptorPool descriptorPool);
+
+		void updateVPDescriptorSets();
+		void updateMDescriptorSets();
+
+		void update(const CameraShaderUBO& cameraShaderUBO)
+		{
+			memcpy(m_ubo.mapped[r_currentFrame], &cameraShaderUBO, sizeof(CameraShaderUBO));
+		}
+
+		void bindDescriptor(VkCommandBuffer commandBuffer)
+		{
+			vkCmdBindDescriptorSets(
+				commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				r_pipelineContext.layout,
+				CAMERA_SET_POINT,
+				1,
+				&m_descriptorSets[r_currentFrame],
+				0,
+				nullptr
+			);
+		}
+
+		VkDescriptorSetLayout getLayout() const
+		{
+			return m_descriptorLayout;
+		}
+
+		void populateLayoutArray(
+			std::vector<VkDescriptorSetLayout>& layoutArray
+		) const
+		{
+
+#ifdef CLZ_ENABLE_CHECKS /*****************************************************/
+			CLZ_ASSERT(
+				layoutArray.size() > CAMERA_SET_POINT,
+				"Cannot populate an array less than set point"
+			);
+#endif /***********************************************************************/
+
+			layoutArray[CAMERA_SET_POINT] = m_descriptorLayout;
+		}
+	};
 } // namespace clz::renderer

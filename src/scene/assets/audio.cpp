@@ -5,7 +5,7 @@
  * Like audio buffers, and buffer players
  */
 
-#include "scene/data/audio.hpp"
+#include "scene/assets/audio.hpp"
 #include "audio/buffer_manager.hpp"
 
 namespace clz::scene
@@ -32,7 +32,4 @@ namespace clz::scene
 			auBufferArray.push_back(bufferPath);
 		}
 	}
-
-
-
 }

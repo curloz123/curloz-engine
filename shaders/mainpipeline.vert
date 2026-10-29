@@ -16,17 +16,8 @@ layout(location = 3) in vec4 inTangent;
 
 layout(push_constant) uniform PushConstants
 {
-	mat4 model;
-
-	vec4 baseColorFactor;
-	uint baseTextureIndex;
-	float metallicFactor;
-	float roughnessFactor;
-	uint metallic_roughnessTextureIndex;
-	vec3 emissiveFactor;
-	uint emissiveTextureIndex;
-	float emissiveStrength;
-	uint normalTextureIndex;
+	uint matrixIndex;
+	uint materialIndex;
 } pushConstant;
 
 layout(set = 0, binding = 0) uniform CameraUBO
@@ -35,6 +26,10 @@ layout(set = 0, binding = 0) uniform CameraUBO
 	mat4 view;
 	vec4 cameraPos;
 } u_Camera;
+layout(std430, set = 0, binding = 1) readonly buffer MatrixSSBO
+{
+	mat4 model[];
+} s_modelMatrices;
 
 // Out's
 layout(location = 0) out vec2 outUV;
@@ -46,12 +41,17 @@ layout(location = 5) out vec3 outBitangent;
 
 void main()
 {
-   	gl_Position = u_Camera.projection * u_Camera.view * pushConstant.model * vec4(inPosition, 1.0);
+	mat4 model = s_modelMatrices.model[pushConstant.matrixIndex];
+   	gl_Position =
+    		u_Camera.projection *
+      		u_Camera.view *
+        	model *
+         	vec4(inPosition, 1.0);
 
 	outUV = inUV;
-	outNormal = normalize(mat3(transpose(inverse(pushConstant.model))) * inNormal);
-	outFragWPos = vec3(pushConstant.model * vec4(inPosition, 1.0));
+	outNormal = normalize(mat3(transpose(inverse(model))) * inNormal);
+	outFragWPos = vec3(model * vec4(inPosition, 1.0));
 	outCameraPos = u_Camera.cameraPos.xyz;
-	outTangent = normalize(mat3(pushConstant.model) * inTangent.xyz);
+	outTangent = normalize(mat3(model) * inTangent.xyz);
 	outBitangent = cross(outNormal, outTangent.xyz) * inTangent.w;
 }

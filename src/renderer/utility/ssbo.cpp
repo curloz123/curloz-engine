@@ -6,8 +6,10 @@
 
 #include "renderer/utility/ssbo.hpp"
 #include "core/logs.hpp"
+#include "renderer/arena.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
+#include <memory.h>
 
 namespace clz::renderer
 {
@@ -74,6 +76,7 @@ namespace clz::renderer
 				true
 			);
 		}
+		bindStorageBufferToMemory(rSSBO.buffer, rSSBO.memory);
 
 		setHandleName(
 			reinterpret_cast<uint64_t>(rSSBO.buffer),
@@ -86,12 +89,29 @@ namespace clz::renderer
 		rSSBO.mapped.resize(r_FRAMES_IN_FLIGHT);
 		for (uint32_t i = 0; i < r_FRAMES_IN_FLIGHT; ++i)
 		{
-			rSSBO.mapped[i] = reinterpret_cast<void*>(mapped + rSSBO.offsets[i]);
+			rSSBO.mapped[i] = mapped + rSSBO.offsets[i];
 		}
 
 		rSSBO.ssboSize = ssboCreateInfo.size;
 
 		return true;
+	}
+
+	void copyDataToSSBO(
+		SSBO& rSSBO,
+		const void* srcData,
+		const size_t size,
+		const size_t offset
+	)
+	{
+		for (size_t i = 0; i < rSSBO.mapped.size(); ++i)
+		{
+			memcpy(
+				rSSBO.mapped[i] + offset,
+				srcData,
+				size
+			);
+		}
 	}
 
 	/// @copydoc destroyStorageBuffer

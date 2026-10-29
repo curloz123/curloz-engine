@@ -1,13 +1,13 @@
 #version 460
 
 layout(location = 0) in vec2 inUV;
-layout(binding = 0) uniform sampler2D renderTargetImage;
-layout(binding = 1) uniform sampler2D bloomSampledImage;
+layout(set = 3, binding = 0) uniform sampler2D renderTargetImage;
+layout(set = 3, binding = 1) uniform sampler2D bloomSampledImage;
 
 #define NUM_BLOOM_MIPS    	5
 #define RENDER_TARGET_INDEX    -1
 #define BLOOMED_IMAGE_INDEX    -1
-layout(binding = 2) uniform sampler2D bloomMips[NUM_BLOOM_MIPS];
+layout(set = 3, binding = 2) uniform sampler2D bloomMips[NUM_BLOOM_MIPS];
 
 layout(push_constant) uniform PushConstants
 {

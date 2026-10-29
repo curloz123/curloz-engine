@@ -1,13 +1,3 @@
-/**
- * @file post_process.hpp
- * @author curl0z
- * @brief This file describes all post processes descriptor resources.
- * Each process and its relevant resources have been given their bind points.
- * Also, this descriptor is updated/written only by the post_process system
- *
- * General workflow is, 
- * create render_target_context -> create Post Process System -> Create post_process descriptor while creating descriptor sets
- */
 #pragma once
 
 #include <cstdint>
@@ -17,44 +7,67 @@
 
 namespace clz::renderer
 {
-	/// @brief Initial render target context's image bind point (0)
-	inline constexpr uint8_t RENDER_TARGET_IMAGE_BIND_POINT = 0;
-	inline constexpr uint8_t BLOOM_SAMPLE_IMAGE_BIND_POINT = 1;
-	/// @brief Bloom Mip-images bind point (2)
-	inline constexpr uint8_t BLOOM_MIP_IMAGES_BIND_POINT = 2;
-	/// @brief Final Bloomed image bind point (3)
-	inline constexpr uint8_t BLOOMED_IMAGE_BIND_POINT = 3;
-	/// @brief Final Tonemapped image bind point (4)
-	inline constexpr uint8_t TONEMAP_IMAGE_BIND_POINT = 4;
-	/// @brief post tonemapped image bind point (5)
-	inline constexpr uint8_t POST_TONEMAP_IMAGE_BIND_POINT = 5;
+	/**
+	 * @brief Post-process pass descriptor resources: render target, bloom
+	 * sample/mip chain, bloomed composite, tonemap, and post-tonemap images.
+	 * Owned/written only by the post-process system, after it's initialized.
+	 */
+	class PostProcessDescriptorInterface
+	{
+	private:
+		static inline constexpr uint32_t POST_PROCESS_SET_POINT = 3;
+		static inline constexpr uint32_t RENDER_TARGET_IMAGE_BIND_POINT = 0;
+		static inline constexpr uint32_t BLOOM_SAMPLE_IMAGE_BIND_POINT = 1;
+		static inline constexpr uint32_t BLOOM_MIP_IMAGES_BIND_POINT = 2;
+		static inline constexpr uint32_t BLOOMED_IMAGE_BIND_POINT = 3;
+		static inline constexpr uint32_t TONEMAP_IMAGE_BIND_POINT = 4;
+		static inline constexpr uint32_t POST_TONEMAP_IMAGE_BIND_POINT = 5;
 
-	/// @brief Post process descriptor set layout
-	inline VkDescriptorSetLayout post_processDescriptorLayout;
+		VkDescriptorSetLayout m_descriptorLayout = VK_NULL_HANDLE;
+		std::array<VkDescriptorSet, r_FRAMES_IN_FLIGHT> m_descriptorSets;
 
-	/// @brief Post process descriptor sets
-	inline std::array<VkDescriptorSet, r_FRAMES_IN_FLIGHT> post_processDescriptorSets;
-}
+	public:
+		bool initialize();
+		void destroy();
 
-namespace clz::renderer
-{
-	/// @brief Create's post process descriptor resources
-	/// @return True on succesful creation, false otherwise
-	bool createPostProcessDescriptor();
+		std::vector<VkDescriptorPoolSize> getRequiredPoolSizes();
 
-	/// @brief Returns a vector of VkDescriptorPoolSize. Right now total number is 10
-	/// @return vector of VkDescriptorPoolSize
-	std::vector<VkDescriptorPoolSize> getPostProcessDescriptorPoolSizes();
+		bool allocateDescriptorSets(VkDescriptorPool descriptorPool);
 
-	/// @brief Allocates post_process descriptor
-	/// @param descriptorPool Descriptor pool to carve out memory from
-	/// @return True on succesful creation, false otherwise
-	bool allocatePostProcessDescriptorSets(const VkDescriptorPool& descriptorPool);
+		/// Must be updated by post_process system
+		void updateDescriptorSets();
 
-	/// @brief updates post-process descriptor sets
-	/// @warning To be called only called after Post process system has been initialized
-	void updatePostProcessDescriptorSets();
+		void bindDescriptor(VkCommandBuffer commandBuffer, const PipelineContext& pipelineContext)
+		{
+			vkCmdBindDescriptorSets(
+				commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineContext.layout,
+				POST_PROCESS_SET_POINT,
+				1,
+				&m_descriptorSets[r_currentFrame],
+				0,
+				nullptr
+			);
+		}
 
-	/// @brief Destroy's all post process descriptor sets
-	void destroyPostProcessDescriptor();
-}
+		VkDescriptorSetLayout getLayout() const
+		{
+			return m_descriptorLayout;
+		}
+		void populateLayoutArray(
+			std::vector<VkDescriptorSetLayout>& layoutArray
+		) const
+		{
+
+#ifdef CLZ_ENABLE_CHECKS /*****************************************************/
+			CLZ_ASSERT(
+				layoutArray.size() > POST_PROCESS_SET_POINT,
+				"Cannot populate an array less than set point"
+			);
+#endif /***********************************************************************/
+
+			layoutArray[POST_PROCESS_SET_POINT] = m_descriptorLayout;
+		}
+	};
+} // namespace clz::renderer

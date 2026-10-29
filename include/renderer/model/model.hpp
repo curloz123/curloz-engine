@@ -7,82 +7,93 @@
 
 #pragma once
 
+#include "core/id_interface.hpp"
+#include "entity/entitymanager.hpp"
+#include "fastgltf/types.hpp"
 #include "math/mat4x4.hpp"
 #include "math/quat.hpp"
 #include "math/vec4.hpp"
 #include "renderer/entitydata/texture.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
-#include "renderer/utility/image.hpp"
-#include <expected>
+#include "renderer/entitydata/buffer.hpp"
+#include <cstdint>
 #include <fastgltf/core.hpp>
 #include <filesystem>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "model_matrix.hpp"
+#include "model_material.hpp"
+#include <span>
 
 namespace clz::renderer
 {
-	/**
-	 * @struct SamplerData
-	 * @brief Sampler data of any texture, holded by primitive data at the time of creation
-	 */
-	struct SamplerData
+
+	class ModelId : public IdInterface<uint32_t>{};
+
+	struct PrimitiveStagingData
 	{
-		SamplerFilter minFilter = SamplerFilter::Linear;
-		SamplerFilter magFilter = SamplerFilter::Linear;
-		MipmapMode mipmapMode = MipmapMode::None;
-		SamplerAddressMode addressModeU = SamplerAddressMode::REPEAT;
-		SamplerAddressMode addressModeV = SamplerAddressMode::REPEAT;
-		SamplerAddressMode addressModeW = SamplerAddressMode::REPEAT;
-	};
-	/**
-	 * @struct PrimitiveData
-	 * @brief Holds the raw, CPU-side geometric and texture data for a single mesh
-	 * primitive before it is uploaded to the GPU buffers.
-	 */
-	struct PrimitiveData
-	{
-		std::vector<VertexAttribute> attributes;
+		std::vector<StaticMesh> attributes;
 		std::vector<uint32_t> indices;
 
-		/// @brief source for the base color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> baseTexture;
-		/// @brief Base color factor in fastgltf
-		/// @note transparency (w field) is disabled(=1.0f),
-		/// because we don't support transparency right now
-		math::vec4 baseColorFactor;
-		/// @brief The index of the base color texture in the fastgltf
-		size_t baseColorTextureIndex;
-		/// @brief Sampler of base color
-		SamplerData baseSamplerData;
+		uint64_t attributesSize = 0;
+		VkDeviceSize attributeOffset = 0;
+		uint64_t indicesSize = 0;
+		VkDeviceSize indiceOffset = 0;
+		uint32_t materialIndex = UINT32_MAX;
+	};
+	struct MeshStagingData
+	{
+		std::vector<PrimitiveStagingData> primitiveDatas;
+	};
 
+	struct TextureStagingData
+	{
+		uint32_t imageIndex = UINT32_MAX;
+		uint32_t samplerIndex = UINT32_MAX;
+	};
+	struct MaterialStagingData
+	{
+		uint32_t baseTextureIndex = UINT32_MAX;
+		uint32_t baseSamplerIndex = UINT32_MAX;
+		math::vec4 baseFactor = math::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-		/// @brief source for the metallic color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> metallic_roughnessTexture;
-		/// @brief The index of the metallic-roughness color texture in the fastgltf
-		size_t metallic_roughnessColorTextureIndex;
-		/// @brief Metallic factor in fastgltf
+		uint32_t metallicRoughnessTextureIndex = UINT32_MAX;
+		uint32_t metallicRoughnessSamplerIndex = UINT32_MAX;
 		float metallicFactor;
-		/// @brief Roughness factor in fastgltf
 		float roughnessFactor;
-		/// @brief metallic-roughness texture's sampler
-		SamplerData metallic_roughnessSamplerData;
 
-		/// @brief emissive factor
+		uint32_t emissiveTextureIndex = UINT32_MAX;
+		uint32_t emissiveSamplerIndex = UINT32_MAX;
 		math::vec3 emissiveFactor;
-		/// @brief The index of emissive color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> emissiveTexture;
-		size_t emissiveTextureIndex;
-		/// @brief emissive strength
 		float emissiveStrength;
-		/// @brief emissive texture sampler
-		SamplerData emissiveSamplerData;
 
-		/// @brief source for the normal color texture in fastgltf
-		std::optional<std::variant<fastgltf::sources::URI, fastgltf::sources::BufferView>> normalTexture;
-		/// @brief The index of the normal color texture in the fastgltf
-		size_t normalColorTextureIndex;
-		/// @brief normal color sampler
-		SamplerData normalSampelerData;
+		uint32_t normalTextureIndex = UINT32_MAX;
+		uint32_t normalSamplerIndex = UINT32_MAX;
+
+		float ior = 0.04;
+
+		float specularFactor;
+		math::vec3 specularColorFactor;
+		uint32_t specularTextureIndex = UINT32_MAX;
+		uint32_t specularSamplerIndex = UINT32_MAX;
+		uint32_t specularColorTextureIndex = UINT32_MAX;
+		uint32_t specularColorSamplerIndex = UINT32_MAX;
+	};
+
+	/// Nodes don't require any staging data as such.
+	struct GLTFStagingData
+	{
+		ModelId modelId;
+		fastgltf::Asset fastAsset;
+		bool valid = false;
+
+		std::vector<TextureCPUData> images;
+		std::vector<MeshStagingData> meshes;
+
+		std::vector<SamplerId> samplers;
+
+		std::vector<TextureStagingData> textures;
+
+		std::vector<MaterialStagingData> materials;
 	};
 
 	/**
@@ -93,37 +104,11 @@ namespace clz::renderer
 	struct Primitive
 	{
 		/// --- 1. Vertices data ---
+		VertexRange vertexBuffer;
+		IndexRange indexBuffer;
 
-		/// @brief Number of indices to draw.
-		uint32_t indexCount;
-		/// @brief Offset to the first index in the global index buffer.
-		uint32_t firstIndex;
-		/// @brief Offset to the first vertex in the global vertex buffer.
-		uint32_t baseVertexIndex;
-
-		/// --- 2. Texture data
-
-		/// @brief Base color factor
-		math::vec4 baseColorFactor;
-		/// @brief ID of the bound base color texture
-		TextureID baseTextureId;
-
-		/// @brief ID of metallic texture
-		TextureID metallic_roughnessTextureId;
-		/// @brief metallic color factor
-		float metallicFactor;
-		/// @brief roughness color factor
-		float roughnessFactor;
-
-		/// @brief emissive factor
-		math::vec3 emissiveFactor;
-		/// @brief ID of emissive texture
-		TextureID emissiveTextureId;
-		/// @brief emissive color strength
-		float emissiveStrength;
-
-		/// @brief ID of normal texture
-		TextureID normalTextureId;
+		/// --- 2. Material Data ---
+		uint32_t materialIdIndex = UINT32_MAX;
 	};
 
 	/**
@@ -142,178 +127,153 @@ namespace clz::renderer
 	 */
 	struct Node
 	{
-		/// @brief Index of the mesh associated with this node, if any.
-		std::optional<uint32_t> meshIndex;
-		/// @brief Local transformation matrix relative to its parent.
 		math::mat4 localTransform;
+		/// @brief Local transformation matrix relative to its parent.
+		ModelMatrixId matrixId;
+
+		/// @brief Index of the mesh associated with this node, if any.
+		uint32_t meshIndex = UINT32_MAX;
+
+		uint32_t ParentIndex = UINT32_MAX;
 		/// @brief Child nodes in the scene hierarchy.
-		std::vector<Node> children;
+		std::vector<uint32_t> children;
+
+		bool dirty = true;
 	};
 
-	/**
-	 * @struct ModelPath
-	 * @brief A simple wrapper around a filesystem path for a model file.
-	 *
-	 */
-	struct ModelPath
-	{
-		std::filesystem::path path; /**< @brief The file path to the model. */
 
-		ModelPath() = default;
-
-		/**
-		 * @brief Constructs a ModelPath from a given filesystem path.
-		 * @param modelPath The path to the model file.
-		 */
-		ModelPath(const std::filesystem::path& modelPath) : path(modelPath)
-		{
-		}
-	};
-
-	/** @brief Unique identifier for a loaded model. */
-	using ModelId = uint32_t;
-
-	/**
-	 * @struct Model
-	 * @brief The core model class containing the scene graph (nodes) and mesh data.
-	 * Handles both the loading logic from glTF and the Vulkan rendering logic.
-	 */
 	struct Model
 	{
-		/// @brief List of meshes (optional to handle sparse indices).
-		std::vector<std::optional<Mesh>> meshes;
+		std::vector<uint32_t> rootNodesIndices;
+
 		/// @brief Root nodes of the scene graph.
 		std::vector<Node> nodes;
 
-		/**
-		 * @brief Draws the entire model starting from the root nodes.
-		 * @param modelMatrix The global model transformation matrix.
-		 * @param commandBuffer The Vulkan command buffer to record commands into.
-		 */
-		void draw(const math::mat4& modelMatrix, VkCommandBuffer commandBuffer);
+		/// @brief List of meshes (optional to handle sparse indices).
+		std::vector<Mesh> meshes;
 
-		/**
-		 * @brief Recursively draws a specific node and its children.
-		 * @tparam T The type of the node (usually Node).
-		 * @param node The current node to draw.
-		 * @param parentTransform The accumulated transformation matrix from parent
-		 * nodes.
-		 * @param commandBuffer The Vulkan command buffer to record commands into.
-		 */
+		std::vector<ModelMaterialId> materials;
+	};
+	struct ModelLoadData{
+		ModelId modelId;
+		fastgltf::Asset asset;
+	};
+
+	class ModelManagerClass
+	{
+	private:
+		fastgltf::Parser m_parser;
+
+		ModelMatrixManager m_matrixManager;
+		ModelMaterialManager m_materialManager;
+
+		std::vector<Model> m_models;
+		std::vector<std::filesystem::path> m_modelPaths;
+		std::vector<std::vector<ecs::entity>> m_modelEntities;
+
+		std::vector<ModelId> m_gaps;
+		uint32_t m_newModelIndex = 0;
+
+
+		void loadImages(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		void loadSamplers(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		void loadTextures(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		/// material must be loaded after images and textures
+		void loadMaterials(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		void loadMeshes(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		void loadNodes(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
+		void submitGPUData(
+			std::vector<GLTFStagingData>& gltfStagingDatas
+		);
+
 		void drawNode(
-			const auto& node,
+			const ModelId modelId,
+			const uint32_t nodeIndex,
 			const math::mat4& parentTransform,
 			VkCommandBuffer commandBuffer
 		);
 
-		/**
-		 * @brief Loads a glTF node and recursively loads its children.
-		 * @param node The fastgltf node to parse.
-		 * @param asset The parent fastgltf asset.
-		 * @param registeredId The ID of the model being loaded.
-		 * @return The parsed Node structure.
-		 */
-		Node loadNode(
-			const fastgltf::Node& node,
-			const fastgltf::Asset& asset,
-			ModelId registeredId
+	public:
+		bool initialize();
+		void close();
+
+		ModelId loadBatch(const std::span<std::filesystem::path> modelPaths);
+
+		void drawIndivisual(
+			ModelId modelId,
+			const math::vec3& position,
+			const math::quat& rotation,
+			const math::vec3& scale,
+			VkCommandBuffer commandBuffer
 		);
 
-		/**
-		 * @brief Loads a glTF mesh and its primitives.
-		 * @param mesh The fastgltf mesh to parse.
-		 * @param asset The parent fastgltf asset.
-		 * @param registeredId The ID of the model being loaded.
-		 * @return The parsed Mesh structure.
-		 */
-		static Mesh loadMesh(
-			const fastgltf::Mesh& mesh,
-			const fastgltf::Asset& asset,
-			ModelId registeredId
+		void drawAll(
+			VkCommandBuffer commandBuffer
 		);
 
-		/**
-		 * @brief Registers primitive data to global GPU buffers and handles texture
-		 * loading/caching.
-		 * @param primitiveData The raw CPU-side primitive data.
-		 * @param asset The parent fastgltf asset.
-		 * @param registeredId The ID of the model being loaded.
-		 * @return The GPU-ready Primitive structure.
-		 */
-		static Primitive registerPrimitive(
-			const PrimitiveData& primitiveData,
-			const fastgltf::Asset& asset,
-			ModelId registeredId
+		void loadNodes(
+			const std::vector<ModelLoadData>& loadDatas
 		);
-	};
 
-	/** @brief Constant representing an invalid or null model ID. */
-	constexpr uint32_t NULL_MODEL = std::numeric_limits<ModelId>::max();
+		void loadMeshesAndMaterials(
+			const std::vector<ModelLoadData>& loadDatas
+		);
 
-	/** @brief Global Look-Up Table (LUT) for all loaded models. */
-	inline std::vector<Model> ModelLUT;
-
-	/** @brief Global Look-Up Table for the file paths of all loaded models. */
-	inline std::vector<ModelPath> ModelPaths;
-
-	/**
-	 * @struct TextureCache
-	 * @brief Caches loaded textures for a specific model to prevent redundant loading of
-	 * shared textures.
-	 */
-	struct TextureCache
-	{
-		/// @brief Map of glTF texture index to internal TextureID.
-		std::unordered_map<size_t, TextureID> texturesLoaded;
-
-		/// @brief Clears the texture cache.
-		void clear()
+		const ModelMaterialManager& getMaterialManager() const
 		{
-			texturesLoaded.clear();
+			return m_materialManager;
 		}
+
+		const ModelMatrixManager& getMatrixManager() const
+		{
+			return m_matrixManager;
+		}
+
+		std::string getModelPath(const ModelId modelId) const
+		{
+			return m_modelPaths[modelId.getId()].string();
+		}
+
+		const auto& getModelPaths() const
+		{
+			return m_modelPaths;
+		}
+
+		bool attachModelToEntity(
+			const ecs::entity entt, 
+			const uint32_t modelIndex
+		)
+		{
+			if (modelIndex > m_models.size())
+			{
+				clz::log::error("Attempt to retrieve out of bound model");
+				return false;
+			}
+
+			m_modelEntities[modelIndex].push_back(entt);
+			return true;
+		}
+
 	};
 
-	/// @brief Global vector of texture caches, indexed by ModelId.
-	inline std::vector<TextureCache> TextureCaches;
-} // namespace clz::renderer
+	inline ModelManagerClass ModelManager;
 
-namespace clz::renderer
-{
-
-	/**
-	 * @brief Loads a 3D model from a glTF file path.
-	 * @param filePath The path to the glTF file.
-	 * @return The unique ModelId of the loaded model, or an unexpected error string on
-	 * failure.
-	 */
-	std::expected<ModelId, std::string> loadModel(const std::filesystem::path& filePath);
-
-	/**
-	 * @brief Iterates through all ECS entities with a ModelComponent and draws them.
-	 * @param commandBuffer The Vulkan command buffer to record draw commands into.
-	 */
-	void drawAllModels(VkCommandBuffer commandBuffer);
-
-	/**
-	 * @brief Draws a specific model at a given transform.
-	 * @param modelId The ID of the model to draw.
-	 * @param position The world position.
-	 * @param rotation The world rotation (quaternion).
-	 * @param scale The world scale.
-	 * @param commandBuffer The Vulkan command buffer to record draw commands into.
-	 */
-	void drawModel(
-		ModelId modelId,
-		const math::vec3& position,
-		const math::quat& rotation,
-		const math::vec3& scale,
-		VkCommandBuffer commandBuffer
-	);
-
-	/**
-	 * @brief Retrieves the original file path of a loaded model.
-	 * @param modelId The ID of the model.
-	 * @return The filesystem path to the model file.
-	 */
-	std::filesystem::path getModelPath(ModelId modelId);
 } // namespace clz::renderer

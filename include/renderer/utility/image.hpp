@@ -112,7 +112,8 @@ namespace clz::renderer
 	 * @param addressModeU Address Mode U
 	 * @param addressModeV Address Mode V
 	 * @param addressModeW Address Mode W
-	 * @param maximum level of detail. Is 0 by default
+	 * @param maximum level of detail. Is 0 by default.
+	 * If set to FLT_MAX, will use VK_LOD_CLAMP_NONE.
 	 * @param enableAnisotropy Decides whether to enable anisotrpy. Is false by default
 	 * @param anisotropy If enableAnisotropy is true, it sets anisotropy value to this
 	 * @return True on creation, false if anything fails
@@ -223,7 +224,14 @@ namespace clz::renderer
 	 * @param mipLevels number of mip-levels
 	 * @note Make sure all the mips of your image are in TRANSFER_DST_OPTIMAL layout before generating mip-maps
 	 * @note Also make sure to transition them to your desired layout properly after calling this function
+	 * @return New layout of all mips.
 	 */
-	void generateMipmaps(VkCommandBuffer commandBuffer, VkImage& rImage, int32_t imageWidth, int32_t imageHeight, uint32_t mipLevels);
+	VkImageLayout generateMipmaps(
+			VkCommandBuffer commandBuffer, 
+			VkImage& rImage, 
+			int32_t imageWidth, 
+			int32_t imageHeight, 
+			uint32_t mipLevels
+	);
 
 } // namespace clz::renderer

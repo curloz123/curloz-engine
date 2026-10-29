@@ -1,48 +1,68 @@
-/**
- * @file texture.hpp
- * @author curl0z
- * @brief Create pipeline's combined sampler storage
- * that will hold all textures in the gpu.
- * The file's layout is similar -
- * 1. Declare data
- * 2. Declare functions
- *
- * @note This may sound similar to textures,
- * but since texture suits more with entity data, most of the
- * implementation stays there. This file only contains
- * The descriptor set layouts and bind points.
- * @note update samplers data for your
- * targeted descriptor after scene have been loaded.
- */
 #pragma once
 
 #include <vector>
 #include <vulkan/vulkan.h>
-
-/// --- Data ----
-namespace clz::renderer
-{
-	/// @brief texture's set point
-	inline constexpr uint8_t TEXTURE_SET_POINT = 1;
-	/// @brief texture bind point
-	inline constexpr uint8_t TEXTURE_BIND_POINT = 0;
-	/// @brief Texture descriptor set layout
-	inline VkDescriptorSetLayout textureDescriptorLayout;
-
-} // namespace clz::renderer
+#include "../vk_types.hpp"
+#include "renderer/context/context.hpp"
 
 namespace clz::renderer
 {
-	/// @brief Create's texture descriptor resources
-	/// Rn only creates the layout
-	/// @return True on success
-	bool createTextureDescriptor();
 
-	/// @brief Writes back all entity's texture data to texture descriptor sets.
-	/// @note Only called after entities have been initializes
-	void updateTextureForDescriptors(const std::vector<VkDescriptorSet>& descriptorSets);
+	class TextureDescriptorInterface
+	{
+	private:
+		VkDescriptorSetLayout m_descriptorLayout = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> m_descriptorSets;
 
-	/// @brief Destroys texture descriptor
-	void destroyTextureDescriptor();
+	public:
+		static inline constexpr uint32_t TEXTURE_SET_POINT = 1;
+		static inline constexpr uint32_t TEXTURE_BIND_POINT = 0;
+		static inline constexpr uint32_t SAMPLER_BIND_POINT = 1;
+		static inline constexpr uint32_t MATERIAL_BIND_POINT = 2;
 
+		bool initialize();
+
+		void destroy();
+
+		std::vector<VkDescriptorPoolSize> getRequiredPoolSizes();
+
+		bool allocateDescriptorSets(VkDescriptorPool descriptorPool);
+
+		/// Must be updated by Model system
+		void updateDescriptorSets();
+
+		void bindDescriptor(VkCommandBuffer commandBuffer)
+		{
+			vkCmdBindDescriptorSets(
+				commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				r_pipelineContext.layout,
+				TEXTURE_SET_POINT,
+				1,
+				&m_descriptorSets[r_currentFrame],
+				0,
+				nullptr
+			);
+		}
+
+		VkDescriptorSetLayout getLayout() const
+		{
+			return m_descriptorLayout;
+		}
+
+		void populateLayoutArray(
+			std::vector<VkDescriptorSetLayout>& layoutArray
+		) const
+		{
+
+#ifdef CLZ_ENABLE_CHECKS /*****************************************************/
+			CLZ_ASSERT(
+				layoutArray.size() > TEXTURE_SET_POINT,
+				"Cannot populate an array less than set point"
+			);
+#endif /***********************************************************************/
+
+			layoutArray[TEXTURE_SET_POINT] = m_descriptorLayout;
+		}
+	};
 } // namespace clz::renderer

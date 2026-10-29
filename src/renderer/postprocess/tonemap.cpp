@@ -7,9 +7,8 @@
 #include "core/logs.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/vk_types.hpp"
-#include "renderer/pipelinedata/post_process.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/utility/image.hpp"
-#include "renderer/utility/memory.hpp"
 #include "renderer/utility/namer.hpp"
 
 namespace clz::renderer::post_process
@@ -19,14 +18,14 @@ namespace clz::renderer::post_process
 	{
 		if (!createImage(
 			tonemapImage,
-			    "tone-map image",
-			    width,
-			    height,
-			    TONEMAP_IMAGE_FORMAT,
-			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			    0
-		    ))
+			"tone-map image",
+		    	width,
+		    	height,
+		    	TONEMAP_IMAGE_FORMAT,
+		    	VK_IMAGE_TILING_OPTIMAL,
+		    	VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+		    	0
+		))
 		{
 			clz::log::error("failed to create tonemap image");
 			return false;
@@ -183,16 +182,7 @@ namespace clz::renderer::post_process
 			sizeof(TonemapPC),
 			&pushConstant
 		);
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			r_tonemapPipelineContext.layout,
-			0,
-			1,
-			&post_processDescriptorSets[r_currentFrame],
-			0,
-			nullptr
-		);
+		PostProcessDescriptor.bindDescriptor(commandBuffer, r_tonemapPipelineContext);
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 		vkCmdEndRendering(commandBuffer);
 

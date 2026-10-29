@@ -15,10 +15,10 @@
 #include "renderer/context/pipelinecontext.hpp"
 #include "core/logs.hpp"
 #include "renderer/context/context.hpp"
-#include "renderer/entitydata/vertexbuffer.hpp"
+#include "renderer/entitydata/buffer.hpp"
 #include "renderer/pipelinedata/camera.hpp"
 #include "renderer/pipelinedata/lights.hpp"
-#include "renderer/pipelinedata/pipelinedata.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/pipelinedata/post_process.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
 #include "renderer/pipelinedata/texture.hpp"
@@ -44,7 +44,7 @@ namespace clz::renderer
 	bool initPipelineContexts()
 	{
 		// --- Initialize pipeline data ---
-		preparePipelineData();
+		initializePipelineData();
 
 		// --- Now create all pipelines
 
@@ -63,6 +63,8 @@ namespace clz::renderer
 			clz::log::error("Could initialize pipeline context");
 			return false;
 		}
+
+		/// --- Post process pipelines --- ///
 
 		if (!createBloomPipeline())
 		{
@@ -127,13 +129,13 @@ namespace clz::renderer
 		VkPipelineDynamicStateCreateInfo dynamicState = createDynamicStates(dynamicStates);
 
 		std::array bindingDescriptions = {
-			getVertexBindingDescription()
+			getStaticVertexBindingDescription()
 		};
 		std::array attributeDescriptions = {
-			getVertexAttributeDescription(VertexAttributeType::POSITION),
-			getVertexAttributeDescription(VertexAttributeType::UV),
-			getVertexAttributeDescription(VertexAttributeType::NORMAL),
-			getVertexAttributeDescription(VertexAttributeType::TANGENT),
+			getStaticVertexAttributeDescription(VertexAttributeType::POSITION),
+			getStaticVertexAttributeDescription(VertexAttributeType::UV),
+			getStaticVertexAttributeDescription(VertexAttributeType::NORMAL),
+			getStaticVertexAttributeDescription(VertexAttributeType::TANGENT),
 		};
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo =
 			createVertexInputInfo(bindingDescriptions, attributeDescriptions);
@@ -168,11 +170,10 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-		std::vector<VkDescriptorSetLayout> layouts = {
-			cameraDescriptorLayout,
-			textureDescriptorLayout,
-			lightDescriptorLayout
-		};
+		std::vector<VkDescriptorSetLayout> layouts(NUM_DESCRIPTORS, getEmptyLayout());
+		CameraDescriptor.populateLayoutArray(layouts);
+		TextureDescriptor.populateLayoutArray(layouts);
+		LightDescriptor.populateLayoutArray(layouts);
 		size_t pushConstantSize = sizeof(ModelDataPC);
 		createPipelineLayout(
 			r_pipelineContext,
@@ -392,6 +393,7 @@ namespace clz::renderer
 		return true;
 	}
 
+
 	/// @brief Shared setup for the full-screen post-process pipelines
 	/// (pre/post-tonemap and tonemap). Both are full-screen-triangle passes:
 	/// no vertex buffer (position/UV come from gl_VertexIndex in the vertex
@@ -404,7 +406,8 @@ namespace clz::renderer
 		const char* debugName,
 		const size_t pushConstantSize,
 		VkFormat colorAttachmentFormat,
-		VkExtent2D extent)
+		VkExtent2D extent
+	)
 	{
 		if (!createShaderModules(pipelineContext, vertPath, fragPath))
 		{
@@ -471,11 +474,8 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-		// Post-process passes sample the previous stage's image through the
-		// shared post-process descriptor set layout (pre/tonemap/post bind points).
-		std::vector<VkDescriptorSetLayout> layouts = {
-			post_processDescriptorLayout
-		};
+		std::vector<VkDescriptorSetLayout> layouts(NUM_DESCRIPTORS, getEmptyLayout());
+		PostProcessDescriptor.populateLayoutArray(layouts);
 		createPipelineLayout(
 			pipelineContext,
 			pushConstantSize,

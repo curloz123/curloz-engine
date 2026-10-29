@@ -92,7 +92,10 @@ namespace clz::scene
 			{
 				ecs::addComponent<renderer::ModelComponent>(
 					e,
-					retrieveModelComponent(entityData["model"]["path"], entityName)
+					retrieveModelComponent(
+						entityData["model"],
+						e
+					)
 				);
 			}
 			// Attach Dir light Component if present
@@ -209,8 +212,7 @@ namespace clz::scene
 			{
 				saveModelComponent(
 					ecs::getComponent<renderer::ModelComponent>(entity),
-					entityJson["model"],
-					entityName
+					entityJson["model"]
 				);
 			}
 			if (ecs::hasComponent<renderer::DirectionalLightComponent>(entity))

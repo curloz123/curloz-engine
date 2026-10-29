@@ -28,7 +28,7 @@
 #include "physics/shape.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/model/model.hpp"
-#include "renderer/pipelinedata/descriptor.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/rendercomponent.hpp"
 #include "renderer/shapes.hpp"
 #include "renderer/utility/image.hpp"
@@ -95,7 +95,7 @@ namespace clz::editor
 		{
 			const auto oldType = physics::getBodyType(rigidBodyId);
 			auto createBodyTypeSnapshot = [rigidBodyId](
-					physics::BodyType oldType, 
+					physics::BodyType oldType,
 					physics::BodyType newType)
 			{
 				timemachine::createSnapshot(
@@ -106,7 +106,7 @@ namespace clz::editor
 						physics::setBodyType(rigidBodyId, newType);
 					}
 				);
-				
+
 			};
 			if (ImGui::MenuItem("Static"))
 			{
@@ -139,8 +139,8 @@ namespace clz::editor
 		ImGui::Separator();
 
 		auto createAttributeSnapshot = [rigidBodyId](
-				const auto func, 
-				const auto oldValue, 
+				const auto func,
+				const auto oldValue,
 				const auto newValue)
 		{
 			timemachine::createSnapshot(
@@ -242,7 +242,8 @@ namespace clz::editor
 		{
 			renderer::resetCamera(physicsBodyShapeImage.cameraId);
 			capturedEntity = currentSelectedEntity.value();
-			physicsBodyShapeImage.showTarget = true;
+			clz::log::warn("Editting shapes is disabled, fix it first");
+			//physicsBodyShapeImage.showTarget = true;
 		}
 
 		ImGui::PopFont();
@@ -371,13 +372,13 @@ namespace clz::editor
 				lastEditedShape = shapeId;
 			ImGui::PopFont();
 
-			
+
 			float currentDensity = shape.getDensity();
 			const float oldDensity = currentDensity;
 			if (ImGui::InputFloat("Density", &currentDensity))
 			{
 				lastEditedShape = shapeId;
-				const float newDensity = currentDensity;		
+				const float newDensity = currentDensity;
 				shape.setDensity(newDensity);
 
 				timemachine::createSnapshot(
@@ -490,7 +491,7 @@ namespace clz::editor
 				auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
 				switch (shape.getShapeType())
 				{
-				case (physics::ShapeType::BOX): 
+				case (physics::ShapeType::BOX):
 				{
 					auto halfExtents = shape.getBoxHalfExtents();
 					if (ImGui::InputFloat3(
@@ -522,12 +523,12 @@ namespace clz::editor
 						timemachine::createSnapshot(
 							[rigidBodyId, shapeId, oldExtents] {
 								physics::getBodyShape(
-										rigidBodyId, 
+										rigidBodyId,
 										shapeId).setBoxHalfExtents(oldExtents);
 							},
 							[rigidBodyId, shapeId, halfExtents] {
 								physics::getBodyShape(
-										rigidBodyId, 
+										rigidBodyId,
 										shapeId).setBoxHalfExtents(halfExtents);
 							}
 						);
@@ -598,7 +599,7 @@ namespace clz::editor
 				ImGui::PushFont(fontMonoBold);
 				ImGui::Text("Box");
 				ImGui::PopFont();
-				
+
 				editLBH(rigidBodyId, shapeId);
 			}
 			case (physics::ShapeType::SPHERE): {
@@ -616,7 +617,7 @@ namespace clz::editor
 
 				break;
 			}
-			case (physics::ShapeType::CAPSULE): 
+			case (physics::ShapeType::CAPSULE):
 				ImGui::PushFont(fontMono);
 				ImGui::Text("Shape type: ");
 				ImGui::PopFont();
@@ -628,7 +629,7 @@ namespace clz::editor
 				// editLBH(rigidBodyId, i, physics::ShapeType::CAPSULE);
 				// editRadius(shape, shapeData, physics::ShapeType::CAPSULE);
 
-			case (physics::ShapeType::CYLINDER): 
+			case (physics::ShapeType::CYLINDER):
 				ImGui::PushFont(fontMono);
 				ImGui::Text("Shape type: ");
 				ImGui::PopFont();
@@ -739,12 +740,12 @@ namespace clz::editor
 					timemachine::createSnapshot(
 						[rigidBodyId, shapeId] {
 							physics::getBodyShape(
-								rigidBodyId, 
+								rigidBodyId,
 								shapeId).unMarkForDeletion();
 						},
 						[rigidBodyId, shapeId] {
 							physics::getBodyShape(
-								rigidBodyId, 
+								rigidBodyId,
 								shapeId).markForDeletion();
 						}
 					);
@@ -786,8 +787,9 @@ namespace clz::editor
 		const auto height = static_cast<uint32_t>(avail.y);
 
 		if ((width != physicsBodyShapeImage.extent.width ||
-		     height != physicsBodyShapeImage.extent.height) &&
-		    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft))
+		    	height != physicsBodyShapeImage.extent.height) &&
+		    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft)
+		)
 		{
 			physicsBodyShapeImage.extent.width = width;
 			physicsBodyShapeImage.extent.height = height;
@@ -850,11 +852,11 @@ namespace clz::editor
 							capturedEntity.value()).rigidBodyId;
 			const physics::RigidBodyShapeId shapeId = lastEditedShape.value();
 			auto& shape = physics::getBodyShape(rigidBodyId, lastEditedShape.value());
-			ecs::EditorTransformComponent shapeTransform;	
+			ecs::EditorTransformComponent shapeTransform;
 			shapeTransform.position = shape.getPosition();
 			shapeTransform.rotation = shape.getRotation();
 			shapeTransform.scale = shape.getBoxHalfExtents() * 2;
-			
+
 			auto proj = renderer::getCameraProjMatrix(physicsBodyShapeImage.cameraId, rect.width, rect.height);
 			const auto view = renderer::getCameraViewMatrix(physicsBodyShapeImage.cameraId);
 			const auto [newTransform, newEditorTransform, change] = gizmoTransform(rect, proj, view, shapeTransform);
@@ -905,7 +907,7 @@ namespace clz::editor
 							shape.setBoxHalfExtents(newEditorTransform.scale * 0.5f);
 						}
 					);
-					
+
 				}
 			}
 
@@ -1004,8 +1006,7 @@ namespace clz::editor
 		memcpy(backend::editorCameraUBO.mapped[renderer::r_currentFrame], &ubo, sizeof(ubo));
 
 		const std::array descriptorSets = {
-			backend::cameraDescriptorSets[renderer::r_currentFrame],
-			renderer::textureDescriptorSets[renderer::r_currentFrame]
+			backend::cameraDescriptorSets[renderer::r_currentFrame]
 		};
 		vkCmdBindDescriptorSets(
 			commandBuffer,
@@ -1017,10 +1018,12 @@ namespace clz::editor
 			0,
 			nullptr
 		);
+		renderer::TextureDescriptor.bindDescriptor(commandBuffer);
 
 		if (ecs::hasComponent<renderer::ModelComponent>(
 				capturedEntity.value()))
 		{
+			/*
 			renderer::drawModel(
 				ecs::getComponent<renderer::ModelComponent>(
 					capturedEntity.value()
@@ -1031,6 +1034,7 @@ namespace clz::editor
 					.scale,
 				commandBuffer
 			);
+			*/
 		}
 
 		const auto& shapes = physics::getBodyShapes(

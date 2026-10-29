@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "../arena.hpp"
 
 namespace clz::renderer
 {
@@ -24,7 +25,7 @@ namespace clz::renderer
 		VkDeviceSize size;
 
 		///< Descriptor binding point this UBO is bound to.
-		std::uint32_t bindPoint;
+		uint32_t bindPoint;
 	} UniformBufferCreateInfo;
 
 

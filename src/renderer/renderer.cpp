@@ -22,9 +22,9 @@
 #include "window/window.hpp"
 #include <vector>
 #include <renderer/arena.hpp>
+#include "renderer/model/model.hpp"
 
 #ifdef CLZ_ENABLE_EDITOR
-#include "include/editor.hpp"
 #include "include/cross_system_flags.hpp"
 #endif
 
@@ -85,6 +85,9 @@ namespace clz::renderer
 			clz::log::error("Could not initialize renderer");
 		}
 
+		prepareEntityData();
+		ModelManager.initialize();
+
 		clz::log::info("initialized all renderer context's");
 		clz::log::info("Initialized renderer");
 		return true;
@@ -120,7 +123,7 @@ namespace clz::renderer
 						"Unable to recreate images"
 						"on framebuffer resize"
 					);
-					break;	
+					break;
 			}
 		}
 
@@ -156,6 +159,7 @@ namespace clz::renderer
 		vkDeviceWaitIdle(r_deviceContext.device);
 
 		/// --- First Destroy Entity Data ---
+		ModelManager.close();
 		destroyEntityData();
 
 		/// --- Then other stuff
@@ -168,10 +172,11 @@ namespace clz::renderer
 		destroyRenderTargetContext();
 		destroySwapchainContext();
 		destroyCommandContext();
-		destroyDeviceContext();
 
 		/// --- Close memory arena --- ///
 		destroyVkArenaMemory();
+
+		destroyDeviceContext();
 
 		/// --- write back config data --- ///
 		writeBackConfigData();

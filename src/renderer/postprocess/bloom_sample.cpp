@@ -4,6 +4,8 @@
  * @brief Bloom post process texture sampling implementation
  */
 #include "core/logs.hpp"
+#include "renderer/arena.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 #include "renderer/utility/namer.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/pipelinedata/pushconstants.hpp"
@@ -25,7 +27,7 @@ namespace clz::renderer::post_process
 			    height,
 			    BLOOM_SAMPLE_IMAGE_FORMAT,
 			    VK_IMAGE_TILING_OPTIMAL,
-			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
+			    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
 			    	VK_IMAGE_USAGE_SAMPLED_BIT,
 			    0
 		    ))
@@ -47,27 +49,22 @@ namespace clz::renderer::post_process
 			memReq.memoryTypeBits,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
-		if (vkAllocateMemory(
-			    renderer::r_deviceContext.device,
-			    &allocInfo,
-			    nullptr,
-			    &bloomSampleImageMemory
-		    ) != VK_SUCCESS)
+
+		const ImageMemoryAllocInfo memAllocInfo{
+			.imageType = ImageType::CANVAS,
+			.alignment = memReq.alignment,
+			.size = memReq.size
+		};
+
+		if (!carveImageMemory(memAllocInfo, bloomSampleImageMemory))
 		{
-			clz::log::error("failed to allocate pre tonemap image");
+			clz::log::error(
+				"Could not carve memory for bloom sample process",
+				true
+			);
 			return false;
 		}
-		vkBindImageMemory(
-			r_deviceContext.device,
-			bloomSampleImage,
-			bloomSampleImageMemory,
-			0
-		);
-		setHandleName(
-			reinterpret_cast<uint64_t>(bloomSampleImageMemory),
-			VK_OBJECT_TYPE_DEVICE_MEMORY,
-			"bloom sampler memory"
-		);
+		bindImageMemory(bloomSampleImage, bloomSampleImageMemory);
 
 		if (!createImageView(
 			bloomSampleImageView,
@@ -100,12 +97,13 @@ namespace clz::renderer::post_process
 	}
 
 	/// @copydoc destroyBloomProcess
-	void destroyBloomSampleProcess()
+	void destroyBloomSampleProcess(const bool isRecreating)
 	{
 		vkDestroySampler(r_deviceContext.device, bloomSampleSampler, nullptr);
 		vkDestroyImageView(r_deviceContext.device, bloomSampleImageView, nullptr);
 		vkDestroyImage(r_deviceContext.device, bloomSampleImage, nullptr);
-		vkFreeMemory(r_deviceContext.device, bloomSampleImageMemory, nullptr);
+		if (isRecreating)
+			freeImageMemory(bloomSampleImageMemory);
 	}
 
 	/// @copydoc applyBloomSampleProcess
@@ -175,15 +173,7 @@ namespace clz::renderer::post_process
 		// 	sizeof(Pre_TonemapPC),
 		// 	&pushConstant
 		// );
-		vkCmdBindDescriptorSets(
-			    commandBuffer,
-			    VK_PIPELINE_BIND_POINT_GRAPHICS,
-			    r_bloomSamplePipelineContext.layout,
-			    0, 1,
-			    &post_processDescriptorSets[r_currentFrame],
-			    0,
-			    nullptr
-		);
+		PostProcessDescriptor.bindDescriptor(commandBuffer, r_bloomSamplePipelineContext);
 
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 		vkCmdEndRendering(commandBuffer);
