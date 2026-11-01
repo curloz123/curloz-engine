@@ -36,8 +36,7 @@ namespace clz::renderer
 		directionalLight.color = math::vec4(color.x, color.y, color.z, intensity);
 
 		Lights.directionalLight[numDirectionalLights] = std::move(directionalLight);
-		DirectionalLightId lightId;
-		lightId.value = numDirectionalLights;
+		DirectionalLightId lightId(numDirectionalLights);
 		++numDirectionalLights;
 		return lightId;
 	}
@@ -77,8 +76,7 @@ namespace clz::renderer
 			-1.0
 		);
 		Lights.pointLights[numPointLights] = std::move(pointLight);
-		PointLightId lightId;
-		lightId.value = numPointLights;
+		PointLightId lightId(numPointLights);
 		++numPointLights;
 		return lightId;
 	}
@@ -116,8 +114,7 @@ namespace clz::renderer
 		spotLight.cutoff = math::vec2(innerCutoffAngle, outerCutoffAngle);
 
 		Lights.spotLights[numSpotLights] = std::move(spotLight);
-		SpotLightId lightId;
-		lightId.value = numSpotLights;
+		SpotLightId lightId(numSpotLights);
 		++numSpotLights;
 		return lightId;
 	}

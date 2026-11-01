@@ -8,12 +8,13 @@
  * plus getter/setter pairs so the rest of the engine never touches
  * the raw arrays directly.
  *
- * @note Everything except the editor should use the getters below —
+ * @note Everything except the editor should use the getters below,
  * writing directly into Lights bypasses validation and id bookkeeping.
  */
 
 #pragma once
 
+#include "core/id_interface.hpp"
 #include "lights.hpp"
 #include "math/vec3.hpp"
 #include <expected>
@@ -26,24 +27,15 @@ namespace clz::renderer
 
 	/// @brief Opaque handle to a registered directional light.
 	/// @note Only ever has value 0 — engine supports a single sun.
-	struct DirectionalLightId
-	{
-		uint32_t value;
-	};
+	class DirectionalLightId : public IdInterface<uint32_t>{};
 
 	/// @brief Opaque handle to a registered point light.
 	/// Index into Lights.pointLights.
-	struct PointLightId
-	{
-		uint32_t value;
-	};
+	class PointLightId : public IdInterface<uint32_t>{};
 
 	/// @brief Opaque handle to a registered spot-light.
 	/// Index into Lights.spotLights.
-	struct SpotLightId
-	{
-		uint32_t value;
-	};
+	class SpotLightId : public IdInterface<uint32_t>{};
 
 	/// @brief Hard cap on directional lights (engine only models one sun).
 	inline constexpr uint8_t MAX_DIR_LIGHTS = 1;
@@ -85,7 +77,7 @@ namespace clz::renderer
 	/// @return directional light Id (always 0),
 	/// else LightRegisterError as error if something went wrong
 	/// @note right now engine only supports single directional light (the sun)
-	/// so id.value will always return 0.
+	/// so id.getId() will always return 0.
 	std::expected<DirectionalLightId, LightRegisterError> registerDirectionalLight(
 		const math::vec3& direction,
 		const math::vec3& color,
@@ -146,12 +138,12 @@ namespace clz::renderer
 	/// @return Normalized direction vector.
 	inline math::vec3 getDirLightDirection(const DirectionalLightId id)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to query direction");
 			return math::vec3(1.0);
 		}
-		const auto& l = Lights.directionalLight[id.value];
+		const auto& l = Lights.directionalLight[id.getId()];
 		return {l.direction.x, l.direction.y, l.direction.z};
 	}
 	/// @brief Sets the direction of a directional light.
@@ -159,14 +151,14 @@ namespace clz::renderer
 	/// @param dir New direction; normalized internally before storing.
 	inline void setDirLightDirection(const DirectionalLightId id, const math::vec3& dir)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to set direction");
 			return;
 		}
 
 		const math::vec3 n = math::normalize(dir);
-		auto& l = Lights.directionalLight[id.value];
+		auto& l = Lights.directionalLight[id.getId()];
 		l.direction.x = n.x;
 		l.direction.y = n.y;
 		l.direction.z = n.z;
@@ -176,13 +168,13 @@ namespace clz::renderer
 	/// @param id Handle returned by registerDirectionalLight.
 	inline math::vec3 getDirLightColor(const DirectionalLightId id)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to query color");
 			return math::vec3(1.0f);
 		}
 
-		const auto& l = Lights.directionalLight[id.value];
+		const auto& l = Lights.directionalLight[id.getId()];
 		return {l.color.x, l.color.y, l.color.z};
 	}
 	/// @brief Sets the RGB color of a directional light.
@@ -190,12 +182,12 @@ namespace clz::renderer
 	/// @param color New RGB color. Intensity (color.w) is left untouched.
 	inline void setDirLightColor(const DirectionalLightId id, const math::vec3& color)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to set color");
 			return;
 		}
-		auto& l = Lights.directionalLight[id.value];
+		auto& l = Lights.directionalLight[id.getId()];
 		l.color.x = color.x;
 		l.color.y = color.y;
 		l.color.z = color.z;
@@ -205,13 +197,13 @@ namespace clz::renderer
 	/// @param id Handle returned by registerDirectionalLight.
 	inline float getDirLightIntensity(const DirectionalLightId id)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to query intensity");
 			return 1.0f;
 		}
 
-		return Lights.directionalLight[id.value].color.w;
+		return Lights.directionalLight[id.getId()].color.w;
 	}
 
 	/// @brief Sets the intensity of a directional light (stored in color.w).
@@ -219,25 +211,25 @@ namespace clz::renderer
 	/// @param intensity New intensity value.
 	inline void setDirLightIntensity(const DirectionalLightId id, const float intensity)
 	{
-		if (id.value >= numDirectionalLights) [[unlikely]]
+		if (id.getId() >= numDirectionalLights) [[unlikely]]
 		{
 			clz::log::error("Invalid dir light id passed to set intensity");
 			return;
 		}
 
-		Lights.directionalLight[id.value].color.w = intensity;
+		Lights.directionalLight[id.getId()].color.w = intensity;
 	}
 
 	/// @brief Gets the world-space position of a point light.
 	/// @param id Handle returned by registerPointLight.
 	inline math::vec3 getPointLightPosition(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to query position");
 			return math::vec3(1.0f);
 		}
-		const auto& l = Lights.pointLights[id.value];
+		const auto& l = Lights.pointLights[id.getId()];
 		return {l.position.x, l.position.y, l.position.z};
 	}
 	/// @brief Sets the world-space position of a point light.
@@ -245,12 +237,12 @@ namespace clz::renderer
 	/// @param position New world-space position.
 	inline void setPointLightPosition(const PointLightId id, const math::vec3& position)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set position");
 			return;
 		}
-		auto& l = Lights.pointLights[id.value];
+		auto& l = Lights.pointLights[id.getId()];
 		l.position.x = position.x;
 		l.position.y = position.y;
 		l.position.z = position.z;
@@ -260,13 +252,13 @@ namespace clz::renderer
 	/// @param id Handle returned by registerPointLight.
 	inline float getPointLightRange(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to get range");
 			return 10.0f;
 		}
 
-		return Lights.pointLights[id.value].range;
+		return Lights.pointLights[id.getId()].range;
 	}
 	/// @brief Sets the maximum effective range of a point light.
 	/// @param id Handle returned by registerPointLight.
@@ -274,25 +266,25 @@ namespace clz::renderer
 	/// entirely in the lighting loop (see mainpipeline.frag).
 	inline void setPointLightRange(const PointLightId id, const float range)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set range");
 			return;
 		}
-		Lights.pointLights[id.value].range = range;
+		Lights.pointLights[id.getId()].range = range;
 	}
 
 	/// @brief Gets the RGB color of a point light.
 	/// @param id Handle returned by registerPointLight.
 	inline math::vec3 getPointLightColor(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to get color");
 			return math::vec3(1.0f);
 		}
 
-		const auto& l = Lights.pointLights[id.value];
+		const auto& l = Lights.pointLights[id.getId()];
 		return {l.color.x, l.color.y, l.color.z};
 	}
 	/// @brief Sets the RGB color of a point light.
@@ -300,13 +292,13 @@ namespace clz::renderer
 	/// @param color New RGB color.
 	inline void setPointLightColor(const PointLightId id, const math::vec3& color)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set color");
 			return;
 		}
 
-		auto& l = Lights.pointLights[id.value];
+		auto& l = Lights.pointLights[id.getId()];
 		l.color.x = color.x;
 		l.color.y = color.y;
 		l.color.z = color.z;
@@ -316,90 +308,90 @@ namespace clz::renderer
 	/// @param id Handle returned by registerPointLight.
 	inline float getPointLightIntensity(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to get intensity");
 			return 1.0f;
 		}
 
-		return Lights.pointLights[id.value].intensity;
+		return Lights.pointLights[id.getId()].intensity;
 	}
 	/// @brief Sets the intensity of a point light.
 	/// @param id Handle returned by registerPointLight.
 	/// @param intensity New intensity value.
 	inline void setPointLightIntensity(const PointLightId id, const float intensity)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set intensity");
 			return;
 		}
 
-		Lights.pointLights[id.value].intensity = intensity;
+		Lights.pointLights[id.getId()].intensity = intensity;
 	}
 
 	/// @brief Gets the linear attenuation term (Kl) of a point light.
 	/// @param id Handle returned by registerPointLight.
 	inline float getPointLightLinearAttenuation(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to get attenuation");
 			return 0.09f;
 		}
 
-		return Lights.pointLights[id.value].attenuation.y;
+		return Lights.pointLights[id.getId()].attenuation.y;
 	}
 	/// @brief Sets the linear attenuation term (Kl) of a point light.
 	/// @param id Handle returned by registerPointLight.
 	/// @param linear New linear attenuation coefficient.
 	inline void setPointLightLinearAttenuation(const PointLightId id, const float linear)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set attenuation");
 			return;
 		}
 
-		Lights.pointLights[id.value].attenuation.y = linear;
+		Lights.pointLights[id.getId()].attenuation.y = linear;
 	}
 
 	/// @brief Gets the quadratic attenuation term (Kq) of a point light.
 	/// @param id Handle returned by registerPointLight.
 	inline float getPointLightQuadraticAttenuation(const PointLightId id)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to get attenuation");
 			return 0.09f;
 		}
 
-		return Lights.pointLights[id.value].attenuation.z;
+		return Lights.pointLights[id.getId()].attenuation.z;
 	}
 	/// @brief Sets the quadratic attenuation term (Kq) of a point light.
 	/// @param id Handle returned by registerPointLight.
 	/// @param quadratic New quadratic attenuation coefficient.
 	inline void setPointLightQuadraticAttenuation(const PointLightId id, const float quadratic)
 	{
-		if (id.value >= numPointLights) [[unlikely]]
+		if (id.getId() >= numPointLights) [[unlikely]]
 		{
 			clz::log::error("Invalid point light id passed to set attenuation");
 			return;
 		}
 
-		Lights.pointLights[id.value].attenuation.z = quadratic;
+		Lights.pointLights[id.getId()].attenuation.z = quadratic;
 	}
 
 	/// @brief Gets the direction of a spot light's cone.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline math::vec3 getSpotLightDirection(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get direction");
 			return math::vec3(1.0f);
 		}
-		const auto& l = Lights.spotLights[id.value];
+		const auto& l = Lights.spotLights[id.getId()];
 		return {l.direction.x, l.direction.y, l.direction.z};
 	}
 	/// @brief Sets the direction of a spot light's cone.
@@ -407,14 +399,14 @@ namespace clz::renderer
 	/// @param dir New direction; normalized internally before storing.
 	inline void setSpotLightDirection(const SpotLightId id, const math::vec3& dir)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set direction");
 			return;
 		}
 
 		const math::vec3 n = math::normalize(dir);
-		auto& l = Lights.spotLights[id.value];
+		auto& l = Lights.spotLights[id.getId()];
 		l.direction.x = n.x;
 		l.direction.y = n.y;
 		l.direction.z = n.z;
@@ -424,13 +416,13 @@ namespace clz::renderer
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline math::vec3 getSpotLightPosition(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get position");
 			return math::vec3(1.0f);
 		}
 
-		const auto& l = Lights.spotLights[id.value];
+		const auto& l = Lights.spotLights[id.getId()];
 		return math::vec3(l.position.x, l.position.y, l.position.z);
 	}
 	/// @brief Sets the world-space position of a spot light.
@@ -438,13 +430,13 @@ namespace clz::renderer
 	/// @param position New world-space position.
 	inline void setSpotLightPosition(const SpotLightId id, const math::vec3& position)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set position");
 			return;
 		}
 
-		auto& l = Lights.spotLights[id.value];
+		auto& l = Lights.spotLights[id.getId()];
 		l.position.x = position.x;
 		l.position.y = position.y;
 		l.position.z = position.z;
@@ -454,39 +446,39 @@ namespace clz::renderer
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightRange(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get range");
 			return 0.0f;
 		}
 
-		return Lights.spotLights[id.value].range;
+		return Lights.spotLights[id.getId()].range;
 	}
 	/// @brief Sets the maximum effective range of a spot light (stored in position.w).
 	/// @param id Handle returned by registerPointLight (spot overload).
 	/// @param range New range.
 	inline void setSpotLightRange(const SpotLightId id, const float range)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set range");
 			return;
 		}
 
-		Lights.spotLights[id.value].range = range;
+		Lights.spotLights[id.getId()].range = range;
 	}
 
 	/// @brief Gets the RGB color of a spot light.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline math::vec3 getSpotLightColor(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get color");
 			return math::vec3(1.0f);
 		}
 
-		const auto& l = Lights.spotLights[id.value];
+		const auto& l = Lights.spotLights[id.getId()];
 		return math::vec3(l.color.x, l.color.y, l.color.z);
 	}
 	/// @brief Sets the RGB color of a spot light.
@@ -494,13 +486,13 @@ namespace clz::renderer
 	/// @param color New RGB color.
 	inline void setSpotLightColor(const SpotLightId id, const math::vec3& color)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set color");
 			return;
 		}
 
-		auto& l = Lights.spotLights[id.value];
+		auto& l = Lights.spotLights[id.getId()];
 		l.color.x = color.x;
 		l.color.y = color.y;
 		l.color.z = color.z;
@@ -510,111 +502,111 @@ namespace clz::renderer
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightIntensity(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get intensity");
 			return 0.0f;
 		}
-		return Lights.spotLights[id.value].intensity;
+		return Lights.spotLights[id.getId()].intensity;
 	}
 	/// @brief Sets the intensity of a spot light (stored in color.w).
 	/// @param id Handle returned by registerPointLight (spot overload).
 	/// @param intensity New intensity value.
 	inline void setSpotLightIntensity(const SpotLightId id, const float intensity)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set intensity");
 			return;
 		}
-		Lights.spotLights[id.value].intensity = intensity;
+		Lights.spotLights[id.getId()].intensity = intensity;
 	}
 
 	/// @brief Gets the linear attenuation term (Kl) of a spot light.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightLinearAttenuation(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get attenuation");
 			return 0.0f;
 		}
-		return Lights.spotLights[id.value].attenuation.x;
+		return Lights.spotLights[id.getId()].attenuation.x;
 	}
 	/// @brief Sets the linear attenuation term (Kl) of a spot light.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	/// @param linear New linear attenuation coefficient.
 	inline void setSpotLightLinearAttenuation(const SpotLightId id, const float linear)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set attenuation");
 			return;
 		}
-		Lights.spotLights[id.value].attenuation.x = linear;
+		Lights.spotLights[id.getId()].attenuation.x = linear;
 	}
 
 	/// @brief Gets the quadratic attenuation term (Kq) of a spot light.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightQuadraticAttenuation(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get attenuation");
 			return 0.0f;
 		}
 
-		return Lights.spotLights[id.value].attenuation.y;
+		return Lights.spotLights[id.getId()].attenuation.y;
 	}
 	/// @brief Sets the quadratic attenuation term (Kq) of a spot light.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	/// @param quadratic New quadratic attenuation coefficient.
 	inline void setSpotLightQuadraticAttenuation(const SpotLightId id, const float quadratic)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set attenuation");
 			return;
 		}
-		Lights.spotLights[id.value].attenuation.y = quadratic;
+		Lights.spotLights[id.getId()].attenuation.y = quadratic;
 	}
 
 	/// @brief Gets the inner cutoff angle (degrees) of a spot light's cone.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightInnerCutoff(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get inner cutoff");
 			return 0.0f;
 		}
-		return Lights.spotLights[id.value].cutoff.x;
+		return Lights.spotLights[id.getId()].cutoff.x;
 	}
 	/// @brief Sets the inner cutoff angle (degrees) of a spot light's cone.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	/// @param angle New inner cutoff angle, in degrees.
 	inline void setSpotLightInnerCutoff(const SpotLightId id, const float angle)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set inner cutoff");
 			return;
 		}
 
-		Lights.spotLights[id.value].cutoff.x = angle;
+		Lights.spotLights[id.getId()].cutoff.x = angle;
 	}
 
 	/// @brief Gets the outer cutoff angle (degrees) of a spot light's cone.
 	/// @param id Handle returned by registerPointLight (spot overload).
 	inline float getSpotLightOuterCutoff(const SpotLightId id)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to get outer cutoff");
 			return 0.0f;
 		}
 
-		return Lights.spotLights[id.value].cutoff.y;
+		return Lights.spotLights[id.getId()].cutoff.y;
 	}
 	/// @brief Sets the outer cutoff angle (degrees) of a spot light's cone.
 	/// @param id Handle returned by registerPointLight (spot overload).
@@ -622,13 +614,13 @@ namespace clz::renderer
 	/// cutoff for the soft edge to make sense.
 	inline void setSpotLightOuterCutoff(const SpotLightId id, const float angle)
 	{
-		if (id.value >= numSpotLights) [[unlikely]]
+		if (id.getId() >= numSpotLights) [[unlikely]]
 		{
 			clz::log::error("Invalid spot light id passed to set outer cutoff");
 			return;
 		}
 
-		Lights.spotLights[id.value].cutoff.y = angle;
+		Lights.spotLights[id.getId()].cutoff.y = angle;
 	}
 
 } // namespace clz::renderer

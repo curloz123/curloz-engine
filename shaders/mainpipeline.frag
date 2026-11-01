@@ -60,11 +60,11 @@ struct Material
 // directional light
 struct DirectionalLight
 {
-	// xyz dir, w pad
-	vec4 direction;
+	vec3 color;
+	float intensity;
 
-	/// xyz is rgb, w is intensity
-	vec4 color;
+	vec3 direction;
+	bool enabled;
 };
 // point light
 struct PointLight
@@ -75,8 +75,24 @@ struct PointLight
 	vec3 color;
 	float intensity;
 
-	/// xyz is kc, kl, kd. w is padding
-	vec4 attenuation;
+	vec3 attenuation;
+	bool enabled;
+};
+
+struct SpotLight
+{
+	vec3 direction;
+	bool enabled;
+
+	vec3 position;
+	float range;
+
+	vec3 color;
+	float intensity;
+
+	/// x is kl, y is kd
+	vec2 attenuation;
+	vec2 cutoff;
 };
 
 /// Uniform's

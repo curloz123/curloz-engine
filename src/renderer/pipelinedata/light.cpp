@@ -9,6 +9,7 @@
 #include "core/logs.hpp"
 #include "renderer/utility/descriptor.hpp"
 #include "renderer/utility/namer.hpp"
+#include "renderer/utility/ssbo.hpp"
 #include "renderer/vk_types.hpp"
 #include <array>
 #include <string>
@@ -51,18 +52,32 @@ namespace clz::renderer
 			return false;
 		}
 
-		constexpr std::array<uint32_t, 3> bindPoints = {
+		StorageBufferCreateInfo spotLightCI{
+			.size = sizeof(PointLight) * MAX_SPOT_LIGHTS,
+			.bindPoint = SPOT_LIGHT_BIND_POINT
+		};
+		if (!createStorageBuffer(spotLightCI, m_spotSSBO, "spot light ssbo"))
+		{
+			clz::log::error("could not create spot light ssbo buffer");
+			return false;
+		}
+
+
+		constexpr std::array<uint32_t, 4> bindPoints = {
 			LIGHT_DATA_BIND_POINT,
 			DIR_LIGHT_BIND_POINT,
-			POINT_LIGHT_BIND_POINT
+			POINT_LIGHT_BIND_POINT,
+			SPOT_LIGHT_BIND_POINT
 		};
-		constexpr std::array<VkDescriptorType, 3> descriptorTypes = {
+		constexpr std::array<VkDescriptorType, 4> descriptorTypes = {
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 		};
-		constexpr std::array<uint32_t, 3> descriptorCounts = {1, 1, 1};
-		constexpr std::array<VkShaderStageFlags, 3> shaderStages = {
+		constexpr std::array<uint32_t, 4> descriptorCounts = {1, 1, 1, 1};
+		constexpr std::array<VkShaderStageFlags, 4> shaderStages = {
+			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_FRAGMENT_BIT
@@ -86,6 +101,7 @@ namespace clz::renderer
 	void LightDescriptorInterface::destroy()
 	{
 		destroyDescriptorSetLayout(m_descriptorLayout);
+		destroyStorageBuffer(m_spotSSBO);
 		destroyStorageBuffer(m_pointSSBO);
 		destroyUniformBuffer(m_dirUBO);
 		destroyUniformBuffer(m_lightDataUBO);
@@ -93,7 +109,7 @@ namespace clz::renderer
 
 	std::vector<VkDescriptorPoolSize> LightDescriptorInterface::getRequiredPoolSizes()
 	{
-		std::vector<VkDescriptorPoolSize> poolSizes(3);
+		std::vector<VkDescriptorPoolSize> poolSizes(4);
 
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[0].descriptorCount = r_FRAMES_IN_FLIGHT; // light data  ubo
@@ -103,6 +119,9 @@ namespace clz::renderer
 
 		poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		poolSizes[2].descriptorCount = r_FRAMES_IN_FLIGHT; // point light ssbo
+
+		poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		poolSizes[3].descriptorCount = r_FRAMES_IN_FLIGHT; // spot light ssbo
 
 		return poolSizes;
 	}
@@ -161,6 +180,12 @@ namespace clz::renderer
 			pointLightInfo.offset = m_pointSSBO.offsets[i];
 			pointLightInfo.range = m_pointSSBO.ssboSize;
 
+			VkDescriptorBufferInfo spotLightInfo{};
+			spotLightInfo.buffer = m_spotSSBO.buffer;
+			spotLightInfo.offset = m_spotSSBO.offsets[i];
+			spotLightInfo.range = m_spotSSBO.ssboSize;
+
+
 			VkWriteDescriptorSet lightDataWrite{};
 			lightDataWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			lightDataWrite.dstSet = m_descriptorSets[i];
@@ -188,8 +213,21 @@ namespace clz::renderer
 			pointLightWrite.descriptorCount = 1;
 			pointLightWrite.pBufferInfo = &pointLightInfo;
 
-			const std::array<VkWriteDescriptorSet, 3> writes = {
-				lightDataWrite, dirLightWrite, pointLightWrite
+			VkWriteDescriptorSet spotLightWrite{};
+			spotLightWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			spotLightWrite.dstSet = m_descriptorSets[i];
+			spotLightWrite.dstBinding = SPOT_LIGHT_BIND_POINT;
+			spotLightWrite.dstArrayElement = 0;
+			spotLightWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			spotLightWrite.descriptorCount = 1;
+			spotLightWrite.pBufferInfo = &spotLightInfo;
+
+
+			const std::array<VkWriteDescriptorSet, 4> writes = {
+				lightDataWrite, 
+				dirLightWrite, 
+				pointLightWrite,
+				spotLightWrite
 			};
 
 			vkUpdateDescriptorSets(
@@ -204,9 +242,11 @@ namespace clz::renderer
 
 	void LightDescriptorInterface::update()
 	{
-		memcpy(m_dirUBO.mapped[r_currentFrame],
-		       Lights.directionalLight.data(),
-		       sizeof(DirectionalLight) * numDirectionalLights);
+		memcpy(
+			m_dirUBO.mapped[r_currentFrame],
+		       	Lights.directionalLight.data(),
+		       	sizeof(DirectionalLight) * numDirectionalLights
+		);
 
 		auto& pointLightEntities = ecs::getEntitiesWithComponent<PointLightComponent>();
 		const uint32_t activePointLights = pointLightEntities.size();
@@ -218,7 +258,7 @@ namespace clz::renderer
 
 		for (auto& entity : pointLightEntities)
 		{
-			Lights.pointLights[ecs::getComponent<PointLightComponent>(entity).Id.value]
+			Lights.pointLights[ecs::getComponent<PointLightComponent>(entity).Id.getId()]
 				.position =
 					ecs::getComponent<ecs::TransformComponent>(entity).position;
 		}

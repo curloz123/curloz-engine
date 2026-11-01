@@ -40,15 +40,19 @@ namespace clz::renderer
 	 */
 	struct DirectionalLight
 	{
+		/// @brief color of directional light
+		/// x,y,z decides direction
+		math::vec3 color = math::vec3(1.0f, 1.0f, 1.0f);
+
+		/// intensity
+		float intensity = 1.0f;
+
 		/// @brief direction of directional light
 		/// x,y,z decides direction
 		/// w is just for padding
-		math::vec4 direction = math::vec4(0.0f, -1.0f, 0.0f, 0.0f);
+		math::vec3 direction = math::vec3(0.0f, -1.0f, 0.0f);
 
-		/// @brief color of directional light
-		/// x,y,z decides direction
-		/// w decides intensity
-		math::vec4 color = math::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		bool enabled = true;
 
 		DirectionalLight() = default;
 	};
@@ -108,7 +112,9 @@ namespace clz::renderer
 		 * specular term in the shader, the resulting radiance can still
 		 * overflow to Inf/NaN. Clamp distance on the shader side, not here.
 		 */
-		math::vec4 attenuation = math::vec4(1.0f, 0.09f, 0.032f, 1.0f);
+		math::vec3 attenuation = math::vec3(1.0f, 0.09f, 0.032f);
+
+		bool enabled = true;
 
 		PointLight() = default;
 	};
@@ -126,8 +132,8 @@ namespace clz::renderer
 	{
 		/// @brief direction of spotlight
 		/// x,y,z decides direction
-		/// w is just for padding
-		math::vec4 direction = math::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+		math::vec3 direction = math::vec3(0.0f, 0.0f, -1.0f);
+		bool enabled = true;
 
 		/// @brief position of spotlight
 		/// x,y,z decides position
@@ -168,6 +174,7 @@ namespace clz::renderer
 		 * @note Constant is always kept 1.0
 		 */
 		math::vec2 attenuation = math::vec2(0.09f, 0.032f);
+
 
 		/// @brief spotlight cutoff values
 		/// x decides inner cutoff angle

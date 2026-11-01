@@ -24,6 +24,7 @@ namespace clz::renderer
 		static inline constexpr uint32_t LIGHT_DATA_BIND_POINT = 0;
 		static inline constexpr uint32_t DIR_LIGHT_BIND_POINT = 1;
 		static inline constexpr uint32_t POINT_LIGHT_BIND_POINT = 2;
+		static inline constexpr uint32_t SPOT_LIGHT_BIND_POINT = 3;
 
 		VkDescriptorSetLayout m_descriptorLayout = VK_NULL_HANDLE;
 		std::vector<VkDescriptorSet> m_descriptorSets;
@@ -31,6 +32,7 @@ namespace clz::renderer
 		UBO m_lightDataUBO;
 		UBO m_dirUBO;
 		SSBO m_pointSSBO;
+		SSBO m_spotSSBO;
 
 	public:
 		bool initialize();
