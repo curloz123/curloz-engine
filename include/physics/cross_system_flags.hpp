@@ -9,9 +9,7 @@
 namespace clz::physics
 {
 	static void resetRigidBodies();
-}
-namespace clz::physics
-{
+
 	inline void flagPhysicsStateChange(
 		const clz::state::EngineState oldState,
 		const clz::state::EngineState newState
@@ -34,11 +32,11 @@ namespace clz::physics
 			const auto& transformComponent =
 				ecs::getComponent<ecs::TransformComponent>(entity);
 
-			setBodyPosition(body.rigidBodyId, transformComponent.position);
-			body.newPosition = transformComponent.position;
+			setBodyPosition(body.rigidBodyId, transformComponent.getPosition());
+			body.newPosition = transformComponent.getPosition();
 			body.prevPosition = body.newPosition;
 
-			const auto bodyRotation = transformComponent.rotation;
+			const auto bodyRotation = transformComponent.getRotation();
 			setBodyRotation(body.rigidBodyId, bodyRotation);
 
 			body.newRotation = bodyRotation;

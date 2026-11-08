@@ -7,6 +7,7 @@
 #include "renderer/model/model.hpp"
 #include "core/assert.hpp"
 #include "core/logs.hpp"
+#include "entity/entitymanager.hpp"
 #include "fastgltf/core.hpp"
 #include "fastgltf/tools.hpp"
 #include "fastgltf/types.hpp"
@@ -31,7 +32,8 @@ namespace clz::renderer
 	{
 		m_parser = fastgltf::Parser{
 			fastgltf::Extensions::KHR_materials_emissive_strength |
-			fastgltf::Extensions::KHR_materials_ior
+			fastgltf::Extensions::KHR_materials_ior |
+			fastgltf::Extensions::KHR_materials_specular
 		};
 
 		if (!m_materialManager.initialize())
@@ -50,10 +52,16 @@ namespace clz::renderer
 
 	void ModelManagerClass::close()
 	{
+		m_models.clear();
+		m_gaps.clear();
+
 		m_materialManager.destroy();
 		m_matrixManager.destroy();
 	}
-	ModelId ModelManagerClass::loadBatch(const std::span<std::filesystem::path> modelPaths)
+
+
+	/// @copydoc ModelManagerClass::loadBatch
+	void ModelManagerClass::loadBatch(const std::span<std::filesystem::path> modelPaths)
 	{
 		auto getModelId = [&](){
 			ModelId modelId;
@@ -86,16 +94,20 @@ namespace clz::renderer
 		for (size_t i = 0; i < modelPaths.size(); ++i)
 		{
 			const auto& modelPath = modelPaths[i];
-
-			/// let model id leak.
 			const auto modelId = getModelId();
+			gltfStagingDatas[i].modelId = modelId;
 			m_modelPaths[modelId.getId()] = modelPath;
+
+			if (modelPath == NULL_MODEL_PATH)
+				continue;
 
 			auto data = fastgltf::GltfDataBuffer::FromPath(modelPath);
 			if (!data)
 			{
 				const auto error = getErrorMessage(data.error());
 				clz::log::error(error);
+				clz::log::error("Could not load model: " + modelPath.string());
+				gltfStagingDatas[i].valid = false;
 				continue;
 			}
 
@@ -109,10 +121,11 @@ namespace clz::renderer
 			{
 				const auto error = getErrorMessage(assetResult.error());
 				clz::log::error(error);
+				clz::log::error("Could not load model: " + modelPath.string());
+				gltfStagingDatas[i].valid = false;
 				continue;
 			}
 
-			gltfStagingDatas[i].modelId = modelId;
 			gltfStagingDatas[i].fastAsset = std::move(assetResult.get());
 			gltfStagingDatas[i].valid = true;
 		}
@@ -126,9 +139,73 @@ namespace clz::renderer
 		submitGPUData(gltfStagingDatas);
 
 		TextureDescriptor.updateDescriptorSets();
-		CameraDescriptor.updateMDescriptorSets();
 
-		return gltfStagingDatas[0].modelId;
+		for (auto& gltfData : gltfStagingDatas)
+		{
+			if (!gltfData.valid)
+			{
+				m_gaps.push_back(gltfData.modelId);
+				m_modelPaths[gltfData.modelId.getId()] = NULL_MODEL_PATH;
+			}
+		}
+	}
+
+	void ModelManagerClass::freeModelResources(ModelId *pModelId)
+	{
+#ifdef CLZ_ENABLE_CHECKS /****************************************/
+		CLZ_ASSERT(
+			!pModelId->isNull() &&
+			pModelId->getId() < m_models.size(),
+			"Attempt to delete a non-existing model"
+		);
+#endif /**********************************************************/
+
+		auto& model = m_models[pModelId->getId()];
+		model.rootNodesIndices.clear();
+		model.nodes.clear();
+
+		for (auto& mesh : model.meshes)
+		{
+			for (auto& primitive : mesh.primitives)
+			{
+				StaticBufferManager.freeVertices(primitive.vertexBuffer);
+				StaticIndexManager.freeIndices(primitive.indexBuffer);
+			}
+		}
+		model.meshes.clear();
+
+		for (auto& material : model.materials)
+		{
+			m_materialManager.freeMaterial(material);
+		}
+		model.materials.clear();
+
+		ModelId gap(pModelId->getId());
+		m_gaps.push_back(gap);
+
+		if (!m_modelEntities[pModelId->getId()].empty())
+		{
+			auto& entities = m_modelEntities[pModelId->getId()];
+			clz::log::warn(
+				"Model: " + m_modelPaths[pModelId->getId()].string() +
+				" has been deleted, but some entities still reference"
+				" it as its model component, names are as belows: "
+			);
+			for (size_t i = 0; i < entities.size(); ++i)
+			{
+				clz::log::warn(
+					std::to_string(i) +  ". " +
+					ecs::getEntityName(entities[i])
+				);
+				auto& modelComp = ecs::getComponent<ModelComponent>(entities[i]);
+				modelComp.modelId.nullify();
+				m_matrixManager.freeRange(modelComp.matricesRange);
+			}
+			clz::log::warn(
+				"Unless explicitly handled, scene file will save null on closure"
+			);
+		}
+		pModelId->nullify();
 	}
 
 	/// @copydoc drawAllModels
@@ -141,73 +218,102 @@ namespace clz::renderer
 
 		for (const auto model_entity : model_entities)
 		{
-			const auto& modelId =
-				ecs::getComponent<ModelComponent>(model_entity).modelId;
-			const auto& transform =
+			const auto& modelComp =
+				ecs::getComponent<ModelComponent>(model_entity);
+			auto& transform =
 				ecs::getComponent<ecs::TransformComponent>(model_entity);
 
 			drawIndivisual(
-				modelId,
-				transform.position,
-				transform.rotation,
-				transform.scale,
+				modelComp.modelId,
+				modelComp.matricesRange,
+				transform,
 				commandBuffer
 			);
+
+			transform.unMarkDirty(ecs::DirtyFlagBit::RENDERER);
 		}
 	}
 
 	void ModelManagerClass::drawIndivisual(
 		const ModelId modelId,
-		const math::vec3& position,
-		const math::quat& rotation,
-		const math::vec3& scale,
+		const ModelMatrixRange& matricesRange,
+		const ecs::TransformComponent& transform,
 		VkCommandBuffer commandBuffer
 	)
 	{
-#ifdef CLZ_ENABLE_CHECKS
+		if (modelId.isNull())
+			return;
+
+#ifdef CLZ_ENABLE_CHECKS /******************************************************/
 		CLZ_ASSERT(
-			modelId.getId() < m_models.size() && !modelId.isNull(),
+			modelId.getId() < m_models.size(),
 			"Invalid model Id sent for drawing"
 		);
-#endif
+#endif /************************************************************************/
 
-		const auto& rootNodeIndices = m_models[modelId.getId()].rootNodesIndices;
-		const math::mat4 worldTransform = math::getModelMatrix(rotation, position, scale);
+		const auto& rootNodeIndices =
+			m_models[modelId.getId()].rootNodesIndices;
+		const math::mat4 worldTransform = math::getModelMatrix(
+			transform.getRotation(),
+			transform.getPosition(),
+			transform.getScale()
+		);
 		for (const uint32_t nodeIndex : rootNodeIndices)
 		{
-			drawNode(modelId, nodeIndex, worldTransform, commandBuffer);
+			drawNode(
+				modelId,
+				matricesRange,
+				nodeIndex,
+				worldTransform,
+				transform.isDirty(ecs::DirtyFlagBit::RENDERER),
+				commandBuffer
+			);
 		}
 	}
 
 	void ModelManagerClass::drawNode(
 		const ModelId modelId,
+		const ModelMatrixRange& matricesRange,
 		const uint32_t nodeIndex,
 		const math::mat4& parentTransform,
+		const bool dirty,
 		VkCommandBuffer commandBuffer
 	)
 	{
+#ifdef CLZ_ENABLE_CHECKS /*****************************************************/
+		CLZ_ASSERT(
+			nodeIndex < matricesRange.count,
+			"some model comp has matrix range less than number of nodes in model"
+		);
+#endif /***********************************************************************/
+
 		const auto& nodeArray = m_models[modelId.getId()].nodes;
 		const auto& meshArray = m_models[modelId.getId()].meshes;
 		const auto& materialArray = m_models[modelId.getId()].materials;
 
-		/// reversed to match column major format
 		const Node& node = nodeArray[nodeIndex];
-		const auto worldTransform = node.localTransform * parentTransform;
-		m_matrixManager.setMatrix(node.matrixId, worldTransform);
+		if (dirty)
+		{
+			m_matrixManager.setMatrix(
+				matricesRange,
+				nodeIndex,
+				node.localTransform * parentTransform // reversed to match column major format
+			);
+		}
 
-		if (node.meshIndex == UINT32_MAX)
+		if (!node.meshIndex.hasValue())
 			goto drawChildren;
 
 		// Draw all primitives in the associated mesh
-		for (const Primitive& primitive : meshArray[node.meshIndex].primitives)
+		for (const Primitive& primitive : meshArray[node.meshIndex.value()].primitives)
 		{
-			uint32_t materialIndex = (primitive.materialIdIndex == UINT32_MAX) ? 
-							UINT32_MAX : 
-							materialArray[primitive.materialIdIndex].getId();
+			uint32_t materialIndex = (primitive.materialIdIndex.hasValue()) ?
+							materialArray[primitive.materialIdIndex.value()].getId() :
+							UINT32_MAX;
+
 			ModelDataPC pc{
-				.matrixIndex = node.matrixId.getId(),
-				.materialIndex = materialIndex 
-				// .materialIndex = 0
+				.matrixIndex = matricesRange.baseIndex.value() + nodeIndex,
+				.materialIndex = materialIndex
 			};
 
 			vkCmdPushConstants(
@@ -235,8 +341,10 @@ namespace clz::renderer
 		{
 			drawNode(
 				modelId,
+				matricesRange,
 				childIndex,
-				worldTransform,
+				m_matrixManager.getMatrix(matricesRange, nodeIndex),
+				dirty,
 				commandBuffer
 			);
 		}
@@ -450,18 +558,18 @@ namespace clz::renderer
 			for (size_t textureIndex = 0; textureIndex < asset.textures.size(); ++textureIndex)
 			{
 				const auto& fastTexture = asset.textures[textureIndex];
-				textureArray[textureIndex] = {
-					.imageIndex = [index = fastTexture.imageIndex](){
-						if (index.has_value())
-							return static_cast<uint32_t>(index.value());
-						return UINT32_MAX;
-					}(),
-					.samplerIndex = [index = fastTexture.samplerIndex](){
-						if (index.has_value())
-							return static_cast<uint32_t>(index.value());
-						return UINT32_MAX;
-					}()
-				};
+				auto& texture = textureArray[textureIndex];
+				if (fastTexture.imageIndex.has_value())
+				{
+					texture.imageIndex =
+						static_cast<uint32_t>(fastTexture.imageIndex.value());
+				}
+				if (fastTexture.samplerIndex.has_value())
+				{
+					texture.samplerIndex =
+						static_cast<uint32_t>(fastTexture.samplerIndex.value());
+
+				}
 			}
 		}
 	}
@@ -510,7 +618,7 @@ namespace clz::renderer
 					material.baseTextureIndex = textureArray[textureIndex].imageIndex;
 					material.baseSamplerIndex = textureArray[textureIndex].samplerIndex;
 
-					imagesArray[material.baseTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+					imagesArray[material.baseTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 				}
 				else
 				{
@@ -524,7 +632,7 @@ namespace clz::renderer
 					material.metallicRoughnessTextureIndex = textureArray[textureIndex].imageIndex;
 					material.metallicRoughnessSamplerIndex = textureArray[textureIndex].samplerIndex;
 
-					imagesArray[material.metallicRoughnessTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+					imagesArray[material.metallicRoughnessTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
 				}
 				else
 				{
@@ -538,7 +646,7 @@ namespace clz::renderer
 					material.emissiveTextureIndex = textureArray[textureIndex].imageIndex;
 					material.emissiveSamplerIndex = textureArray[textureIndex].samplerIndex;
 
-					imagesArray[material.emissiveTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+					imagesArray[material.emissiveTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 				}
 				else
 				{
@@ -553,7 +661,7 @@ namespace clz::renderer
 					material.normalTextureIndex = textureArray[textureIndex].imageIndex;
 					material.normalSamplerIndex = textureArray[textureIndex].samplerIndex;
 
-					imagesArray[material.normalTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+					imagesArray[material.normalTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
 				}
 				else
 				{
@@ -579,9 +687,9 @@ namespace clz::renderer
 						const auto ti = spec.specularTexture.value().textureIndex;
 						material.specularTextureIndex = textureArray[ti].imageIndex;
 						material.specularSamplerIndex = textureArray[ti].samplerIndex;
-						imagesArray[material.specularTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+						imagesArray[material.specularTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
 					}
-					else 
+					else
 					{
 						material.specularTextureIndex = UINT32_MAX;
 						material.specularSamplerIndex = UINT32_MAX;
@@ -591,7 +699,7 @@ namespace clz::renderer
 						const auto ti = spec.specularColorTexture.value().textureIndex;
 						material.specularColorTextureIndex = textureArray[ti].imageIndex;
 						material.specularColorSamplerIndex = textureArray[ti].samplerIndex;
-						imagesArray[material.specularColorTextureIndex].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+						imagesArray[material.specularColorTextureIndex.value()].imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 					}
 					else
 					{
@@ -768,12 +876,11 @@ namespace clz::renderer
 		ModelMatrixManager& matrixManager
 	)
 	{
-		auto retrieveTransform = [&matrixManager](
+		auto retrieveTransform = [](
 			Node& node,
 			const fastgltf::Node& fastNode
 		)
 		{
-			node.matrixId = matrixManager.allocate();
 			std::visit(
 				[&](const auto& transform)
 				{
@@ -809,7 +916,6 @@ namespace clz::renderer
 				},
 				fastNode.transform
 			);
-			matrixManager.setMatrix(node.matrixId, node.localTransform);
 		};
 		auto retrieveMeshIndex = [](Node& node, const fastgltf::Node& fastNode)
 		{
@@ -883,6 +989,9 @@ namespace clz::renderer
 		uint64_t numIndexBufferRegions = 0;
 		for (auto& data : gltfStagingDatas)
 		{
+			if (!data.valid)
+				continue;
+
 			for (auto& mesh : data.meshes)
 			{
 				for (auto& primitive : mesh.primitiveDatas)
@@ -953,6 +1062,9 @@ namespace clz::renderer
 
 		for (auto& data : gltfStagingDatas)
 		{
+			if (!data.valid)
+				continue;
+
 			const ModelId modelId = data.modelId;
 
 			auto& meshArray = m_models[modelId.getId()].meshes;
@@ -964,7 +1076,7 @@ namespace clz::renderer
 				mesh.primitives.resize(meshData.primitiveDatas.size());
 				for (size_t primitiveIndex = 0; primitiveIndex < meshData.primitiveDatas.size(); ++primitiveIndex)
 				{
-					auto [vertexRegion, vertexCopyData] = 
+					auto [vertexRegion, vertexCopyData] =
 						StaticBufferManager.recordVerticesSubmission(
 							meshData.primitiveDatas[primitiveIndex].attributes,
 							commandBuffer,
@@ -975,7 +1087,7 @@ namespace clz::renderer
 					mesh.primitives[primitiveIndex].vertexBuffer = vertexRegion;
 					vertexBufferCopyDatas.push_back(std::move(vertexCopyData));
 
-					auto [indiceRegion, indiceCopyData] = 
+					auto [indiceRegion, indiceCopyData] =
 						StaticIndexManager.recordIndicesSubmission(
 							meshData.primitiveDatas[primitiveIndex].indices,
 							commandBuffer,
@@ -1011,10 +1123,12 @@ namespace clz::renderer
 		vkDestroyBuffer(r_deviceContext.device, stagingBuffer, nullptr);
 		vkFreeMemory(r_deviceContext.device, stagingBufferMemory, nullptr);
 
-
 		/// submit material data
 		for (auto& data : gltfStagingDatas)
 		{
+			if (!data.valid)
+				continue;
+
 			auto& materialDataArray = data.materials;
 			auto& materialArray = m_models[data.modelId.getId()].materials;
 			auto& imageArray = data.images;
@@ -1026,17 +1140,17 @@ namespace clz::renderer
 				auto& materialData = materialDataArray[materialIndex];
 				ModelMaterial material;
 
-				auto resolveSampler = [&](const uint32_t samplerIndex) -> SamplerId
+				auto resolveSampler = [&](const auto samplerIndex) -> SamplerId
 				{
-					return (samplerIndex == UINT32_MAX)
-						? TextureManager.getDefaultSamplerId()
-						: samplerArray[samplerIndex];
+					return (!samplerIndex.hasValue()) ?
+							TextureManager.getDefaultSamplerId() :
+							samplerArray[samplerIndex.value()];
 				};
-				auto resolveTexture = [&](const uint32_t textureIndex) -> TextureId
+				auto resolveTexture = [&](const auto textureIndex) -> TextureId
 				{
-					return (textureIndex == UINT32_MAX)
+					return (!textureIndex.hasValue())
 						? TextureId()
-						: imageArray[textureIndex].stagingId;
+						: imageArray[textureIndex.value()].stagingId;
 				};
 
 				material.baseFactor = materialData.baseFactor;

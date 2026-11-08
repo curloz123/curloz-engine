@@ -70,13 +70,16 @@ namespace clz::scene
 			else
 			{
 				const auto transform = retrieveTransformComponent(
-								entityData["transform"], entityName);
+								entityData["transform"],
+								entityName
+							);
 
 				addComponent<ecs::TransformComponent>(
-						e, 
-						transform
-					);
-#ifdef CLZ_ENABLE_EDITOR
+					e,
+					transform
+				);
+
+#ifdef CLZ_ENABLE_EDITOR /***********************************************************************/
 				/// @brief If Editor is enabled,
 				/// only then create these components
 				auto editorTransform = ecs::EditorTransformComponent(transform);
@@ -84,7 +87,8 @@ namespace clz::scene
 					e,
 					editorTransform
 				);
-#endif
+#endif /*****************************************************************************************/
+
 			}
 
 			// Attach ModelComponent if present
@@ -149,7 +153,7 @@ namespace clz::scene
 			if (entityData.contains("sensor_scripts"))
 			{
 				ecs::addComponent<script::SensorScriptComponent>(
-					e, 
+					e,
 					retrieveSensorScriptComponent(
 						entityData["sensor_scripts"])
 				);
@@ -158,12 +162,12 @@ namespace clz::scene
 			if (entityData.contains("collision_scripts"))
 			{
 				ecs::addComponent<script::CollisionScriptComponent>(
-					e, 
+					e,
 					retrieveCollisionScriptComponent(
 						entityData["collision_scripts"])
 				);
 			}
-			
+
 			// Attach buffer player component, if present
 			if (entityData.contains("buffer_player"))
 			{

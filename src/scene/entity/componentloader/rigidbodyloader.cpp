@@ -64,8 +64,8 @@ namespace clz::scene
 
 		const auto& tc = ecs::getComponent<ecs::TransformComponent>(entity);
 
-		data.position = tc.position;
-		data.rotation = tc.rotation;
+		data.position = tc.getPosition();
+		data.rotation = tc.getRotation();
 
 		if (physicsTable.contains("lineardamping"))
 		{
@@ -222,7 +222,7 @@ namespace clz::scene
 				else
 				{
 					clz::log::warn("corrupted scene file: entity '" + std::string(entityName) +
-							"' lacks half dimensions entry in a box shape field" + 
+							"' lacks half dimensions entry in a box shape field" +
 							"assigning default values");
 					halfExtents = math::vec3(0.5f);
 				}
@@ -316,7 +316,7 @@ namespace clz::scene
 						"disabling by default");
 			}
 
-			
+
 			return physics::ShapeDef(
 				shapeType,
 				position,
@@ -344,18 +344,18 @@ namespace clz::scene
 				shapeDefs.emplace_back(loadShape(shapesTable[i]));
 			}
 			data.ShapeDefs.insert(
-					data.ShapeDefs.end(), 
-					std::make_move_iterator(shapeDefs.begin()), 
+					data.ShapeDefs.end(),
+					std::make_move_iterator(shapeDefs.begin()),
 					std::make_move_iterator(shapeDefs.end())
 			);
 		}
 
 		physics::RigidBodyComponent rigidBodyComponent(
 			physics::createBody(entity, data),
-			tc.rotation,
-			tc.rotation,
-			tc.position,
-			tc.position
+			tc.getRotation(),
+			tc.getRotation(),
+			tc.getPosition(),
+			tc.getPosition()
 		);
 
 		return rigidBodyComponent;

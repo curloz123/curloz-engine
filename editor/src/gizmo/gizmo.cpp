@@ -5,7 +5,6 @@
 #include "math/quateulerconv.hpp"
 #include "math/worldtransform.hpp"
 #include <array>
-#include "core/logs.hpp"
 
 namespace clz::editor
 {
@@ -14,7 +13,7 @@ namespace clz::editor
 		const Rect2D& viewport,
 		clz::math::mat4& projection,
 		const clz::math::mat4& view,
-		const ecs::TransformComponent transform, 
+		const ecs::TransformComponent transform,
 		const bool uniformScale
 	)
 	{
@@ -50,9 +49,9 @@ namespace clz::editor
 		ecs::TransformComponent transformComponent = transform;
 		ecs::EditorTransformComponent eTransformComponent(transform);
 		math::mat4 model = math::getModelMatrix(
-				transform.rotation,
-				transform.position,
-				transform.scale
+				transform.getRotation(),
+				transform.getPosition(),
+				transform.getScale()
 		);
 
 		ImGuizmo::Manipulate(
@@ -67,28 +66,31 @@ namespace clz::editor
 
 		if (operationHappenedThisFrame)
 		{
-			std::array<float, 3> pos;			
-			std::array<float, 3> rot;			
-			std::array<float, 3> scale;			
+			std::array<float, 3> pos;
+			std::array<float, 3> rot;
+			std::array<float, 3> scale;
 			ImGuizmo::DecomposeMatrixToComponents(
-					model.data, 
+					model.data,
 					pos.data(), rot.data(), scale.data());
 
-			transformComponent.position = math::vec3(pos[0], pos[1], pos[2]);
-			transformComponent.rotation = math::quatFromEuler(
-					math::radians(math::vec3(rot[0], rot[1], rot[2])));
-			transformComponent.scale    = math::vec3(scale[0], scale[1], scale[2]);
+			transformComponent.setPosition(math::vec3(pos[0], pos[1], pos[2]));
+			transformComponent.setRotation(
+				math::quatFromEuler(
+					math::radians(math::vec3(rot[0], rot[1], rot[2]))
+				)
+			);
+			transformComponent.setScale(math::vec3(scale[0], scale[1], scale[2]));
 
-			eTransformComponent.position = math::vec3(pos[0], pos[1], pos[2]);
-			eTransformComponent.rotation = math::vec3(rot[0], rot[1], rot[2]);
-			eTransformComponent.scale    = math::vec3(scale[0], scale[1], scale[2]);
+			eTransformComponent.setPosition(math::vec3(pos[0], pos[1], pos[2]));
+			eTransformComponent.setRotation(math::vec3(rot[0], rot[1], rot[2]));
+			eTransformComponent.setScale(math::vec3(scale[0], scale[1], scale[2]));
 		}
 
 
 
 		return std::make_tuple(
-				transformComponent, 
-				eTransformComponent, 
+				transformComponent,
+				eTransformComponent,
 				operationHappenedThisFrame);
 	}
 
@@ -97,7 +99,7 @@ namespace clz::editor
 		const Rect2D& viewport,
 		clz::math::mat4& projection,
 		const clz::math::mat4& view,
-		const ecs::EditorTransformComponent eTransform, 
+		const ecs::EditorTransformComponent eTransform,
 		const bool uniformScale
 	)
 	{
@@ -131,47 +133,45 @@ namespace clz::editor
 		}
 
 		ecs::TransformComponent transformComponent;
-		transformComponent.position = eTransform.position;
-		transformComponent.rotation = math::quatFromEuler(math::radians(eTransform.rotation));
-		transformComponent.scale = eTransform.scale;
+		transformComponent.setPosition(eTransform.getPosition());
+		transformComponent.setRotation(math::quatFromEuler(math::radians(eTransform.getRotation())));
+		transformComponent.setScale(eTransform.getScale());
 		ecs::EditorTransformComponent eTransformComponent = eTransform;
 
 		math::mat4 model = math::getModelMatrix(
-				transformComponent.rotation,
-				transformComponent.position,
-				transformComponent.scale
+	        transformComponent.getRotation(),
+	        transformComponent.getPosition(),
+	        transformComponent.getScale()
 		);
 		ImGuizmo::Manipulate(
-			    view.data,
-			    projection.data,
-			    operation,
-			    ImGuizmo::LOCAL,
-			    model.data
+		        view.data,
+		        projection.data,
+		        operation,
+		        ImGuizmo::LOCAL,
+		        model.data
 		);
-
 
 		bool operationHappenedThisFrame = ImGuizmo::IsUsing();
 		if (operationHappenedThisFrame)
 		{
 			operationHappenedThisFrame = true;
 
-			std::array<float, 3> pos;			
-			std::array<float, 3> rot;			
-			std::array<float, 3> scale;			
+			std::array<float, 3> pos;
+			std::array<float, 3> rot;
+			std::array<float, 3> scale;
 			ImGuizmo::DecomposeMatrixToComponents(
-					model.data, 
-					pos.data(), rot.data(), scale.data());
+			        model.data,
+			        pos.data(), rot.data(), scale.data()
+			);
 
+			transformComponent.setPosition(math::vec3(pos[0], pos[1], pos[2]));
+			transformComponent.setRotation(math::quatFromEuler(
+			        math::radians(math::vec3(rot[0], rot[1], rot[2]))));
+			transformComponent.setScale(math::vec3(scale[0], scale[1], scale[2]));
 
-
-			transformComponent.position = math::vec3(pos[0], pos[1], pos[2]);
-			transformComponent.rotation = math::quatFromEuler(
-					math::radians(math::vec3(rot[0], rot[1], rot[2])));
-			transformComponent.scale    = math::vec3(scale[0], scale[1], scale[2]);
-
-			eTransformComponent.position = math::vec3(pos[0], pos[1], pos[2]);
-			eTransformComponent.rotation = math::vec3(rot[0], rot[1], rot[2]);
-			eTransformComponent.scale    = math::vec3(scale[0], scale[1], scale[2]);
+			eTransformComponent.setPosition(math::vec3(pos[0], pos[1], pos[2]));
+			eTransformComponent.setRotation(math::vec3(rot[0], rot[1], rot[2]));
+			eTransformComponent.setScale(math::vec3(scale[0], scale[1], scale[2]));
 		}
 
 		return std::make_tuple(transformComponent, eTransformComponent, operationHappenedThisFrame);

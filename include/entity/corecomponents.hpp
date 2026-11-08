@@ -10,9 +10,15 @@
 #include "math/quat.hpp"
 #include "math/quateulerconv.hpp"
 #include "math/vec3.hpp"
+#include <cstdint>
 
 namespace clz::ecs
 {
+	/// Dirty bits for the whole system
+	enum class DirtyFlagBit : uint64_t
+	{
+		RENDERER = 1u << 0
+	};
 
 	/**
 	 * @brief Stores position, rotation and scale of an entity in world space.
@@ -23,11 +29,22 @@ namespace clz::ecs
 	 * @warning Do not change the layout without consulting the renderer and physics
 	 * owners.
 	 */
-	struct TransformComponent
+	class TransformComponent
 	{
-		math::quat rotation = {1, 0, 0, 0}; ///< Quaternion rotation
-		math::vec3 position = {0, 0, 0};    ///< World space position.
-		math::vec3 scale = {1, 1, 1};	    ///< Non-uniform scale.
+	private:
+		math::quat m_rotation = {1, 0, 0, 0};
+		math::vec3 m_position = {0, 0, 0};
+		math::vec3 m_scale = {1, 1, 1};
+
+		/// dirty flag
+		uint64_t m_dirty = 0xFFFFFFFFFFFFFFFF;
+
+		void markDirty()
+		{
+			m_dirty = 0xFFFFFFFFFFFFFFFF;
+		}
+
+	public:
 
 		TransformComponent() = default;
 
@@ -35,9 +52,53 @@ namespace clz::ecs
 			const math::quat& rotation,
 			const math::vec3& position,
 			const math::vec3& scale
-		)
-		    : rotation(rotation), position(position), scale(scale)
+		):
+			m_rotation(rotation),
+			m_position(position),
+			m_scale(scale),
+			m_dirty(0xFFFFFFFFFFFFFFFF)
 		{
+		}
+
+		const math::quat& getRotation() const
+		{
+			return m_rotation;
+		}
+		const math::vec3& getPosition() const
+		{
+			return m_position;
+		}
+		const math::vec3& getScale() const
+		{
+			return m_scale;
+		}
+
+		bool isDirty(const DirtyFlagBit dirtyFlagBit) const
+		{
+			return (m_dirty & static_cast<uint64_t>(dirtyFlagBit)) != 0;
+		}
+
+		void setRotation(const math::quat& rotation)
+		{
+			m_rotation = rotation;
+			markDirty();
+		}
+
+		void setPosition(const math::vec3& position)
+		{
+			m_position = position;
+			markDirty();
+		}
+
+		void setScale(const math::vec3& scale)
+		{
+			m_scale = scale;
+			markDirty();
+		}
+
+		void unMarkDirty(const DirtyFlagBit dirtyFlagBit)
+		{
+			m_dirty &= ~(static_cast<uint64_t>(dirtyFlagBit));
 		}
 	};
 	/**
@@ -53,9 +114,11 @@ namespace clz::ecs
 	 */
 	struct EditorTransformComponent
 	{
-		math::vec3 rotation;
-		math::vec3 position = {0, 0, 0}; ///< World space position.
-		math::vec3 scale = {1, 1, 1};	 ///< Non-uniform scale.
+	private:
+		math::vec3 m_rotation = {0, 0, 0};
+		math::vec3 m_position = {0, 0, 0};
+		math::vec3 m_scale = {1, 1, 1};
+	public:
 
 		EditorTransformComponent()
 		{
@@ -65,15 +128,50 @@ namespace clz::ecs
 			const math::vec3& rotation,
 			const math::vec3& position,
 			const math::vec3& scale
-		)
-		    : rotation(rotation), position(position), scale(scale)
+		):
+			m_rotation(rotation),
+			m_position(position),
+			m_scale(scale)
 		{
 		}
 
-		EditorTransformComponent(const TransformComponent& transformComponent)
-		    : rotation(math::degrees(math::quatToEulerXYZ(transformComponent.rotation))),
-		      position(transformComponent.position), scale(transformComponent.scale)
+		EditorTransformComponent(const TransformComponent& transformComponent) :
+			m_rotation(
+				math::degrees(
+					math::quatToEulerXYZ(
+						transformComponent.getRotation()
+					)
+				)
+			),
+		     	m_position(transformComponent.getPosition()),
+			m_scale(transformComponent.getScale())
 		{
+		}
+
+		const math::vec3& getRotation() const
+		{
+			return m_rotation;
+		}
+		const math::vec3& getPosition() const
+		{
+			return m_position;
+		}
+		const math::vec3& getScale() const
+		{
+			return m_scale;
+		}
+
+		void setRotation(const math::vec3& rotation)
+		{
+			m_rotation = rotation;
+		}
+		void setPosition(const math::vec3& position)
+		{
+			m_position = position;
+		}
+		void setScale(const math::vec3& scale)
+		{
+			m_scale = scale;
 		}
 	};
 

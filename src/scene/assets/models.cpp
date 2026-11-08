@@ -10,7 +10,12 @@ namespace clz::scene
 
 		for (const auto& modelPath : modelPathArray)
 		{
-			modelPaths.push_back(modelPath);
+			if (!modelPath.is_null())
+				modelPaths.push_back(modelPath);
+			else
+				modelPaths.push_back(
+					renderer::ModelManagerClass::NULL_MODEL_PATH
+				);
 		}
 
 		renderer::ModelManager.loadBatch(modelPaths);

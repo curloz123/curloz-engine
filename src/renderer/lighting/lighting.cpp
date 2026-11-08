@@ -29,12 +29,12 @@ namespace clz::renderer
 			return std::unexpected(LightRegisterError::INVALID_PARAMETER);
 		}
 
-		DirectionalLight directionalLight;
-		directionalLight.direction =
-			math::vec4(direction.x, direction.y, direction.z, 1.0f);
-
-		directionalLight.color = math::vec4(color.x, color.y, color.z, intensity);
-
+		DirectionalLight directionalLight{
+			.color = color,
+			.intensity = intensity,
+			.direction = direction,
+			.enabled = true
+		};
 		Lights.directionalLight[numDirectionalLights] = std::move(directionalLight);
 		DirectionalLightId lightId(numDirectionalLights);
 		++numDirectionalLights;
@@ -69,11 +69,10 @@ namespace clz::renderer
 		pointLight.range = range;
 		pointLight.color = color;
 		pointLight.intensity = intensity;
-		pointLight.attenuation = math::vec4(
+		pointLight.attenuation = math::vec3(
 			1.0,		      // constant
 			linearAttenuation,    // linear
-			quadraticAttenuation, // quadratic
-			-1.0
+			quadraticAttenuation  // quadratic
 		);
 		Lights.pointLights[numPointLights] = std::move(pointLight);
 		PointLightId lightId(numPointLights);
@@ -105,7 +104,8 @@ namespace clz::renderer
 		}
 
 		SpotLight spotLight = {};
-		spotLight.direction = math::vec4(direction.x, direction.y, direction.z, 1.0f);
+		spotLight.direction = math::vec3(direction.x, direction.y, direction.z);
+		spotLight.enabled = true;
 		spotLight.position = position;
 		spotLight.range = range;
 		spotLight.color = color;

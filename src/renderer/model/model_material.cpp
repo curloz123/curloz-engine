@@ -1,4 +1,5 @@
 #include "renderer/model/model_material.hpp"
+#include "renderer/entitydata/texture.hpp"
 #include "renderer/utility/ssbo.hpp"
 #include "core/logs.hpp"
 #include "renderer/pipelinedata/pipeline_data.hpp"
@@ -56,11 +57,49 @@ namespace clz::renderer
                		sizeof(ModelMaterial) * materialId.getId()
          	);
 
+         	if (materialId.getId() >= m_cachedMaterials.size())
+           		m_cachedMaterials.resize(materialId.getId() + 1);
+
+          	m_cachedMaterials[materialId.getId()] = modelMaterial;
+
          	return materialId;
     	}
-	void ModelMaterialManager::freeMaterial(ModelMaterialId& id)
-      	{
+    	void ModelMaterialManager::freeMaterial(
+     		ModelMaterialId& id
+     	)
+	{
+		constexpr bool immediateDestroy = true;
+		auto& material = m_cachedMaterials[id.getId()];
+		const auto defaultSamplerId = TextureManager.getDefaultSamplerId();
+
+		auto freeTexture = [&](const TextureId& textureId)
+		{
+		   	if (!textureId.isNull())
+		        	TextureManager.destroyTexture(textureId, immediateDestroy);
+		};
+		auto freeSampler = [&](const SamplerId& samplerId)
+		{
+		    	if (!samplerId.isNull() &&
+				samplerId.getId() != defaultSamplerId.getId()
+			)
+		        	TextureManager.destroyTextureSampler(samplerId);
+		};
+
+		freeTexture(material.baseTextureId);
+		freeTexture(material.metallicRoughnessTextureId);
+		freeTexture(material.emissiveTextureId);
+		freeTexture(material.normalTextureId);
+		freeTexture(material.specularColorTextureId);
+		freeTexture(material.specularTextureId);
+
+		freeSampler(material.baseSamplerId);
+		freeSampler(material.metallicRoughnessSamplerId);
+		freeSampler(material.emissiveSamplerId);
+		freeSampler(material.normalSamplerId);
+		freeSampler(material.specularColorSamplerId);
+		freeSampler(material.specularSamplerId);
+
 		m_freeIndices.push_back(id);
 		id.nullify();
-       	}
+	}
 }

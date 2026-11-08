@@ -11,13 +11,12 @@
 #include "entity/entitymanager.hpp"
 #include "lighting/lighting.hpp"
 #include "model/model.hpp"
-#include "renderer/entitydata/entitydata.hpp"
-#include "renderer/pipelinedata/pipeline_data.hpp"
-#include <filesystem>
+#include "model/model_matrix.hpp"
+#include <expected>
+#include <vulkan/vulkan.h>
 
 namespace clz::renderer
 {
-
 	/**
 	 * @brief This function kind of acts like a flag,
 	 * that is set whenever the ecs subsystem has finished
@@ -32,18 +31,13 @@ namespace clz::renderer
 
 	/**
 	 * @brief Stores a renderable ModelID, that can be used to draw models
-	 * @note Dependencies -> TransformComponent
+	 * Stores model's Id which references the actual model
+	 * and matricesRange which is a handle to all matrices this entity's model's nodes have.
 	 */
 	struct ModelComponent
 	{
 		ModelId modelId;
-		ModelComponent() = default;
-		explicit ModelComponent(
-			const ModelId modelId
-		) : 
-			modelId(modelId)
-		{
-		}
+		ModelMatrixRange matricesRange;
 	};
 
 	struct DirectionalLightComponent
@@ -59,30 +53,69 @@ namespace clz::renderer
 		SpotLightId Id;
 	};
 
-	/**
-	 *
-	 * @param path Path to the model file
-	 *
-	 * @brief Tells renderer to create(register) a model,
-	 * calls Asset::loadModel which returns handle referencing to the model.
-	 *
-	 * @return ecs::ModelComponent which internally references a model
-	 */
-	inline ModelComponent createModelComponent(
+
+	/// @brief Creates model component.
+	/// Internally registers entity for this model, and allocates matrix range to it.
+	/// @param entt The entity for which we're creating this component.
+	/// @param modelIndex The actual model index stored in JSON's data.
+	/// @return ModelComponent on successful creation, error string otherwise.
+	inline std::expected<ModelComponent, std::string>
+	createModelComponent(
 		const ecs::entity entt,
 		const uint32_t modelIndex
 	)
 	{
-		if (!ModelManager.attachModelToEntity(entt, modelIndex))
+		ModelId modelId;
+		ModelMatrixRange range;
+
+		if (ModelManager.attachModelToEntity(entt, modelIndex)) [[likely]]
 		{
-			clz::log::error(
-				"could not retrieve model Id for entity: " + 
-				ecs::getEntityName(entt)
-			);
-			return ModelComponent(ModelId());
+			modelId = ModelId(modelIndex);
+		}
+		else
+		{
+			const std::string error =
+				"could not retrieve model Id for entity: " +
+				ecs::getEntityName(entt);
+
+			clz::log::error(error);
+			return std::unexpected(error);
 		}
 
-		return ModelComponent(ModelId(modelIndex));
+
+		auto& matrixManager = ModelManager.getMatrixManager();
+		auto matrixCount =
+			ModelManager.getMatrixCount(modelId);
+		if (!matrixCount) [[unlikely]]
+		{
+			const std::string error =
+				"Unable to retrieve matrix range for entity: " +
+				ecs::getEntityName(entt);
+
+			clz::log::error(error);
+			return std::unexpected(error);
+		}
+
+		if (!matrixManager.allocateRange(
+			matrixCount.value(),
+			range
+		)) [[unlikely]]
+		{
+			const std::string error =
+				"Unable to retrieve matrix range for entity: " +
+				ecs::getEntityName(entt);
+
+			clz::log::error(error);
+			return std::unexpected(error);
+		}
+
+		CameraDescriptor.updateMDescriptorSets();
+
+		ModelComponent modelComp;
+		modelComp.modelId = modelId;
+		modelComp.matricesRange = range;
+
+		return modelComp;
 	}
 
 } // namespace clz::renderer

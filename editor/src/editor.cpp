@@ -181,9 +181,9 @@ namespace clz::editor
 			ecs::setComponent<ecs::TransformComponent>(
 				entityId,
 				ecs::TransformComponent(
-					math::quatFromEuler(math::radians(editorTransform.rotation)),
-					editorTransform.position,
-					editorTransform.scale
+					math::quatFromEuler(math::radians(editorTransform.getRotation())),
+					editorTransform.getPosition(),
+					editorTransform.getScale()
 				)
 			);
 		}

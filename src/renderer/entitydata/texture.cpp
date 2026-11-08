@@ -244,6 +244,14 @@ namespace clz::renderer
 		const bool immediateDestroy
 	)
 	{
+#ifdef CLZ_ENABLE_CHECKS /***********************************************************/
+		if (textureId.isNull())
+		{
+			clz::log::warn("Attempt to destroy a null texture was done");
+			return;
+		}
+#endif /*****************************************************************************/
+
 		const auto index = textureId.getId();
 		const auto& device = r_deviceContext.device;
 		vkDestroyImageView(

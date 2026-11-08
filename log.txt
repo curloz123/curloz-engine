@@ -1,0 +1,106 @@
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): the descriptor [VkDescriptorSet 0x2400000000240[camera descriptor [frame 0]], Set 0, Binding 1, Index 0, variable "s_modelMatrices"] is being used in draw but has never been updated via vkUpdateDescriptorSets() or a similar call.
+The Vulkan spec states: Descriptors in each bound descriptor set, specified via vkCmdBindDescriptorSets, must be valid if they are accessed as described by descriptor validity by the VkPipeline bound to the pipeline bind point used by this command and the bound VkPipeline was not created with VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-None-08114)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[WARN] VULKAN VALIDATION LAYERS: vkBindImageMemory(): Trying to bind VkImage 0x4a700000004a7 to a memory block which is fully consumed by the image. The required size of the allocation is 262144, but smaller images like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[WARN] VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4ab00000004ab to a memory block which is fully consumed by the buffer. The required size of the allocation is 262144, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[WARN] VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4ad00000004ad to a memory block which is fully consumed by the buffer. The required size of the allocation is 1280, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[WARN] VULKAN VALIDATION LAYERS: vkBindBufferMemory(): Trying to bind VkBuffer 0x4af00000004af to a memory block which is fully consumed by the buffer. The required size of the allocation is 256, but smaller buffers like this should be sub-allocated from larger memory blocks. (Current threshold is 1048576 bytes)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:287
+[DEBUG] Frame time: 58.566719
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/main.cpp Line:111
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): the descriptor [VkDescriptorSet 0x2410000000241[camera descriptor [frame 1]], Set 0, Binding 1, Index 0, variable "s_modelMatrices"] is being used in draw but has never been updated via vkUpdateDescriptorSets() or a similar call.
+The Vulkan spec states: Descriptors in each bound descriptor set, specified via vkCmdBindDescriptorSets, must be valid if they are accessed as described by descriptor validity by the VkPipeline bound to the pipeline bind point used by this command and the bound VkPipeline was not created with VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-None-08114)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1476 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1477 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1478 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1479 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1480 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 1481 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 0
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 67015 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 1
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 67016 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 1
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 67017 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 1
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)
+LOCATION: /home/curl0z/dev/git/curloz-engine/src/renderer/context/devicecontext.cpp Line:292
+[ERROR] VULKAN VALIDATION LAYERS: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdDrawIndexed(): (set = 0, binding = 1, index 0) Trying to access a null descriptor, but vkUpdateDescriptorSets was not called with VK_NULL_HANDLE for this descriptor.
+Stage = Vertex. Vertex Index = 67018 Instance Index = 0.
+Command buffer (0x5555569ff320)
+	Draw Index 1
+Shader Module (0x24c000000024c) (internal ID 1)
+SPIR-V Instruction: %26 = OpLoad %8 %25
+(Unable to find shader source, build shader with debug info to get source information)
+The Vulkan spec states: If any stage of the VkPipeline object bound to the pipeline bind point used by this command accesses a storage buffer, and that stage was created without enabling either VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS or VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 for storageBuffers, and the robustBufferAccess feature is not enabled, that stage must not access values outside of the range of the buffer as specified in the descriptor set bound to the same pipeline bind point (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-storageBuffers-06936)

@@ -14,12 +14,12 @@ namespace clz::scene
 {
 	/// @copydoc retrieveModelComponent
 	renderer::ModelComponent retrieveModelComponent(
-		const nlohmann::json& modelCompEntry, 
+		const nlohmann::json& modelCompEntry,
 		const ecs::entity entt
 	)
 	{
 		const auto name = ecs::getEntityName(entt);
-		if (!modelCompEntry.contains("index") || 
+		if (!modelCompEntry.contains("index") ||
 			modelCompEntry["index"].is_null()
 		)
 		{
@@ -31,10 +31,17 @@ namespace clz::scene
 			return renderer::ModelComponent(renderer::ModelId());
 		}
 
-		return renderer::createModelComponent(
-				entt,
-				modelCompEntry["index"]
-			);
+		const auto result = renderer::createModelComponent(
+					entt,
+					modelCompEntry["index"]
+				    );
+		if (!result)
+		{
+			clz::log::error(result.error());
+			return renderer::ModelComponent(renderer::ModelId());
+		}
+
+		return result.value();
 	}
 
 	/// @copydoc saveModelComponent
@@ -43,9 +50,9 @@ namespace clz::scene
 		nlohmann::json& componentData
 	)
 	{
-		if (mc.modelId.isNull())
-			componentData["index"] = nlohmann::json(nullptr);
-		else
+		if (!mc.modelId.isNull())
 			componentData["index"] = mc.modelId.getId();
+		else
+			componentData["index"] = nlohmann::json(nullptr);
 	}
 } // namespace clz::scene

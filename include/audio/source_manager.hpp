@@ -30,7 +30,7 @@ namespace clz::audio
 	};
 
 	///< @brief Global audio distance model.
-	inline DistanceModel au_distanceModel;	
+	inline DistanceModel au_distanceModel;
 
 	/// @brief Sets the global distance model.
 	/// @param distanceModel The new distance model to set.
@@ -52,13 +52,13 @@ namespace clz::audio
 	///< @brief Global Sources of array.
 	inline std::array<ALuint, MAX_AUDIO_SOURCES> au_sourcesLUT;
 	///< @brief SourceId -> Indices the sources lut above.
-	///< @note It does make sense to use uint8_t here, 
+	///< @note It does make sense to use uint8_t here,
 	///< because max audio sources are 128. But if it was 256,
 	///< then IdInterface will define maxof(uint8_t) as null,
 	///< and we dont want that now do we.
 	class SourceId : public IdInterface<std::uint8_t>{};
 	///< @brief Defines which sources are free, by index.
-	inline std::vector<uint8_t> au_freeSources;	
+	inline std::vector<uint8_t> au_freeSources;
 
 
 	/// @brief Initializes all sources and all related data.
@@ -66,7 +66,7 @@ namespace clz::audio
 	{
 		/// --- generate sources --- ///
 		alGenSources(
-			au_sourcesLUT.size(), 
+			au_sourcesLUT.size(),
 			au_sourcesLUT.data()
 		);
 
@@ -99,7 +99,7 @@ namespace clz::audio
 		}
 
 		clz::log::warn(
-			"MAXIMUM AUDIO SOURCES LIMIT REACHED. " 
+			"MAXIMUM AUDIO SOURCES LIMIT REACHED. "
 			"You might notice some audio missing. "
 			"Either free some sources, "
 			"or increase maximum limit "
@@ -120,7 +120,7 @@ namespace clz::audio
 			clz::log::error("While freeing an audio source, null ID was passed");
 			return;
 		}
-		
+
 		/// --- pass this to free sources list --- ///
 		const auto freeIndex = sourceId.getId();
 		au_freeSources.push_back(freeIndex);
@@ -132,12 +132,13 @@ namespace clz::audio
 	/// @param newVelocity New position of source.
 	/// @note Must be updated each frame.
 	inline void sourceSetPosition(
-		const SourceId sourceId, 
-		const math::vec3& newPosition)
+		const SourceId sourceId,
+		const math::vec3& newPosition
+	)
 	{
 		alSource3f(
-			au_sourcesLUT[sourceId.getId()], 
-			AL_POSITION, 
+			au_sourcesLUT[sourceId.getId()],
+			AL_POSITION,
 			newPosition.x,
 			newPosition.y,
 			newPosition.z
@@ -148,12 +149,13 @@ namespace clz::audio
 	/// @param newVelocity New velocity of source.
 	/// @note Must be updated each frame.
 	inline void sourceSetVelocity(
-		const SourceId sourceId, 
-		const math::vec3& newVelocity)
+		const SourceId sourceId,
+		const math::vec3& newVelocity
+	)
 	{
 		alSource3f(
-			au_sourcesLUT[sourceId.getId()], 
-			AL_VELOCITY, 
+			au_sourcesLUT[sourceId.getId()],
+			AL_VELOCITY,
 			newVelocity.x,
 			newVelocity.y,
 			newVelocity.z
@@ -192,8 +194,8 @@ namespace clz::audio
 	{
 		ALint state;
 		alGetSourcei(
-			au_sourcesLUT[sourceId.getId()], 
-			AL_SOURCE_STATE, 
+			au_sourcesLUT[sourceId.getId()],
+			AL_SOURCE_STATE,
 			&state
 		);
 		return state == AL_PLAYING;
@@ -238,7 +240,7 @@ namespace clz::audio
 	inline void sourceSetLooping(const SourceId sourceId, const bool value)
 	{
 		alSourcei(
-			au_sourcesLUT[sourceId.getId()], 
+			au_sourcesLUT[sourceId.getId()],
 			AL_LOOPING, value ? AL_TRUE : AL_FALSE
 		);
 	}

@@ -224,8 +224,8 @@ namespace clz::renderer
 
 
 			const std::array<VkWriteDescriptorSet, 4> writes = {
-				lightDataWrite, 
-				dirLightWrite, 
+				lightDataWrite,
+				dirLightWrite,
 				pointLightWrite,
 				spotLightWrite
 			};
@@ -260,7 +260,7 @@ namespace clz::renderer
 		{
 			Lights.pointLights[ecs::getComponent<PointLightComponent>(entity).Id.getId()]
 				.position =
-					ecs::getComponent<ecs::TransformComponent>(entity).position;
+					ecs::getComponent<ecs::TransformComponent>(entity).getPosition();
 		}
 		memcpy(m_pointSSBO.mapped[r_currentFrame],
 		       Lights.pointLights.data(),

@@ -853,9 +853,9 @@ namespace clz::editor
 			const physics::RigidBodyShapeId shapeId = lastEditedShape.value();
 			auto& shape = physics::getBodyShape(rigidBodyId, lastEditedShape.value());
 			ecs::EditorTransformComponent shapeTransform;
-			shapeTransform.position = shape.getPosition();
-			shapeTransform.rotation = shape.getRotation();
-			shapeTransform.scale = shape.getBoxHalfExtents() * 2;
+			shapeTransform.setPosition(shape.getPosition());
+			shapeTransform.setRotation(shape.getRotation());
+			shapeTransform.setScale(shape.getBoxHalfExtents() * 2);
 
 			auto proj = renderer::getCameraProjMatrix(physicsBodyShapeImage.cameraId, rect.width, rect.height);
 			const auto view = renderer::getCameraViewMatrix(physicsBodyShapeImage.cameraId);
@@ -870,13 +870,13 @@ namespace clz::editor
 				if (!gizmoUsedLastFrame)
 					prevTransform = shapeTransform;
 
-				shape.setPosition(newEditorTransform.position);
-				shape.setRotation(newEditorTransform.rotation);
+				shape.setPosition(newEditorTransform.getPosition());
+				shape.setRotation(newEditorTransform.getRotation());
 
 				switch (shape.getShapeType())
 				{
 				case physics::ShapeType::BOX:
-					shape.setBoxHalfExtents(newEditorTransform.scale * 0.5f);
+					shape.setBoxHalfExtents(newEditorTransform.getScale() * 0.5f);
 					break;
 
 				case physics::ShapeType::SPHERE:
@@ -895,16 +895,16 @@ namespace clz::editor
 						[rigidBodyId, shapeId, oldTransform]
 						{
 							auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
-							shape.setPosition(oldTransform.position);
-							shape.setRotation(oldTransform.rotation);
-							shape.setBoxHalfExtents(oldTransform.scale * 0.5f);
+							shape.setPosition(oldTransform.getPosition());
+							shape.setRotation(oldTransform.getRotation());
+							shape.setBoxHalfExtents(oldTransform.getScale() * 0.5f);
 						},
 						[rigidBodyId, shapeId, newEditorTransform]
 						{
 							auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
-							shape.setPosition(newEditorTransform.position);
-							shape.setRotation(newEditorTransform.rotation);
-							shape.setBoxHalfExtents(newEditorTransform.scale * 0.5f);
+							shape.setPosition(newEditorTransform.getPosition());
+							shape.setRotation(newEditorTransform.getRotation());
+							shape.setBoxHalfExtents(newEditorTransform.getScale() * 0.5f);
 						}
 					);
 

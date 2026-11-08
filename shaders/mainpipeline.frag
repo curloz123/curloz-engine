@@ -5,8 +5,8 @@
  */
 #version 460
 
-#define NULL_TEXTURE  uint(-1)
-#define NULL_MATERIAL uint(-1)
+#define NULL_TEXTURE  0xFFFFu
+#define NULL_MATERIAL 0xFFFFu
 
 /// In's
 layout(location = 0) in vec2 inUV;
@@ -17,6 +17,7 @@ layout(location = 4) in vec3 inTangent;
 layout(location = 5) in vec3 inBitangent;
 
 
+/// General material storage buffer.
 struct Material
 {
 	/// @brief Base color factor
@@ -57,7 +58,7 @@ struct Material
 	float _pad;
 };
 
-// directional light
+/// Directional light
 struct DirectionalLight
 {
 	vec3 color;
@@ -66,7 +67,8 @@ struct DirectionalLight
 	vec3 direction;
 	bool enabled;
 };
-// point light
+
+/// point light
 struct PointLight
 {
 	vec3 position;
@@ -96,12 +98,6 @@ struct SpotLight
 };
 
 /// Uniform's
-layout(push_constant) uniform PushConstants
-{
-	uint matrixIndex;
-	uint materialIndex;
-} PC;
-
 layout(set = 1, binding = 0) uniform texture2D textures[1024];
 layout(set = 1, binding = 1) uniform sampler samplers[1024];
 layout(std430, set = 1, binding = 2) readonly buffer Materials
@@ -122,14 +118,21 @@ uniform  DirectionalLightUBO
 	DirectionalLight dirLight;
 } u_DirLight;
 
-
 layout(std430, set = 2, binding = 2) readonly buffer PointLightSSBO
 {
 	PointLight pointLights[];
 } s_PointLights;
 
+layout(push_constant) uniform PushConstants
+{
+	uint matrixIndex;
+	uint materialIndex;
+} PC;
+
 /// Out's
 layout(location = 0) out vec4 outColor;
+
+
 
 /// functions
 #define PI 3.14159265359
@@ -243,7 +246,7 @@ void main()
 				sampler2D(
 					textures[material.specularColorTextureId],
 				       	samplers[material.specularColorSamplerId]
-				), 
+				),
 				inUV
 			 );
 		specularColor *= s.rgb;
@@ -331,7 +334,7 @@ vec3 calcDirLight(
 	DirectionalLight light = u_DirLight.dirLight;
 	vec3 lightDir = -light.direction.xyz;
 	vec3 halfway = normalize(viewDir + lightDir);
-	vec3 radiance = light.color.xyz * light.color.w;
+	vec3 radiance = light.color.xyz * light.intensity;
 
 	float f0Base = pow((ior - 1.0) / (ior + 1.0), 2.0);
 	vec3 dielectricF0 = min(f0Base * specularColor, vec3(1.0)) * specular;
@@ -424,12 +427,12 @@ float geometrySmith(const vec3 normal, const vec3 view, const vec3 lightPos, con
 	return GGX1 * GGX2;
 }
 vec3 fresnelSchlick(
-	const float cosTheta, 
+	const float cosTheta,
 	const vec3 surfaceReflection0Incidence,
 	const vec3 surfaceReflection90Incidence
 )
 {
 	return surfaceReflection0Incidence +
-			(surfaceReflection90Incidence - surfaceReflection0Incidence) * 
-				(pow(1.0 - clamp(cosTheta, 0.0, 1.0), 5.0));
+		surfaceReflection90Incidence - surfaceReflection0Incidence) *
+		(pow(1.0 - clamp(cosTheta, 0.0, 1.0), 5.0));
 }

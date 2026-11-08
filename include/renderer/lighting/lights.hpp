@@ -32,11 +32,7 @@ namespace clz::renderer
 	};
 
 	/**
-	 * @brief GPU-layout directional (sun-like) light.
-	 *
-	 * A directional light has no position — it's treated as coming from
-	 * infinitely far away, uniformly across the whole scene, along
-	 * @c direction.
+	 * @brief GPU-layout directional(sun) light.
 	 */
 	struct DirectionalLight
 	{
@@ -54,7 +50,6 @@ namespace clz::renderer
 
 		bool enabled = true;
 
-		DirectionalLight() = default;
 	};
 
 	/**

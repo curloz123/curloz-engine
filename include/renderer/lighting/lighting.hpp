@@ -26,7 +26,7 @@ namespace clz::renderer
 {
 
 	/// @brief Opaque handle to a registered directional light.
-	/// @note Only ever has value 0 — engine supports a single sun.
+	/// @note Only ever has value 0, engine supports a single sun.
 	class DirectionalLightId : public IdInterface<uint32_t>{};
 
 	/// @brief Opaque handle to a registered point light.
@@ -40,8 +40,10 @@ namespace clz::renderer
 	/// @brief Hard cap on directional lights (engine only models one sun).
 	inline constexpr uint8_t MAX_DIR_LIGHTS = 1;
 	/// @brief Hard cap on point lights, must match shader-side array sizing.
+	/// Max 256 lights
 	inline constexpr uint8_t MAX_POINT_LIGHTS = UINT8_MAX;
 	/// @brief Hard cap on spot-lights, must match shader-side array sizing.
+	/// Max 256 lights
 	inline constexpr uint8_t MAX_SPOT_LIGHTS = UINT8_MAX;
 
 	/**
@@ -59,6 +61,7 @@ namespace clz::renderer
 	};
 	/// @brief Global light registry. See LightArrays.
 	inline LightArrays Lights;
+
 	inline uint8_t numDirectionalLights = 0;
 	inline uint8_t numPointLights = 0;
 	inline uint8_t numSpotLights = 0;
@@ -66,8 +69,10 @@ namespace clz::renderer
 	/// @brief Reasons a register*Light call can fail.
 	enum class LightRegisterError
 	{
-		LIMIT_EXCEEDED,	  ///< MAX_*_LIGHTS would be exceeded by this registration.
-		INVALID_PARAMETER ///< A parameter (color/intensity/range/etc.) is out of range.
+		///< MAX_*_LIGHTS would be exceeded by this registration.
+		LIMIT_EXCEEDED,
+		///< A parameter (color/intensity/range/etc.) is out of range.
+		INVALID_PARAMETER
 	};
 
 	/// @brief Creates directional light
@@ -131,7 +136,6 @@ namespace clz::renderer
 		float outerCutoffAngle
 	);
 
-	void updateLights();
 
 	/// @brief Gets the direction of a directional light.
 	/// @param id Handle returned by registerDirectionalLight.
@@ -203,7 +207,7 @@ namespace clz::renderer
 			return 1.0f;
 		}
 
-		return Lights.directionalLight[id.getId()].color.w;
+		return Lights.directionalLight[id.getId()].intensity;
 	}
 
 	/// @brief Sets the intensity of a directional light (stored in color.w).
@@ -217,7 +221,7 @@ namespace clz::renderer
 			return;
 		}
 
-		Lights.directionalLight[id.getId()].color.w = intensity;
+		Lights.directionalLight[id.getId()].intensity = intensity;
 	}
 
 	/// @brief Gets the world-space position of a point light.

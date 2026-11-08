@@ -20,7 +20,7 @@ void showDirectionalLightHeader()
 
 	const auto entityId = currentSelectedEntity.value();
 	const auto DirLightId = ecs::getComponent<renderer::DirectionalLightComponent>(entityId);
-	auto& rLight = renderer::Lights.directionalLight[DirLightId.Id.value];
+	auto& rLight = renderer::Lights.directionalLight[DirLightId.Id.getId()];
 
 	bool anyEditFinished = false;
 
@@ -38,7 +38,7 @@ void showDirectionalLightHeader()
 	ImGui::Separator();
 
 	ImGui::Text("Intensity");
-	ImGui::InputFloat("##Intensity: ", &rLight.color.w);
+	ImGui::InputFloat("##Intensity: ", &rLight.intensity);
 	if (ImGui::IsItemActivated())
 	{
 		previousDirLight = rLight;
@@ -65,11 +65,11 @@ void showDirectionalLightHeader()
 		timemachine::createSnapshot(
 			[entityId, prevDirLight] {
 				const auto DirLightComp = ecs::getComponent<renderer::DirectionalLightComponent>(entityId);
-				renderer::Lights.directionalLight[DirLightComp.Id.value] = prevDirLight;
+				renderer::Lights.directionalLight[DirLightComp.Id.getId()] = prevDirLight;
 			},
 			[entityId, newDirLight] {
 				const auto DirLightComp = ecs::getComponent<renderer::DirectionalLightComponent>(entityId);
-				renderer::Lights.directionalLight[DirLightComp.Id.value] = newDirLight;
+				renderer::Lights.directionalLight[DirLightComp.Id.getId()] = newDirLight;
 			});
 	}
 
@@ -84,7 +84,7 @@ void showPointLightHeader()
 
 	const auto entityId = currentSelectedEntity.value();
 	const auto pointLightId = ecs::getComponent<renderer::PointLightComponent>(entityId);
-	auto& rLight = renderer::Lights.pointLights[pointLightId.Id.value];
+	auto& rLight = renderer::Lights.pointLights[pointLightId.Id.getId()];
 
 	bool anyEditFinished = false;
 
@@ -151,11 +151,11 @@ void showPointLightHeader()
 		timemachine::createSnapshot(
 			[entityId, prevPointLight] {
 				const auto pointLightComp = ecs::getComponent<renderer::PointLightComponent>(entityId);
-				renderer::Lights.pointLights[pointLightComp.Id.value] = prevPointLight;
+				renderer::Lights.pointLights[pointLightComp.Id.getId()] = prevPointLight;
 			},
 			[entityId, newPointLight] {
 				const auto pointLightComp = ecs::getComponent<renderer::PointLightComponent>(entityId);
-				renderer::Lights.pointLights[pointLightComp.Id.value] = newPointLight;
+				renderer::Lights.pointLights[pointLightComp.Id.getId()] = newPointLight;
 			});
 	}
 

@@ -12,21 +12,13 @@
 #include "../../include/timemachine.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
-#include "entity/entitymanager.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
 #include <imgui.h>
-#include <string>
 #include "../../include/gizmo/gizmo.hpp"
 
 namespace clz::editor
 {
-	/// @brief Component state captured at the start of the current edit, used as the undo
-	/// "before" value.
-	ecs::EditorTransformComponent previousEditorTransform;
-	ecs::TransformComponent previousTransform;
-
-
 	/// @brief Draws Position/Rotation/Scale sliders and records a snapshot when an edit
 	/// completes.
 	void showTransformComponentHeader()
@@ -34,12 +26,12 @@ namespace clz::editor
 		if (!ImGui::CollapsingHeader("󰵉 Transform"))
 			return;
 
+		static ecs::EditorTransformComponent previousEditorTransform;
+		static ecs::TransformComponent previousTransform;
 
 		auto editorTransform = ecs::getComponent<ecs::EditorTransformComponent>(
 			currentSelectedEntity.value()
 		);
-
-
 
 		bool anyChange = false;
 		bool anyEditFinished = false;
@@ -55,8 +47,10 @@ namespace clz::editor
 			);
 		};
 
-		if (ImGui::SliderFloat3("Position", &editorTransform.position.x, -100.0f, 100.0f))
+		auto pos = editorTransform.getPosition();
+		if (ImGui::SliderFloat3("Position", &pos.x, -100.0f, 100.0f))
 		{
+			editorTransform.setPosition(pos);
 			anyChange = true;
 		}
 		if (ImGui::IsItemActivated())
@@ -69,8 +63,10 @@ namespace clz::editor
 			anyEditFinished = true;
 		}
 
-		if (ImGui::SliderFloat3("Rotation", &editorTransform.rotation.x, -179.9f, 179.9f))
+		auto rot = editorTransform.getRotation();
+		if (ImGui::SliderFloat3("Rotation", &rot.x, -179.9f, 179.9f))
 		{
+			editorTransform.setRotation(rot);
 			anyChange = true;
 		}
 		if (ImGui::IsItemActivated())
@@ -83,8 +79,10 @@ namespace clz::editor
 			anyEditFinished = true;
 		}
 
-		if (ImGui::SliderFloat3("Scale", &editorTransform.scale.x, 0.01f, 10.0f))
+		auto scale = editorTransform.getScale();
+		if (ImGui::SliderFloat3("Scale", &scale.x, 0.01f, 10.0f))
 		{
+			editorTransform.setScale(scale);
 			anyChange = true;
 		}
 		if (ImGui::IsItemActivated())
@@ -102,10 +100,13 @@ namespace clz::editor
 		if (anyChange)
 		{
 			ecs::setComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value(), editorTransform);
-			ecs::setComponent<ecs::TransformComponent>(currentSelectedEntity.value(), ecs::TransformComponent(
-				math::quatFromEuler(math::radians(editorTransform.rotation)),
-				editorTransform.position,
-				editorTransform.scale)
+			ecs::setComponent<ecs::TransformComponent>(
+				currentSelectedEntity.value(),
+				ecs::TransformComponent(
+					math::quatFromEuler(math::radians(editorTransform.getRotation())),
+					editorTransform.getPosition(),
+					editorTransform.getScale()
+				)
 			);
 		}
 
@@ -113,9 +114,9 @@ namespace clz::editor
 		if (anyEditFinished)
 		{
 			ecs::TransformComponent newTransform(
-				math::quatFromEuler(math::radians(editorTransform.rotation)),
-				editorTransform.position,
-				editorTransform.scale
+				math::quatFromEuler(math::radians(editorTransform.getPosition())),
+				editorTransform.getPosition(),
+				editorTransform.getPosition()
 			);
 			auto oldTransform = previousTransform;
 			ecs::EditorTransformComponent newEditorTransform = editorTransform;

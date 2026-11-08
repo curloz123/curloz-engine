@@ -47,7 +47,7 @@ namespace clz::physics
 	/// @brief Update's the physics engine
 	/// @note in editor mode, we don't iterate physics engine at all
 	/// @note Also we use fixed time step with
-	/// that remainder accumulator method Uses slerp and lerp for 
+	/// that remainder accumulator method Uses slerp and lerp for
 	/// smooth transition of transform
 	void update()
 	{
@@ -88,10 +88,12 @@ namespace clz::physics
 				ecs::getComponent<ecs::TransformComponent>(entity);
 			const auto& body = ecs::getComponent<RigidBodyComponent>(entity);
 
-			transformComponent.position =
-				math::lerp(body.prevPosition, body.newPosition, alpha);
-			transformComponent.rotation =
-				math::slerp(body.prevRotation, body.newRotation, alpha);
+			transformComponent.setPosition(
+				math::lerp(body.prevPosition, body.newPosition, alpha)
+			);
+			transformComponent.setRotation(
+				math::slerp(body.prevRotation, body.newRotation, alpha)
+			);
 		}
 
 	}

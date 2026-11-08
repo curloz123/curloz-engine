@@ -1,10 +1,10 @@
 [engine]
 name = 'Curloz Engine'
-refreshrate = 120
+refreshrate = 60
 version_major = 0
 version_minor = 7
 version_patch = 7
-vsync = false
+vsync = true
 
 [physics]
 enablesleep = false
@@ -17,12 +17,12 @@ triple_buffering = true
 
     [renderer.post_process]
     bloom_filter_radius = 0.004999999888241291
-    bloom_strength = 0.1120000034570694
+    bloom_strength = 0.090000003576278687
     ca_edgefade_far = 0.69900000095367432
-    ca_edgefade_near = 0.55400002002716064
+    ca_edgefade_near = 0.44800001382827759
     chromatic_aberration = 0.0
     exposure = 1.5
-    vignette_far = 2.0
+    vignette_far = 0.97100001573562622
     vignette_near = 0.34299999475479126
 
 [window]

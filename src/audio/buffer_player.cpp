@@ -47,7 +47,7 @@ namespace clz::audio
 
 	/// @copydoc bufferPlayerPlayPos
 	void bufferPlayerPlayPos(
-		const BufferPlayerId bufferPlayerId, 
+		const BufferPlayerId bufferPlayerId,
 		const BufferId bufferId,
 		const math::vec3& position,
 		const math::vec3& velocity
@@ -63,7 +63,7 @@ namespace clz::audio
 		}
 #endif
 
-		SourceId& associatedSourceId = 
+		SourceId& associatedSourceId =
 			au_associatedSources[bufferPlayerId.getId()];
 
 		/// if associated source id is not null, then
@@ -82,7 +82,7 @@ namespace clz::audio
 				clz::log::warn(
 					"Null source id passed"
 					", when tried to retrieve a free source"
-					", not playing bufferId: " + 
+					", not playing bufferId: " +
 					std::to_string(bufferId.getId())
 				);
 				return;
@@ -97,7 +97,7 @@ namespace clz::audio
 
 		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetGain(
-			associatedSourceId, 
+			associatedSourceId,
 			gain.first * gain.second
 		);
 		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
@@ -114,7 +114,7 @@ namespace clz::audio
 			false
 		);
 		sourceSetPosition(
-			associatedSourceId, 
+			associatedSourceId,
 			position
 		);
 		sourceSetVelocity(
@@ -127,7 +127,7 @@ namespace clz::audio
 
 	/// @copydoc bufferPlayerPlayBg
 	void bufferPlayerPlayBg(
-		const BufferPlayerId bufferPlayerId, 
+		const BufferPlayerId bufferPlayerId,
 		const BufferId bufferId
 	)
 	{
@@ -141,7 +141,7 @@ namespace clz::audio
 		}
 #endif
 
-		SourceId& associatedSourceId = 
+		SourceId& associatedSourceId =
 			au_associatedSources[bufferPlayerId.getId()];
 
 		/// if associated source id is not null, then
@@ -159,7 +159,7 @@ namespace clz::audio
 				clz::log::warn(
 					"Null source id passed"
 					", when tried to retrieve a free source"
-					", not playing bufferId: " + 
+					", not playing bufferId: " +
 					std::to_string(bufferId.getId())
 				);
 				return;
@@ -174,7 +174,7 @@ namespace clz::audio
 
 		const auto& gain = au_bufferPlayerGain[bufferPlayerId.getId()];
 		sourceSetGain(
-			associatedSourceId, 
+			associatedSourceId,
 			gain.first * gain.second
 		);
 		const auto& pitch = au_bufferPlayerPitch[bufferPlayerId.getId()];
@@ -212,9 +212,9 @@ namespace clz::audio
 			return;
 		}
 #endif
-		
+
 		/// --- free source first --- ///
-		SourceId associatedSource = 
+		SourceId associatedSource =
 			au_associatedSources[bufferPlayerId.getId()];
 		freeSource(associatedSource);
 
@@ -252,7 +252,7 @@ namespace clz::audio
 						associatedEntity);
 		sourceSetPosition(
 			associatedSourceId,
-			transform.position
+			transform.getPosition()
 		);
 		if (ecs::hasComponent<physics::RigidBodyComponent>(
 			associatedEntity
