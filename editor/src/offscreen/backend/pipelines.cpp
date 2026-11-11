@@ -1,52 +1,33 @@
-#include "../../../include/offscreen/backend/pipeline.hpp"
+/**
+ * @file pipelines.cpp
+ * @author curl0z
+ * @brief Defines all pipelines creation etc...
+ */
+
+#include "../../../include/offscreen/backend/pipelines.hpp"
+#include "../../../include/offscreen/backend/push_constants.hpp"
+#include "../../../include/offscreen/offscreentarget.hpp"
 #include "core/logs.hpp"
-#include "renderer/context/pipelinecontext.hpp"
-#include "renderer/entitydata/buffer.hpp"
-#include "renderer/pipelinedata/pushconstants.hpp"
-#include "renderer/pipelinedata/texture.hpp"
-#include "renderer/pipelinedata/pipeline_data.hpp"
-#include "renderer/utility/namer.hpp"
-#include <array>
 #include "renderer/vk_types.hpp"
+#include "renderer/utility/pipeline.hpp"
+#include "renderer/utility/namer.hpp"
+#include "renderer/entitydata/buffer.hpp"
+#include "renderer/pipelinedata/pipeline_data.hpp"
 
 namespace clz::editor::backend
 {
-	bool initializeEditorPipeline()
+	bool BodyEditorPipeline::initialize()
 	{
-		// Pipeline creation
 		if (!renderer::createShaderModules(
-			    editorPipelineContext,
-			    "shaders/editor.vert.spirv",
-			    "shaders/editor.frag.spirv"
-		    ))
+			m_pipelineContext,
+			"shaders/body_editor.vert.spirv",
+			"shaders/body_editor.frag.spirv"
+		))
 		{
-			clz::log::error("could not create editor shaders");
-			return false;
-		}
-		renderer::setHandleName(
-			reinterpret_cast<uint64_t>(editorPipelineContext.vertexShader),
-			VK_OBJECT_TYPE_SHADER_MODULE,
-			"editor vertex shader module"
-		);
-		renderer::setHandleName(
-			reinterpret_cast<uint64_t>(editorPipelineContext.fragmentShader),
-			VK_OBJECT_TYPE_SHADER_MODULE,
-			"editor fragment shader module"
-		);
-
-		// Use the camera and sampler layout from renderer
-		std::array<VkDescriptorSetLayout, 2> layouts = {
-			renderer::CameraDescriptor.getLayout(),
-			renderer::TextureDescriptor.getLayout()
-		};
-		if (!renderer::createPipelineLayout(
-			    editorPipelineContext,
-			    sizeof(EditorPushConstant),
-			    2,
-			    layouts.data()
-		    ))
-		{
-			clz::log::error("could not create editor pipeline layout");
+			clz::log::error(
+				"Could not create shape editor pipeline",
+				true
+			);
 			return false;
 		}
 
@@ -54,16 +35,16 @@ namespace clz::editor::backend
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = editorPipelineContext.vertexShader;
+		vertShaderStageInfo.module = m_pipelineContext.vertexShader;
 		vertShaderStageInfo.pName = "main";
 
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
 		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = editorPipelineContext.fragmentShader;
+		fragShaderStageInfo.module = m_pipelineContext.fragmentShader;
 		fragShaderStageInfo.pName = "main";
 
-		VkPipelineShaderStageCreateInfo shaderStages[] = {
+		const VkPipelineShaderStageCreateInfo shaderStages[] = {
 			vertShaderStageInfo,
 			fragShaderStageInfo
 		};
@@ -78,54 +59,37 @@ namespace clz::editor::backend
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
-		std::array<VkVertexInputBindingDescription, 1> bindingDescriptions = {
-			clz::renderer::getStaticVertexBindingDescription(),
+		std::array bindingDescriptions = {
+			renderer::getStaticVertexBindingDescription()
 		};
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
-			clz::renderer::getStaticVertexAttributeDescription(renderer::VertexAttributeType::POSITION),
-			clz::renderer::getStaticVertexAttributeDescription(renderer::VertexAttributeType::UV),
+		std::array attributeDescriptions = {
+			getStaticVertexAttributeDescription(renderer::VertexAttributeType::POSITION),
+			getStaticVertexAttributeDescription(renderer::VertexAttributeType::UV)
 		};
-
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.vertexBindingDescriptionCount = bindingDescriptions.size(),
-			.pVertexBindingDescriptions = bindingDescriptions.data(),
-			.vertexAttributeDescriptionCount = attributeDescriptions.size(),
-			.pVertexAttributeDescriptions = attributeDescriptions.data()
-		};
+		const VkPipelineVertexInputStateCreateInfo vertexInputInfo =
+			renderer::createVertexInputInfo(
+				bindingDescriptions,
+				attributeDescriptions
+			);
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(renderer::r_renderTargetContext.imageExtent.width);
-		viewport.height = static_cast<float>(renderer::r_renderTargetContext.imageExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = renderer::r_renderTargetContext.imageExtent;
-
 		VkPipelineViewportStateCreateInfo viewportState{};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
+		viewportState.pViewports = nullptr;
 		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
+		viewportState.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizer.cullMode = VK_CULL_MODE_NONE;
-		// rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.lineWidth = 1.0f;
 
@@ -153,6 +117,19 @@ namespace clz::editor::backend
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
+		std::vector<VkDescriptorSetLayout> layouts(
+			renderer::NUM_DESCRIPTORS,
+			renderer::getEmptyLayout()
+		);
+		renderer::TextureDescriptor.populateLayoutArray(layouts);
+		size_t pushConstantSize = sizeof(BodyEditorPC);
+		createPipelineLayout(
+			m_pipelineContext,
+			pushConstantSize,
+			layouts.size(),
+			layouts.data()
+		);
+
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = {};
 		pipelineRenderingCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		pipelineRenderingCI.colorAttachmentCount = 1;
@@ -172,7 +149,7 @@ namespace clz::editor::backend
 		pipelineInfo.pDepthStencilState = &depthStencil;
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
-		pipelineInfo.layout = editorPipelineContext.layout;
+		pipelineInfo.layout = m_pipelineContext.layout;
 		pipelineInfo.renderPass = VK_NULL_HANDLE;
 		pipelineInfo.subpass = 0;
 
@@ -182,20 +159,24 @@ namespace clz::editor::backend
 			    1,
 			    &pipelineInfo,
 			    nullptr,
-			    &editorPipelineContext.pipeline
+			    &m_pipelineContext.pipeline
 		    ) != VK_SUCCESS)
 		{
-			clz::log::error("vulkan Could not create editor's pipeline");
+			clz::log::error(
+				"vulkan Could not create body-editor pipeline",
+				true
+			);
 			return false;
 		}
 
-		clz::log::info("created editor's pipeline");
+		clz::log::info("created shape-editor pipeline");
+
+		renderer::setHandleName(
+			reinterpret_cast<uint64_t>(m_pipelineContext.pipeline),
+			VK_OBJECT_TYPE_PIPELINE,
+			"shape-editor pipeline"
+		);
+
 		return true;
 	}
-
-	void destroyEditorPipeline()
-	{
-		renderer::destroyPipelineContext(editorPipelineContext);
-		clz::log::info("destroyed editor's pipeline");
-	}
-} // namespace clz::editor::backend
+}

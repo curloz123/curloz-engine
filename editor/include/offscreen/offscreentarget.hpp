@@ -6,100 +6,131 @@
 #pragma once
 
 #include "renderer/camera/camera.hpp"
+#include "renderer/arena.hpp"
+#include "renderer/camera/cameradata.hpp"
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::editor
 {
-	/// @brief Tells if any window presenting offscreen targets
-	/// If it is, it will tell renderer to not update its camera
-	/// as the offscreen window will be using it.
-	inline bool IsCurrentlyShowingOffscreenTargets = false;
-
-	/// @brief A single offscreen render target: color + depth image pair,
-	/// sampler, and its registered ImGui descriptor set for display via
-	/// ImGui::Image(). Owns all Vulkan resources needed to render a scene
-	/// into a texture and present it inside an editor panel.
-	struct OffscreenTarget
+	class OffscreenImage
 	{
-		/// @brief Whether the owning editor window is currently open/visible.
-		bool showTarget = false;
+	private:
+		/// Flag that tells whether to show image this frame.
+		/// Also tells whether image has 'just' started
+		/// to being used to draw on, so we could allocate
+		/// resources appropriately.
+		bool m_showImage = false;
 
-		/// @brief tells whether image is outdated
-		bool outDated = true;
+		/// Flag that denotes whether image is outdated or not.
+		bool m_outDated = true;
 
-		/// @brief tells whether its image's first time being rendered on
-		bool firstTime = true;
+		/// Offscreen camera
+		renderer::CameraId m_cameraId = renderer::NULL_CAMERA;
 
-		/// @brief image specific camera
-		/// @note is initialized by scene and scene ONLY!!
-		renderer::CameraId cameraId = renderer::NULL_CAMERA;
+		/// Image extents
+		VkExtent2D m_extent = {256, 256};
 
-		/// @brief Current pixel dimensions of the render target.
-		VkExtent2D extent = {.width = 256, .height = 256};
+		/// Image data
+		VkImage m_image = VK_NULL_HANDLE;
+		/// Image view
+		VkImageView m_imageView = VK_NULL_HANDLE;
+		/// Image memory
+		renderer::clzImageMemory m_imageMemory{};
+		/// Image sampler
+		VkSampler m_imageSampler = VK_NULL_HANDLE;
+		/// Depth image
+		VkImage m_depthImage = VK_NULL_HANDLE;
+		/// Depth image view
+		VkImageView m_depthImageView = VK_NULL_HANDLE;
+		/// Depth image memory
+		renderer::clzImageMemory m_depthImageMemory{};
 
-		/// @brief Color image the scene is rendered into.
+		/// Imgui's descriptor set
+		VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
 
-		VkImage preProcessedImage = VK_NULL_HANDLE;
-		VkImageView preProcessedImageView = VK_NULL_HANDLE;
-		VkDeviceMemory preProcessedImageMemory = VK_NULL_HANDLE;
-		VkImage image = VK_NULL_HANDLE;
-		VkImageView imageView = VK_NULL_HANDLE;
-		VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+	public:
+		OffscreenImage() = default;
 
+		/// Initializes the offscreen image
+		void initialize(
+			uint32_t width,
+			uint32_t height
+		);
 
-		/// @brief Sampler used by ImGui to sample the color image as a texture.
-		VkSampler sampler = VK_NULL_HANDLE;
+		/// offscreen image's camera might be initialized later,
+		/// much later after its actual initialization, so this func
+		/// basically allows changing attributes later.
+		void changeCameraAttrib(const renderer::CameraDef& cameraDef);
 
-		/// @brief Depth image, required since the shared editor pipeline has depth testing
-		/// enabled.
-		VkImage depthImage = VK_NULL_HANDLE;
-		VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
-		VkImageView depthImageView = VK_NULL_HANDLE;
+		/// destroys the offscreen image
+		/// Must only be called during engine closure
+		void destroy();
 
-		/// @brief ImGui-side texture handle, obtained via ImGui_ImplVulkan_AddTexture.
-		VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+		/// @brief Prepares the image to be presented.
+		/// After showing has been finished, free its resources
+		/// by calling freeResources
+		/// @param commandBuffer Also records depth-image transitions
+		/// and all those things.
+		bool prepare(VkCommandBuffer commandBuffer);
+
+		/// Sets extents of the image,
+		/// Next time prepare func is called, it would be resized
+		void setExtent(uint32_t width, uint32_t height);
+
+		/// Frees the image's frame resources,
+		/// always call this after use has been completed
+		void freeFrameResources();
+
+		VkExtent2D getExtent() const
+		{
+			return m_extent;
+		}
+		VkImage getVkImage() const
+		{
+			return m_image;
+		}
+		VkImageView getVkImageView() const
+		{
+			return m_imageView;
+		}
+		VkImage getVkDepthImage() const
+		{
+			return m_depthImage;
+		}
+		VkImageView getVkDepthImageView() const
+		{
+			return m_depthImageView;
+		}
+		VkSampler getVkSampler() const
+		{
+			return m_imageSampler;
+		}
+		VkDescriptorSet getVkDescriptorSet() const
+		{
+			return m_descriptorSet;
+		}
+		renderer::CameraId getCameraId() const
+		{
+			return m_cameraId;
+		}
+		[[nodiscard]] bool isShowingImage() const
+		{
+			return m_showImage;
+		}
+		[[nodiscard]] bool isOutDated() const
+		{
+			return m_outDated;
+		}
 	};
 
-	/// @brief The offscreen target used by the RigidBody Shape Editor preview panel.
-	inline OffscreenTarget physicsBodyShapeImage{};
-	} // namespace clz::editor
 
-	namespace clz::editor
-	{
-	/// @brief Initializes the offscreen rendering backend and creates all offscreen targets.
-	/// @return true on success.
-	bool createOffscreenTargets();
+	/// This is the single function that internally calls drawing
+	/// or update/draw function of all offscreen images.
+	/// Must be called each frame.
+	/// Don't consider it to be simply a function that draws, you can
+	/// technically do anything, as long as its related to offscreen images,
+	/// basically involves code that involves drawing on offscreen images.
+	void drawOffscreenImages(VkCommandBuffer commandBuffer);
 
-	/// @brief Destroys the offscreen backend and all offscreen targets' Vulkan resources.
-	void destroyOffscreenTargets();
-
-	/// @brief Destroys and recreates a target's Vulkan resources at a new size.
-	/// @param target Target to resize.
-	/// @param width New width in pixels.
-	/// @param height New height in pixels.
-	/// @return true on success.
-	bool recreateOffscreenTarget(OffscreenTarget& target, uint32_t width, uint32_t height);
-
-	/// @brief Issues the render passes for every currently-open offscreen target.
-	/// @param commandBuffer Active command buffer, must be in recording state.
-	void drawOffscreenTargets(VkCommandBuffer commandBuffer);
-
-	/// @brief Draws the ImGui windows for every currently-open offscreen target.
-	void presentOffscreenWindows();
-
-	enum class OffscreenPrepareResult
-	{
-		SAFE_TO_DRAW_ON,
-		RESIZED_THIS_FRAME,
-		FIRST_TIME
-	};
-	/// @brief prepare's offscreen target before it can be used
-	/// If it is outdated or image's first time, it will return appropriate enum
-	/// If it's ok to draw on, it will return a good message
-	OffscreenPrepareResult prepareOffscreenTarget(OffscreenTarget& target);
-
-	/// @brief Whether any offscreen target window is currently open.
-	/// Used to suppress main viewport camera updates while an offscreen
-	/// preview camera should have input focus instead.
-	bool isCurrentlyShowingOffscreenTargets();
 } // namespace clz::editor

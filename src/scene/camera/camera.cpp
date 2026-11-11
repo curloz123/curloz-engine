@@ -7,6 +7,7 @@
 
 #include "scene/camera/camera.hpp"
 #include "core/logs.hpp"
+#include "include/inspector/rigidbodycomponent.hpp"
 #include "renderer/camera/camera.hpp"
 #include "renderer/camera/cameradata.hpp"
 #include "renderer/vk_types.hpp"
@@ -55,13 +56,17 @@ namespace clz::scene
 			}
 		}
 
-#ifdef CLZ_ENABLE_EDITOR
+#ifdef CLZ_ENABLE_EDITOR /*******************************************************/
+
 		/// --- 2. Load editor camera ---
 
 		/// Editor starts same as game camera
 		renderer::CameraDef editorCameraDef = gameCameraDef;
 		editorCameraDef.acceleration = 32768.0f;
-		editor::mainViewportImage.cameraId = renderer::createCamera(editorCameraDef);
+		renderer::updateCameraData(
+			editor::mainViewportImage.getCameraId(),
+			editorCameraDef
+		);
 
 		/// --- 3. Load rigidbody shape editor camera ---
 		renderer::CameraDef bodyCameraDef = {};
@@ -69,9 +74,12 @@ namespace clz::scene
 		bodyCameraDef.localFront = math::vec3(0.0f, 0.0f, -1.0f);
 		bodyCameraDef.yaw = -90.0f;
 		bodyCameraDef.pitch = 0.0f;
-		editor::physicsBodyShapeImage.cameraId = renderer::createCamera(bodyCameraDef);
+		renderer::updateCameraData(
+			editor::bodyEditorImage.getCameraId(),
+			bodyCameraDef
+		);
 
-#endif
+#endif /**************************************************************************/
 
 		clz::log::info("Loaded cameras");
 		return true;

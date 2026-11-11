@@ -29,6 +29,16 @@ namespace clz::editor
 
 namespace clz::editor
 {
+	void initializeSceneView(const uint32_t width, const uint32_t height)
+	{
+		mainViewportImage.initialize(width, height);
+	}
+
+	void destroySceneView()
+	{
+		mainViewportImage.destroy();
+	}
+
 	/**
 	 * @brief Draws the "Curloz Engine" window and its tab bar.
 	 *
@@ -49,7 +59,7 @@ namespace clz::editor
 		}
 
 		/// --- Main Scene
-		if (mainViewportImage.showTarget)
+		if (mainViewportImage.isShowingImage())
 			drawMainViewPort();
 
 		/// --- Rigid body editor
@@ -97,17 +107,18 @@ namespace clz::editor
 			isLooking = false;
 			window::enableCursor();
 		}
-		
+
 		/// --- If looking right now, only then update camera --- ///
 		if (isLooking)
 		{
-			renderer::updateCamera(mainViewportImage.cameraId);
+			renderer::updateCamera(mainViewportImage.getCameraId());
 		}
 
 
 		const ImVec2 canvasSize = availableRegion;
-		const float imageAspect = (float)mainViewportImage.extent.width / 
-						(float)mainViewportImage.extent.height;
+		const auto imageExtent = mainViewportImage.getExtent();
+		const float imageAspect = (float)imageExtent.width /
+						(float)imageExtent.height;
 		const float canvasAspect = canvasSize.x / canvasSize.y;
 
 		ImVec2 finalCanvasSize;
@@ -125,14 +136,14 @@ namespace clz::editor
 			(canvasSize.x - finalCanvasSize.x) * 0.5f,
 			(canvasSize.y - finalCanvasSize.y) * 0.5f
 		};
-		ImVec2 currentPosLocal  = ImGui::GetCursorPos();      
+		ImVec2 currentPosLocal  = ImGui::GetCursorPos();
 		ImVec2 currentPosScreen = ImGui::GetCursorScreenPos();
 
 		ImVec2 newCursorPosLocal  = ImVec2(currentPosLocal.x + offset.x,  currentPosLocal.y + offset.y);
 		ImVec2 newCursorPosScreen = ImVec2(currentPosScreen.x + offset.x, currentPosScreen.y + offset.y);
 
 		ImGui::SetCursorPos(newCursorPosLocal);
-		ImGui::Image((ImTextureID)mainViewportImage.descriptorSet, finalCanvasSize);
+		ImGui::Image((ImTextureID)mainViewportImage.getVkDescriptorSet(), finalCanvasSize);
 
 		const Rect2D rect{
 			.x = static_cast<uint32_t>(newCursorPosScreen.x),
@@ -151,23 +162,24 @@ namespace clz::editor
 		/// --- static variables ---
 		static bool gizmoUsedLastFrame = false;
 		static bool gizmoUsedThisFrame = false;
-		static auto previousGizmoEditorTransform = 
+		static auto previousGizmoEditorTransform =
 			ecs::getComponent<ecs::EditorTransformComponent>(currentSelectedEntity.value());
-		static auto previousGizmoTransform = 
+		static auto previousGizmoTransform =
 			ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
 
+		const auto imageExtent = mainViewportImage.getExtent();
 		auto proj = renderer::getCameraProjMatrix(
-				mainViewportImage.cameraId, 
-				mainViewportImage.extent.width,
-				mainViewportImage.extent.height);
-		auto view = renderer::getCameraViewMatrix(mainViewportImage.cameraId);
+			mainViewportImage.getCameraId(),
+			imageExtent.width,
+			imageExtent.height);
+		auto view = renderer::getCameraViewMatrix(mainViewportImage.getCameraId());
 		const auto currentTransform = ecs::getComponent<ecs::TransformComponent>(currentSelectedEntity.value());
 		const auto [newTransform, newEditorTransform, change] = gizmoTransform(rect, proj, view, currentTransform);
 
 
 		///< @brief determines if gizmo was changed this frame
 		///< @note at the end of this function, gizmoUsedLastFrame is set
-		gizmoUsedThisFrame = change;	
+		gizmoUsedThisFrame = change;
 
 		if (change)
 		{
@@ -219,9 +231,4 @@ namespace clz::editor
 		gizmoUsedLastFrame = gizmoUsedThisFrame;
 	}
 
-	/// @copydoc getEditorMainViewCameraId
-	renderer::CameraId getEditorMainViewCameraId()
-	{
-		return mainViewportImage.cameraId;
-	}
 } // namespace clz::editor

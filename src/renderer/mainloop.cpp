@@ -251,74 +251,6 @@ namespace clz::renderer
 			);
 		};
 
-		/// @brief Draws Black into the image this frame
-		/// Useful when images have been recreated this frame only
-		auto drawNullScene = [commandBuffer](
-			VkImage image,
-			VkImageView imageView,
-			VkExtent2D extent,
-			VkImageLayout finalLayout,
-			VkAccessFlags2 finalAccessMask,
-			VkPipelineStageFlags2 finalStage
-			)
-		{
-			transition_image_layout(
-				image,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				0,
-				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer
-			);
-
-			VkRenderingAttachmentInfo colorAttachment = {};
-			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			colorAttachment.pNext = nullptr;
-			colorAttachment.imageView = imageView;
-			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachment.clearValue = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-
-			VkRenderingInfo renderingInfo = {};
-			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-			renderingInfo.renderArea = {{0, 0}, extent};
-			renderingInfo.layerCount = 1;
-			renderingInfo.colorAttachmentCount = 1;
-			renderingInfo.pColorAttachments = &colorAttachment;
-
-			vkCmdBeginRendering(commandBuffer, &renderingInfo);
-			const VkViewport viewport = {
-				.x = 0.0f,
-				.y = 0.0f,
-				.width = static_cast<float>(extent.width),
-				.height = static_cast<float>(extent.height),
-				.minDepth = 0.0f,
-				.maxDepth = 1.0f,
-			};
-			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-			const VkRect2D scissor = {{0, 0}, extent};
-			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-			vkCmdEndRendering(commandBuffer);
-
-			transition_image_layout(
-				image,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				finalLayout,
-				VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-				finalAccessMask,
-				VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-				finalStage,
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				commandBuffer
-			);
-		};
-
-
 		drawSceneIntoRenderTarget();
 		post_process::applyPostProcessing(commandBuffer);
 
@@ -327,10 +259,12 @@ namespace clz::renderer
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
-			editor::prepareOffscreenTarget(editor::mainViewportImage);
+			const auto extent = r_renderTargetContext.imageExtent;
+			editor::mainViewportImage.setExtent(extent.width, extent.height);
+			editor::mainViewportImage.prepare(commandBuffer);
 			copyPostprocessResultInto(
-				editor::mainViewportImage.image,
-				editor::mainViewportImage.extent,
+				editor::mainViewportImage.getVkImage(),
+				editor::mainViewportImage.getExtent(),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
 				VK_ACCESS_2_SHADER_READ_BIT_KHR
@@ -400,7 +334,6 @@ namespace clz::renderer
 				commandBuffer
 			);
 
-			editor::drawOffscreenTargets(commandBuffer);
 		}
 		else if (state::g_engineState == state::EngineState::Game)
 #endif
@@ -415,7 +348,6 @@ namespace clz::renderer
 			);
 		}
 
-		endCommandBuffer:
 		const VkResult result = vkEndCommandBuffer(commandBuffer);
 		if (result != VK_SUCCESS) [[unlikely]]
 		{

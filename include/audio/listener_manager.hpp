@@ -20,7 +20,7 @@
 namespace clz::audio
 {
 	/// @brief Updates listener data
-	/// @note Internally retrieves camera's data. 
+	/// @note Internally retrieves camera's data.
 	/// Must be called only after entities have loaded
 	inline void updateListenerData()
 	{
@@ -29,9 +29,9 @@ namespace clz::audio
 #ifdef CLZ_ENABLE_EDITOR
 		if (state::g_engineState == state::EngineState::Editor)
 		{
-			cameraId = editor::getEditorMainViewCameraId();
+			cameraId = editor::mainViewportImage.getCameraId();
 		}
-		else 
+		else
 #endif
 		{
 			cameraId = renderer::getGameCameraHandle();
@@ -43,8 +43,8 @@ namespace clz::audio
 		math::vec3 velocity  = renderer::getCameraVelocity(cameraId);
 
 		alListener3f(
-			AL_POSITION, 
-			cameraPos.x, 
+			AL_POSITION,
+			cameraPos.x,
 			cameraPos.y,
 			cameraPos.z
 		);

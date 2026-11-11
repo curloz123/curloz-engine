@@ -16,6 +16,7 @@
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
 #include "include/offscreen/offscreentarget.hpp"
+#include "../include/offscreen/backend/backend.hpp"
 #include "math/angle.hpp"
 #include "renderer/vk_types.hpp"
 #include <cmath>
@@ -30,7 +31,7 @@
 namespace clz::editor
 {
 	/// @brief Builds all ImGui widget calls for the current frame.
-	static void render()
+	static void render(VkCommandBuffer commandBuffer)
 	{
 		/// @brief top menu bar
 		showTopBar();
@@ -46,7 +47,7 @@ namespace clz::editor
 			ImGui::EndTabBar();
 		}
 		drawSceneView();
-		showInspector();
+		showInspector(commandBuffer);
 
 		ImGui::End();
 	}
@@ -164,7 +165,12 @@ namespace clz::editor
 		initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineRenderingInfo;
 
 		ImGui_ImplVulkan_Init(&initInfo);
-		createOffscreenTargets();
+
+
+		/// Our resources
+		initializeSceneView(1024, 768);
+		initInspector();
+		backend::init();
 
 		clz::log::info("Initialized editor");
 
@@ -197,8 +203,9 @@ namespace clz::editor
 		ImGui::NewFrame();
 
 		/// All Rendering functions go here
-		render();
-		presentOffscreenWindows();
+		render(commandBuffer);
+
+		drawOffscreenImages(commandBuffer);
 
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
@@ -207,7 +214,11 @@ namespace clz::editor
 	void shutdown()
 	{
 		vkDeviceWaitIdle(clz::renderer::r_deviceContext.device);
-		destroyOffscreenTargets();
+
+		backend::shutdown();
+		closeInspector();
+		destroySceneView();
+
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();

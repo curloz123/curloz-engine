@@ -24,7 +24,7 @@ namespace clz::editor
 			prepareEditor();
 			window::enableCursor();
 
-			const auto editorCameraId = mainViewportImage.cameraId;
+			const auto editorCameraId = mainViewportImage.getCameraId();
 
 			renderer::setCameraPosition(editorCameraId, renderer::getCameraPosition(renderer::r_cameraId));
 			renderer::setCameraPitch(editorCameraId, renderer::getCameraPitch(renderer::r_cameraId));
@@ -36,11 +36,6 @@ namespace clz::editor
 
 	void flagEditorFramebufferResize(const uint32_t width, const uint32_t height)
 	{
-		mainViewportImage.outDated = true;
-		mainViewportImage.extent = VkExtent2D{
-			.width = width, 
-			.height = height
-		};
-		physicsBodyShapeImage.outDated = true;
+		mainViewportImage.setExtent(width, height);
 	}
 }

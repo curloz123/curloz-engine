@@ -16,22 +16,22 @@ namespace clz::renderer
 	struct CameraDef
 	{
 		// Core properties
-		std::optional<float> fov;
-		std::optional<float> nearPlane;
-		std::optional<float> farPlane;
-		std::optional<float> maxVelocity;
-		std::optional<float> sensitivity;
-		std::optional<float> acceleration;
+		float fov = 60.0f;
+		float nearPlane = 0.1f;
+		float farPlane = 100.0f;
+		float maxVelocity = 5.0f;
+		float sensitivity = 0.1f;
+		float acceleration = 32768.0f;
 
 		// Orientation
-		std::optional<float> pitch; // degrees
-		std::optional<float> yaw;   // degrees
+		float pitch = 0.0f; // degrees
+		float yaw = -90.0f;   // degrees
 
 		// Transform
-		std::optional<math::vec3> position;
+		math::vec3 position = math::vec3(0.0f);
 
 		/// OUTDATE THIS
-		std::optional<math::vec3> localFront;
+		math::vec3 localFront;
 	};
 
 } // namespace clz::renderer
@@ -40,6 +40,11 @@ namespace clz::renderer
 	/// @brief The Create Function
 	/// @param def Camera defintion object
 	CameraId createCamera(const CameraDef& def);
+
+	/// @brief Updates camera data, through a new definition value.
+	/// @param cameraId Id of camera whose data is to be updated.
+	/// @param def New camera definition data.
+	void updateCameraData(const CameraId cameraId, const CameraDef& def);
 
 	/// @brief Drives input handling
 	/// For the currently active camera and manage mode switching

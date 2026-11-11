@@ -33,13 +33,14 @@ namespace clz::renderer
 		if (clz::state::g_engineState == clz::state::EngineState::Editor)
 		{
 			// editor handles camera updating itself
-			activeCameraId = editor::mainViewportImage.cameraId;
+			activeCameraId = editor::mainViewportImage.getCameraId();
 			const math::vec3 camPos = getCameraPosition(activeCameraId);
+			auto extent = editor::mainViewportImage.getExtent();
 			cameraShaderUBO = {
 				.projection = getCameraProjMatrix(
 					activeCameraId,
-					static_cast<float>(editor::mainViewportImage.extent.width),
-					static_cast<float>(editor::mainViewportImage.extent.height)
+					static_cast<float>(extent.width),
+					static_cast<float>(extent.height)
 				),
 				.view = getCameraViewMatrix(activeCameraId),
 				.cameraPos = math::vec4(camPos.x, camPos.y, camPos.z, 1.0f),

@@ -9,15 +9,13 @@
 
 #include "../../include/inspector/rigidbodycomponent.hpp"
 #include "../../include/editor_types.hpp"
-#include "../../include/offscreen/backend/descriptor.hpp"
-#include "../../include/offscreen/backend/pipeline.hpp"
-#include "../../include/offscreen/backend/ubo.hpp"
+#include "../../include/offscreen/backend/backend.hpp"
 #include "../../include/scenetable.hpp"
 #include "../../include/timemachine.hpp"
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
-#include "include/offscreen/offscreentarget.hpp"
+#include "include/offscreen/backend/pipelines.hpp"
 #include "include/timemachine.hpp"
 #include "math/angle.hpp"
 #include "math/quateulerconv.hpp"
@@ -40,23 +38,16 @@
 
 namespace clz::editor
 {
-
-	void showBodySceneWindow();
 	void showBodyEditorWindow();
+	void drawBodyScene(VkCommandBuffer commandBuffer);
+	void showBodySceneWindow();
 
 } // namespace clz::editor
 
 namespace clz::editor
 {
-	/**
-	 * @brief Shows rigid body header in
-	 * inspector Allows to edit physics-body
-	 * data of current selected entity Opens
-	 * a new window for shape editor
-	 * @note Is currently in-complete. Needs
-	 * undo/redo work-done
-	 */
-	void showRigidBodyHeader()
+	/// @copydoc showRigidBodyHeader
+	void showRigidBodyHeader(VkCommandBuffer commandBuffer)
 	{
 		if (!ImGui::CollapsingHeader("󱢖 RigidBody"))
 			return;
@@ -238,26 +229,36 @@ namespace clz::editor
 			createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
 		}
 
-		if ((ImGui::Button("Edit Shapes") && !physicsBodyShapeImage.showTarget))
+		if ((ImGui::Button("Edit Shapes") && !bodyEditorImage.isShowingImage()))
 		{
-			renderer::resetCamera(physicsBodyShapeImage.cameraId);
+			renderer::resetCamera(bodyEditorImage.getCameraId());
 			capturedEntity = currentSelectedEntity.value();
-			clz::log::warn("Editting shapes is disabled, fix it first");
-			//physicsBodyShapeImage.showTarget = true;
+
+			/// this basically marks isShowing to true
+			bodyEditorImage.prepare(commandBuffer);
 		}
 
 		ImGui::PopFont();
 	}
 
-	void presentBodyEditorWindow()
+	void showBodyEditorWindow(VkCommandBuffer commandBuffer)
 	{
+		/// These below 3 functions can exit early if
+		/// bodyEditorOffImage.isShowing is not true, dont worry about these.
+
+		/// this function can internally call to close this image too
 		showBodyEditorWindow();
+
+		drawBodyScene(commandBuffer);
+
 		showBodySceneWindow();
 	}
 
 	void showBodyEditorWindow()
 	{
 		if (!capturedEntity.has_value())
+			return;
+		if (!bodyEditorImage.isShowingImage())
 			return;
 
 		if (!ImGui::Begin("Shape Controls"))
@@ -334,8 +335,8 @@ namespace clz::editor
 			if (ImGui::MenuItem("Sure"))
 			{
 				physics::refreshAttachedShapes(rigidBodyId);
-				physicsBodyShapeImage.showTarget = false;
-				renderer::resetCamera(physicsBodyShapeImage.cameraId);
+				bodyEditorImage.freeFrameResources();
+				renderer::resetCamera(bodyEditorImage.getCameraId());
 				timemachine::clearSnapshots();
 				capturedEntity.reset();
 				lastEditedShape.reset();
@@ -772,6 +773,9 @@ namespace clz::editor
 		if (!capturedEntity.has_value())
 			return;
 
+		if (!bodyEditorImage.isShowingImage())
+			return;
+
 		ImGui::Begin(
 			"RigidBody Shape Editor"
 		);
@@ -783,26 +787,18 @@ namespace clz::editor
 			return;
 		}
 
+		const auto extent = bodyEditorImage.getExtent();
+		const auto cameraId = bodyEditorImage.getCameraId();
+
 		const auto width = static_cast<uint32_t>(avail.x);
 		const auto height = static_cast<uint32_t>(avail.y);
 
-		if ((width != physicsBodyShapeImage.extent.width ||
-		    	height != physicsBodyShapeImage.extent.height) &&
-		    clz::window::isMouseReleased(clz::input::Mouse::MouseLeft)
+		if ((width != extent.width || height != extent.height) &&
+		    	clz::window::isMouseReleased(clz::input::Mouse::MouseLeft)
 		)
 		{
-			physicsBodyShapeImage.extent.width = width;
-			physicsBodyShapeImage.extent.height = height;
-			renderer::updateCameraProjMatrix(physicsBodyShapeImage.cameraId);
-			physicsBodyShapeImage.outDated = true;
-			clz::log::debug(
-				"Won't show "
-				"image this "
-				"frame, "
-				"resizing rn"
-			);
-			ImGui::End();
-			return;
+			bodyEditorImage.setExtent(width, height);
+			renderer::updateCameraProjMatrix(cameraId);
 		}
 
 		if (ImGui::IsWindowFocused())
@@ -820,8 +816,7 @@ namespace clz::editor
 
 			if (rightClickThisFrame)
 			{
-				const auto Id = physicsBodyShapeImage.cameraId;
-				renderer::updateCamera(Id);
+				renderer::updateCamera(cameraId);
 			}
 
 			if (rightClickThisFrame && !rightClickLastFrame)
@@ -838,15 +833,16 @@ namespace clz::editor
 
 		const ImVec2 cursorPosBefore = ImGui::GetCursorScreenPos();
 
-		ImGui::Image((ImTextureID)physicsBodyShapeImage.descriptorSet, avail);
+		ImGui::Image((ImTextureID)bodyEditorImage.getVkDescriptorSet(), avail);
 
 		if (lastEditedShape.has_value())
 		{
 			const Rect2D rect{
 				.x = static_cast<uint32_t>(cursorPosBefore.x),
 				.y = static_cast<uint32_t>(cursorPosBefore.y),
-				.width = physicsBodyShapeImage.extent.width,
-				.height = physicsBodyShapeImage.extent.height};
+				.width = extent.width,
+				.height = extent.height
+			};
 
 			const auto rigidBodyId = ecs::getComponent<physics::RigidBodyComponent>(
 							capturedEntity.value()).rigidBodyId;
@@ -857,8 +853,8 @@ namespace clz::editor
 			shapeTransform.setRotation(shape.getRotation());
 			shapeTransform.setScale(shape.getBoxHalfExtents() * 2);
 
-			auto proj = renderer::getCameraProjMatrix(physicsBodyShapeImage.cameraId, rect.width, rect.height);
-			const auto view = renderer::getCameraViewMatrix(physicsBodyShapeImage.cameraId);
+			auto proj = renderer::getCameraProjMatrix(cameraId, rect.width, rect.height);
+			const auto view = renderer::getCameraViewMatrix(cameraId);
 			const auto [newTransform, newEditorTransform, change] = gizmoTransform(rect, proj, view, shapeTransform);
 
 			static auto prevTransform      = shapeTransform;
@@ -917,20 +913,83 @@ namespace clz::editor
 		ImGui::End();
 	}
 
+	inline void drawNode(
+		const auto nodeIndex,
+		const renderer::Model& model,
+		const math::mat4& parentTransform,
+		const math::mat4& vp,
+		VkCommandBuffer commandBuffer
+	)
+	{
+		const auto& nodeArray = model.nodes;
+		const auto& meshArray = model.meshes;
+		const auto& materialArray = model.materials;
+		const auto& node = nodeArray[nodeIndex];
+		const auto localTransform = node.localTransform * parentTransform;
 
-	void drawBodyEditorOffscreenImage(VkCommandBuffer commandBuffer)
+		if (node.meshIndex.hasValue())
+		{
+			for (const auto& primitive : meshArray[node.meshIndex.value()].primitives)
+			{
+				const uint32_t materialIndex =
+					(primitive.materialIdIndex.hasValue()) ?
+						materialArray[primitive.materialIdIndex.value()].getId() :
+						UINT32_MAX;
+
+				const backend::BodyEditorPC pc{
+					.mvp = localTransform * vp,
+					.materialIndex = materialIndex
+				};
+				backend::bodyEditorPipeline.submitPushConstant(
+					commandBuffer,
+					pc
+				);
+
+				vkCmdDrawIndexed(
+					commandBuffer,
+					primitive.indexBuffer.indexCount,
+					1,
+					primitive.indexBuffer.firstIndex,
+					primitive.vertexBuffer.baseIndex,
+					0
+				);
+			}
+		}
+
+		for (const auto childIndex : node.children)
+		{
+			drawNode(
+				childIndex,
+				model,
+				localTransform,
+				vp,
+				commandBuffer
+			);
+		}
+	}
+
+	void drawBodyScene(VkCommandBuffer commandBuffer)
 	{
 		if (!capturedEntity.has_value())
 		{
 			return;
 		}
-		prepareOffscreenTarget(physicsBodyShapeImage);
+		if (!bodyEditorImage.isShowingImage())
+		{
+			return;
+		}
+
+		bodyEditorImage.setExtent(
+			renderer::r_renderTargetContext.imageExtent.width,
+			renderer::r_renderTargetContext.imageExtent.height
+		);
+		bodyEditorImage.prepare(commandBuffer);
 
 		/// over here, src is set to ~fragment shader,
 		/// cuz imgui also has to read this image that frame
 		/// dn wanna mess with that at all.
 		renderer::transition_image_layout(
-			physicsBodyShapeImage.image,
+			bodyEditorImage.getVkImage(),
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			VK_ACCESS_2_SHADER_READ_BIT,
@@ -944,7 +1003,7 @@ namespace clz::editor
 		VkRenderingAttachmentInfoKHR colorAttachment = {};
 		colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 		colorAttachment.pNext = nullptr;
-		colorAttachment.imageView = physicsBodyShapeImage.imageView;
+		colorAttachment.imageView = bodyEditorImage.getVkImageView();
 		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -952,7 +1011,7 @@ namespace clz::editor
 
 		VkRenderingAttachmentInfoKHR depthAttachment = {};
 		depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-		depthAttachment.imageView = physicsBodyShapeImage.depthImageView;
+		depthAttachment.imageView = bodyEditorImage.getVkDepthImageView();
 		depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -961,36 +1020,35 @@ namespace clz::editor
 		VkRenderingInfoKHR renderingInfo = {};
 		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
 		renderingInfo.pNext = nullptr, renderingInfo.flags = 0;
-		renderingInfo.renderArea = {{0, 0}, physicsBodyShapeImage.extent};
-		renderingInfo.layerCount = 1, renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.renderArea = {{0, 0}, bodyEditorImage.getExtent()};
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
 		renderingInfo.pColorAttachments = &colorAttachment;
 		renderingInfo.pDepthAttachment = &depthAttachment;
 
 		vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
+		const auto extent = bodyEditorImage.getExtent();
 		const VkViewport viewport = {
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(physicsBodyShapeImage.extent.width),
-			.height = static_cast<float>(physicsBodyShapeImage.extent.height),
+			.width = static_cast<float>(extent.width),
+			.height = static_cast<float>(extent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-		const VkRect2D scissor{{0, 0}, physicsBodyShapeImage.extent};
+		const VkRect2D scissor{{0, 0}, extent};
 
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdBindPipeline(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			backend::editorPipelineContext.pipeline
-		);
+		backend::bodyEditorPipeline.bindPipeline(commandBuffer);
+
 		// Update uniform buffers here
 
-		const auto cameraId = physicsBodyShapeImage.cameraId;
+		const auto cameraId = bodyEditorImage.getCameraId();
 		const auto p = math::makePerspectiveMatrix(
 			renderer::getCameraFarPlane(cameraId),
 			renderer::getCameraNearPlane(cameraId),
@@ -1002,39 +1060,43 @@ namespace clz::editor
 			renderer::getCameraTarget(cameraId),
 			renderer::WorldUp
 		);
-		const auto ubo = backend::CameraShaderUBO{.projection = p, .view = v};
-		memcpy(backend::editorCameraUBO.mapped[renderer::r_currentFrame], &ubo, sizeof(ubo));
+		const auto vp = v * p; // again, reversed
 
-		const std::array descriptorSets = {
-			backend::cameraDescriptorSets[renderer::r_currentFrame]
-		};
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			backend::editorPipelineContext.layout,
-			0,
-			descriptorSets.size(),
-			descriptorSets.data(),
-			0,
-			nullptr
-		);
 		renderer::TextureDescriptor.bindDescriptor(commandBuffer);
 
 		if (ecs::hasComponent<renderer::ModelComponent>(
-				capturedEntity.value()))
+			capturedEntity.value()
+		))
 		{
-			/*
-			renderer::drawModel(
+			const auto& transform =
+				ecs::getComponent<ecs::TransformComponent>(
+					capturedEntity.value()
+				);
+			const auto& modelId =
 				ecs::getComponent<renderer::ModelComponent>(
 					capturedEntity.value()
-				).modelId,
-				math::vec3(0.0f),
+				).modelId;
+
+			renderer::StaticBufferManager.bindVertexBuffer(commandBuffer);
+			renderer::StaticIndexManager.bindIndexBuffer(commandBuffer);
+
+			const auto m = math::getModelMatrix(
 				math::quat(1.0f, 0.0f, 0.0f, 0.0f),
-				ecs::getComponent<ecs::TransformComponent>(capturedEntity.value())
-					.scale,
-				commandBuffer
+				math::vec3(0.0f),
+				transform.getScale()
 			);
-			*/
+
+			const auto& model = renderer::ModelManager.getModel(modelId);
+			for (const auto rootNodeIndex : model.rootNodesIndices)
+			{
+				drawNode(
+					rootNodeIndex,
+					model,
+					m,
+					vp,
+					commandBuffer
+				);
+			}
 		}
 
 		const auto& shapes = physics::getBodyShapes(
@@ -1082,7 +1144,7 @@ namespace clz::editor
 
 		vkCmdEndRendering(commandBuffer);
 		renderer::transition_image_layout(
-			physicsBodyShapeImage.image,
+			bodyEditorImage.getVkImage(),
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,

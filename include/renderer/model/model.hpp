@@ -295,6 +295,19 @@ namespace clz::renderer
 			const std::vector<ModelLoadData>& loadDatas
 		);
 
+		const Model& getModel(const ModelId modelId)
+		{
+#ifdef CLZ_ENABLE_CHECKS /****************************************************************/
+			CLZ_ASSERT(
+				!modelId.isNull() &&
+					modelId.getId() < m_models.size(),
+				"attempt to retrieve an out-of-bound/non-existing model"
+			);
+#endif /*********************************************************************************/
+
+			return m_models[modelId.getId()];
+		}
+
 		ModelMaterialManager& getMaterialManager()
 		{
 			return m_materialManager;

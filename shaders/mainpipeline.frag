@@ -5,8 +5,7 @@
  */
 #version 460
 
-#define NULL_TEXTURE  0xFFFFu
-#define NULL_MATERIAL 0xFFFFu
+
 
 /// In's
 layout(location = 0) in vec2 inUV;

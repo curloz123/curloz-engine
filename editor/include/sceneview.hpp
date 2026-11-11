@@ -1,5 +1,6 @@
 /**
  * @file sceneview.hpp
+ * @author curl0z
  * @brief Defines the editor's main viewport (scene view) and its drawing function.
  *
  * The main viewport is rendered to an offscreen target that is then displayed
@@ -19,26 +20,22 @@ namespace clz::editor
 	 * and extent for the main scene view. It is updated whenever the viewport
 	 * is resized.
 	 *
-	 * @note Access is inline – all editor modules can use this to obtain the
+	 * @note Access is inline. All editor modules can use this to obtain the
 	 *       current viewport texture and associated camera.
 	 */
-	inline OffscreenTarget mainViewportImage{};
+	inline OffscreenImage mainViewportImage;
 
-	/// @brief Returns camera Id of our main view camera
-	/// @return CameraID of editor's main view camera
-	/// @warn Must be called only after entities have loaded
-	renderer::CameraId getEditorMainViewCameraId();
+	/// Initializes scene view resources
+	void initializeSceneView(uint32_t width, uint32_t height);
 
+	/// destroys scene view resources
+	void destroySceneView();
 	/**
 	 * @brief Draws the main viewport (scene view) as an ImGui window.
-	 *
-	 * This function creates the "Curloz Engine" window with a tab bar,
+	 * This function creates the tab bar,
 	 * and internally calls `drawMainViewPort()` to display the offscreen image.
 	 * It handles focus, mouse interaction, and resizing of the offscreen target.
-	 *
-	 * @par Decision: Separate tab for game view
-	 *      The viewport is placed inside a tab bar to allow future addition of
-	 *      other views (e.g., editor camera view, UV view, etc.).
 	 */
 	void drawSceneView();
+
 } // namespace clz::editor

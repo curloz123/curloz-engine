@@ -20,33 +20,21 @@ namespace clz::renderer
 	/// @copydoc
 	CameraId createCamera(const CameraDef& def)
 	{
-		constexpr float DEFAULT_FOV = 60.0f;
-		constexpr float DEFAULT_NEAR = 0.1f;
-		constexpr float DEFAULT_FAR = 100.0f;
-		constexpr float DEFAULT_MAX_VELOCITY = 5.0f;
-		constexpr float DEFAULT_SENSITIVITY = 0.1f;
-		constexpr float DEFAULT_ACCELERATION = 32768.0f;
-		constexpr float DEFAULT_PITCH = 0.0f;
-		constexpr float DEFAULT_YAW = -90.0f;
-		const math::vec3 DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
-		const math::vec3 DEFAULT_FRONT = {0.0f, 0.0f, -1.0f};
-		const math::vec3 DEFAULT_RIGHT = {1.0f, 0.0f, 0.0f};
+		Near.push_back(def.nearPlane);
+		Far.push_back(def.farPlane);
 
-		Near.push_back(def.nearPlane.value_or(DEFAULT_NEAR));
-		Far.push_back(def.farPlane.value_or(DEFAULT_FAR));
-
-		MaxVelocity.push_back(def.maxVelocity.value_or(DEFAULT_MAX_VELOCITY));
+		MaxVelocity.push_back(def.maxVelocity);
 		Velocity.emplace_back(0.0f);
-		Sensitivity.push_back(def.sensitivity.value_or(DEFAULT_SENSITIVITY));
-		Acceleration.push_back(def.acceleration.value_or(DEFAULT_ACCELERATION));
+		Sensitivity.push_back(def.sensitivity);
+		Acceleration.push_back(def.acceleration);
 
-		Pitch.push_back(def.pitch.value_or(DEFAULT_PITCH));
-		Yaw.push_back(def.yaw.value_or(DEFAULT_YAW));
+		Pitch.push_back(def.pitch);
+		Yaw.push_back(def.yaw);
 
-		Fov.push_back(def.fov.value_or(DEFAULT_FOV));
+		Fov.push_back(def.fov);
 
-		const auto pos = def.position.value_or(DEFAULT_POSITION);
-		const auto frnt = def.localFront.value_or(DEFAULT_FRONT);
+		const auto pos = def.position;
+		const auto frnt = def.localFront;
 		Position.push_back(pos);
 		LocalFront.push_back(frnt);
 		LocalRight.push_back(math::normalize(math::cross(frnt, WorldUp)));
@@ -55,6 +43,36 @@ namespace clz::renderer
 		ChangeProjMatrix.push_back(true);
 
 		return NumCameras++;
+	}
+
+
+	void updateCameraData(const CameraId cameraId, const CameraDef& def)
+	{
+#ifdef CLZ_ENABLE_CHECKS /***************************************************/
+		CLZ_ASSERT(
+		    cameraId < NumCameras,
+		    "Attempt to update out-of-bound/non-existent camera"
+		);
+#endif /*********************************************************************/
+
+		Near[cameraId] = def.nearPlane;
+		Far[cameraId] = def.farPlane;
+
+		MaxVelocity[cameraId] = def.maxVelocity;
+		Velocity[cameraId] = math::vec3(0.0f);
+
+		Sensitivity[cameraId] = def.sensitivity;
+		Acceleration[cameraId] = def.acceleration;
+
+		Pitch[cameraId] = def.pitch;
+		Yaw[cameraId] = def.yaw;
+
+		Fov[cameraId] = def.fov;
+
+		Position[cameraId] = def.position;
+		LocalFront[cameraId] = def.localFront;
+		LocalRight[cameraId] = math::normalize(math::cross(def.localFront, WorldUp));
+		ChangeProjMatrix[cameraId] = true;
 	}
 
 	/// @copydoc

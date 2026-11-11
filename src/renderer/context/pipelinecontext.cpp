@@ -239,7 +239,7 @@ namespace clz::renderer
 			    "shaders/shapes.frag.spirv"
 		    ))
 		{
-			log::error("Could not create pipeline");
+			log::error("Could not create shape pipeline");
 			return false;
 		}
 		// Shader Create Info

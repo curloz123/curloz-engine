@@ -23,6 +23,7 @@
 #include "renderer/rendercomponent.hpp"
 #include "audio/audio_components.hpp"
 #include <imgui.h>
+#include <vulkan/vulkan_core.h>
 #include "include/inspector/lightcomponent.hpp"
 #include "../../include/inspector/scripts_component.hpp"
 #include "script/script_components.hpp"
@@ -33,8 +34,8 @@ namespace clz::editor
 }
 namespace clz::editor
 {
-	/// @brief Draws the Inspector window for the currently selected entity, and polls undo/redo.
-	void showInspector()
+	/// @copydoc showInspector
+	void showInspector(VkCommandBuffer commandBuffer)
 	{
 		if (!ImGui::Begin("Inspector"))
 		{
@@ -63,38 +64,36 @@ namespace clz::editor
 
 		ImGui::SameLine();
 		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
-		{
 			ImGui::Text("Enabled");
-		}
 		else
-		{
 			ImGui::Text("Disabled");
-		}
+
 		ImGui::PopFont();
 
 		ImGui::Separator();
 
 		// Every entity has transform component
 		showTransformComponentHeader();
+
 		ImGui::Separator();
 
 		if (ecs::hasComponent<renderer::ModelComponent>(
 			    currentSelectedEntity.value()
-		    ))
+		))
 		{
 			showModelComponentHeader();
 			ImGui::Separator();
 		}
 		if (ecs::hasComponent<renderer::DirectionalLightComponent>(
 			currentSelectedEntity.value()
-			))
+		))
 		{
 			showDirectionalLightHeader();
 			ImGui::Separator();
 		}
 		if (ecs::hasComponent<renderer::PointLightComponent>(
 			currentSelectedEntity.value()
-			))
+		))
 		{
 			showPointLightHeader();
 			ImGui::Separator();
@@ -102,9 +101,9 @@ namespace clz::editor
 
 		if (ecs::hasComponent<physics::RigidBodyComponent>(
 			    currentSelectedEntity.value()
-		    ))
+		))
 		{
-			showRigidBodyHeader();
+			showRigidBodyHeader(commandBuffer);
 			ImGui::Separator();
 		}
 
@@ -128,6 +127,16 @@ namespace clz::editor
 		ImGui::End();
 
 		showComponentSpecificWindows();
+	}
+
+	void initInspector()
+	{
+		bodyEditorImage.initialize(1024, 768);
+	}
+
+	void closeInspector()
+	{
+		bodyEditorImage.destroy();
 	}
 
 	void showComponentSpecificWindows()
