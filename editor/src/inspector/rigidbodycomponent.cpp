@@ -907,7 +907,7 @@ namespace clz::editor
 				break;
 
 			case physics::ShapeType::SPHERE:
-				shapeTransform.setScale(math::vec3(shape.getSphereRadius()) * 2);
+				shapeTransform.setScale(math::vec3(shape.getSphereRadius()));
 				useUniformScale = true;
 
 				break;
@@ -1204,7 +1204,7 @@ namespace clz::editor
 				break;
 
 			case physics::ShapeType::SPHERE:
-				scale = math::vec3(shapeData.getSphereRadius()) * 2;
+				scale = math::vec3(shapeData.getSphereRadius());
 				drawShape = renderer::SHAPE::SPHERE;
 				break;
 

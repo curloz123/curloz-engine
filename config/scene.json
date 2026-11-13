@@ -7,7 +7,7 @@
             "assets/audio/gun_drop.wav"
         ],
         "models": [
-            "lmao_XD",
+            "assets/models/ball.glb",
             "assets/models/train.glb",
             "assets/models/thanos_sword.glb",
             "assets/models/gltf/2.0/EmissiveStrengthTest/glTF/EmissiveStrengthTest.gltf",
@@ -23,21 +23,21 @@
             "far": 1000.0,
             "fov": 63.0,
             "localfront": [
-                -0.8498545289039612,
-                -0.5269554853439331,
-                -0.008069649338722229
+                0.5875758528709412,
+                -0.759178876876831,
+                -0.2795673906803131
             ],
             "maxvelocity": 5.0,
             "name": "game",
             "near": 0.10000000149011612,
-            "pitch": -31.79998207092285,
+            "pitch": -49.4000244140625,
             "position": [
-                -1.3056364059448242,
-                -3.8369574546813965,
-                -0.9482885599136353
+                0.8593851327896118,
+                -5.867488861083984,
+                0.11056341975927353
             ],
             "sensitivity": 0.4000000059604645,
-            "yaw": 5940.5439453125
+            "yaw": 6454.55517578125
         }
     ],
     "entities": [
@@ -296,12 +296,51 @@
             "model": {
                 "index": 0
             },
-            "name": "Minecraft Castle",
+            "name": "Ball",
+            "rigidbody": {
+                "angulardamping": 0.10000000149011612,
+                "angularlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "enablesleep": true,
+                "lineardamping": 0.10000000149011612,
+                "linearlock": [
+                    false,
+                    false,
+                    false
+                ],
+                "shapes": [
+                    {
+                        "density": 1.0,
+                        "enablecontactevents": false,
+                        "enablehitevents": false,
+                        "enablesensorevents": false,
+                        "friction": 0.5,
+                        "issensor": false,
+                        "position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "radius": 0.4000000059604645,
+                        "restitution": 0.6000000238418579,
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "type": "sphere"
+                    }
+                ],
+                "type": "dynamic"
+            },
             "transform": {
                 "position": [
                     2.1342501640319824,
-                    -1.7679194211959839,
-                    -0.7757515907287598
+                    3.970388412475586,
+                    3.798776388168335
                 ],
                 "rotation": [
                     1.0,
@@ -310,9 +349,9 @@
                     0.0
                 ],
                 "scale": [
-                    0.2500002086162567,
-                    0.2500067353248596,
-                    0.25000110268592834
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             }
         },
@@ -439,9 +478,9 @@
                 ],
                 "rotation": [
                     0.9987778067588806,
-                    1.627951678528916e-05,
+                    1.627952224225737e-05,
                     0.049425821751356125,
-                    -2.1581831788353156e-06
+                    -2.158183860956342e-06
                 ],
                 "scale": [
                     0.9999999403953552,
@@ -645,9 +684,9 @@
                 ],
                 "rotation": [
                     0.9791152477264404,
-                    0.06332910805940628,
+                    0.06332914531230927,
                     0.19310590624809265,
-                    0.005740265361964703
+                    0.005740263499319553
                 ],
                 "scale": [
                     0.4999992847442627,
@@ -763,7 +802,7 @@
                         "enablecontactevents": false,
                         "enablehitevents": false,
                         "enablesensorevents": false,
-                        "friction": 0.699999988079071,
+                        "friction": 4.0,
                         "halfdimensions": [
                             14.0,
                             0.4000000059604645,
@@ -1144,10 +1183,10 @@
                     0.9913470149040222
                 ],
                 "rotation": [
-                    0.006701220758259296,
+                    0.006701222620904446,
                     0.7072697281837463,
                     -0.7069007158279419,
-                    0.0040097786113619804
+                    0.004009780008345842
                 ],
                 "scale": [
                     0.0009999979520216584,

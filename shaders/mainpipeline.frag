@@ -206,24 +206,21 @@ void main()
 
 	const vec3 viewDir = normalize(inCameraPos.xyz - inFragWPos);
 
-	vec4 base;
-	if (material.baseTextureId == NULL_TEXTURE)
+	vec4 base = material.baseFactor;
+	if (material.baseTextureId != NULL_TEXTURE)
 	{
-		base = material.baseFactor;
-	}
-	else
-	{
-		base = texture(
+		base *= texture(
 				sampler2D(
 					textures[material.baseTextureId],
 					samplers[material.baseSamplerId]
 				),
 				inUV
-			) * material.baseFactor;
+			);
 	}
 
 	float metallic = clamp(material.metallicFactor, 0.0, 1.0);
 	float roughness = clamp(material.roughnessFactor, 0.0, 1.0);
+	float ao = 1.0f;
 	if (material.metallicRoughnessTextureId != NULL_TEXTURE)
 	{
 		vec4 mrColor = texture(
@@ -233,6 +230,7 @@ void main()
 				),
 				inUV
 			);
+		ao = mrColor.r;
 		metallic *= mrColor.b;
 		roughness *= mrColor.g;
 	}
@@ -313,7 +311,7 @@ void main()
 				).rgb;
 	}
 
-	vec3 ambient = vec3(0.01) * base.rgb;
+	vec3 ambient = vec3(0.01) * base.rgb * ao;
 	vec3 color = ambient + L0 + emissiveColor;
 
 	outColor = vec4(color, 1.0);
