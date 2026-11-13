@@ -23,6 +23,7 @@
 #include <vector>
 #include <renderer/arena.hpp>
 #include "renderer/model/model.hpp"
+#include "renderer/shapes.hpp"
 
 #ifdef CLZ_ENABLE_EDITOR
 #include "include/cross_system_flags.hpp"
@@ -87,6 +88,13 @@ namespace clz::renderer
 
 		prepareEntityData();
 		ModelManager.initialize();
+		if (!initShapes())
+		{
+			clz::log::error(
+				"Unable to load shapes sadly",
+				true
+			);
+		}
 
 		clz::log::info("initialized all renderer context's");
 		clz::log::info("Initialized renderer");
@@ -159,6 +167,7 @@ namespace clz::renderer
 		vkDeviceWaitIdle(r_deviceContext.device);
 
 		/// --- First Destroy Entity Data ---
+		closeShapes();
 		ModelManager.close();
 		destroyEntityData();
 

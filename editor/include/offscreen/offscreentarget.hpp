@@ -49,6 +49,9 @@ namespace clz::editor
 		/// Imgui's descriptor set
 		VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
 
+		/// Cleans all frame resources of image
+		void freeFrameResources();
+
 	public:
 		OffscreenImage() = default;
 
@@ -67,20 +70,25 @@ namespace clz::editor
 		/// Must only be called during engine closure
 		void destroy();
 
+		/// Basically marks show image flag internallt to true
+		void prepareToBegin();
+
+		/// Whenever you're done drawing on image,
+		/// call this function, this'll free frame resoures,
+		/// and mark showImage to false
+		void finish();
+
 		/// @brief Prepares the image to be presented.
 		/// After showing has been finished, free its resources
 		/// by calling freeResources
 		/// @param commandBuffer Also records depth-image transitions
 		/// and all those things.
-		bool prepare(VkCommandBuffer commandBuffer);
+		bool prepareToDraw(VkCommandBuffer commandBuffer);
 
 		/// Sets extents of the image,
 		/// Next time prepare func is called, it would be resized
+		/// Internally marks image outdated too.
 		void setExtent(uint32_t width, uint32_t height);
-
-		/// Frees the image's frame resources,
-		/// always call this after use has been completed
-		void freeFrameResources();
 
 		VkExtent2D getExtent() const
 		{

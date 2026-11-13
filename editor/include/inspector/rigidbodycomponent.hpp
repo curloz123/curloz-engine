@@ -29,8 +29,6 @@ namespace clz::editor
 	 */
 	void showRigidBodyHeader(VkCommandBuffer commandBuffer);
 
-	/// shows the body editor window,
-	/// goes inside update function of offscreen images.
-	void showBodyEditorWindow(VkCommandBuffer commandBuffer);
+	void drawBodyScene(VkCommandBuffer commandBuffer);
 
 } // namespace clz::editor

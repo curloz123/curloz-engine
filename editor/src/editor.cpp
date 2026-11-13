@@ -205,8 +205,6 @@ namespace clz::editor
 		/// All Rendering functions go here
 		render(commandBuffer);
 
-		drawOffscreenImages(commandBuffer);
-
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	}

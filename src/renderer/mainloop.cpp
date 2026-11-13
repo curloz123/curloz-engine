@@ -261,7 +261,7 @@ namespace clz::renderer
 		{
 			const auto extent = r_renderTargetContext.imageExtent;
 			editor::mainViewportImage.setExtent(extent.width, extent.height);
-			editor::mainViewportImage.prepare(commandBuffer);
+			editor::mainViewportImage.prepareToDraw(commandBuffer);
 			copyPostprocessResultInto(
 				editor::mainViewportImage.getVkImage(),
 				editor::mainViewportImage.getExtent(),
@@ -334,6 +334,8 @@ namespace clz::renderer
 				commandBuffer
 			);
 
+			/// finally draw editor's offscreen images
+			editor::drawOffscreenImages(commandBuffer);
 		}
 		else if (state::g_engineState == state::EngineState::Game)
 #endif
@@ -347,6 +349,9 @@ namespace clz::renderer
 				0
 			);
 		}
+
+		/// Fix dual instance of calling vkCmdBeginRendering
+		/// one is here, other is being called while drawing offscreen images
 
 		const VkResult result = vkEndCommandBuffer(commandBuffer);
 		if (result != VK_SUCCESS) [[unlikely]]

@@ -12,7 +12,6 @@
 #include "window/vulkanhelper.hpp"
 #include "window/window_types.hpp"
 #include <GLFW/glfw3.h>
-#include <string>
 
 namespace clz::window
 {
@@ -72,13 +71,6 @@ namespace clz::window
 
 		/// --- update cursor offset --- ///
 		cursorOffset = cursorPosThisFrame - cursorPosLastFrame;
-		if (std::abs(cursorOffset.x) > 50.0f || std::abs(cursorOffset.y) > 50.0f)
-		{
-			clz::log::debug("HUGE cursor offset: " + std::to_string(cursorOffset.x) + ", "
-				+ std::to_string(cursorOffset.y) + " | this: " +std::to_string(cursorPosThisFrame.x) +  "," +
-				std::to_string(cursorPosThisFrame.y) +
-				" | last: " + std::to_string(cursorPosLastFrame.x) + "," + std::to_string(cursorPosLastFrame.y));
-		}
 		cursorPosLastFrame = cursorPosThisFrame;
 	}
 
@@ -191,6 +183,6 @@ namespace clz::window
 				glfwSetWindowAttrib(w_window, GLFW_DECORATED, GLFW_TRUE);
 			glfwSetWindowPos(w_window, lastX, lastY);
 		}
-		
+
 	}
 } // namespace clz::window

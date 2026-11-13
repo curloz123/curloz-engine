@@ -225,7 +225,6 @@ namespace clz::renderer
 			);
 
 			ChangeProjMatrix[Id] = false;
-			clz::log::debug("Updated projection matrix");
 		}
 
 		return ProjMatrix[Id];

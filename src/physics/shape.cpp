@@ -5,6 +5,7 @@
 */
 
 #include "physics/shape.hpp"
+#include "box3d/box3d.h"
 #include "physics/body.hpp"
 #include "physics/math.hpp"
 #include "math/angle.hpp"
@@ -14,8 +15,8 @@ namespace clz::physics
 {
 	/// @copydoc
 	Shape::Shape(
-		const ShapeDef& shapeDef, 
-		const RigidBodyId rigidBodyId, 
+		const ShapeDef& shapeDef,
+		const RigidBodyId rigidBodyId,
 		const RigidBodyShapeId shapeId)
 	{
 		createShape(shapeDef, rigidBodyId, shapeId);
@@ -23,9 +24,10 @@ namespace clz::physics
 
 	/// @copydoc
 	void Shape::createShape(
-			const ShapeDef& shapeDef, 
-			const RigidBodyId rigidBodyId, 
-			const RigidBodyShapeId shapeId)
+		const ShapeDef& shapeDef,
+		const RigidBodyId rigidBodyId,
+		const RigidBodyShapeId shapeId
+	)
 	{
 		/// Set internal data
 		m_externalId = shapeId;
@@ -65,6 +67,13 @@ namespace clz::physics
 		}
 		case (ShapeType::SPHERE): {
 			m_radius = shapeDef.radius;
+			b3Sphere sphere{
+				.center = pos,
+				.radius = m_radius
+			};
+			m_shapeId =
+				b3CreateSphereShape(getBox3dBodyId(rigidBodyId), &sDef, &sphere);
+			CLZ_ASSERT(B3_IS_NON_NULL(m_shapeId), "Unable to create shape");
 			break;
 		}
 		case (ShapeType::CAPSULE): {

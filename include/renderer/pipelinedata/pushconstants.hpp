@@ -20,6 +20,15 @@ namespace clz::renderer
 		uint32_t materialIndex;
 	};
 
+	/// @brief Push constants
+	struct ShapePushConstants
+	{
+		math::mat4 mvp;
+		math::vec4 baseFactor;
+		uint32_t textureIndex;
+		uint32_t samplerIndex;
+	};
+
 	/// @brief Bloom pipeline's push constant
 	struct BloomPC
 	{

@@ -31,6 +31,7 @@
 #include "renderer/postprocess/tonemap.hpp"
 #include "renderer/postprocess/bloom.hpp"
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace clz::renderer
 {
@@ -149,7 +150,11 @@ namespace clz::renderer
 			createViewportState(viewport, scissor);
 
 		VkPipelineRasterizationStateCreateInfo rasterizer =
-			createRasterizer(VK_POLYGON_MODE_FILL, 1.0f);
+			createRasterizer(
+				VK_POLYGON_MODE_FILL,
+				1.0f,
+				VK_CULL_MODE_BACK_BIT
+			);
 
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -272,14 +277,21 @@ namespace clz::renderer
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
+		std::array bindingDescriptions = {
+			getShapeVertexBindingDescription()
+		};
+		std::array attributeDescriptions = {
+			getShapeVertexAttributeDescription(VertexAttributeType::POSITION),
+			getShapeVertexAttributeDescription(VertexAttributeType::UV)
+		};
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.vertexBindingDescriptionCount = 0,
-			.pVertexBindingDescriptions = nullptr,
-			.vertexAttributeDescriptionCount = 0,
-			.pVertexAttributeDescriptions = nullptr
+			.vertexBindingDescriptionCount = bindingDescriptions.size(),
+			.pVertexBindingDescriptions = bindingDescriptions.data(),
+			.vertexAttributeDescriptionCount = attributeDescriptions.size(),
+			.pVertexAttributeDescriptions = attributeDescriptions.data()
 		};
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -287,24 +299,12 @@ namespace clz::renderer
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(r_renderTargetContext.imageExtent.width);
-		viewport.height = static_cast<float>(r_renderTargetContext.imageExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = r_renderTargetContext.imageExtent;
-
 		VkPipelineViewportStateCreateInfo viewportState{};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
+		viewportState.pViewports = nullptr;
 		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
+		viewportState.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -317,7 +317,7 @@ namespace clz::renderer
 
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.rasterizationSamples = r_renderTargetContext.msaaFlagBits;
+		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -339,11 +339,17 @@ namespace clz::renderer
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
+		std::vector<VkDescriptorSetLayout> layouts(
+			NUM_DESCRIPTORS,
+			getEmptyLayout()
+		);
+		TextureDescriptor.populateLayoutArray(layouts);
+
 		createPipelineLayout(
 			r_shapePipelineContext,
 			sizeof(ShapePushConstants),
-			0,
-			nullptr
+			layouts.size(),
+			layouts.data()
 		);
 
 		VkPipelineRenderingCreateInfo pipelineRenderingCI = {};

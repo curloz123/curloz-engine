@@ -32,6 +32,9 @@ namespace clz::editor
 	void initializeSceneView(const uint32_t width, const uint32_t height)
 	{
 		mainViewportImage.initialize(width, height);
+
+		/// this image will always be rendered on
+		mainViewportImage.prepareToBegin();
 	}
 
 	void destroySceneView()

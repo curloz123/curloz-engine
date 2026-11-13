@@ -5,7 +5,8 @@
  */
 #version 460
 
-
+#define NULL_TEXTURE  0xFFFFFFFFu
+#define NULL_MATERIAL 0xFFFFFFFFu
 
 /// In's
 layout(location = 0) in vec2 inUV;
@@ -130,7 +131,6 @@ layout(push_constant) uniform PushConstants
 
 /// Out's
 layout(location = 0) out vec4 outColor;
-
 
 
 /// functions
@@ -432,6 +432,6 @@ vec3 fresnelSchlick(
 )
 {
 	return surfaceReflection0Incidence +
-		surfaceReflection90Incidence - surfaceReflection0Incidence) *
+		(surfaceReflection90Incidence - surfaceReflection0Incidence) *
 		(pow(1.0 - clamp(cosTheta, 0.0, 1.0), 5.0));
 }

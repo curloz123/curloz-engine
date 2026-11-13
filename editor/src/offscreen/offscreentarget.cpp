@@ -12,10 +12,12 @@
 #include "imgui_impl_vulkan.h"
 #include "renderer/arena.hpp"
 #include "renderer/camera/camera.hpp"
+#include "renderer/camera/cameradata.hpp"
 #include "renderer/utility/image.hpp"
 #include "renderer/vk_types.hpp"
 #include "renderer/utility/image.hpp"
 #include "../../include/inspector/rigidbodycomponent.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace clz::editor
 {
@@ -23,7 +25,7 @@ namespace clz::editor
 	{
 		if (bodyEditorImage.isShowingImage())
 		{
-			showBodyEditorWindow(commandBuffer);
+			drawBodyScene(commandBuffer);
 		}
 	}
 
@@ -47,10 +49,10 @@ namespace clz::editor
 		m_extent = {width, height};
 	}
 
-
 	void OffscreenImage::destroy()
 	{
 		const auto& device = renderer::r_deviceContext.device;
+		vkDeviceWaitIdle(device);
 
 		if (m_imageView != VK_NULL_HANDLE)
 		{
@@ -98,7 +100,14 @@ namespace clz::editor
 		{
 			renderer::freeImageMemory(m_depthImageMemory);
 		}
-
+		if (m_imageSampler != VK_NULL_HANDLE)
+		{
+			vkDestroySampler(
+				renderer::r_deviceContext.device,
+				m_imageSampler,
+				nullptr
+			);
+		}
 		if (m_descriptorSet != VK_NULL_HANDLE)
 		{
 			ImGui_ImplVulkan_RemoveTexture(m_descriptorSet);
@@ -106,17 +115,29 @@ namespace clz::editor
 		}
 	}
 
-	bool OffscreenImage::prepare(VkCommandBuffer commandBuffer)
+	void OffscreenImage::prepareToBegin()
 	{
-		if (m_showImage && !m_outDated)
+		m_showImage = true;
+		m_outDated = true;
+	}
+
+	bool OffscreenImage::prepareToDraw(VkCommandBuffer commandBuffer)
+	{
+		if (!m_showImage)
+		{
+			clz::log::warn(
+				"Attempt to draw on an offscreen image"
+				" which was not prepared to begin"
+			);
+			return false;
+		}
+
+		if (!m_outDated)
 			return true;
 
-		/// If image is outdated, destroy all current resources first
-		if (m_outDated)
-		{
-			freeFrameResources();
-			m_outDated = false;
-		}
+
+		/// Ok image is outdated, lets reprepare it
+		freeFrameResources();
 
 		/// Now simply allocate resources
 		if (!renderer::createImage(
@@ -186,6 +207,35 @@ namespace clz::editor
 		renderer::bindImageMemory(m_image, m_imageMemory);
 		renderer::bindImageMemory(m_depthImage, m_depthImageMemory);
 
+		if (!renderer::createImageView(
+			m_imageView,
+			"offscreen image view",
+			m_image,
+			renderer::r_renderTargetContext.imageFormat,
+			VK_IMAGE_ASPECT_COLOR_BIT
+		))
+		{
+			clz::log::error(
+				"could not create offscreen image view",
+				true
+			);
+			return false;
+		}
+		if (!renderer::createImageView(
+			m_depthImageView,
+			"offscreen depth image view",
+			m_depthImage,
+			renderer::r_renderTargetContext.depthFormat,
+			VK_IMAGE_ASPECT_DEPTH_BIT
+		))
+		{
+			clz::log::error(
+				"could not create offscreen depth image view",
+				true
+			);
+			return false;
+		}
+
 		if (!renderer::createSampler(
 			m_imageSampler,
 			"offscreen image sampler",
@@ -218,19 +268,39 @@ namespace clz::editor
 			m_depthImage,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-			VK_PIPELINE_STAGE_2_NONE,
-			VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-				VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
 			VK_ACCESS_2_NONE,
 			VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 				VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_2_NONE,
+			VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+				VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
 			VK_IMAGE_ASPECT_DEPTH_BIT,
 			commandBuffer
 		);
 
-		m_showImage = true;
+		/// hint camera system to update camera proj matrix.
+		if (m_cameraId != renderer::NULL_CAMERA)
+			renderer::updateCameraProjMatrix(m_cameraId);
+
+		m_outDated = false;
 
 		return true;
+	}
+
+	void OffscreenImage::finish()
+	{
+		if (!m_showImage)
+		{
+			clz::log::warn(
+				"Attempt to finish an offscreen image"
+				" which is not even being drawed on atm"
+			);
+			return;
+		}
+
+		freeFrameResources();
+		m_showImage = false;
+		m_outDated = false;
 	}
 
 	/// Frees the image resources,
@@ -239,6 +309,15 @@ namespace clz::editor
 	{
 		const auto& device = renderer::r_deviceContext.device;
 
+		if (m_imageSampler != VK_NULL_HANDLE)
+		{
+			vkDestroySampler(
+				renderer::r_deviceContext.device,
+				m_imageSampler,
+				nullptr
+			);
+			m_imageSampler = VK_NULL_HANDLE;
+		}
 		if (m_imageView != VK_NULL_HANDLE)
 		{
 			vkDestroyImageView(
@@ -293,8 +372,6 @@ namespace clz::editor
 			ImGui_ImplVulkan_RemoveTexture(m_descriptorSet);
 			m_descriptorSet = VK_NULL_HANDLE;
 		}
-
-		m_showImage = false;
 	}
 	void OffscreenImage::setExtent(const uint32_t width, const uint32_t height)
 	{

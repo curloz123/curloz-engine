@@ -78,7 +78,7 @@ namespace clz::renderer
 		CameraDescriptor.update(cameraShaderUBO);
 		LightDescriptor.update();
 		CameraDescriptor.bindDescriptor(commandBuffer);
-		TextureDescriptor.bindDescriptor(commandBuffer);
+		TextureDescriptor.bindDescriptor(commandBuffer, r_pipelineContext);
 		LightDescriptor.bindDescriptor(commandBuffer);
 
 		ModelManager.drawAll(commandBuffer);

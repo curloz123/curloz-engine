@@ -31,12 +31,15 @@ namespace clz::renderer
 		/// Must be updated by Model system
 		void updateDescriptorSets();
 
-		void bindDescriptor(VkCommandBuffer commandBuffer)
+		void bindDescriptor(
+			VkCommandBuffer commandBuffer,
+			const PipelineContext& pipelineContext
+		)
 		{
 			vkCmdBindDescriptorSets(
 				commandBuffer,
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				r_pipelineContext.layout,
+				pipelineContext.layout,
 				TEXTURE_SET_POINT,
 				1,
 				&m_descriptorSets[r_currentFrame],

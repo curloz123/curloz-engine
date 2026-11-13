@@ -12,6 +12,7 @@
 #include "../../include/offscreen/backend/backend.hpp"
 #include "../../include/scenetable.hpp"
 #include "../../include/timemachine.hpp"
+#include "core/assert.hpp"
 #include "core/logs.hpp"
 #include "entity/componentmanager.hpp"
 #include "entity/corecomponents.hpp"
@@ -34,18 +35,14 @@
 #include "window/inputmanager.hpp"
 #include "window/mouse.hpp"
 #include <imgui.h>
+#include <string>
 #include "../../include/gizmo/gizmo.hpp"
 
 namespace clz::editor
 {
 	void showBodyEditorWindow();
-	void drawBodyScene(VkCommandBuffer commandBuffer);
 	void showBodySceneWindow();
 
-} // namespace clz::editor
-
-namespace clz::editor
-{
 	/// @copydoc showRigidBodyHeader
 	void showRigidBodyHeader(VkCommandBuffer commandBuffer)
 	{
@@ -235,23 +232,18 @@ namespace clz::editor
 			capturedEntity = currentSelectedEntity.value();
 
 			/// this basically marks isShowing to true
-			bodyEditorImage.prepare(commandBuffer);
+			bodyEditorImage.prepareToBegin();
 		}
 
+			/// These below 2 functions can exit early if
+			/// bodyEditorOffImage.isShowing is not true, dont worry about these.
+
+			/// this function can internally call to close this image too
+			showBodyEditorWindow();
+
+			showBodySceneWindow();
+
 		ImGui::PopFont();
-	}
-
-	void showBodyEditorWindow(VkCommandBuffer commandBuffer)
-	{
-		/// These below 3 functions can exit early if
-		/// bodyEditorOffImage.isShowing is not true, dont worry about these.
-
-		/// this function can internally call to close this image too
-		showBodyEditorWindow();
-
-		drawBodyScene(commandBuffer);
-
-		showBodySceneWindow();
 	}
 
 	void showBodyEditorWindow()
@@ -307,8 +299,19 @@ namespace clz::editor
 				auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
 				lastEditedShape = shapeId;
 				createShapeAddSnapshot(shape);
-				clz::log::debug(
+				clz::log::info(
 					"Added box shape, "
+					"click save to apply changes"
+				);
+			}
+			if (ImGui::MenuItem("Sphere"))
+			{
+				physics::ShapeDef shapeDef(physics::ShapeType::SPHERE);
+				auto shapeId = physics::attachShapeToBody(rigidBodyId, shapeDef);
+				auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
+				createShapeAddSnapshot(shape);
+				clz::log::info(
+					"Added sphere shape, "
 					"click save to apply changes"
 				);
 			}
@@ -335,7 +338,7 @@ namespace clz::editor
 			if (ImGui::MenuItem("Sure"))
 			{
 				physics::refreshAttachedShapes(rigidBodyId);
-				bodyEditorImage.freeFrameResources();
+				bodyEditorImage.finish();
 				renderer::resetCamera(bodyEditorImage.getCameraId());
 				timemachine::clearSnapshots();
 				capturedEntity.reset();
@@ -485,16 +488,19 @@ namespace clz::editor
 			}
 
 			auto editLBH = [](
-					const physics::RigidBodyId rigidBodyId,
-					const physics::RigidBodyShapeId shapeId
-					)
+				const physics::RigidBodyId rigidBodyId,
+				const physics::RigidBodyShapeId shapeId
+			)
 			{
 				auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
 				switch (shape.getShapeType())
 				{
 				case (physics::ShapeType::BOX):
 				{
+					static auto oldExtents = shape.getBoxHalfExtents();
 					auto halfExtents = shape.getBoxHalfExtents();
+					auto changeDone = false;
+
 					if (ImGui::InputFloat3(
 						    "Half dimensions",
 						    &halfExtents.x)
@@ -518,21 +524,32 @@ namespace clz::editor
 							30.0f
 						);
 
-						const auto oldExtents = shape.getBoxHalfExtents();
-						shape.setBoxHalfExtents(halfExtents);
-
+						changeDone = true;
+					}
+					if (ImGui::IsItemActivated())
+					{
+						oldExtents = shape.getBoxHalfExtents();
+					}
+					if (ImGui::IsItemDeactivated())
+					{
 						timemachine::createSnapshot(
-							[rigidBodyId, shapeId, oldExtents] {
+							[rigidBodyId, shapeId, oldExtent = oldExtents] {
 								physics::getBodyShape(
 										rigidBodyId,
-										shapeId).setBoxHalfExtents(oldExtents);
+										shapeId
+								).setBoxHalfExtents(oldExtent);
 							},
 							[rigidBodyId, shapeId, halfExtents] {
 								physics::getBodyShape(
 										rigidBodyId,
-										shapeId).setBoxHalfExtents(halfExtents);
+										shapeId
+								).setBoxHalfExtents(halfExtents);
 							}
 						);
+					}
+					if (changeDone)
+					{
+						shape.setBoxHalfExtents(halfExtents);
 					}
 					break;
 				}
@@ -553,42 +570,69 @@ namespace clz::editor
 				}
 			};
 
-			// auto editRadius = [](physics::Shape& shape,
-			// 		     physics::ShapeDef& shapeData,
-			// 		     const physics::ShapeType type) -> void {
-			// 	switch (type)
-			// 	{
-			// 	case (physics::ShapeType::SPHERE): {
-			// 		if (ImGui::InputFloat("Radius", &shapeData.radius))
-			// 		{
-			// 			shapeData.radius =
-			// 				std::clamp(shapeData.radius, 0.1f, 30.0f);
+			auto editRadius = [](
+				const physics::RigidBodyId rigidBodyId,
+				const physics::RigidBodyShapeId shapeId
+			){
+				auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
+				switch (shape.getShapeType())
+				{
+				case (physics::ShapeType::SPHERE): {
+					auto radius = shape.getSphereRadius();
+					static auto oldRadius = radius;
+					bool changeDone = false;
+					if (ImGui::InputFloat("Radius", &radius, 0.1f, 30.0f))
+					{
+						changeDone = true;
+					}
+					if (ImGui::IsItemActivated())
+					{
+						oldRadius = shape.getSphereRadius();
+					}
+					if (ImGui::IsItemDeactivated())
+					{
+						timemachine::createSnapshot(
+							[rigidBodyId, shapeId, oldRad = oldRadius] {
+								physics::getBodyShape(
+										rigidBodyId,
+										shapeId
+								).setSphereRadius(oldRad);
+							},
+							[rigidBodyId, shapeId, radius] {
+								physics::getBodyShape(
+										rigidBodyId,
+										shapeId
+								).setSphereRadius(radius);
+							}
+						);
+					}
+					if (changeDone)
+						shape.setSphereRadius(radius);
 
-			// 			shape.setSphereRadius(shapeData.radius);
-			// 		}
-			// 	}
-			// 	case (physics::ShapeType::CAPSULE):
-			// 	case (physics::ShapeType::CYLINDER): {
-			// 		auto radius = shape.getCapsuleRadius();
-			// 		ImGui::SliderFloat("Radius", &radius, 0.1f, 30.0f, "%.2f");
-			// 		if (ImGui::IsItemDeactivated())
-			// 		{
-			// 			shape.setCapsuleRadius(radius);
-			// 		}
+					break;
+				}
+				case (physics::ShapeType::CAPSULE):
+				case (physics::ShapeType::CYLINDER): {
+					auto radius = shape.getCapsuleRadius();
+					ImGui::SliderFloat("Radius", &radius, 0.1f, 30.0f, "%.2f");
+					if (ImGui::IsItemDeactivated())
+					{
+						shape.setCapsuleRadius(radius);
+					}
 
-			// 		break;
-			// 	}
+					break;
+				}
 
-			// 	default: {
+				default: {
 
-			// 		CLZ_ASSERT(
-			// 			false,
-			// 			"Unknown shape type passed "
-			// 			"while requesting LBH"
-			// 		);
-			// 	}
-			// 	}
-			// };
+					CLZ_ASSERT(
+						false,
+						"Unknown shape type passed "
+						"while requesting radius"
+					);
+				}
+				}
+			};
 
 			switch (shape.getShapeType())
 			{
@@ -602,6 +646,8 @@ namespace clz::editor
 				ImGui::PopFont();
 
 				editLBH(rigidBodyId, shapeId);
+
+				break;
 			}
 			case (physics::ShapeType::SPHERE): {
 				ImGui::PushFont(fontMono);
@@ -611,10 +657,10 @@ namespace clz::editor
 				ImGui::PopFont();
 				ImGui::SameLine();
 				ImGui::PushFont(fontMonoBold);
-				ImGui::Text("Box");
+				ImGui::Text("Sphere");
 				ImGui::PopFont();
 
-				// editRadius(shape, shapeData, physics::ShapeType::SPHERE);
+				editRadius(rigidBodyId, shapeId);
 
 				break;
 			}
@@ -787,18 +833,17 @@ namespace clz::editor
 			return;
 		}
 
-		const auto extent = bodyEditorImage.getExtent();
-		const auto cameraId = bodyEditorImage.getCameraId();
-
 		const auto width = static_cast<uint32_t>(avail.x);
 		const auto height = static_cast<uint32_t>(avail.y);
+
+		const auto cameraId = bodyEditorImage.getCameraId();
+		const auto extent = bodyEditorImage.getExtent();
 
 		if ((width != extent.width || height != extent.height) &&
 		    	clz::window::isMouseReleased(clz::input::Mouse::MouseLeft)
 		)
 		{
 			bodyEditorImage.setExtent(width, height);
-			renderer::updateCameraProjMatrix(cameraId);
 		}
 
 		if (ImGui::IsWindowFocused())
@@ -851,11 +896,30 @@ namespace clz::editor
 			ecs::EditorTransformComponent shapeTransform;
 			shapeTransform.setPosition(shape.getPosition());
 			shapeTransform.setRotation(shape.getRotation());
-			shapeTransform.setScale(shape.getBoxHalfExtents() * 2);
+
+			bool useUniformScale = false;
+			switch (shape.getShapeType())
+			{
+			case physics::ShapeType::BOX:
+				shapeTransform.setScale(shape.getBoxHalfExtents() * 2);
+				useUniformScale = false;
+
+				break;
+
+			case physics::ShapeType::SPHERE:
+				shapeTransform.setScale(math::vec3(shape.getSphereRadius()) * 2);
+				useUniformScale = true;
+
+				break;
+
+			default:
+				CLZ_ASSERT(false, "Unknown shape");
+			}
 
 			auto proj = renderer::getCameraProjMatrix(cameraId, rect.width, rect.height);
 			const auto view = renderer::getCameraViewMatrix(cameraId);
-			const auto [newTransform, newEditorTransform, change] = gizmoTransform(rect, proj, view, shapeTransform);
+			const auto [newTransform, newEditorTransform, change] =
+				gizmoTransform(rect, proj, view, shapeTransform, useUniformScale);
 
 			static auto prevTransform      = shapeTransform;
 			static bool gizmoUsedThisFrame = false;
@@ -874,8 +938,9 @@ namespace clz::editor
 				case physics::ShapeType::BOX:
 					shape.setBoxHalfExtents(newEditorTransform.getScale() * 0.5f);
 					break;
-
 				case physics::ShapeType::SPHERE:
+					shape.setSphereRadius(newEditorTransform.getScale().x * 0.5f);
+					break;
 				case physics::ShapeType::CYLINDER:
 				case physics::ShapeType::CAPSULE:
 					break;
@@ -893,14 +958,36 @@ namespace clz::editor
 							auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
 							shape.setPosition(oldTransform.getPosition());
 							shape.setRotation(oldTransform.getRotation());
-							shape.setBoxHalfExtents(oldTransform.getScale() * 0.5f);
+							switch (shape.getShapeType())
+							{
+							case physics::ShapeType::BOX:
+								shape.setBoxHalfExtents(oldTransform.getScale() * 0.5f);
+								break;
+							case physics::ShapeType::SPHERE:
+								shape.setSphereRadius(oldTransform.getScale().x * 0.5f);
+								break;
+							case physics::ShapeType::CYLINDER:
+							case physics::ShapeType::CAPSULE:
+								break;
+							}
 						},
 						[rigidBodyId, shapeId, newEditorTransform]
 						{
 							auto& shape = physics::getBodyShape(rigidBodyId, shapeId);
 							shape.setPosition(newEditorTransform.getPosition());
 							shape.setRotation(newEditorTransform.getRotation());
-							shape.setBoxHalfExtents(newEditorTransform.getScale() * 0.5f);
+							switch (shape.getShapeType())
+							{
+							case physics::ShapeType::BOX:
+								shape.setBoxHalfExtents(newEditorTransform.getScale() * 0.5f);
+								break;
+							case physics::ShapeType::SPHERE:
+								shape.setSphereRadius(newEditorTransform.getScale().x * 0.5f);
+								break;
+							case physics::ShapeType::CYLINDER:
+							case physics::ShapeType::CAPSULE:
+								break;
+							}
 						}
 					);
 
@@ -971,19 +1058,12 @@ namespace clz::editor
 	void drawBodyScene(VkCommandBuffer commandBuffer)
 	{
 		if (!capturedEntity.has_value())
-		{
 			return;
-		}
 		if (!bodyEditorImage.isShowingImage())
-		{
 			return;
-		}
 
-		bodyEditorImage.setExtent(
-			renderer::r_renderTargetContext.imageExtent.width,
-			renderer::r_renderTargetContext.imageExtent.height
-		);
-		bodyEditorImage.prepare(commandBuffer);
+		if (!bodyEditorImage.prepareToDraw(commandBuffer))
+			return;
 
 		/// over here, src is set to ~fragment shader,
 		/// cuz imgui also has to read this image that frame
@@ -1045,7 +1125,6 @@ namespace clz::editor
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		backend::bodyEditorPipeline.bindPipeline(commandBuffer);
-
 		// Update uniform buffers here
 
 		const auto cameraId = bodyEditorImage.getCameraId();
@@ -1062,7 +1141,10 @@ namespace clz::editor
 		);
 		const auto vp = v * p; // again, reversed
 
-		renderer::TextureDescriptor.bindDescriptor(commandBuffer);
+		renderer::TextureDescriptor.bindDescriptor(
+			commandBuffer,
+			backend::bodyEditorPipeline.getPipelineContext()
+		);
 
 		if (ecs::hasComponent<renderer::ModelComponent>(
 			capturedEntity.value()
@@ -1113,23 +1195,24 @@ namespace clz::editor
 			const auto quat = math::quatFromEuler(math::radians(shapeData.getRotation()));
 			const auto pos = shapeData.getPosition();
 			math::vec3 scale;
-			renderer::Shape drawShape;
+			renderer::SHAPE drawShape;
 			switch (shapeData.getShapeType())
 			{
-			case physics::ShapeType::BOX: {
+			case physics::ShapeType::BOX:
 				scale = shapeData.getBoxHalfExtents() * 2;
-				drawShape = renderer::Shape::BOX;
+				drawShape = renderer::SHAPE::BOX;
 				break;
-			}
 
 			case physics::ShapeType::SPHERE:
-				drawShape = renderer::Shape::BOX;
+				scale = math::vec3(shapeData.getSphereRadius()) * 2;
+				drawShape = renderer::SHAPE::SPHERE;
 				break;
+
 			case physics::ShapeType::CAPSULE:
-				drawShape = renderer::Shape::BOX;
+				drawShape = renderer::SHAPE::BOX;
 				break;
 			case physics::ShapeType::CYLINDER:
-				drawShape = renderer::Shape::BOX;
+				drawShape = renderer::SHAPE::BOX;
 				break;
 			}
 			renderer::drawShape(
@@ -1137,8 +1220,7 @@ namespace clz::editor
 				drawShape,
 				p,
 				v,
-				math::getModelMatrix(quat, pos, scale),
-				math::vec4(0.0f, 0.5f, 0.0f, 1.0f)
+				math::getModelMatrix(quat, pos, scale)
 			);
 		}
 

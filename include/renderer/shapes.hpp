@@ -4,65 +4,85 @@
 #include "math/mat4x4.hpp"
 #include "math/vec4.hpp"
 #include "renderer/vk_types.hpp"
+#include "entitydata/buffer.hpp"
 #include "vulkan/vulkan.h"
 
 namespace clz::renderer
 {
-	enum class Shape : uint32_t
+	/// SHAPE enum
+	enum class SHAPE : uint32_t
 	{
 		BOX = 0,
-	};
-	/// @brief Push constants
-	struct ShapePushConstants
-	{
-		math::mat4 mvp;
-		math::vec4 color;
-		Shape shape;
+		SPHERE = 1,
+		CYLINDER = 2,
+		CAPSULE = 3
 	};
 
-	inline bool initShapes()
+	/// Shape vertex buffer data
+	struct ShapeMesh
 	{
-		
+		math::vec3 position;
+		math::vec2 uv;
+	};
 
-		return true;
-	}
+	/// Shapes vertex buffer manager
+	inline VertexBufferInterface<ShapeMesh> ShapeBufferManager;
+	/// Shapes index buffer manager
+	inline IndexBufferInterface ShapeIndicesManager;
 
-	inline void drawShape(
+	/// Initializes shapes
+	/// basically loads all shapes.gltf from assets/shapes directory
+	bool initShapes();
+
+	/// Releases all resurces held by shapes
+	void closeShapes();
+
+	/// Draws a shape
+	void drawShape(
 		VkCommandBuffer commandBuffer,
-		const Shape shape,
+		const SHAPE shape,
 		const math::mat4& projection,
 		const math::mat4& view,
-		const math::mat4& model,
-		const math::vec4& color
-	)
+		const math::mat4& model
+	);
+
+	inline VkVertexInputBindingDescription getShapeVertexBindingDescription()
 	{
-		ShapePushConstants pc = {
-			.mvp = model * view * projection, /// reversed purposefully
-			.color = color,
-			.shape = shape
-		};
-		vkCmdBindPipeline(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			r_shapePipelineContext.pipeline
-		);
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(ShapeMesh);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-		vkCmdPushConstants(
-			commandBuffer,
-			r_shapePipelineContext.layout,
-			VK_SHADER_STAGE_VERTEX_BIT,
-			0,
-			sizeof(ShapePushConstants),
-			&pc
-		);
+		return bindingDescription;
+	}
 
-		switch (shape)
+	inline VkVertexInputAttributeDescription
+	getShapeVertexAttributeDescription(const VertexAttributeType type)
+	{
+		VkVertexInputAttributeDescription attributeDescription{};
+		attributeDescription.binding = 0;
+
+		switch (type)
 		{
-		case Shape::BOX:
-			vkCmdDraw(commandBuffer, 36, 1, 0, 0);
+		case VertexAttributeType::POSITION:
+			attributeDescription.location = 0;
+			attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+			attributeDescription.offset = offsetof(ShapeMesh, position);
+			break;
+		case VertexAttributeType::UV:
+			attributeDescription.location = 1;
+			attributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescription.offset = offsetof(ShapeMesh, uv);
 			break;
 		default:
-			clz::log::warn("Invalid shape request");
+			CLZ_ASSERT(
+				false,
+				"Attempt to retrieve vertex attribute description"
+				" other than pos and uv for shape pipeline"
+			);
 		}
+
+		return attributeDescription;
 	}
+
 } // namespace clz::renderer
