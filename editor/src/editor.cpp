@@ -38,6 +38,10 @@ namespace clz::editor
 		setDockSpace();
 		showSystemSettings();
 
+#ifdef CLZ_DEBUG /***************************/
+		ImGui::ShowMetricsWindow();
+#endif /*************************************/
+		
 		ImGui::PushFont(fontSansBold);
 		ImGui::Begin("Scene");
 		ImGui::PopFont();
@@ -47,9 +51,10 @@ namespace clz::editor
 			ImGui::EndTabBar();
 		}
 		drawSceneView();
+		ImGui::End();
+
 		showInspector(commandBuffer);
 
-		ImGui::End();
 	}
 
 	/// @copydoc init

@@ -81,7 +81,10 @@ namespace clz::time
 		t_timeTakenLastFrame 	= t_timeTakenThisFrame;
 		t_totalElapsedTime 	+= t_deltaTime;
 
-		// Software frame cap — sleep remaining time if frame finished early
+		/// @note Frame cap is removed as of now
+		/// Might be added later.
+
+		/*
 		if ((t_VSync) && (t_deltaTime < t_targetDeltaTime))
 		{
 			std::this_thread::sleep_for(
@@ -89,6 +92,7 @@ namespace clz::time
 			);
 			t_deltaTime = t_targetDeltaTime;
 		}
+		*/
 	}
 
 	/**

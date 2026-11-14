@@ -52,7 +52,6 @@ namespace clz::editor
 	void OffscreenImage::destroy()
 	{
 		const auto& device = renderer::r_deviceContext.device;
-		vkDeviceWaitIdle(device);
 
 		if (m_imageView != VK_NULL_HANDLE)
 		{
@@ -135,6 +134,7 @@ namespace clz::editor
 		if (!m_outDated)
 			return true;
 
+		vkDeviceWaitIdle(renderer::r_deviceContext.device);
 
 		/// Ok image is outdated, lets reprepare it
 		freeFrameResources();

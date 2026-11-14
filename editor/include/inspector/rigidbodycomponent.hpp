@@ -31,4 +31,5 @@ namespace clz::editor
 
 	void drawBodyScene(VkCommandBuffer commandBuffer);
 
+	void showRigidBodySpecificWindows();
 } // namespace clz::editor

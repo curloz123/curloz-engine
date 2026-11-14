@@ -40,213 +40,219 @@
 
 namespace clz::editor
 {
-	void showBodyEditorWindow();
-	void showBodySceneWindow();
+	static void showBodyEditorWindow();
+	static void showBodySceneWindow();
 
 	/// @copydoc showRigidBodyHeader
 	void showRigidBodyHeader(VkCommandBuffer commandBuffer)
 	{
-		if (!ImGui::CollapsingHeader("󱢖 RigidBody"))
-			return;
-
-		const auto& rigidBodyId =
-			ecs::getComponent<physics::RigidBodyComponent>(currentSelectedEntity.value())
-				.rigidBodyId;
-
-		ImGui::PushFont(fontMonoBold);
-		std::string type = "undefined";
-		const auto& bodyType = physics::getBodyType(rigidBodyId);
-		if (bodyType == physics::BodyType::DynamicBody)
-			type = "dynamic";
-		else if (bodyType == physics::BodyType::StaticBody)
-			type = "static";
-		else if (bodyType == physics::BodyType::KinematicBody)
-			type = "kinematic";
-		else
-			clz::log::warn("In Editor, unable to identify body type");
-
-		ImGui::Text("Body Type: ");
-		ImGui::SameLine();
-		ImGui::PopFont();
-		ImGui::PushFont(fontMono);
-		ImGui::Text(type.c_str());
-		ImGui::PopFont();
-		ImGui::SameLine();
-		ImGui::PushFont(fontMonoBold);
-		if (ImGui::Button("Change type"))
+		if (ImGui::CollapsingHeader("󱢖 RigidBody"))
 		{
-			ImGui::OpenPopup("Body type");
-			clz::log::debug("Changing body type");
-		}
-		ImGui::PopFont();
-		if (ImGui::BeginPopup("Body type"))
-		{
-			const auto oldType = physics::getBodyType(rigidBodyId);
-			auto createBodyTypeSnapshot = [rigidBodyId](
-					physics::BodyType oldType,
-					physics::BodyType newType)
+			const auto& rigidBodyId =
+				ecs::getComponent<physics::RigidBodyComponent>(currentSelectedEntity.value())
+					.rigidBodyId;
+
+			ImGui::PushFont(fontMonoBold);
+			std::string type = "undefined";
+			const auto& bodyType = physics::getBodyType(rigidBodyId);
+			if (bodyType == physics::BodyType::DynamicBody)
+				type = "dynamic";
+			else if (bodyType == physics::BodyType::StaticBody)
+				type = "static";
+			else if (bodyType == physics::BodyType::KinematicBody)
+				type = "kinematic";
+			else
+				clz::log::warn("In Editor, unable to identify body type");
+
+			ImGui::Text("Body Type: ");
+			ImGui::SameLine();
+			ImGui::PopFont();
+			ImGui::PushFont(fontMono);
+			ImGui::Text(type.c_str());
+			ImGui::PopFont();
+			ImGui::SameLine();
+			ImGui::PushFont(fontMonoBold);
+			if (ImGui::Button("Change type"))
+			{
+				ImGui::OpenPopup("Body type");
+				clz::log::debug("Changing body type");
+			}
+			ImGui::PopFont();
+			if (ImGui::BeginPopup("Body type"))
+			{
+				const auto oldType = physics::getBodyType(rigidBodyId);
+				auto createBodyTypeSnapshot = [rigidBodyId](
+						physics::BodyType oldType,
+						physics::BodyType newType)
+				{
+					timemachine::createSnapshot(
+						[rigidBodyId, oldType] {
+							physics::setBodyType(rigidBodyId, oldType);
+						},
+						[rigidBodyId, newType] {
+							physics::setBodyType(rigidBodyId, newType);
+						}
+					);
+
+				};
+				if (ImGui::MenuItem("Static"))
+				{
+					createBodyTypeSnapshot(oldType, physics::BodyType::StaticBody);
+					physics::setBodyType(rigidBodyId, physics::BodyType::StaticBody);
+				}
+				if (ImGui::MenuItem("Kinematic"))
+				{
+					createBodyTypeSnapshot(oldType, physics::BodyType::KinematicBody);
+					physics::setBodyType(rigidBodyId, physics::BodyType::KinematicBody);
+				}
+				if (ImGui::MenuItem("Dynamic"))
+				{
+					createBodyTypeSnapshot(oldType, physics::BodyType::DynamicBody);
+					physics::setBodyType(rigidBodyId, physics::BodyType::DynamicBody);
+				}
+
+				ImGui::EndPopup();
+			}
+
+			ImGui::PushFont(fontMono);
+			ImGui::Separator();
+			ImGui::Text("Computed Mass: %.2f", physics::getBodyMass(rigidBodyId));
+			ImGui::Text(
+				"Mass is computed "
+				"via density of "
+				"shapes attached "
+				"to it"
+			);
+			ImGui::Separator();
+
+			auto createAttributeSnapshot = [rigidBodyId](
+					const auto func,
+					const auto oldValue,
+					const auto newValue)
 			{
 				timemachine::createSnapshot(
-					[rigidBodyId, oldType] {
-						physics::setBodyType(rigidBodyId, oldType);
+					[func, rigidBodyId, oldValue]{
+						func(rigidBodyId, oldValue);
 					},
-					[rigidBodyId, newType] {
-						physics::setBodyType(rigidBodyId, newType);
+					[func, rigidBodyId, newValue]{
+						func(rigidBodyId, newValue);
 					}
 				);
-
 			};
-			if (ImGui::MenuItem("Static"))
+
+			float linearDamping = physics::getBodyLinearDamping(rigidBodyId);
+			ImGui::Text("Linear Damping");
+
+			if (ImGui::InputFloat("##lineardamping: ", &linearDamping))
 			{
-				createBodyTypeSnapshot(oldType, physics::BodyType::StaticBody);
-				physics::setBodyType(rigidBodyId, physics::BodyType::StaticBody);
-			}
-			if (ImGui::MenuItem("Kinematic"))
-			{
-				createBodyTypeSnapshot(oldType, physics::BodyType::KinematicBody);
-				physics::setBodyType(rigidBodyId, physics::BodyType::KinematicBody);
-			}
-			if (ImGui::MenuItem("Dynamic"))
-			{
-				createBodyTypeSnapshot(oldType, physics::BodyType::DynamicBody);
-				physics::setBodyType(rigidBodyId, physics::BodyType::DynamicBody);
+				const float oldLDamping = physics::getBodyLinearDamping(rigidBodyId);
+				const float newLDamping = linearDamping;
+
+				physics::setBodyLinearDamping(rigidBodyId, linearDamping);
+				createAttributeSnapshot(physics::setBodyLinearDamping, oldLDamping, newLDamping);
 			}
 
-			ImGui::EndPopup();
+			float angularDamping = physics::getBodyAngularDamping(rigidBodyId);
+			ImGui::Text("Angular Damping");
+			if (ImGui::InputFloat("##angulardamping: ", &angularDamping))
+			{
+				float oldADamping = physics::getBodyAngularDamping(rigidBodyId);
+				physics::setBodyAngularDamping(rigidBodyId, angularDamping);
+
+				createAttributeSnapshot(physics::setBodyAngularDamping, oldADamping, angularDamping);
+			}
+
+			bool sleepEnabled = physics::isSleepEnabled(rigidBodyId);
+			ImGui::Text("Sleeping");
+			if (ImGui::Checkbox("##sleeping", &sleepEnabled))
+			{
+				const auto oldSleep = physics::isSleepEnabled(rigidBodyId);
+				physics::enableSleep(rigidBodyId, sleepEnabled);
+
+				createAttributeSnapshot(physics::enableSleep, oldSleep, sleepEnabled);
+			}
+
+			auto linearLocks = physics::getBodyLinearLocks(rigidBodyId);
+			ImGui::Text("Linear lock");
+			if (ImGui::Checkbox("X##xlinear", &linearLocks[0]))
+			{
+				const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
+				physics::setBodyLinearLocks(rigidBodyId, linearLocks);
+
+				createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Y##ylinear", &linearLocks[1]))
+			{
+				const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
+				physics::setBodyLinearLocks(rigidBodyId, linearLocks);
+
+				createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Z##zlinear", &linearLocks[2]))
+			{
+				const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
+				physics::setBodyLinearLocks(rigidBodyId, linearLocks);
+
+				createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
+			}
+
+			auto angularLocks = physics::getBodyAngularLocks(rigidBodyId);
+			ImGui::Text("Angular lock");
+			if (ImGui::Checkbox("X##xangular", &angularLocks[0]))
+			{
+				const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
+				physics::setBodyAngularLocks(rigidBodyId, angularLocks);
+
+				createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Y##yangular", &angularLocks[1]))
+			{
+				const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
+				physics::setBodyAngularLocks(rigidBodyId, angularLocks);
+
+				createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Z##zangular", &angularLocks[2]))
+			{
+				const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
+				physics::setBodyAngularLocks(rigidBodyId, angularLocks);
+
+				createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
+			}
+
+			if ((ImGui::Button("Edit Shapes") && !bodyEditorImage.isShowingImage()))
+			{
+				renderer::resetCamera(bodyEditorImage.getCameraId());
+				capturedEntity = currentSelectedEntity.value();
+
+				/// this basically marks isShowing to true
+				bodyEditorImage.prepareToBegin();
+			}
+
+
+			ImGui::PopFont();
 		}
 
-		ImGui::PushFont(fontMono);
-		ImGui::Separator();
-		ImGui::Text("Computed Mass: %.2f", physics::getBodyMass(rigidBodyId));
-		ImGui::Text(
-			"Mass is computed "
-			"via density of "
-			"shapes attached "
-			"to it"
-		);
-		ImGui::Separator();
 
-		auto createAttributeSnapshot = [rigidBodyId](
-				const auto func,
-				const auto oldValue,
-				const auto newValue)
-		{
-			timemachine::createSnapshot(
-				[func, rigidBodyId, oldValue]{
-					func(rigidBodyId, oldValue);
-				},
-				[func, rigidBodyId, newValue]{
-					func(rigidBodyId, newValue);
-				}
-			);
-		};
-
-		float linearDamping = physics::getBodyLinearDamping(rigidBodyId);
-		ImGui::Text("Linear Damping");
-
-		if (ImGui::InputFloat("##lineardamping: ", &linearDamping))
-		{
-			const float oldLDamping = physics::getBodyLinearDamping(rigidBodyId);
-			const float newLDamping = linearDamping;
-
-			physics::setBodyLinearDamping(rigidBodyId, linearDamping);
-			createAttributeSnapshot(physics::setBodyLinearDamping, oldLDamping, newLDamping);
-		}
-
-		float angularDamping = physics::getBodyAngularDamping(rigidBodyId);
-		ImGui::Text("Angular Damping");
-		if (ImGui::InputFloat("##angulardamping: ", &angularDamping))
-		{
-			float oldADamping = physics::getBodyAngularDamping(rigidBodyId);
-			physics::setBodyAngularDamping(rigidBodyId, angularDamping);
-
-			createAttributeSnapshot(physics::setBodyAngularDamping, oldADamping, angularDamping);
-		}
-
-		bool sleepEnabled = physics::isSleepEnabled(rigidBodyId);
-		ImGui::Text("Sleeping");
-		if (ImGui::Checkbox("##sleeping", &sleepEnabled))
-		{
-			const auto oldSleep = physics::isSleepEnabled(rigidBodyId);
-			physics::enableSleep(rigidBodyId, sleepEnabled);
-
-			createAttributeSnapshot(physics::enableSleep, oldSleep, sleepEnabled);
-		}
-
-		auto linearLocks = physics::getBodyLinearLocks(rigidBodyId);
-		ImGui::Text("Linear lock");
-		if (ImGui::Checkbox("X##xlinear", &linearLocks[0]))
-		{
-			const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
-			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
-
-			createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
-		}
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Y##ylinear", &linearLocks[1]))
-		{
-			const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
-			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
-
-			createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
-		}
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Z##zlinear", &linearLocks[2]))
-		{
-			const auto oldLinearLocks = physics::getBodyLinearLocks(rigidBodyId);
-			physics::setBodyLinearLocks(rigidBodyId, linearLocks);
-
-			createAttributeSnapshot(physics::setBodyLinearLocks, oldLinearLocks, linearLocks);
-		}
-
-		auto angularLocks = physics::getBodyAngularLocks(rigidBodyId);
-		ImGui::Text("Angular lock");
-		if (ImGui::Checkbox("X##xangular", &angularLocks[0]))
-		{
-			const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
-			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
-
-			createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
-		}
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Y##yangular", &angularLocks[1]))
-		{
-			const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
-			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
-
-			createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Z##zangular", &angularLocks[2]))
-		{
-			const auto oldAngularLocks = physics::getBodyAngularLocks(rigidBodyId);
-			physics::setBodyAngularLocks(rigidBodyId, angularLocks);
-
-			createAttributeSnapshot(physics::setBodyAngularLocks, oldAngularLocks, angularLocks);
-		}
-
-		if ((ImGui::Button("Edit Shapes") && !bodyEditorImage.isShowingImage()))
-		{
-			renderer::resetCamera(bodyEditorImage.getCameraId());
-			capturedEntity = currentSelectedEntity.value();
-
-			/// this basically marks isShowing to true
-			bodyEditorImage.prepareToBegin();
-		}
-
-			/// These below 2 functions can exit early if
-			/// bodyEditorOffImage.isShowing is not true, dont worry about these.
-
-			/// this function can internally call to close this image too
-			showBodyEditorWindow();
-
-			showBodySceneWindow();
-
-		ImGui::PopFont();
 	}
 
-	void showBodyEditorWindow()
+	void showRigidBodySpecificWindows()
+	{
+		/// These below 2 functions can exit early if
+		/// bodyEditorOffImage.isShowing is not true, dont worry about these.
+
+		/// this function can internally call to close this image too
+		showBodyEditorWindow();
+
+		showBodySceneWindow();
+	}
+
+	static void showBodyEditorWindow()
 	{
 		if (!capturedEntity.has_value())
 			return;
@@ -814,7 +820,7 @@ namespace clz::editor
 		ImGui::End();
 	}
 
-	void showBodySceneWindow()
+	static void showBodySceneWindow()
 	{
 		if (!capturedEntity.has_value())
 			return;

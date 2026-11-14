@@ -270,6 +270,12 @@ namespace clz::renderer
 				VK_ACCESS_2_SHADER_READ_BIT_KHR
 			);
 
+			/// First draw editor's offscreen images
+			/// This is because offscreen images when being prepared to draw
+			/// might destroy the frame resources, but the commandBuffer executing
+			/// editor::update might still be using them.
+			editor::drawOffscreenImages(commandBuffer);
+
 			// ImGui chrome (panels, including the viewport image widget)
 			// renders onto the swapchain image directly.
 			transition_image_layout(
@@ -334,8 +340,6 @@ namespace clz::renderer
 				commandBuffer
 			);
 
-			/// finally draw editor's offscreen images
-			editor::drawOffscreenImages(commandBuffer);
 		}
 		else if (state::g_engineState == state::EngineState::Game)
 #endif

@@ -30,104 +30,10 @@
 
 namespace clz::editor
 {
-	void showComponentSpecificWindows();
-}
-namespace clz::editor
-{
-	/// @copydoc showInspector
-	void showInspector(VkCommandBuffer commandBuffer)
-	{
-		if (!ImGui::Begin("Inspector"))
-		{
-			ImGui::End();
-			return;
-		}
-
-		if (!currentSelectedEntity.has_value())
-		{
-			ImGui::TextDisabled("No entity selected");
-			ImGui::End();
-			return;
-		}
-
-		ImGui::PushFont(fontMonoBold, 20);
-		ImGui::Text(
-			"Selected Entity: %s",
-			ecs::getEntityName(currentSelectedEntity.value()).c_str()
-		);
-		ImGui::PopFont();
-
-		ImGui::Separator();
-
-		ImGui::PushFont(fontMono, 18);
-		ImGui::Text("Entity is currently: ");
-
-		ImGui::SameLine();
-		if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
-			ImGui::Text("Enabled");
-		else
-			ImGui::Text("Disabled");
-
-		ImGui::PopFont();
-
-		ImGui::Separator();
-
-		// Every entity has transform component
-		showTransformComponentHeader();
-
-		ImGui::Separator();
-
-		if (ecs::hasComponent<renderer::ModelComponent>(
-			    currentSelectedEntity.value()
-		))
-		{
-			showModelComponentHeader();
-			ImGui::Separator();
-		}
-		if (ecs::hasComponent<renderer::DirectionalLightComponent>(
-			currentSelectedEntity.value()
-		))
-		{
-			showDirectionalLightHeader();
-			ImGui::Separator();
-		}
-		if (ecs::hasComponent<renderer::PointLightComponent>(
-			currentSelectedEntity.value()
-		))
-		{
-			showPointLightHeader();
-			ImGui::Separator();
-		}
-
-		if (ecs::hasComponent<physics::RigidBodyComponent>(
-			    currentSelectedEntity.value()
-		))
-		{
-			showRigidBodyHeader(commandBuffer);
-			ImGui::Separator();
-		}
-
-		if (ecs::hasComponent<script::SensorScriptComponent>(currentSelectedEntity.value()))
-		{
-			showSensorScriptComponent();
-			ImGui::Separator();
-		}
-		if (ecs::hasComponent<script::CollisionScriptComponent>(currentSelectedEntity.value()))
-		{
-			showCollisionScriptComponent();
-			ImGui::Separator();
-		}
-
-		if (ecs::hasComponent<audio::AudioBufferPlayerComponent>(currentSelectedEntity.value()))
-		{
-			showBufferPlayerHeader();
-			ImGui::Separator();
-		}
-
-		ImGui::End();
-
-		showComponentSpecificWindows();
-	}
+	/// Shows component specific windows
+	/// necessary because they need to be visible independently too,
+	/// no matter whether Inspector window is opened or not
+	static void showComponentSpecificWindows();
 
 	void initInspector()
 	{
@@ -139,8 +45,108 @@ namespace clz::editor
 		bodyEditorImage.destroy();
 	}
 
-	void showComponentSpecificWindows()
+	/// @copydoc showInspector
+	void showInspector(VkCommandBuffer commandBuffer)
 	{
+		auto showComponents = [&]()
+		{
+			ImGui::PushFont(fontMonoBold, 20);
+			ImGui::Text(
+				"Selected Entity: %s",
+				ecs::getEntityName(currentSelectedEntity.value()).c_str()
+			);
+			ImGui::PopFont();
 
+			ImGui::Separator();
+
+			ImGui::PushFont(fontMono, 18);
+			ImGui::Text("Entity is currently: ");
+
+			ImGui::SameLine();
+			if (!ecs::isEntityDisabled(currentSelectedEntity.value()))
+				ImGui::Text("Enabled");
+			else
+				ImGui::Text("Disabled");
+
+			ImGui::PopFont();
+
+			ImGui::Separator();
+
+			// Every entity has transform component
+			showTransformComponentHeader();
+
+			ImGui::Separator();
+
+			if (ecs::hasComponent<renderer::ModelComponent>(
+				    currentSelectedEntity.value()
+			))
+			{
+				showModelComponentHeader();
+				ImGui::Separator();
+			}
+			if (ecs::hasComponent<renderer::DirectionalLightComponent>(
+				currentSelectedEntity.value()
+			))
+			{
+				showDirectionalLightHeader();
+				ImGui::Separator();
+			}
+			if (ecs::hasComponent<renderer::PointLightComponent>(
+				currentSelectedEntity.value()
+			))
+			{
+				showPointLightHeader();
+				ImGui::Separator();
+			}
+
+			if (ecs::hasComponent<physics::RigidBodyComponent>(
+				    currentSelectedEntity.value()
+			))
+			{
+				showRigidBodyHeader(commandBuffer);
+				ImGui::Separator();
+			}
+
+			if (ecs::hasComponent<script::SensorScriptComponent>(currentSelectedEntity.value()))
+			{
+				showSensorScriptComponent();
+				ImGui::Separator();
+			}
+			if (ecs::hasComponent<script::CollisionScriptComponent>(currentSelectedEntity.value()))
+			{
+				showCollisionScriptComponent();
+				ImGui::Separator();
+			}
+
+			if (ecs::hasComponent<audio::AudioBufferPlayerComponent>(currentSelectedEntity.value()))
+			{
+				showBufferPlayerHeader();
+				ImGui::Separator();
+			}
+
+		};
+
+		if (ImGui::Begin("Inspector"))
+		{
+			if (currentSelectedEntity.has_value())
+			{
+				showComponents();
+			}
+			else
+			{
+				ImGui::TextDisabled("No entity selected");
+			}
+
+
+		}
+		ImGui::End();
+
+		showComponentSpecificWindows();
+	}
+
+
+	static void showComponentSpecificWindows()
+	{
+		showRigidBodySpecificWindows();
 	}
 } // namespace clz::editor
